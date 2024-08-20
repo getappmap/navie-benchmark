@@ -1,0 +1,6 @@
+[submodule "submodules/navie-editor"]
+	path = submodules/navie-editor
+	url = https://github.com/getappmap/navie-editor
+[submodule "submodules/appmap-js"]
+	path = submodules/appmap-js
+	url = https://github.com/getappmap/appmap-js
