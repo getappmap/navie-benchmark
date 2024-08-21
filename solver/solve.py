@@ -1,45 +1,50 @@
 from argparse import ArgumentParser
-import resource
-from time import time
+from pathlib import Path
+from subprocess import run
 
-import docker
-
-from swebench.harness.docker_build import build_env_images
-from swebench.harness.docker_utils import clean_images, list_images
-from swebench.harness.utils import load_swebench_dataset, str2bool
+from swebench.harness.utils import load_swebench_dataset
 
 
 def main(
     dataset_name: str,
     split: str,
     instance_ids: list,
+    reuse_work_dir: bool,
     max_workers: int,
-    force_rebuild: bool,
-    cache_level: str,
-    clean: bool,
-    open_file_limit: int,
-    run_id: str,
-    timeout: int,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
     """
 
-    resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
-    client = docker.from_env()
-
     full_dataset = load_swebench_dataset(dataset_name, split, instance_ids)
     dataset = full_dataset
-    existing_images = list_images(client)
     print(f"Running {len(dataset)} unevaluated instances...")
     if not dataset:
         print("No instances to run.")
         return
 
-    # build environment images
-    build_env_images(client, dataset, force_rebuild, max_workers)
+    # TODO: Parallelize this
+    # Make inferences
+    solver_path = Path(__file__).parent / "solve_instance.py"
 
-    # make inferences
+    for instance in dataset:
+        print(f"Running instance {instance['instance_id']}...")
+        solve_args = [
+            "python",
+            str(solver_path),
+            "--dataset_name",
+            dataset_name,
+            "--instance_id",
+            instance["instance_id"],
+        ]
+        if reuse_work_dir:
+            solve_args.append("--reuse_work_dir")
+
+        # Run this as a separate process so that it can change the working directory.
+        solve_result = run(solve_args)
+
+        if solve_result.returncode != 0:
+            print(f"Failed to run instance {instance['instance_id']}")
 
 
 if __name__ == "__main__":
@@ -66,40 +71,11 @@ if __name__ == "__main__":
         help="Maximum number of workers (should be <= 75%% of CPU cores)",
     )
     parser.add_argument(
-        "--open_file_limit", type=int, default=4096, help="Open file limit"
-    )
-    parser.add_argument(
-        "--timeout",
-        type=int,
-        default=1_800,
-        help="Timeout (in seconds) for running tests for each instance",
-    )
-    parser.add_argument(
-        "--force_rebuild",
-        type=str2bool,
+        "--reuse_work_dir",
+        action="store_true",
+        help="Reuse the work directory if it exists",
         default=False,
-        help="Force rebuild of all images",
-    )
-    parser.add_argument(
-        "--cache_level",
-        type=str,
-        choices=["none", "base", "env", "instance"],
-        help="Cache level - remove images above this level",
-        default="env",
-    )
-    # if clean is true then we remove all images that are above the cache level
-    # if clean is false, we only remove images above the cache level if they don't already exist
-    parser.add_argument(
-        "--clean", type=str2bool, default=False, help="Clean images above cache level"
-    )
-    parser.add_argument(
-        "--run_id", type=str, required=False, help="Run ID - identifies the run"
     )
 
     args = parser.parse_args()
-    if not args.run_id:
-        time_millis = int(time() * 1000)
-        args.run_id = f"solve_{time_millis}"
-        print(f"Generated run ID: {args.run_id}")
-
     main(**vars(args))
