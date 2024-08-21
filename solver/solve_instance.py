@@ -110,7 +110,11 @@ def main(
 
         except Exception as e:
             print(f"[plan] Error running plan for {instance_id}: {e}")
+            import traceback
+
+            traceback.print_exc()
         finally:
+            print(f"[plan] Cleaning up container {container.id}")
             close_logger(logger)
             # Remove instance container + image, close logger
             cleanup_container(client, container, logger)

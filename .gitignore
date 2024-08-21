@@ -170,5 +170,5 @@ cython_debug/
 data/repos/copies
 notebooks/
 *logs/
-work
+work/
 
