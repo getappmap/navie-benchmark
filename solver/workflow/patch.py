@@ -1,4 +1,5 @@
 from subprocess import run
+from typing import Union
 from unidiff import PatchSet
 
 from .is_test_file import is_non_test_file, is_test_file
@@ -67,3 +68,26 @@ def exclude_files(diff: str, paths: list[str]) -> str:
     result = PatchSet("")
     result.extend([p for p in PatchSet(diff) if p.path not in paths])
     return str(result)
+
+
+class Patch:
+    def __init__(self, patch: Union[str, PatchSet]):
+        if isinstance(patch, str):
+            patch = PatchSet(patch)
+
+        self.patch = patch
+
+    def list_files(self):
+        return list_files_in_patch(str(self.patch))
+
+    def modified_lines(self, file):
+        patched_file = next((pf for pf in self.patch if pf.path == file), None)
+        if patched_file is None:
+            return []
+
+        line_numbers = []
+        for hunk in patched_file:
+            for line in hunk.target_lines():
+                if line.is_added or line.is_removed:
+                    line_numbers.append(line.target_line_no)
+        return line_numbers

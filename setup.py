@@ -35,6 +35,7 @@ setuptools.setup(
         'ghapi',
         'GitPython',
         'pre-commit',
+        'pytest',
         'python-dotenv',
         'requests',
         'rich',

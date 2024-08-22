@@ -12,9 +12,8 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 
 from swebench.harness.constants import KEY_INSTANCE_ID
-
-from solver.workflow import Workflow
-from solver.steps.checkout_code import checkout_code
+from solver.checkout_code import checkout_code
+from solver.workflow.workflow import Workflow
 
 from swebench.harness.docker_build import (
     build_container,

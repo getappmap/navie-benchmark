@@ -45,6 +45,10 @@ def checkout_code(log, container, source_dir, tmp_dir):
         # Initialize git and add all files; on this filesystem, not in the container.
         subprocess.run(["git", "init"], check=True)
         subprocess.run(["git", "add", "."], check=True)
-        subprocess.run(["git", "commit", "-m", f"Baseline commit"], check=True)
+        commit_output = subprocess.run(
+            ["git", "commit", "-m", f"Baseline commit"], check=True, capture_output=True
+        )
+        commit_output_lines = commit_output.stdout.decode().split("\n")
+        log("checkout-code", f"Committed {len(commit_output_lines)} files")
     finally:
         chdir(pwd)
