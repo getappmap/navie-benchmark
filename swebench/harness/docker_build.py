@@ -1,6 +1,7 @@
 import logging
 import re
 import traceback
+from typing import Optional
 import docker
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -503,6 +504,24 @@ def build_container(
     if force_rebuild:
         remove_image(client, test_spec.instance_image_key, "quiet")
     build_instance_image(test_spec, client, logger, nocache)
+
+    # Remove the container, if it exists
+    container_name = test_spec.get_instance_container_name(run_id)
+
+    def get_existing_container(
+        client, container_name
+    ) -> Optional[docker.models.containers.Container]:
+        try:
+            return client.containers.get(container_name)
+        except docker.errors.NotFound:
+            pass
+
+    existing_container = get_existing_container(client, container_name)
+    if existing_container:
+        existing_container.remove(force=True)
+        logger.info(
+            f"WARNING Container {existing_container.id} removed. Container named {container_name} was probably not cleaned up after a previous run."
+        )
 
     container = None
     try:
