@@ -113,10 +113,11 @@ def main(
 
             traceback.print_exc()
         finally:
-            print(f"[plan] Cleaning up container {container.id}")
-            close_logger(logger)
             # Remove instance container + image, close logger
-            cleanup_container(client, container, logger)
+            close_logger(logger)
+            if container:
+                print(f"[plan] Cleaning up container {container.id}")
+                cleanup_container(client, container, logger)
 
     return
 

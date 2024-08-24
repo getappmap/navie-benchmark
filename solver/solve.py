@@ -16,6 +16,12 @@ def main(
     Run evaluation harness for the given dataset and predictions.
     """
 
+    # Collect all instance ids by splitting each instance id by space
+    if instance_ids:
+        instance_ids = [
+            id for instance_id in instance_ids for id in instance_id.split()
+        ]
+
     full_dataset = load_swebench_dataset(dataset_name, split, instance_ids)
     dataset = full_dataset
     print(f"Running {len(dataset)} unevaluated instances...")

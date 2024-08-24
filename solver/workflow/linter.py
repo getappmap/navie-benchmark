@@ -2,11 +2,35 @@ from abc import abstractmethod
 import re
 from subprocess import run
 
+from navie.editor import Editor
 
 FLAKE8_LINT_COMMAND = [
     "flake8",
-    "--extend-ignore=BLK100,C402,C408,C416,D,E122,E124,E127,E128,E131,E201,E202,E203,E221,E225,E231,E251,E261,E265,E266,E302,E303,E305,E402,E501,E502,E713,E731,F401,F841,W291,W293",
+    "--extend-ignore=BLK100,C402,C408,C416,D,E122,E124,E127,E128,E131,E201,E202,E203,E221,E225,E231,E251,E261,E265,E266,E302,E303,E305,E402,E501,E502,E713,E731,F401,F841,W291,W292,W293",
 ]
+
+
+def generate_lint_error_avoidance_plan(work_dir: str, plan, lint_errors: list) -> str:
+    lint_errors_str = "\n".join(lint_errors)
+    return Editor(work_dir).ask(
+        f"""Generate a simple set of instructions that will ensure that the following
+lint errors do not occur when code is generated for the plan.
+
+These instructions will be appended to the plan as a reminder to avoid these lint errors.
+
+Do not generate a complete plan, just generate a bullet list of instructions.
+
+## Lint errors
+
+{lint_errors_str}
+
+## Plan
+
+{plan}
+""",
+        options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
+        question_name="lint_error_avoidance_plan",
+    )
 
 
 class Linter:

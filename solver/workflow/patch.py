@@ -12,10 +12,7 @@ EXCLUDED = ["setup.py", "tox.ini"]
 # Run git diff in the log directory and return the output.
 # clean: EXCLUDED files are removed from the output before it's returned.
 def git_diff(clean=True):
-    diff_command = [
-        "git",
-        "diff",
-    ]
+    diff_command = ["git", "diff"]
     patch = run(diff_command, check=True, capture_output=True).stdout.decode("utf-8")
     if clean:
         patch = clean_patch(patch)
@@ -76,6 +73,9 @@ class Patch:
             patch = PatchSet(patch)
 
         self.patch = patch
+
+    def __str__(self) -> str:
+        return str(self.patch)
 
     def list_files(self):
         return list_files_in_patch(str(self.patch))
