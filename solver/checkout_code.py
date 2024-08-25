@@ -46,7 +46,7 @@ def checkout_code(log, container, source_dir, tmp_dir):
         subprocess.run(["git", "init"], check=True)
         subprocess.run(["git", "add", "."], check=True)
         commit_output = subprocess.run(
-            ["git", "commit", "-m", f"Baseline commit"], check=True, capture_output=True
+            ["git", "commit", "-m", "Baseline commit"], check=True, capture_output=True
         )
         commit_output_lines = commit_output.stdout.decode().split("\n")
         log("checkout-code", f"Committed {len(commit_output_lines)} files")

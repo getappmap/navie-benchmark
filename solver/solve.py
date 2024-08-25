@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from os import environ
 from pathlib import Path
 from subprocess import run
 
@@ -6,11 +7,7 @@ from swebench.harness.utils import load_swebench_dataset
 
 
 def main(
-    dataset_name: str,
-    split: str,
-    instance_ids: list,
-    reuse_work_dir: bool,
-    max_workers: int,
+    dataset_name: str, split: str, instance_ids: list, reuse_work_dir: bool, limit: list
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -21,6 +18,7 @@ def main(
         instance_ids = [
             id for instance_id in instance_ids for id in instance_id.split()
         ]
+        print(f"Running instances: {instance_ids}")
 
     full_dataset = load_swebench_dataset(dataset_name, split, instance_ids)
     dataset = full_dataset
@@ -45,6 +43,11 @@ def main(
         ]
         if reuse_work_dir:
             solve_args.append("--reuse_work_dir")
+        if limit:
+            solve_args.append("--limit")
+            solve_args.extend(limit)
+
+        print(f"Running: {' '.join(solve_args)}")
 
         # Run this as a separate process so that it can change the working directory.
         solve_result = run(solve_args)
@@ -71,17 +74,27 @@ if __name__ == "__main__":
         help="Instance IDs to run (space separated)",
     )
     parser.add_argument(
-        "--max_workers",
-        type=int,
-        default=4,
-        help="Maximum number of workers (should be <= 75%% of CPU cores)",
-    )
-    parser.add_argument(
         "--reuse_work_dir",
         action="store_true",
         help="Reuse the work directory if it exists",
         default=False,
     )
+    parser.add_argument(
+        "--limit",
+        type=str,
+        help="Set a configurable limit as key=value. Valid keys are: ['time', 'memory']",
+        nargs="+",
+    )
 
     args = parser.parse_args()
+
+    appmap_command = environ.get("APPMAP_COMMAND")
+    if appmap_command:
+        print(f"Running with appmap command: {appmap_command}")
+
+    if environ.get("OPENAI_API_KEY"):
+        print("Running with OpenAI API key")
+    else:
+        print("WARNING: OpenAI API key not found in environment")
+
     main(**vars(args))

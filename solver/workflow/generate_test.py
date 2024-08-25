@@ -21,14 +21,14 @@ class GenerateTest:
         log: Callable[[str, str], None],
         work_dir: str,
         plan: str,
-        file_name: str,
-        file_limit: int = 1,
+        python_version: str,
+        packages: str,
     ):
         self.log = log
         self.work_dir = work_dir
         self.plan = plan
-        self.file_name = file_name
-        self.file_limit = file_limit
+        self.python_version = python_version
+        self.packages = packages
 
     # Generate a code change plan and return it as a string.
     # If lint_errors is provided, include prompting to avoid them.
@@ -52,8 +52,21 @@ class GenerateTest:
             f"""## Output
 
 Output a completelly new and self-contained test case, that is based on the original
-test case code. Remove all other test functions aside from the one that is 
-being generated.
+test case code. 
+
+Remove all other test classes and functions aside from the one that is being generated.
+
+Never use the @skipIf annotation.
+
+## Python environment
+
+Do not use Python features that are not available in this Python version.
+
+Do not use any packages that are not available in this environment.
+
+{self.python_version}
+
+{self.packages}
 """
         ]
 

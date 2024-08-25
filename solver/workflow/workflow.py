@@ -2,48 +2,124 @@ from os import listdir, path
 from pathlib import Path
 import subprocess
 from typing import Callable, List
-from uuid import uuid4
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
 
-from .patch import Patch
-from .linter import Flake8Linter
+from .detect_environment import DetectEnvironment
+from .choose_test_file import choose_test_file
 from .generate_code import GenerateCode
 from .generate_test import GenerateTest
-from .choose_test_file import choose_test_file
+from .linter import Flake8Linter
+from .lint_repair import lint_repair
+from .patch import Patch
+from .run_test import RunTest
+
+FILE_LIMIT = 1
+TEST_LINT_RETRY_LIMIT = 3
+TEST_STATUS_RETRY_LIMIT = 3
+CODE_LINT_RETRY_LIMIT = 5
+CODE_STATUS_RETRY_LIMIT = 5
+
+
+class WorkflowLimits:
+    def __init__(
+        self,
+        file_limit: int = FILE_LIMIT,
+        test_lint_retry_limit: int = TEST_LINT_RETRY_LIMIT,
+        test_status_retry_limit: int = TEST_STATUS_RETRY_LIMIT,
+        code_lint_retry_limit: int = CODE_LINT_RETRY_LIMIT,
+        code_status_retry_limit: int = CODE_STATUS_RETRY_LIMIT,
+    ):
+        self.file_limit = file_limit
+        self.test_lint_retry_limit = test_lint_retry_limit
+        self.test_status_retry_limit = test_status_retry_limit
+        self.code_lint_retry_limit = code_lint_retry_limit
+        self.code_status_retry_limit = code_status_retry_limit
+
+    def __str__(self):
+        return f"file={self.file_limit}, test_lint_retry={self.test_lint_retry_limit}, test_status_retry={self.test_status_retry_limit}, code_lint_retry={self.code_lint_retry_limit}, code_status_retry={self.code_status_retry_limit}"
+
+    @staticmethod
+    def from_dict(data: dict):
+        return WorkflowLimits(
+            file_limit=data.get("file", FILE_LIMIT),
+            test_lint_retry_limit=data.get("test_lint_retry", TEST_LINT_RETRY_LIMIT),
+            test_status_retry_limit=data.get(
+                "test_status_retry", TEST_STATUS_RETRY_LIMIT
+            ),
+            code_lint_retry_limit=data.get("code_lint_retry", CODE_LINT_RETRY_LIMIT),
+            code_status_retry_limit=data.get(
+                "code_status_retry", CODE_STATUS_RETRY_LIMIT
+            ),
+        )
+
+    @staticmethod
+    def limit_names():
+        return [
+            "file",
+            "test_lint_retry",
+            "test_status_retry",
+            "code_lint_retry",
+            "code_status_retry",
+        ]
 
 
 class Workflow:
     def __init__(
-        self, log, navie_work_dir, issue_text, file_limit=1, generate_retry_limit=5
+        self,
+        log,
+        navie_work_dir,
+        docker_client,
+        repo,
+        version,
+        test_spec,
+        issue_text,
+        limits=WorkflowLimits(),
     ):
         self.log = log
         self.navie_work_dir = navie_work_dir
+        self.docker_client = docker_client
+        self.repo = repo
+        self.version = version
+        self.test_spec = test_spec
         self.issue_text = issue_text
-        self.file_limit = file_limit
-        self.generate_retry_limit = generate_retry_limit
+        self.limits = limits
 
-        self.edit_test_patch = None
-        self.patch = None
+        self.test_failure_identity_string = f"!!!{self.test_spec.instance_id}-failed!!!"
+
+        self.test_patch_path = None
+        self.code_patch_path = None
 
     def run(self):
         self.log("workflow", "Running workflow")
 
+        self.detect_environment()
         plan = self.generate_plan()
         self.generate_test(plan)
+        if self.test_patch_path:
+            self.run_test()
+
         self.generate_code(plan)
+
+    def detect_environment(self):
+        environment = DetectEnvironment(
+            self.log, self.navie_work_dir, self.repo, self.version, self.test_spec
+        ).detect(self.docker_client)
+        self.python_version = environment.python_version
+        self.packages = environment.packages
 
     def generate_plan(self):
         editor = Editor(self.navie_work_dir)
-        issue_text = "\n\n".join(
-            [
-                self.issue_text,
-                f"In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.",
-                f"Limit your solution to modify at most {self.file_limit} file(s).",
-                "Do not plan specific code changes. Just design the solution.",
-            ]
-        )
+        issue_text = f"""{self.issue_text}
+
+In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
+
+Limit your solution to modify at most {self.limits.file_limit} file(s).
+
+Do not plan specific code changes. Just design the solution.
+"""
+
         return editor.plan(
             issue_text,
             options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
@@ -68,7 +144,11 @@ The test should pass only when the issue is fixed as per the following plan:
 {code_plan}
 </plan>
 
-Do not modify any code besides the named test file. Do not generate code. Just design the test.
+When the test fails, it should output the following string in the test failure message: {self.test_failure_identity_string}
+
+Do not modify any code besides the named test file. 
+
+Do not output actual code. Just design the test.
 """,
             options=r"/noprojectinfo",
             question_name="test_plan",
@@ -111,6 +191,12 @@ Avoid using any of the following names, because these files already exist:
 </test-plan>
 
 Output the file name, and nothing else. Do not include directory paths.
+
+## Environment
+
+Python version: {self.python_version}
+
+Available packages: {self.packages}
 """,
             options=r"/noprojectinfo",
             question_name="test_file_name",
@@ -120,79 +206,113 @@ Output the file name, and nothing else. Do not include directory paths.
         )
         test_file_path = str(Path(edit_test_file).parent / test_file_name)
 
-        generator = GenerateTest(self.log, editor.work_dir, test_plan, self.file_limit)
+        generator = GenerateTest(
+            self.log, editor.work_dir, test_plan, self.python_version, self.packages
+        )
 
         def generate(attempt, lint_errors: list = []):
             test_patch = generator.generate(attempt, lint_errors)
             return generator.apply(test_file_path, test_patch)
 
-        self.edit_test_patch = self.implement_plan(generate)
+        test_patch = self.lint_repair(
+            "test", self.limits.test_lint_retry_limit, generate
+        )
 
         self.clean_git_state()
 
-        if self.edit_test_patch:
-            self.log("generate-test", f"Patch:\n{self.edit_test_patch}")
+        if test_patch:
+            test_patch_path = path.join(editor.work_dir, "test.patch")
+            self.log(
+                "generate-test",
+                f"Patch file generated to {test_patch_path}:\n{test_patch}",
+            )
+            with open(test_patch_path, "w") as f:
+                f.write(str(test_patch))
+
+            self.test_patch_path = test_patch_path
+
+    @property
+    def test_patch(self):
+        if self.test_patch_path:
+            with open(self.test_patch_path, "r") as f:
+                return Patch(f.read())
+
+        raise ValueError("No test patch is available")
+
+    @property
+    def code_patch(self):
+        if self.code_patch_path:
+            with open(self.code_patch_path, "r") as f:
+                return Patch(f.read())
+
+        raise ValueError("No code patch is available")
+
+    def run_test(self):
+        self.log("workflow", "Running test")
+        run_test = RunTest(
+            self.log, self.navie_work_dir, self.repo, self.version, self.test_spec
+        )
+        run_test_result = run_test.run(self.docker_client, self.test_patch_path)
+
+        if run_test_result.succeeded:
+            self.log("workflow", "Test passed unexpectedly")
+        else:
+            self.log("workflow", "Test failed")
+            contains_signal_error = run_test_result.contains_error(
+                self.test_failure_identity_string
+            )
+            if contains_signal_error:
+                self.log("workflow", "Test failure contains signal error.")
+            else:
+                self.log("workflow", "Test failure does not contain signal error.")
 
     def generate_code(self, plan):
         self.clean_git_state()
 
-        generator = GenerateCode(self.log, self.navie_work_dir, plan, self.file_limit)
+        generator = GenerateCode(
+            self.log,
+            self.navie_work_dir,
+            plan,
+            self.python_version,
+            self.packages,
+            self.limits.file_limit,
+        )
 
         def generate(attempt, lint_errors: list = []):
             code = generator.generate(attempt, lint_errors)
             return generator.apply(attempt, code)
 
-        self.patch = self.implement_plan(generate)
+        patch = self.lint_repair("code", self.limits.code_lint_retry_limit, generate)
 
         self.clean_git_state()
 
-        if self.patch:
-            self.log("generate-code", f"Patch:\n{self.patch}")
-
-    def implement_plan(self, generator: Callable[[int, List[str]], None]) -> Patch:
-        generate_attempt = 1
-        lint_errors = []
-        patch = None
-        while not patch and generate_attempt <= self.generate_retry_limit:
+        if patch:
+            patch_path = path.join(self.navie_work_dir, "generate", "code.patch")
             self.log(
-                "workflow",
-                f"Making attempt {generate_attempt} to generate code that lints cleanly",
+                "generate-code",
+                f"Patch file generated to {patch_path}:\n{patch}",
             )
-            lint_errors.sort()
+            with open(patch_path, "w") as f:
+                f.write(str(patch))
 
-            distinct_lint_errors = list(set(lint_errors))
-            patch = generator(generate_attempt, distinct_lint_errors)
+            self.code_patch_path = patch_path
 
-            generate_attempt += 1
-
-            if not patch:
-                self.log("workflow", "Patch is empty, retrying")
-                continue
-
-            lint_clean = True
-            for file_path in patch.list_files():
-                linter = Flake8Linter()
-                file_lint_errors = linter.lint(file_path)
-                patch_lines = patch.modified_lines(file_path)
-                lint_errors_in_patch = linter.select_lint_errors(
-                    file_lint_errors, patch_lines
-                )
-                if lint_errors_in_patch:
-                    lint_errors_in_patch_str = "\n".join(lint_errors_in_patch)
-                    self.log(
-                        "workflow", f"Code has lint errors: {lint_errors_in_patch_str}"
-                    )
-                    lint_errors.extend(file_lint_errors)
-                    lint_clean = False
-
-            if lint_clean:
-                self.log("workflow", "Code lints cleanly")
-            else:
-                patch = None
-                self.log("workflow", "Reverting code changes due to lint errors")
-                subprocess.run(["git", "checkout", "."], check=True)
-
-        return patch
+    def lint_repair(
+        self,
+        step_name: str,
+        max_retries: int,
+        generator: Callable[[int, List[str]], None],
+    ) -> Patch:
+        linter = Flake8Linter()
+        clean_repo = lambda: subprocess.run(["git", "checkout", "."], check=True)
+        return lint_repair(
+            self.log,
+            step_name,
+            max_retries,
+            linter,
+            generator,
+            clean_repo,
+        )
 
     def clean_git_state(self):
         first_commit_hash = (
