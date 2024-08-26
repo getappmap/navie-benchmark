@@ -1,7 +1,13 @@
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 from .linter import Linter
 from .patch import Patch
+
+
+class LintRepairResult:
+    def __init__(self, attempts: int, patch: Optional[Patch]):
+        self.attempts = attempts
+        self.patch = patch
 
 
 def lint_repair(
@@ -11,7 +17,7 @@ def lint_repair(
     linter: Linter,
     generator: Callable[[int, List[str]], Patch],
     clean_repo: Callable[[], None],
-) -> Patch:
+) -> LintRepairResult:
     log_label = "/".join([step_name, "lint-repair"])
     generate_attempt = 1
     lint_errors = []
@@ -53,4 +59,4 @@ def lint_repair(
             log(log_label, "Reverting code changes due to lint errors")
             clean_repo()
 
-    return patch
+    return LintRepairResult(generate_attempt - 1, patch)

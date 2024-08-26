@@ -11,7 +11,7 @@ from .choose_test_file import choose_test_file
 from .generate_code import GenerateCode
 from .generate_test import GenerateTest
 from .linter import Flake8Linter
-from .lint_repair import lint_repair
+from .lint_repair import LintRepairResult, lint_repair
 from .patch import Patch
 from .run_test import RunTest
 
@@ -214,8 +214,17 @@ Available packages: {self.packages}
             test_patch = generator.generate(attempt, lint_errors)
             return generator.apply(test_file_path, test_patch)
 
-        test_patch = self.lint_repair(
+        lint_repair_result = self.lint_repair(
             "test", self.limits.test_lint_retry_limit, generate
+        )
+
+        test_patch = lint_repair_result.patch
+        self.limits.test_status_retry_limit = max(
+            0, self.limits.test_status_retry_limit - lint_repair_result.attempts
+        )
+        self.log(
+            "generate-test",
+            f"Test patch generated after {lint_repair_result.attempts} attempts. Setting test status retry limit to {self.limits.test_status_retry_limit}.",
         )
 
         self.clean_git_state()
@@ -282,7 +291,18 @@ Available packages: {self.packages}
             code = generator.generate(attempt, lint_errors)
             return generator.apply(attempt, code)
 
-        patch = self.lint_repair("code", self.limits.code_lint_retry_limit, generate)
+        lint_repair_result = self.lint_repair(
+            "code", self.limits.code_lint_retry_limit, generate
+        )
+
+        patch = lint_repair_result.patch
+        self.limits.code_status_retry_limit = max(
+            0, self.limits.code_status_retry_limit - lint_repair_result.attempts
+        )
+        self.log(
+            "generate-code",
+            f"Test patch generated after {lint_repair_result.attempts} attempts. Setting test status retry limit to {self.limits.code_status_retry_limit}.",
+        )
 
         self.clean_git_state()
 
@@ -302,7 +322,7 @@ Available packages: {self.packages}
         step_name: str,
         max_retries: int,
         generator: Callable[[int, List[str]], None],
-    ) -> Patch:
+    ) -> LintRepairResult:
         linter = Flake8Linter()
         clean_repo = lambda: subprocess.run(["git", "checkout", "."], check=True)
         return lint_repair(

@@ -1,9 +1,11 @@
 from os import path
 import os
+from pathlib import Path
 
 import docker
 
 from solver.harness.build_extended_image import build_extended_image
+from solver.ioutil import make_path, open_path
 from solver.workflow.patch import Patch
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.docker_build import build_instance_image
@@ -38,8 +40,11 @@ class RunTest:
         self.version = version
         self.test_spec = test_spec
 
-    def run(self, docker_client, test_patch_path) -> RunTestResult:
-        with open(test_patch_path, "r") as f:
+    def run(
+        self, docker_client: docker.APIClient, test_patch_path: Path
+    ) -> RunTestResult:
+        test_patch_path = make_path(test_patch_path)
+        with open_path(test_patch_path, "r") as f:
             test_patch = Patch(f.read())
 
         test_files = test_patch.list_files()

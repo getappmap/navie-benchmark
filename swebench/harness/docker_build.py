@@ -47,6 +47,9 @@ def setup_logger(instance_id: str, log_file: Path, mode="w"):
     This logger is used for logging the build process of images and containers.
     It writes logs to the log file.
     """
+    if isinstance(log_file, str):
+        log_file = Path(log_file)
+
     log_file.parent.mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger(f"{instance_id}.{log_file.name}")
     handler = logging.FileHandler(log_file, mode=mode)

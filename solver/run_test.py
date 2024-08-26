@@ -8,10 +8,10 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.cli import build_logger, build_work_dir, load_dataset
 from swebench.harness.constants import KEY_INSTANCE_ID
-from swebench.harness.docker_build import build_env_images, setup_logger
+from swebench.harness.docker_build import build_env_images
 from swebench.harness.test_spec import make_test_spec
-from swebench.harness.utils import load_swebench_dataset
 
 from solver.workflow.patch import Patch
 from solver.workflow.run_test import RunTest
@@ -25,60 +25,31 @@ def main(
     """
     Run evaluation harness for the given dataset and predictions.
     """
-    work_dir = Path(__file__).parent.parent / "work" / run_id
+
+    docker_client = docker.from_env()
+    work_dir = build_work_dir(run_id)
+    logger_fn = build_logger(work_dir, instance_id)
+    dataset = load_dataset(dataset_name, [instance_id])
+    instance = dataset[0]
+
+    test_spec = make_test_spec(instance)
+
     navie_work_dir = work_dir / "navie"
     navie_work_dir.mkdir(parents=True, exist_ok=True)
 
-    test_patch_file = Path(navie_work_dir) / "test.patch"
+    test_patch_file = Path(navie_work_dir) / "generate-test" / "test.patch"
     if not test_patch_file.exists():
         print(f"Test patch file {test_patch_file} not found.")
-        sys.exit(1)
-
-    docker_client = docker.from_env()
-
-    test_dataset = load_swebench_dataset(dataset_name, "test")
-    dev_dataset = load_swebench_dataset(dataset_name, "dev")
-
-    dataset = [
-        instance
-        for instance in test_dataset + dev_dataset
-        if instance[KEY_INSTANCE_ID] == instance_id
-    ]
-    if not dataset:
-        print(f"Instance ID {instance_id} not found in dataset.")
-        sys.exit(1)
-
-    if len(dataset) > 1:
-        print(f"Found multiple instances with ID {instance_id}.")
         sys.exit(1)
 
     # build environment images
     build_env_images(docker_client, dataset)
 
-    instance = dataset[0]
-
-    test_spec = make_test_spec(instance)
-
-    log_dir = work_dir
-    log_dir.mkdir(parents=True, exist_ok=True)
-    log_file = log_dir / "run_test.log"
-
-    print(f"Logging to {log_file}")
-    logger = setup_logger(instance_id, log_file)
-
-    def logger_fn(facility, msg):
-        message = f"[{facility}] ({instance_id}) {msg}"
-        print(message)
-        logger.info(message)
-
     run_test = RunTest(
         logger_fn, navie_work_dir, instance["repo"], instance["version"], test_spec
     )
 
-    with test_patch_file.open("r") as f:
-        test_patch = Patch(f.read())
-
-    run_test_result = run_test.run(docker_client, test_patch)
+    run_test_result = run_test.run(docker_client, test_patch_file)
     print(run_test_result)
 
 
