@@ -2,9 +2,18 @@ from argparse import ArgumentParser
 from pathlib import Path
 from time import time
 
-from solver.workflow.workflow import WorkflowLimits
-from swebench.harness.constants import KEY_INSTANCE_ID
-from swebench.harness.docker_build import setup_logger
+import docker
+
+from solver.harness.pull_images import pull_instance_images
+from solver.workflow.workflow import Workflow, WorkflowLimits
+from swebench.harness.constants import KEY_INSTANCE_ID, SWEbenchInstance
+from swebench.harness.docker_build import (
+    build_base_images,
+    build_env_images,
+    build_instance_images,
+    setup_logger,
+)
+from swebench.harness.test_spec import TestSpec, make_test_spec
 from swebench.harness.utils import load_swebench_dataset
 
 
@@ -97,3 +106,44 @@ def build_logger(work_dir: str, instance_id: str) -> callable:
         logger.info(message)
 
     return logger_fn
+
+
+def build_images(
+    docker_client: docker.APIClient, dataset: list, force_rebuild=False, max_workers=4
+):
+    build_env_images(docker_client, dataset, force_rebuild, max_workers)
+    build_instance_images(docker_client, dataset, force_rebuild, max_workers)
+
+
+def build_workflow(
+    log: callable,
+    navie_work_dir: Path,
+    docker_client: docker.APIClient,
+    instance: SWEbenchInstance,
+    limits: WorkflowLimits,
+):
+    repo = instance["repo"]
+    version = instance["version"]
+    problem_statement = instance["problem_statement"]
+    test_spec = make_test_spec(instance)
+
+    return Workflow(
+        log,
+        navie_work_dir,
+        docker_client,
+        repo,
+        version,
+        test_spec,
+        problem_statement,
+        limits,
+    )
+
+
+def pull_or_build_instance_images(
+    docker_client: docker.APIClient, dataset: list, force_rebuild=False, max_workers=4
+):
+    pull_instance_images(docker_client, dataset, max_workers)
+
+    build_base_images(docker_client, dataset, force_rebuild)
+    build_env_images(docker_client, dataset, force_rebuild)
+    build_instance_images(docker_client, dataset, force_rebuild)

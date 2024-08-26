@@ -4,6 +4,8 @@ from pathlib import Path
 import sys
 import docker
 
+from solver.harness.pull_images import pull_instance_images
+
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
 )
@@ -16,15 +18,19 @@ from solver.cli import (
     build_limits,
     build_logger,
     build_work_dir,
+    build_workflow,
     load_dataset,
+    pull_or_build_instance_images,
 )
 from swebench.harness.constants import KEY_INSTANCE_ID
 from solver.checkout_code import checkout_code
 from solver.workflow import Workflow, WorkflowLimits
 
 from swebench.harness.docker_build import (
+    build_base_images,
     build_container,
     build_env_images,
+    build_instance_images,
     setup_logger,
 )
 from swebench.harness.docker_utils import (
@@ -51,11 +57,9 @@ def main(
     dataset = load_dataset(dataset_name, [instance_id])
     instance = dataset[0]
 
-    # build environment images
-    build_env_images(docker_client, dataset)
+    pull_or_build_instance_images(docker_client, dataset)
 
     instance_id = instance["instance_id"]
-    issue_text = instance["problem_statement"]
 
     test_spec = make_test_spec(instance)
 
@@ -86,14 +90,11 @@ def main(
         logger_fn("solve", f"Changing directory to {source_dir}")
         chdir(source_dir)
         try:
-            workflow = Workflow(
+            workflow = build_workflow(
                 logger_fn,
                 navie_work_dir,
                 docker_client,
-                instance["repo"],
-                instance["version"],
-                test_spec,
-                issue_text,
+                instance,
                 limits,
             )
             workflow.run()

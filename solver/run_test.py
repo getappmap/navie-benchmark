@@ -8,7 +8,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from solver.cli import build_logger, build_work_dir, load_dataset
+from solver.cli import build_logger, build_work_dir, load_dataset, pull_or_build_instance_images
 from swebench.harness.constants import KEY_INSTANCE_ID
 from swebench.harness.docker_build import build_env_images
 from swebench.harness.test_spec import make_test_spec
@@ -32,8 +32,9 @@ def main(
     dataset = load_dataset(dataset_name, [instance_id])
     instance = dataset[0]
 
-    test_spec = make_test_spec(instance)
+    pull_or_build_instance_images(docker_client, dataset)
 
+    test_spec = make_test_spec(instance)
     navie_work_dir = work_dir / "navie"
     navie_work_dir.mkdir(parents=True, exist_ok=True)
 

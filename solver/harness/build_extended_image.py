@@ -1,13 +1,10 @@
 import io
-from os import path
 import tarfile
-from tempfile import NamedTemporaryFile, mkdtemp
-import docker
 
 
 def build_extended_image(log, docker_client, base_image, run_commands, new_image_name):
     """
-    Build a new Docker image based on the base_image and extended with run_test_prep_commands.
+    Build a new Docker image based on the base_image and extended with run_commands.
 
     :param docker_client: Docker client instance
     :param base_image: The base image to extend

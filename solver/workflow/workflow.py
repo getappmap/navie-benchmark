@@ -3,8 +3,11 @@ from pathlib import Path
 import subprocess
 from typing import Callable, List
 
+import docker
+
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
+from swebench.harness.test_spec import TestSpec
 
 from .detect_environment import DetectEnvironment
 from .choose_test_file import choose_test_file
@@ -68,14 +71,14 @@ class WorkflowLimits:
 class Workflow:
     def __init__(
         self,
-        log,
-        navie_work_dir,
-        docker_client,
-        repo,
-        version,
-        test_spec,
-        issue_text,
-        limits=WorkflowLimits(),
+        log: callable,
+        navie_work_dir: Path,
+        docker_client: docker.APIClient,
+        repo: str,
+        version: str,
+        test_spec: TestSpec,
+        issue_text: str,
+        limits: WorkflowLimits,
     ):
         self.log = log
         self.navie_work_dir = navie_work_dir
@@ -94,7 +97,6 @@ class Workflow:
     def run(self):
         self.log("workflow", "Running workflow")
 
-        self.detect_environment()
         plan = self.generate_plan()
         self.generate_test(plan)
         if self.test_patch_path:
@@ -103,6 +105,9 @@ class Workflow:
         self.generate_code(plan)
 
     def detect_environment(self):
+        if hasattr(self, "python_version") and hasattr(self, "packages"):
+            return
+
         environment = DetectEnvironment(
             self.log, self.navie_work_dir, self.repo, self.version, self.test_spec
         ).detect(self.docker_client)
@@ -127,6 +132,7 @@ Do not plan specific code changes. Just design the solution.
 
     def generate_test(self, code_plan):
         self.clean_git_state()
+        self.detect_environment()
 
         # Choose a test file
         editor = Editor(path.join(self.navie_work_dir, "generate-test"))
@@ -277,6 +283,7 @@ Available packages: {self.packages}
 
     def generate_code(self, plan):
         self.clean_git_state()
+        self.detect_environment()
 
         generator = GenerateCode(
             self.log,

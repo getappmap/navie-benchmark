@@ -7,13 +7,16 @@ from solver.cli import (
     apply_run_id,
     build_limits,
     build_work_dir,
+    build_workflow,
     configure_limits,
     configure_run_id,
     load_dataset,
+    pull_or_build_instance_images,
 )
-from solver.workflow.workflow import WorkflowLimits
+from solver.workflow.workflow import Workflow, WorkflowLimits
 from swebench.harness.constants import KEY_INSTANCE_ID
 from swebench.harness.docker_build import setup_logger
+from swebench.harness.test_spec import make_test_spec
 
 
 def main(
@@ -28,10 +31,16 @@ def main(
 
     docker_client = docker.from_env()
     work_dir = build_work_dir(run_id)
-    docker_logger = setup_logger(work_dir, instance_id)
+    logger = setup_logger(work_dir, instance_id)
     limits = build_limits(limits)
     dataset = load_dataset(dataset_name, [instance_id])
+
+    pull_or_build_instance_images(docker_client, dataset)
+
     instance = dataset[0]
+    navie_work_dir = work_dir / "navie"
+
+    workflow = build_workflow(logger, navie_work_dir, docker_client, instance, limits)
 
 
 if __name__ == "__main__":
