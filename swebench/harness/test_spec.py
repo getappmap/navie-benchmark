@@ -1,5 +1,6 @@
 import hashlib
 import json
+from os import getenv
 import platform
 import re
 
@@ -28,12 +29,15 @@ from swebench.harness.utils import (
 
 DIFF_MODIFIED_FILE_REGEX = r"--- a/(.*)"
 
+arch_reported = False
+
 
 @dataclass
 class TestSpec:
     """
     A dataclass that represents a test specification for a single instance of SWE-bench.
     """
+
     instance_id: str
     repo: str
     version: str
@@ -46,16 +50,25 @@ class TestSpec:
 
     @property
     def setup_env_script(self):
-        return "\n".join(["#!/bin/bash", "set -euxo pipefail"] + self.env_script_list) + "\n"
+        return (
+            "\n".join(["#!/bin/bash", "set -euxo pipefail"] + self.env_script_list)
+            + "\n"
+        )
 
     @property
     def eval_script(self):
-        return "\n".join(["#!/bin/bash", "set -uxo pipefail"] + self.eval_script_list) + "\n"
+        return (
+            "\n".join(["#!/bin/bash", "set -uxo pipefail"] + self.eval_script_list)
+            + "\n"
+        )
         # Don't exit early because we need to revert tests at the end
 
     @property
     def install_repo_script(self):
-        return "\n".join(["#!/bin/bash", "set -euxo pipefail"] + self.repo_script_list) + "\n"
+        return (
+            "\n".join(["#!/bin/bash", "set -euxo pipefail"] + self.repo_script_list)
+            + "\n"
+        )
 
     @property
     def base_image_key(self):
@@ -106,7 +119,9 @@ class TestSpec:
             raise ValueError(f"Invalid architecture: {self.arch}")
 
 
-def get_test_specs_from_dataset(dataset: Union[list[SWEbenchInstance], list[TestSpec]]) -> list[TestSpec]:
+def get_test_specs_from_dataset(
+    dataset: Union[list[SWEbenchInstance], list[TestSpec]]
+) -> list[TestSpec]:
     """
     Idempotent function that converts a list of SWEbenchInstance objects to a list of TestSpec objects.
     """
@@ -179,7 +194,9 @@ def make_env_script_list(instance, specs, env_name):
         )
         if "no_use_env" in specs and specs["no_use_env"]:
             # `conda create` based installation
-            cmd = f"conda create -c conda-forge -n {env_name} python={specs['python']} -y"
+            cmd = (
+                f"conda create -c conda-forge -n {env_name} python={specs['python']} -y"
+            )
             reqs_commands.append(cmd)
 
             # Install dependencies
@@ -210,7 +227,9 @@ def make_env_script_list(instance, specs, env_name):
     return reqs_commands
 
 
-def make_eval_script_list(instance, specs, env_name, repo_directory, base_commit, test_patch):
+def make_eval_script_list(
+    instance, specs, env_name, repo_directory, base_commit, test_patch
+):
     """
     Applies the test patch and runs the tests.
     """
@@ -223,7 +242,9 @@ def make_eval_script_list(instance, specs, env_name, repo_directory, base_commit
     )
     test_command = " ".join(
         [
-            MAP_REPO_VERSION_TO_SPECS[instance["repo"]][instance["version"]]["test_cmd"],
+            MAP_REPO_VERSION_TO_SPECS[instance["repo"]][instance["version"]][
+                "test_cmd"
+            ],
             *get_test_directives(instance),
         ]
     )
@@ -279,16 +300,26 @@ def make_test_spec(instance: SWEbenchInstance) -> TestSpec:
     repo_directory = f"/{env_name}"
     specs = MAP_REPO_VERSION_TO_SPECS[repo][version]
 
-    repo_script_list = make_repo_script_list(specs, repo, repo_directory, base_commit, env_name)
+    repo_script_list = make_repo_script_list(
+        specs, repo, repo_directory, base_commit, env_name
+    )
     env_script_list = make_env_script_list(instance, specs, env_name)
     eval_script_list = make_eval_script_list(
         instance, specs, env_name, repo_directory, base_commit, test_patch
     )
-    if platform.machine() in {"aarch64", "arm64"}:
-        # use arm64 unless explicitly specified
-        arch = "arm64" if instance_id not in USE_X86 else "x86_64"
-    else:
-        arch = "x86_64"
+
+    arch = getenv("SWE_ARCH")
+    if not arch:
+        if platform.machine() in {"aarch64", "arm64"}:
+            # use arm64 unless explicitly specified
+            arch = "arm64" if instance_id not in USE_X86 else "x86_64"
+        else:
+            arch = "x86_64"
+
+    global arch_reported
+    if not arch_reported:
+        arch_reported = True
+        print(f"Using Docker architecture: {arch}")
 
     return TestSpec(
         instance_id=instance_id,
