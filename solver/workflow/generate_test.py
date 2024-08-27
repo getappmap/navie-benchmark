@@ -14,6 +14,10 @@ from .patch import (
 )
 
 
+def test_failure_identity_string(instance_id: str):
+    return f"!!!{instance_id}-failed!!!"
+
+
 class GenerateTest:
 
     def __init__(

@@ -3,6 +3,10 @@ from os import environ
 from pathlib import Path
 from subprocess import run
 
+import docker
+
+from solver.harness.pull_images import pull_instance_images
+from swebench.harness.docker_build import build_base_images, build_env_images
 from swebench.harness.utils import load_swebench_dataset
 
 
@@ -26,6 +30,12 @@ def main(
     if not dataset:
         print("No instances to run.")
         return
+
+    docker_client = docker.from_env()
+
+    pull_instance_images(docker_client, dataset)
+    build_base_images(docker_client, dataset)
+    build_env_images(docker_client, dataset)
 
     # TODO: Parallelize this
     # Make inferences

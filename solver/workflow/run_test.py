@@ -40,16 +40,15 @@ class RunTest:
         self.version = version
         self.test_spec = test_spec
 
-    def run(
-        self, docker_client: docker.APIClient, test_patch_path: Path
-    ) -> RunTestResult:
-        test_patch_path = make_path(test_patch_path)
-        with test_patch_path.open("r") as f:
-            test_patch = Patch(f.read())
-
+    def run(self, docker_client: docker.APIClient, test_patch: Patch) -> RunTestResult:
         test_files = test_patch.list_files()
-        test_files_str = ", ".join(test_files)
-        self.log("run-test", f"Running tests {test_files_str}...")
+
+        if len(test_files) != 1:
+            raise ValueError(f"Expected exactly one test file, got {len(test_files)}")
+
+        test_file = test_files[0]
+
+        self.log("run-test", f"Running tests {test_file}...")
 
         instance_image_name = self.test_spec.instance_image_key.split(":")[0]
         run_test_image_name = ".".join([instance_image_name, "run_test"])
@@ -66,7 +65,7 @@ class RunTest:
             f"Creating run-test container for {self.test_spec.instance_id}...",
         )
 
-        test_directives = make_test_directives(self.repo, test_files)
+        test_directives = make_test_directives(self.repo, [test_file])
 
         env_name = "testbed"
         repo_directory = f"/{env_name}"
@@ -144,7 +143,7 @@ class RunTest:
         # Start the container
         self.log(
             "run-test",
-            f"Starting container for {test_files_str}...",
+            f"Starting container for {test_file}...",
         )
 
         succeeded = False
@@ -157,7 +156,7 @@ class RunTest:
                 remove=True,
                 platform=self.test_spec.platform,
                 volumes={
-                    path.abspath(test_patch_path): {
+                    path.abspath(test_file): {
                         "bind": "/tmp/test.patch",
                         "mode": "ro",
                     },
@@ -183,7 +182,5 @@ class RunTest:
 
         with open(log_file, "r") as f:
             test_output = f.read()
-
-        print(f"Container log: {test_output}")
 
         return RunTestResult(succeeded, test_output)

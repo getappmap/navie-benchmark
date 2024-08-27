@@ -91,3 +91,8 @@ class Patch:
                 if line.is_added or line.is_removed:
                     line_numbers.append(line.target_line_no)
         return line_numbers
+
+    @staticmethod
+    def load_file(file_path: str):
+        with open(file_path, "r") as file:
+            return Patch(file.read())

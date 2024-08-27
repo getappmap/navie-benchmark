@@ -1,7 +1,7 @@
 from os import listdir, path
 from pathlib import Path
 import subprocess
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 import docker
 
@@ -9,10 +9,13 @@ from navie.editor import Editor
 from navie.fences import extract_fenced_content
 from swebench.harness.test_spec import TestSpec
 
-from .detect_environment import DetectEnvironment
+from .code_environment import DetectEnvironment, Environment
 from .choose_test_file import choose_test_file
 from .generate_code import GenerateCode
-from .generate_test import GenerateTest
+from .generate_test import (
+    GenerateTest,
+    test_failure_identity_string as build_test_failure_identity_string,
+)
 from .linter import Flake8Linter
 from .lint_repair import LintRepairResult, lint_repair
 from .patch import Patch
@@ -23,6 +26,10 @@ TEST_LINT_RETRY_LIMIT = 3
 TEST_STATUS_RETRY_LIMIT = 3
 CODE_LINT_RETRY_LIMIT = 5
 CODE_STATUS_RETRY_LIMIT = 5
+
+TEST_PASSED = 1
+TEST_FAILED_WITH_SIGNAL_ERROR = 2
+TEST_FAILED = 3
 
 
 class WorkflowLimits:
@@ -73,7 +80,7 @@ class Workflow:
         self,
         log: callable,
         navie_work_dir: Path,
-        docker_client: docker.APIClient,
+        environment: Environment,
         repo: str,
         version: str,
         test_spec: TestSpec,
@@ -82,37 +89,38 @@ class Workflow:
     ):
         self.log = log
         self.navie_work_dir = navie_work_dir
-        self.docker_client = docker_client
+        self.environment = environment
         self.repo = repo
         self.version = version
         self.test_spec = test_spec
         self.issue_text = issue_text
         self.limits = limits
 
-        self.test_failure_identity_string = f"!!!{self.test_spec.instance_id}-failed!!!"
+        self.test_failure_identity_string = build_test_failure_identity_string(
+            self.test_spec.instance_id
+        )
 
-        self.test_patch_path = None
-        self.code_patch_path = None
+        self.test_patch = None
+        self.code_patch = None
 
     def run(self):
-        self.log("workflow", "Running workflow")
-
         plan = self.generate_plan()
-        self.generate_test(plan)
-        if self.test_patch_path:
-            self.run_test()
+        self.test_patch = self.generate_and_validate_test(plan)
+        if self.test_patch:
+            self.write_patch_file("test", self.test_patch)
 
-        self.generate_code(plan)
+        self.code_patch = self.generate_code(plan)
+        if self.code_patch:
+            self.write_patch_file("code", self.code_patch)
 
-    def detect_environment(self):
-        if hasattr(self, "python_version") and hasattr(self, "packages"):
-            return
-
-        environment = DetectEnvironment(
-            self.log, self.navie_work_dir, self.repo, self.version, self.test_spec
-        ).detect(self.docker_client)
-        self.python_version = environment.python_version
-        self.packages = environment.packages
+    def write_patch_file(self, patch_name: str, patch: Patch):
+        patch_path = path.join(self.navie_work_dir, f"{patch_name}.patch")
+        self.log(
+            "workflow",
+            f"Patch file generated to {patch_path}:\n{patch}",
+        )
+        with open(patch_path, "w") as f:
+            f.write(str(patch))
 
     def generate_plan(self):
         editor = Editor(self.navie_work_dir)
@@ -130,7 +138,33 @@ Do not plan specific code changes. Just design the solution.
             options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 
-    def generate_test(self, code_plan):
+    def generate_and_validate_test(self, plan) -> Optional[Patch]:
+        limit = self.limits.test_status_retry_limit
+
+        # Re-run test generation up to the limit, or until a test patch is available.
+        attempt = 0
+        test_patch = None
+        while attempt < limit and not test_patch:
+            test_patch = self.generate_test(plan)
+            if test_patch:
+                run_status = self.run_test()
+                if run_status == TEST_PASSED:
+                    self.log("workflow", "Test passed unexpectedly. Regenerating test.")
+                    test_patch = None
+                elif run_status == TEST_FAILED:
+                    self.log("workflow", "Test failed without the signal error.")
+                    test_patch = None
+                elif run_status == TEST_FAILED_WITH_SIGNAL_ERROR:
+                    self.log(
+                        "workflow",
+                        "Test failed with the signal error. Accepting test.",
+                    )
+
+            attempt += 1
+
+        return test_patch
+
+    def generate_test(self, code_plan) -> Optional[Patch]:
         self.clean_git_state()
         self.detect_environment()
 
@@ -236,41 +270,22 @@ Available packages: {self.packages}
         self.clean_git_state()
 
         if test_patch:
-            test_patch_path = path.join(editor.work_dir, "test.patch")
             self.log(
                 "generate-test",
-                f"Patch file generated to {test_patch_path}:\n{test_patch}",
+                f"Patch file generated to :\n{test_patch}",
             )
-            with open(test_patch_path, "w") as f:
-                f.write(str(test_patch))
+            return test_patch
 
-            self.test_patch_path = test_patch_path
-
-    @property
-    def test_patch(self):
-        if self.test_patch_path:
-            with open(self.test_patch_path, "r") as f:
-                return Patch(f.read())
-
-        raise ValueError("No test patch is available")
-
-    @property
-    def code_patch(self):
-        if self.code_patch_path:
-            with open(self.code_patch_path, "r") as f:
-                return Patch(f.read())
-
-        raise ValueError("No code patch is available")
-
-    def run_test(self):
+    def run_test(self) -> int:
         self.log("workflow", "Running test")
         run_test = RunTest(
             self.log, self.navie_work_dir, self.repo, self.version, self.test_spec
         )
-        run_test_result = run_test.run(self.docker_client, self.test_patch_path)
+        run_test_result = run_test.run(self.docker_client, self.test_patch)
 
         if run_test_result.succeeded:
             self.log("workflow", "Test passed unexpectedly")
+            return TEST_PASSED
         else:
             self.log("workflow", "Test failed")
             contains_signal_error = run_test_result.contains_error(
@@ -278,10 +293,12 @@ Available packages: {self.packages}
             )
             if contains_signal_error:
                 self.log("workflow", "Test failure contains signal error.")
+                return TEST_FAILED_WITH_SIGNAL_ERROR
             else:
                 self.log("workflow", "Test failure does not contain signal error.")
+                return TEST_FAILED
 
-    def generate_code(self, plan):
+    def generate_code(self, plan) -> Optional[Patch]:
         self.clean_git_state()
         self.detect_environment()
 
@@ -313,16 +330,7 @@ Available packages: {self.packages}
 
         self.clean_git_state()
 
-        if patch:
-            patch_path = path.join(self.navie_work_dir, "generate", "code.patch")
-            self.log(
-                "generate-code",
-                f"Patch file generated to {patch_path}:\n{patch}",
-            )
-            with open(patch_path, "w") as f:
-                f.write(str(patch))
-
-            self.code_patch_path = patch_path
+        return patch
 
     def lint_repair(
         self,

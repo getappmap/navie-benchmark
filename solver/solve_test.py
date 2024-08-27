@@ -1,11 +1,19 @@
 from argparse import ArgumentParser
+from pathlib import Path
+import sys
 
 import docker
+
+sys.path.append(
+    str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
+)
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from solver.cli import (
     apply_limits,
     apply_run_id,
     build_limits,
+    build_logger,
     build_work_dir,
     build_workflow,
     configure_limits,
@@ -13,10 +21,8 @@ from solver.cli import (
     load_dataset,
     pull_or_build_instance_images,
 )
-from solver.workflow.workflow import Workflow, WorkflowLimits
-from swebench.harness.constants import KEY_INSTANCE_ID
+from solver.workflow.workflow import WorkflowLimits
 from swebench.harness.docker_build import setup_logger
-from swebench.harness.test_spec import make_test_spec
 
 
 def main(
@@ -26,12 +32,12 @@ def main(
     limits: dict,
 ):
     """
-    Run evaluation harness for the given dataset and predictions.
+    Generate a test that reproduces the problem_statement in a given instance.
     """
 
     docker_client = docker.from_env()
     work_dir = build_work_dir(run_id)
-    logger = setup_logger(work_dir, instance_id)
+    logger_fn = build_logger(work_dir, instance_id)
     limits = build_limits(limits)
     dataset = load_dataset(dataset_name, [instance_id])
 
@@ -40,7 +46,18 @@ def main(
     instance = dataset[0]
     navie_work_dir = work_dir / "navie"
 
-    workflow = build_workflow(logger, navie_work_dir, docker_client, instance, limits)
+    workflow = build_workflow(
+        logger_fn, navie_work_dir, docker_client, instance, limits
+    )
+
+    plan = workflow.generate_plan()
+    test_patch = workflow.generate_and_validate_test(plan)
+
+    if test_patch is None:
+        print("No test patch generated.")
+        return
+
+    print(f"Generated test patch:\n{test_patch}")
 
 
 if __name__ == "__main__":
@@ -49,9 +66,9 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
         "--dataset_name",
+        default="princeton-nlp/SWE-bench_Lite",
         type=str,
         help="Name of dataset or path to JSON file.",
-        required=True,
     )
     parser.add_argument(
         "--instance_id", type=str, help="Instance ID to run", required=True

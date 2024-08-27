@@ -7,7 +7,7 @@ from swebench.harness.test_spec import get_test_specs_from_dataset
 
 
 def _pull_images(
-    docker_client: docker.APIClient, image_names: set, max_workers=4
+    docker_client: docker.APIClient, image_type: str, image_names: set, max_workers=4
 ) -> list:
     """
     Pull images for the given dataset. Report the images that are not available.
@@ -19,7 +19,7 @@ def _pull_images(
             unavailable_images.append(image_name)
 
     if not unavailable_images:
-        print("All images are already present locally.")
+        print(f"All {image_type} images are already present locally.")
         return []
 
     not_found_images = []
@@ -50,7 +50,7 @@ def pull_base_images(docker_client: docker.APIClient, dataset: list, max_workers
     """
     test_specs = get_test_specs_from_dataset(dataset)
     base_image_names = {x.base_image_key for x in test_specs}
-    _pull_images(docker_client, base_image_names, max_workers)
+    _pull_images(docker_client, "base", base_image_names, max_workers)
 
 
 def pull_env_images(docker_client: docker.APIClient, dataset: list, max_workers=4):
@@ -61,7 +61,7 @@ def pull_env_images(docker_client: docker.APIClient, dataset: list, max_workers=
 
     test_specs = get_test_specs_from_dataset(dataset)
     env_image_names = {x.env_image_key for x in test_specs}
-    _pull_images(docker_client, env_image_names, max_workers)
+    _pull_images(docker_client, "env", env_image_names, max_workers)
 
 
 def pull_instance_images(docker_client: docker.APIClient, dataset: list, max_workers=4):
@@ -72,4 +72,4 @@ def pull_instance_images(docker_client: docker.APIClient, dataset: list, max_wor
 
     test_specs = get_test_specs_from_dataset(dataset)
     instance_image_names = {x.instance_image_key for x in test_specs}
-    _pull_images(docker_client, instance_image_names, max_workers)
+    _pull_images(docker_client, "instance", instance_image_names, max_workers)

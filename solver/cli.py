@@ -5,6 +5,7 @@ from time import time
 import docker
 
 from solver.harness.pull_images import pull_instance_images
+from solver.workflow.code_environment import DetectEnvironment
 from solver.workflow.workflow import Workflow, WorkflowLimits
 from swebench.harness.constants import KEY_INSTANCE_ID, SWEbenchInstance
 from swebench.harness.docker_build import (
@@ -27,14 +28,16 @@ def configure_limits(parser: ArgumentParser) -> None:
 
 
 def apply_limits(args) -> None:
+    args.limits = {}
     if args.limit:
         limits = args.limit
-        args.limits = {}
-        del args.limit
         for limit in limits:
             key, value_str = limit.split("=")
             value_int = int(value_str)
             args.limits[key] = value_int
+
+    if hasattr(args, "limit"):
+        del args.limit
 
 
 def build_limits(limits: dict) -> WorkflowLimits:
@@ -127,10 +130,14 @@ def build_workflow(
     problem_statement = instance["problem_statement"]
     test_spec = make_test_spec(instance)
 
+    environment = DetectEnvironment(
+        log, navie_work_dir, repo, version, test_spec
+    ).detect(docker_client)
+
     return Workflow(
         log,
         navie_work_dir,
-        docker_client,
+        environment,
         repo,
         version,
         test_spec,
@@ -142,8 +149,11 @@ def build_workflow(
 def pull_or_build_instance_images(
     docker_client: docker.APIClient, dataset: list, force_rebuild=False, max_workers=4
 ):
+    # Base and env images will be pulled, but will not be built.
+    # That's beacuse there may be multiple processes running at the same time
+    # that want to do this, and we don't want to build the same image multiple times.
+    # Base and env images should be pre-allocated before running any command that needs this function.
+
     pull_instance_images(docker_client, dataset, max_workers)
 
-    build_base_images(docker_client, dataset, force_rebuild)
-    build_env_images(docker_client, dataset, force_rebuild)
     build_instance_images(docker_client, dataset, force_rebuild)

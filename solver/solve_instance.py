@@ -22,15 +22,11 @@ from solver.cli import (
     load_dataset,
     pull_or_build_instance_images,
 )
-from swebench.harness.constants import KEY_INSTANCE_ID
 from solver.checkout_code import checkout_code
-from solver.workflow import Workflow, WorkflowLimits
+from solver.workflow import WorkflowLimits
 
 from swebench.harness.docker_build import (
-    build_base_images,
     build_container,
-    build_env_images,
-    build_instance_images,
     setup_logger,
 )
 from swebench.harness.docker_utils import (
