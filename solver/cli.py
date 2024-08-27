@@ -138,6 +138,7 @@ def build_workflow(
         log,
         navie_work_dir,
         environment,
+        docker_client,
         repo,
         version,
         test_spec,

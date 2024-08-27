@@ -1,11 +1,12 @@
 import os
+from typing import Optional
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
 
 
 # Choose a test case file that is most related to the issue.
-def choose_test_file(log, work_dir, issue_content):
+def choose_test_file(log, work_dir, issue_content) -> Optional[str]:
     test_to_modify_str = Editor(
         os.path.join(work_dir, "choose"), log_dir=work_dir
     ).search(
@@ -41,17 +42,15 @@ Do not include line numbers or any location within the file. Just the file path.
                 return test_relative
         return test
 
-    log("maketest", f"Found {len(tests_to_modify)} test files in {test_to_modify_str}")
-
     tests_to_modify = [resolve_test_path(test) for test in tests_to_modify]
     tests_to_modify = [test for test in tests_to_modify if os.path.exists(test)]
 
     if len(tests_to_modify) == 0:
-        log("maketest", f"Found no existing test files in {test_to_modify_str}")
-        return {"error": "No test files found"}
+        log("choose-test-file", f"Found no existing test files in {test_to_modify_str}")
+        return None
 
     if len(tests_to_modify) > 1:
-        log("maketest", f"Found multiple test files in {test_to_modify_str}")
+        log("choose-test-file", f"Found multiple test files in {test_to_modify_str}")
 
     test_file = tests_to_modify[0]
     test_file = os.path.relpath(test_file, os.getcwd())

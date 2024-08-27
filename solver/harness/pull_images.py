@@ -1,4 +1,3 @@
-from asyncio import as_completed
 from concurrent.futures import ThreadPoolExecutor, as_completed as futures_as_completed
 
 import docker
@@ -27,7 +26,7 @@ def _pull_images(
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_image_name = {}
         for image_name in unavailable_images:
-            full_image_name = "/".join(["ghcr.io", "getappmap", image_name])
+            full_image_name = f"ghcr.io/getappmap/{image_name}:latest"
             future = executor.submit(docker_client.images.pull, full_image_name)
             future_to_image_name[future] = full_image_name
 
@@ -39,6 +38,9 @@ def _pull_images(
                 print(
                     f"Image not found: {full_image_name}. It should be built in a subsequent step."
                 )
+                not_found_images.append(full_image_name)
+            except docker.errors.APIError as e:
+                print(f"Error pulling image: {full_image_name}. Error: {e}")
                 not_found_images.append(full_image_name)
 
     return not_found_images

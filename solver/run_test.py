@@ -40,7 +40,8 @@ def main(
 
     test_spec = make_test_spec(instance)
     navie_work_dir = work_dir / "navie"
-    navie_work_dir.mkdir(parents=True, exist_ok=True)
+    run_test_dir = navie_work_dir / "run_test"
+    run_test_dir.mkdir(parents=True, exist_ok=True)
 
     test_patch_file = Path(navie_work_dir) / "generate-test" / "test.patch"
     if not test_patch_file.exists():

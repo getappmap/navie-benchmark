@@ -1,7 +1,7 @@
-from os import listdir, path
+from os import getcwd, listdir, path
 from pathlib import Path
 import subprocess
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 import docker
 
@@ -9,7 +9,7 @@ from navie.editor import Editor
 from navie.fences import extract_fenced_content
 from swebench.harness.test_spec import TestSpec
 
-from .code_environment import DetectEnvironment, Environment
+from .code_environment import Environment
 from .choose_test_file import choose_test_file
 from .generate_code import GenerateCode
 from .generate_test import (
@@ -81,6 +81,7 @@ class Workflow:
         log: callable,
         navie_work_dir: Path,
         environment: Environment,
+        docker_client: docker.DockerClient,
         repo: str,
         version: str,
         test_spec: TestSpec,
@@ -90,6 +91,7 @@ class Workflow:
         self.log = log
         self.navie_work_dir = navie_work_dir
         self.environment = environment
+        self.docker_client = docker_client
         self.repo = repo
         self.version = version
         self.test_spec = test_spec
@@ -145,14 +147,20 @@ Do not plan specific code changes. Just design the solution.
         attempt = 0
         test_patch = None
         while attempt < limit and not test_patch:
-            test_patch = self.generate_test(plan)
+            test_patch = self.generate_test(attempt, plan)
             if test_patch:
-                run_status = self.run_test()
+                run_status = self.run_test(attempt, test_patch)
                 if run_status == TEST_PASSED:
-                    self.log("workflow", "Test passed unexpectedly. Regenerating test.")
+                    self.log(
+                        "workflow",
+                        "Test passed unexpectedly. Will retry if there are attempts left.",
+                    )
                     test_patch = None
                 elif run_status == TEST_FAILED:
-                    self.log("workflow", "Test failed without the signal error.")
+                    self.log(
+                        "workflow",
+                        "Test failed without the signal error. Will retry if there are attempts left.",
+                    )
                     test_patch = None
                 elif run_status == TEST_FAILED_WITH_SIGNAL_ERROR:
                     self.log(
@@ -164,12 +172,17 @@ Do not plan specific code changes. Just design the solution.
 
         return test_patch
 
-    def generate_test(self, code_plan) -> Optional[Patch]:
-        self.clean_git_state()
-        self.detect_environment()
+    @staticmethod
+    def generate_test_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
+        if isinstance(navie_work_dir, str):
+            navie_work_dir = Path(navie_work_dir)
 
-        # Choose a test file
-        editor = Editor(path.join(self.navie_work_dir, "generate-test"))
+        return str(navie_work_dir / "generate-test" / str(attempt))
+
+    def generate_test(self, attempt, code_plan) -> Optional[Patch]:
+        self.clean_git_state()
+
+        editor = Editor(Workflow.generate_test_work_dir(self.navie_work_dir, attempt))
 
         edit_test_file = choose_test_file(self.log, editor.work_dir, self.issue_text)
         if not edit_test_file:
@@ -234,9 +247,9 @@ Output the file name, and nothing else. Do not include directory paths.
 
 ## Environment
 
-Python version: {self.python_version}
+Python version: {self.environment.python_version}
 
-Available packages: {self.packages}
+Available packages: {self.environment.packages}
 """,
             options=r"/noprojectinfo",
             question_name="test_file_name",
@@ -247,7 +260,11 @@ Available packages: {self.packages}
         test_file_path = str(Path(edit_test_file).parent / test_file_name)
 
         generator = GenerateTest(
-            self.log, editor.work_dir, test_plan, self.python_version, self.packages
+            self.log,
+            editor.work_dir,
+            test_plan,
+            self.environment.python_version,
+            self.environment.packages,
         )
 
         def generate(attempt, lint_errors: list = []):
@@ -259,29 +276,23 @@ Available packages: {self.packages}
         )
 
         test_patch = lint_repair_result.patch
-        self.limits.test_status_retry_limit = max(
-            0, self.limits.test_status_retry_limit - lint_repair_result.attempts
-        )
+
         self.log(
             "generate-test",
-            f"Test patch generated after {lint_repair_result.attempts} attempts. Setting test status retry limit to {self.limits.test_status_retry_limit}.",
+            f"Test patch generated after {lint_repair_result.attempts} attempts.",
         )
 
         self.clean_git_state()
 
-        if test_patch:
-            self.log(
-                "generate-test",
-                f"Patch file generated to :\n{test_patch}",
-            )
-            return test_patch
+        return test_patch
 
-    def run_test(self) -> int:
-        self.log("workflow", "Running test")
-        run_test = RunTest(
-            self.log, self.navie_work_dir, self.repo, self.version, self.test_spec
+    def run_test(self, attempt: int, test_patch: Patch) -> int:
+        self.log("workflow", f"Running test for attempt {attempt}")
+        work_dir = path.join(
+            Workflow.generate_test_work_dir(self.navie_work_dir, attempt, "run-test")
         )
-        run_test_result = run_test.run(self.docker_client, self.test_patch)
+        run_test = RunTest(self.log, work_dir, self.repo, self.version, self.test_spec)
+        run_test_result = run_test.run(self.docker_client, test_patch)
 
         if run_test_result.succeeded:
             self.log("workflow", "Test passed unexpectedly")
@@ -300,14 +311,13 @@ Available packages: {self.packages}
 
     def generate_code(self, plan) -> Optional[Patch]:
         self.clean_git_state()
-        self.detect_environment()
 
         generator = GenerateCode(
             self.log,
             self.navie_work_dir,
             plan,
-            self.python_version,
-            self.packages,
+            self.environment.python_version,
+            self.environment.packages,
             self.limits.file_limit,
         )
 
@@ -320,12 +330,10 @@ Available packages: {self.packages}
         )
 
         patch = lint_repair_result.patch
-        self.limits.code_status_retry_limit = max(
-            0, self.limits.code_status_retry_limit - lint_repair_result.attempts
-        )
+
         self.log(
             "generate-code",
-            f"Test patch generated after {lint_repair_result.attempts} attempts. Setting test status retry limit to {self.limits.code_status_retry_limit}.",
+            f"Code patch generated after {lint_repair_result.attempts} attempts.",
         )
 
         self.clean_git_state()
@@ -339,7 +347,18 @@ Available packages: {self.packages}
         generator: Callable[[int, List[str]], None],
     ) -> LintRepairResult:
         linter = Flake8Linter()
-        clean_repo = lambda: subprocess.run(["git", "checkout", "."], check=True)
+
+        def clean_repo():
+            if not Workflow.in_git_controlled_source_dir():
+                self.log("workflow", f"Current directory: {getcwd()}")
+                self.log(
+                    "workflow",
+                    "It doesn't look like we are in an instance source directory. Not cleaning git repo.",
+                )
+                return
+
+            subprocess.run(["git", "checkout", "."], check=True)
+
         return lint_repair(
             self.log,
             step_name,
@@ -350,6 +369,14 @@ Available packages: {self.packages}
         )
 
     def clean_git_state(self):
+        if not Workflow.in_git_controlled_source_dir():
+            self.log("workflow", f"Current directory: {getcwd()}")
+            self.log(
+                "workflow",
+                "It doesn't look like we are in an instance source directory. Not cleaning git state.",
+            )
+            return
+
         first_commit_hash = (
             subprocess.check_output("git rev-list --max-parents=0 HEAD", shell=True)
             .strip()
@@ -360,3 +387,7 @@ Available packages: {self.packages}
         subprocess.run(cmd, shell=True, check=True)
 
         self.log("workflow", "Cleaned git state")
+
+    @staticmethod
+    def in_git_controlled_source_dir():
+        return Path(".git").exists() and path.split(getcwd())[-1] == "source"

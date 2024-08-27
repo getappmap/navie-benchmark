@@ -4,8 +4,6 @@ from pathlib import Path
 import sys
 import docker
 
-from solver.harness.pull_images import pull_instance_images
-
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
 )
@@ -98,14 +96,14 @@ def main(
             chdir(pwd)
 
     except Exception as e:
-        print(f"[plan] Error running plan for {instance_id}: {e}")
+        print(f"[solve_instance] Error running plan for {instance_id}: {e}")
         import traceback
 
         traceback.print_exc()
     finally:
         # Remove instance container + image, close logger
         if container:
-            print(f"[plan] Cleaning up container {container.id}")
+            print(f"[solve_instance] Cleaning up container {container.id}")
             cleanup_container(docker_client, container, docker_logger)
 
     return

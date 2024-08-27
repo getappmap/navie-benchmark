@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from os import chdir
 from pathlib import Path
 import sys
 
@@ -45,6 +46,17 @@ def main(
 
     instance = dataset[0]
     navie_work_dir = work_dir / "navie"
+    source_dir = work_dir / "source"
+
+    navie_work_dir.mkdir(parents=True, exist_ok=True)
+
+    if not source_dir.exists():
+        raise Exception(
+            f"Source directory {source_dir} does not exist. It should already be checked out to run this script. Try running solve.py first, then using this script for re-runs."
+        )
+
+    print(f"[solve_test]Changing directory to {source_dir}")
+    chdir(source_dir)
 
     workflow = build_workflow(
         logger_fn, navie_work_dir, docker_client, instance, limits
@@ -54,10 +66,10 @@ def main(
     test_patch = workflow.generate_and_validate_test(plan)
 
     if test_patch is None:
-        print("No test patch generated.")
+        print("[solve_test] No test patch generated.")
         return
 
-    print(f"Generated test patch:\n{test_patch}")
+    print(f"[solve_test]Generated test patch:\n{test_patch}")
 
 
 if __name__ == "__main__":
