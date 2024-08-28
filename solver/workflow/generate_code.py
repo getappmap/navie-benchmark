@@ -8,7 +8,6 @@ from navie.editor import Editor
 from navie.format_instructions import xml_format_instructions
 from navie.extract_changes import extract_changes
 
-from .linter import generate_lint_error_avoidance_plan
 from .patch import (
     Patch,
     filter_patch_exclude_tests,
@@ -37,18 +36,20 @@ class GenerateCode:
     # Generate a code change plan and return it as a string.
     # If lint_errors is provided, include prompting to avoid them.
     def generate(self, attempt: int, lint_errors: list = []) -> str:
-        work_dir = path.join(self.work_dir, "generate", str(attempt))
-
         plan = [
             self.plan,
         ]
         if lint_errors:
-            lint_error_avoidance_plan = generate_lint_error_avoidance_plan(
-                work_dir, self.plan, lint_errors
-            )
-            plan.append(lint_error_avoidance_plan)
+            lint_errors_str = "\n".join(lint_errors)
             plan.append(
-                "Detailed code, which explicitly avoids lint errors, is now presented."
+                f"""## Preventing linter errors
+                
+Ensure that the following lint errors do not occur:
+
+<lint-errors>                        
+{lint_errors_str}
+</lint-errors>
+"""
             )
 
         prompt = [
@@ -85,7 +86,7 @@ Do not use any packages that are not available in this environment.
                 f"Found {len(changes)} changes, but the limit is {self.file_limit}",
             )
 
-        editor = Editor(path.join(self.work_dir, "apply", str(attempt)))
+        editor = Editor(path.join(self.work_dir, "generate", str(attempt), "apply"))
         for change in changes:
             change.file = relpath(change.file, getcwd())
             if not change.original:

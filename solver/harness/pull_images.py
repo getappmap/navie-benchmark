@@ -12,6 +12,17 @@ def _pull_images(
     Pull images for the given dataset. Report the images that are not available.
     """
 
+    def tag_image(image_name):
+        if ":" not in image_name:
+            print(
+                f"WARNING: Image name {image_name} does not have a tag. Tagging :latest"
+            )
+            return f"{image_name}:latest"
+
+        return image_name
+
+    image_names = [tag_image(x) for x in image_names]
+
     unavailable_images = []
     for image_name in image_names:
         if not docker_client.images.list(name=image_name):
@@ -26,7 +37,7 @@ def _pull_images(
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_image_name = {}
         for image_name in unavailable_images:
-            full_image_name = f"ghcr.io/getappmap/{image_name}:latest"
+            full_image_name = f"ghcr.io/getappmap/{image_name}"
             future = executor.submit(docker_client.images.pull, full_image_name)
             future_to_image_name[future] = full_image_name
 

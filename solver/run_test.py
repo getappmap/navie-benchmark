@@ -19,7 +19,6 @@ from solver.cli import (
     pull_or_build_instance_images,
 )
 from solver.workflow.patch import Patch
-from solver.workflow.generate_test import test_failure_identity_string
 from solver.workflow.run_test import RunTest
 
 
@@ -59,15 +58,6 @@ def main(
     run_test_result = run_test.run(docker_client, test_patch)
 
     print(run_test_result)
-
-    contains_signal_error = run_test_result.contains_error(
-        test_failure_identity_string(test_spec.instance_id)
-    )
-    if contains_signal_error:
-        logger_fn("run_test", "Test failure contains signal error.")
-    else:
-        logger_fn("run_test", "Test failure does not contain signal error.")
-
 
 if __name__ == "__main__":
     parser = ArgumentParser()

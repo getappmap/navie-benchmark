@@ -1,25 +1,25 @@
 from os import getcwd, listdir, path
+import os
 from pathlib import Path
 import subprocess
+import tempfile
 from typing import Callable, List, Optional, Union
 
 import docker
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
+from swebench.harness.constants import TestStatus
 from swebench.harness.test_spec import TestSpec
 
 from .code_environment import Environment
 from .choose_test_file import choose_test_file
 from .generate_code import GenerateCode
-from .generate_test import (
-    GenerateTest,
-    test_failure_identity_string as build_test_failure_identity_string,
-)
+from .generate_test import GenerateTest
 from .linter import Flake8Linter
 from .lint_repair import LintRepairResult, lint_repair
 from .patch import Patch
-from .run_test import RunTest
+from .run_test import RunTest, RunTestResult
 
 FILE_LIMIT = 1
 TEST_LINT_RETRY_LIMIT = 3
@@ -98,20 +98,17 @@ class Workflow:
         self.issue_text = issue_text
         self.limits = limits
 
-        self.test_failure_identity_string = build_test_failure_identity_string(
-            self.test_spec.instance_id
-        )
-
         self.test_patch = None
         self.code_patch = None
 
     def run(self):
-        plan = self.generate_plan()
-        self.test_patch = self.generate_and_validate_test(plan)
+        self.test_patch = self.generate_and_validate_test()
         if self.test_patch:
             self.write_patch_file("test", self.test_patch)
 
-        self.code_patch = self.generate_code(plan)
+        plan = self.generate_plan()
+        # TODO: Make this generate_and_validate_code
+        self.code_patch = self.generate_code(plan, 1)
         if self.code_patch:
             self.write_patch_file("code", self.code_patch)
 
@@ -140,35 +137,68 @@ Do not plan specific code changes. Just design the solution.
             options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 
-    def generate_and_validate_test(self, plan) -> Optional[Patch]:
+    def generate_and_validate_test(self) -> Optional[Patch]:
         limit = self.limits.test_status_retry_limit
+        observed_errors = []
 
         # Re-run test generation up to the limit, or until a test patch is available.
-        attempt = 0
+        attempt = 1
         test_patch = None
-        while attempt < limit and not test_patch:
-            test_patch = self.generate_test(attempt, plan)
+        while attempt <= limit and not test_patch:
+            test_patch = self.generate_test(attempt, observed_errors)
             if test_patch:
-                run_status = self.run_test(attempt, test_patch)
-                if run_status == TEST_PASSED:
+                run_test_result = self.run_test("test", attempt, test_patch)
+                test_status = run_test_result.test_status
+                if test_status == TestStatus.PASSED:
                     self.log(
                         "workflow",
-                        "Test passed unexpectedly. Will retry if there are attempts left.",
+                        "Test passed. Accepting test.",
                     )
+                else:
+                    self.log(
+                        "workflow",
+                        "Test did not pass. Discarding test.",
+                    )
+                    observed_error = run_test_result.test_output
+                    # Truncate it, if it's too long.
+                    if len(observed_error) > 10000:
+                        self.log(
+                            "workflow",
+                            f"Observed error is too long ({len(observed_error)} characters). Truncating it to 10000 characters.",
+                        )
+                        observed_error = observed_error[:10000] + "..."
+                    observed_errors.append(observed_error)
                     test_patch = None
-                elif run_status == TEST_FAILED:
-                    self.log(
-                        "workflow",
-                        "Test failed without the signal error. Will retry if there are attempts left.",
-                    )
-                    test_patch = None
-                elif run_status == TEST_FAILED_WITH_SIGNAL_ERROR:
-                    self.log(
-                        "workflow",
-                        "Test failed with the signal error. Accepting test.",
-                    )
 
             attempt += 1
+
+        if test_patch:
+            # For fun, let's also invert the test, then run it and look for the marker error.
+            inverted_patch = self.invert_test(test_patch)
+            if inverted_patch:
+                inverted_run_test_result = self.run_test(
+                    "inverted-test", 1, inverted_patch
+                )
+                inverted_test_status = inverted_run_test_result.test_status
+                if inverted_test_status == TestStatus.PASSED:
+                    self.log(
+                        "workflow",
+                        "Inverted test passed; this should not happen.",
+                    )
+
+                inverted_test_output_contains_marker_error = (
+                    "__BUG__HERE__" in inverted_run_test_result.test_output
+                )
+                if inverted_test_output_contains_marker_error:
+                    self.log(
+                        "workflow",
+                        "Inverted test failed with the expected marker error. Accepting test.",
+                    )
+                else:
+                    self.log(
+                        "workflow",
+                        "Inverted test did not fail with the expected marker error. Discarding test.",
+                    )
 
         return test_patch
 
@@ -179,7 +209,58 @@ Do not plan specific code changes. Just design the solution.
 
         return str(navie_work_dir / "generate-test" / str(attempt))
 
-    def generate_test(self, attempt, code_plan) -> Optional[Patch]:
+    @staticmethod
+    def generate_code_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
+        if isinstance(navie_work_dir, str):
+            navie_work_dir = Path(navie_work_dir)
+
+        return str(navie_work_dir / "generate-code" / str(attempt))
+
+    def invert_test(self, test_patch: Patch) -> Patch:
+        self.log("workflow", "Inverting test")
+
+        self.clean_git_state()
+
+        test_file_name = test_patch.list_files()[0]
+        # Modify test_file_name so that the base file name now includes "_inverted".
+        test_file_path = Path(test_file_name).parent / (
+            Path(test_file_name).stem + "_inverted" + Path(test_file_name).suffix
+        )
+
+        generator = GenerateTest(
+            self.log,
+            self.navie_work_dir,
+            test_file_path,
+            self.issue_text,
+            [],
+            self.environment.python_version,
+            self.environment.packages,
+        )
+
+        def generate(attempt, lint_errors: list = []):
+            patch = generator.invert(str(test_patch), attempt, lint_errors)
+            return generator.apply(test_file_path, patch)
+
+        lint_repair_result = self.lint_repair(
+            "invert-test", self.limits.test_lint_retry_limit, generate
+        )
+
+        test_patch = lint_repair_result.patch
+
+        self.log(
+            "invert-test",
+            f"Test patch inverted after {lint_repair_result.attempts} attempts.",
+        )
+        self.log(
+            "invert-test",
+            f"Inverted test patch:\n{test_patch}",
+        )
+
+        self.clean_git_state()
+
+        return test_patch
+
+    def generate_test(self, attempt: int, observed_errors: list) -> Optional[Patch]:
         self.clean_git_state()
 
         editor = Editor(Workflow.generate_test_work_dir(self.navie_work_dir, attempt))
@@ -188,50 +269,16 @@ Do not plan specific code changes. Just design the solution.
         if not edit_test_file:
             return
 
-        test_plan = editor.ask(
-            f"""Modify {edit_test_file} to include a test for the following code.
-
-The test should pass only when the issue is fixed as per the following plan:
-
-<plan>
-{code_plan}
-</plan>
-
-When the test fails, it should output the following string in the test failure message: {self.test_failure_identity_string}
-
-Do not modify any code besides the named test file. 
-
-Do not output actual code. Just design the test.
-""",
-            options=r"/noprojectinfo",
-            question_name="test_plan",
-            prompt="""## Output
-
-Output a list of conditions that the code should satisfy to reproduce the issue.
-
-Do not describe the conditions of the issue. Describe the conditions that the test
-should check for to ensure that the issue is fixed.
-
-The list of conditions should be in bullet list format.
-
-* Do not modify any code besides the named test file
-* Do not generate code. Just design the test.
-* Ensure that if the issue is present in the code, the test FAILS.
-* When the issue is fixed, the test should PASS.
-""",
-        )
-
-        self.log("workflow", f"Test file: {edit_test_file}")
-        self.log("workflow", f"Plan:\n{test_plan}")
+        self.log("workflow", f"Test file to be modified: {edit_test_file}")
 
         existing_test_files = "\n".join(listdir(Path(edit_test_file).parent))
 
         test_file_answer = editor.ask(
-            f"""Generate a new test file name based on the existing test file name, that is relevant to the issue being fixed.
+            f"""Generate a new test file name for a test that will address the following issue:
 
-<base-file-name>
-{edit_test_file}
-</base-file-name>
+<issue>
+{self.issue_text}
+</issue>
 
 Avoid using any of the following names, because these files already exist:
 
@@ -239,11 +286,9 @@ Avoid using any of the following names, because these files already exist:
 {existing_test_files}
 </existing-files>
 
-<test-plan>
-{test_plan}
-</test-plan>
-
 Output the file name, and nothing else. Do not include directory paths.
+
+Do not include directory names in the file name. Just choose a base file name.
 
 ## Environment
 
@@ -251,18 +296,26 @@ Python version: {self.environment.python_version}
 
 Available packages: {self.environment.packages}
 """,
-            options=r"/noprojectinfo",
+            options=r"/noprojectinfo /nocontext",
             question_name="test_file_name",
         )
         test_file_name = (
             "\n".join(extract_fenced_content(test_file_answer)).strip().split("\n")[0]
         )
-        test_file_path = str(Path(edit_test_file).parent / test_file_name)
+        test_base_file_name = Path(test_file_name).name
+        if test_base_file_name != test_file_name:
+            self.log(
+                "generate-test",
+                f"WARNING: The test file name {test_file_name} is different from the base file name {test_base_file_name}. The base file name will be used.",
+            )
+        test_file_path = str(Path(edit_test_file).parent / test_base_file_name)
 
         generator = GenerateTest(
             self.log,
             editor.work_dir,
-            test_plan,
+            test_file_path,
+            self.issue_text,
+            observed_errors,
             self.environment.python_version,
             self.environment.packages,
         )
@@ -286,35 +339,26 @@ Available packages: {self.environment.packages}
 
         return test_patch
 
-    def run_test(self, attempt: int, test_patch: Patch) -> int:
+    def run_test(self, step, attempt: int, test_patch: Patch) -> RunTestResult:
         self.log("workflow", f"Running test for attempt {attempt}")
         work_dir = path.join(
-            Workflow.generate_test_work_dir(self.navie_work_dir, attempt, "run-test")
+            Workflow.generate_test_work_dir(
+                self.navie_work_dir,
+                attempt,
+            ),
+            step,
         )
         run_test = RunTest(self.log, work_dir, self.repo, self.version, self.test_spec)
-        run_test_result = run_test.run(self.docker_client, test_patch)
+        return run_test.run(self.docker_client, test_patch)
 
-        if run_test_result.succeeded:
-            self.log("workflow", "Test passed unexpectedly")
-            return TEST_PASSED
-        else:
-            self.log("workflow", "Test failed")
-            contains_signal_error = run_test_result.contains_error(
-                self.test_failure_identity_string
-            )
-            if contains_signal_error:
-                self.log("workflow", "Test failure contains signal error.")
-                return TEST_FAILED_WITH_SIGNAL_ERROR
-            else:
-                self.log("workflow", "Test failure does not contain signal error.")
-                return TEST_FAILED
-
-    def generate_code(self, plan) -> Optional[Patch]:
+    def generate_code(self, plan, attempt) -> Optional[Patch]:
         self.clean_git_state()
+
+        work_dir = Workflow.generate_code_work_dir(self.navie_work_dir, attempt)
 
         generator = GenerateCode(
             self.log,
-            self.navie_work_dir,
+            work_dir,
             plan,
             self.environment.python_version,
             self.environment.packages,

@@ -62,8 +62,7 @@ def main(
         logger_fn, navie_work_dir, docker_client, instance, limits
     )
 
-    plan = workflow.generate_plan()
-    test_patch = workflow.generate_and_validate_test(plan)
+    test_patch = workflow.generate_and_validate_test()
 
     if test_patch is None:
         print("[solve_test] No test patch generated.")

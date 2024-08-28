@@ -10,29 +10,6 @@ FLAKE8_LINT_COMMAND = [
 ]
 
 
-def generate_lint_error_avoidance_plan(work_dir: str, plan, lint_errors: list) -> str:
-    lint_errors_str = "\n".join(lint_errors)
-    return Editor(work_dir).ask(
-        f"""Generate a simple set of instructions that will ensure that the following
-lint errors do not occur when code is generated for the plan.
-
-These instructions will be appended to the plan as a reminder to avoid these lint errors.
-
-Do not generate a complete plan, just generate a bullet list of instructions.
-
-## Lint errors
-
-{lint_errors_str}
-
-## Plan
-
-{plan}
-""",
-        options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
-        question_name="lint_error_avoidance_plan",
-    )
-
-
 class Linter:
     def __init__(self, lint_command: list) -> None:
         self.lint_command = lint_command

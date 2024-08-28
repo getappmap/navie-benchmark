@@ -39,7 +39,7 @@ class DetectEnvironment:
             with open(python_version_file, "r") as f:
                 python_version = f.read().strip()
             with open(packages_file, "r") as f:
-                packages = f.read().strip().split("\n")
+                packages = f.read()
             return Environment(python_version, packages)
 
         script_dir = path.join(self.work_dir, "scripts")
