@@ -290,7 +290,7 @@ def build_env_images(
     if len(configs_to_build) == 0:
         print("No environment images need to be built.")
         return [], []
-    print(f"Total environment images to build: {len(configs_to_build)}")
+    print(f"Environment images to build: {', '.join(configs_to_build.keys())}")
 
     # Build the environment images
     successful, failed = list(), list()
