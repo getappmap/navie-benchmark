@@ -32,6 +32,7 @@ setuptools.setup(
         'chardet',
         'datasets',
         'docker',
+        'flake8',
         'ghapi',
         'GitPython',
         'pre-commit',
