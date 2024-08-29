@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
-from time import time
+import shutil
 
 import docker
 
@@ -9,12 +9,11 @@ from solver.workflow.code_environment import DetectEnvironment
 from solver.workflow.workflow import Workflow, WorkflowLimits
 from swebench.harness.constants import KEY_INSTANCE_ID, SWEbenchInstance
 from swebench.harness.docker_build import (
-    build_base_images,
     build_env_images,
     build_instance_images,
     setup_logger,
 )
-from swebench.harness.test_spec import TestSpec, make_test_spec
+from swebench.harness.test_spec import make_test_spec
 from swebench.harness.utils import load_swebench_dataset
 
 
@@ -46,37 +45,35 @@ def build_limits(limits: dict) -> WorkflowLimits:
     return limits
 
 
-def configure_run_id(parser: ArgumentParser) -> None:
+def configure_clean_option(parser: ArgumentParser) -> None:
     parser.add_argument(
-        "--reuse_work_dir",
+        "--clean_work_dir",
         action="store_true",
-        help="Reuse the work directory if it exists",
+        help="Remove the work directory, if it exists, before running",
         default=False,
     )
 
 
-def apply_run_id(args) -> None:
-    reuse_work_dir = args.reuse_work_dir
-    del args.reuse_work_dir
+def apply_clean_option(args) -> None:
+    work_dir = build_work_dir(args.instance_id)
 
-    if reuse_work_dir:
-        args.run_id = f"solve_{args.instance_id}"
-    else:
-        time_millis = int(time() * 1000)
-        args.run_id = f"solve_{args.instance_id}_{time_millis}"
-        print(f"Generated run ID: {args.run_id}")
+    clean_work_dir = args.clean_work_dir
+    del args.clean_work_dir
+
+    if clean_work_dir and work_dir.exists():
+        print(f"Deleting work directory {work_dir}")
+        shutil.rmtree(work_dir)
 
 
 def load_dataset(dataset_name: str, instance_ids: list) -> list:
     test_dataset = load_swebench_dataset(dataset_name, "test")
-    dev_dataset = load_swebench_dataset(dataset_name, "dev")
 
     dataset = []
     not_found_instance_ids = []
     for instance_id in instance_ids:
         instance = [
             instance
-            for instance in test_dataset + dev_dataset
+            for instance in test_dataset
             if instance[KEY_INSTANCE_ID] == instance_id
         ]
         if not instance:
@@ -91,8 +88,8 @@ def load_dataset(dataset_name: str, instance_ids: list) -> list:
     return dataset
 
 
-def build_work_dir(run_id) -> Path:
-    work_dir = Path(__file__).parent.parent / "work" / run_id
+def build_work_dir(instance_id) -> Path:
+    work_dir = Path(__file__).parent.parent / "solve" / instance_id
     work_dir.mkdir(parents=True, exist_ok=True)
     return work_dir
 
@@ -100,7 +97,7 @@ def build_work_dir(run_id) -> Path:
 def build_logger(work_dir: str, instance_id: str) -> callable:
     log_dir = work_dir / "logs" / "plan" / instance_id
     log_dir.mkdir(parents=True, exist_ok=True)
-    log_file = log_dir / "run_instance.log"
+    log_file = work_dir / "logs" / "solve.log"
     logger = setup_logger(instance_id, log_file)
 
     def logger_fn(facility, msg):

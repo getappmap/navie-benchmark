@@ -4,19 +4,23 @@ from pathlib import Path
 import sys
 import docker
 
+
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 
+from solver.solve import DATASET_NAME
 from solver.cli import (
     apply_limits,
-    apply_run_id,
+    apply_clean_option,
     build_limits,
     build_logger,
     build_work_dir,
     build_workflow,
+    configure_clean_option,
+    configure_limits,
     load_dataset,
     pull_or_build_instance_images,
 )
@@ -34,9 +38,7 @@ from swebench.harness.test_spec import make_test_spec
 
 
 def main(
-    dataset_name: str,
     instance_id: list,
-    run_id: str,
     limits: dict,
 ):
     """
@@ -44,11 +46,12 @@ def main(
     """
 
     docker_client = docker.from_env()
-    work_dir = build_work_dir(run_id)
-    docker_logger = setup_logger(work_dir, instance_id)
+    work_dir = build_work_dir(instance_id)
+    docker_log_file = work_dir / "docker.log"
+    docker_logger = setup_logger(instance_id, docker_log_file)
     logger_fn = build_logger(work_dir, instance_id)
     limits = build_limits(limits)
-    dataset = load_dataset(dataset_name, [instance_id])
+    dataset = load_dataset(DATASET_NAME, [instance_id])
     instance = dataset[0]
 
     pull_or_build_instance_images(docker_client, dataset)
@@ -67,7 +70,7 @@ def main(
     try:
         # Build + start instance container (instance image should already be built)
         container = build_container(
-            test_spec, docker_client, run_id, docker_logger, False
+            test_spec, docker_client, instance_id, docker_logger, False
         )
         container.start()
         logger_fn("solve", f"Container started: {container.id}")
@@ -110,34 +113,16 @@ def main(
 
 
 if __name__ == "__main__":
-    limit_names = WorkflowLimits.limit_names()
-
     parser = ArgumentParser()
-    parser.add_argument(
-        "--dataset_name",
-        type=str,
-        help="Name of dataset or path to JSON file.",
-        required=True,
-    )
     parser.add_argument(
         "--instance_id", type=str, help="Instance ID to run", required=True
     )
-    parser.add_argument(
-        "--reuse_work_dir",
-        action="store_true",
-        help="Reuse the work directory if it exists",
-        default=False,
-    )
-    parser.add_argument(
-        "--limit",
-        type=str,
-        help=f"Set a configurable limit as key=value. Valid keys are: {limit_names}",
-        nargs="+",
-    )
+    configure_limits(parser)
+    configure_clean_option(parser)
 
     args = parser.parse_args()
 
     apply_limits(args)
-    apply_run_id(args)
+    apply_clean_option(args)
 
     main(**vars(args))

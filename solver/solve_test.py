@@ -10,15 +10,16 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.solve import DATASET_NAME
 from solver.cli import (
     apply_limits,
-    apply_run_id,
+    apply_clean_option,
     build_limits,
     build_logger,
     build_work_dir,
     build_workflow,
     configure_limits,
-    configure_run_id,
+    configure_clean_option,
     load_dataset,
     pull_or_build_instance_images,
 )
@@ -27,7 +28,6 @@ from swebench.harness.docker_build import setup_logger
 
 
 def main(
-    dataset_name: str,
     instance_id: list,
     run_id: str,
     limits: dict,
@@ -40,7 +40,7 @@ def main(
     work_dir = build_work_dir(run_id)
     logger_fn = build_logger(work_dir, instance_id)
     limits = build_limits(limits)
-    dataset = load_dataset(dataset_name, [instance_id])
+    dataset = load_dataset(DATASET_NAME, [instance_id])
 
     pull_or_build_instance_images(docker_client, dataset)
 
@@ -72,24 +72,16 @@ def main(
 
 
 if __name__ == "__main__":
-    limit_names = WorkflowLimits.limit_names()
-
     parser = ArgumentParser()
-    parser.add_argument(
-        "--dataset_name",
-        default="princeton-nlp/SWE-bench_Lite",
-        type=str,
-        help="Name of dataset or path to JSON file.",
-    )
     parser.add_argument(
         "--instance_id", type=str, help="Instance ID to run", required=True
     )
-    configure_run_id(parser)
+    configure_clean_option(parser)
     configure_limits(parser)
 
     args = parser.parse_args()
 
     apply_limits(args)
-    apply_run_id(args)
+    apply_clean_option(args)
 
     main(**vars(args))

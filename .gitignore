@@ -172,6 +172,9 @@ notebooks/
 *logs/
 work/
 
+# Solve
+solve
+
 # Evaluation
 *.validate-*.json
 
