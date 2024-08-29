@@ -97,12 +97,17 @@ class Workflow:
         self.limits = limits
 
         self.test_patch = None
+        self.inverted_patch = None
         self.code_patch = None
 
     def run(self):
-        self.test_patch = self.generate_and_validate_test()
-        if self.test_patch:
+        (test_patch, inverted_patch) = self.generate_and_validate_test()
+        if test_patch:
+            self.test_patch = test_patch
             self.write_patch_file("test", self.test_patch)
+        if inverted_patch:
+            self.inverted_patch = inverted_patch
+            self.write_patch_file("test-inverted", self.inverted_patch)
 
         plan = self.generate_plan()
         # TODO: Make this generate_and_validate_code
@@ -139,9 +144,11 @@ Do not plan specific code changes. Just design the solution.
         limit = self.limits.test_status_retry_limit
         observed_errors = []
 
+        test_patch = None
+        inverted_patch = None
+
         # Re-run test generation up to the limit, or until a test patch is available.
         attempt = 1
-        test_patch = None
         while attempt <= limit and not test_patch:
             test_patch = self.generate_test(attempt, observed_errors)
             if test_patch:
@@ -178,11 +185,13 @@ Do not plan specific code changes. Just design the solution.
                     "inverted-test", 1, inverted_patch
                 )
                 inverted_test_status = inverted_run_test_result.test_status
+
                 if inverted_test_status == TestStatus.PASSED:
                     self.log(
                         "workflow",
                         "Inverted test passed; this should not happen.",
                     )
+                    inverted_patch = None
 
                 inverted_test_output_contains_marker_error = (
                     "__BUG__HERE__" in inverted_run_test_result.test_output
@@ -197,8 +206,9 @@ Do not plan specific code changes. Just design the solution.
                         "workflow",
                         "Inverted test did not fail with the expected marker error. Discarding test.",
                     )
+                    inverted_patch = None
 
-        return test_patch
+        return [test_patch, inverted_patch]
 
     @staticmethod
     def generate_test_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
