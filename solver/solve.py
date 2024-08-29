@@ -20,12 +20,35 @@ DATASET_NAME = "princeton-nlp/SWE-bench_Verified"
 DATASET_SPLIT = "test"
 
 
-def main(instance_ids: list, clean_work_dir: bool, limit: list):
+def main(
+    instance_set: str,
+    instance_ids: list,
+    runner_index: int,
+    clean_work_dir: bool,
+    limit: list,
+):
     """
     Run evaluation harness for the given dataset and predictions.
     """
 
+    if not instance_ids:
+        instance_ids = []
+
+    if instance_set:
+        instance_set_file = (
+            Path(__file__).resolve().parents[1]
+            / "instance_sets"
+            / f"{instance_set}.txt"
+        )
+        with instance_set_file.open() as f:
+            instance_ids.extend([id for id in f.read().splitlines() if id])
+
     dataset = load_dataset(DATASET_NAME, instance_ids)
+
+    if runner_index:
+        dataset = [
+            instance for i, instance in enumerate(dataset) if i % runner_index == 0
+        ]
 
     if not dataset:
         print("[solve] No instances to run.")
@@ -72,6 +95,16 @@ if __name__ == "__main__":
         nargs="+",
         type=str,
         help="Instance IDs to run (space separated)",
+    )
+    parser.add_argument(
+        "--instance_set",
+        type=str,
+        help="Instance set to run",
+    )
+    parser.add_argument(
+        "--runner_index",
+        type=int,
+        help="Select instances based on the runner index (instance index % runner_index == 0)",
     )
 
     configure_clean_option(parser)

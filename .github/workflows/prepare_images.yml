@@ -1,0 +1,65 @@
+name: Prepare docker images
+
+on:
+  workflow_dispatch:
+    inputs:
+      instance_set:
+        description: "Instance set to solve"
+        type: string
+
+run-name: Prepare images (${{ inputs.instance_set }})
+
+permissions:
+  contents: read
+  pull-requests: read
+  packages: write
+
+jobs:
+  prepare_images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install virtualenv
+          virtualenv venv
+          . ./venv/bin/activate
+          pip install -e .
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare images
+        env:
+          INSTANCE_SET: ${{ inputs.instance_set }}
+        run: |
+          . ./venv/bin/activate
+          instance_set="${INSTANCE_SET:-smoke}"
+          python solver/prepare_images.py \
+            --instance_set "${instance_set}"
+
+      - name: Report image logs
+        if: always()
+        run: |
+          log_files=()
+          while IFS= read -r line; do
+              log_files+=("$line")
+          done < <(find logs/build_images -name '*.log' | sort)
+
+          for log_file in "${log_files[@]}"; do
+              echo "Log file: $log_file"
+              cat "$log_file"
+          done

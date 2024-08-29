@@ -32,7 +32,9 @@ def _pull_images(
         return []
 
     not_found_images = []
-    print(f"Pulling images that are not present locally: {unavailable_images}")
+    print(
+        f"Pulling images that are not present locally: {', '.join(unavailable_images)}"
+    )
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_image_name = {}
         for image_name in unavailable_images:
@@ -94,7 +96,7 @@ def pull_base_images(docker_client: docker.APIClient, dataset: list, max_workers
     """
     test_specs = get_test_specs_from_dataset(dataset)
     base_image_names = {x.base_image_key for x in test_specs}
-    print(f"Base image names: {base_image_names}")
+    print(f"Base image names: {', '.join(base_image_names)}")
     not_found_images = _pull_images(
         docker_client, "base", base_image_names, max_workers
     )
@@ -126,6 +128,7 @@ def pull_instance_images(docker_client: docker.APIClient, dataset: list, max_wor
 
     test_specs = get_test_specs_from_dataset(dataset)
     instance_image_names = {x.instance_image_key for x in test_specs}
+    print(f"Instance image names: {', '.join(instance_image_names)}")
     not_found_images = _pull_images(
         docker_client, "instance", instance_image_names, max_workers
     )

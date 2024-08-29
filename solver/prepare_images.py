@@ -66,8 +66,13 @@ def main(instance_ids: list, instance_set: str, max_workers: int = 4):
     base_images_to_build_dataset = pull_base_images(
         docker_client, dataset, max_workers=1
     )
+
+    # max_workers is not used here
+    def wrap_build_base_images(docker_client, dataset, max_workers):
+        return build_base_images(docker_client, dataset)
+
     build_and_push_images(
-        docker_client, base_images_to_build_dataset, build_base_images, max_workers
+        docker_client, base_images_to_build_dataset, wrap_build_base_images, max_workers
     )
 
     env_images_to_build_dataset = pull_env_images(
