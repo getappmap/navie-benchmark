@@ -3,28 +3,35 @@ from unittest.mock import ANY, MagicMock, patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from navie.editor import Editor
-from navie.format_instructions import xml_format_instructions
-
 from solver.workflow.patch import Patch
-from solver.workflow.generator import Generator
+from solver.workflow.generate_code import GenerateCode
 
 
 class TestGenerator(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
-        self.editor_mock = MagicMock(spec=Editor)
+        self.work_dir = "/work/directory"
         self.plan = "Sample plan"
-        self.generator = Generator(
-            log=self.log_mock, editor=self.editor_mock, plan=self.plan
+        self.generator = GenerateCode(
+            log=self.log_mock,
+            work_dir=self.work_dir,
+            plan=self.plan,
+            python_version="3.8",
+            packages="numpy",
         )
 
-    @patch("solver.workflow.generator.extract_changes")
-    @patch("solver.workflow.generator.git_diff")
-    @patch("solver.workflow.generator.relpath")
-    @patch("solver.workflow.generator.getcwd")
+    @patch("solver.workflow.generate_code.extract_changes")
+    @patch("solver.workflow.generate_code.git_diff")
+    @patch("solver.workflow.generate_code.relpath")
+    @patch("solver.workflow.generate_code.getcwd")
+    @patch("solver.workflow.generate_code.Editor")
     def test_generate(
-        self, getcwd_mock, relpath_mock, git_diff_mock, extract_changes_mock
+        self,
+        Editor_mock,
+        getcwd_mock,
+        relpath_mock,
+        git_diff_mock,
+        extract_changes_mock,
     ):
         getcwd_mock.return_value = "/current/directory"
         relpath_mock.side_effect = lambda x, _: x
@@ -39,30 +46,28 @@ class TestGenerator(unittest.TestCase):
             )
         ]
 
-        with TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            self.editor_mock.generate.return_value = "Generated code"
-            self.editor_mock.apply.side_effect = (
-                lambda file, modified, search: "original code"
-            )
+        editor_instance_mock = Editor_mock.return_value
+        editor_instance_mock.generate.return_value = "Generated code"
+        editor_instance_mock.apply.return_value = None
 
+        with TemporaryDirectory() as temp_dir:
             # Test generate method
-            generated_code = self.generator.generate()
+            generated_code = self.generator.generate(1, [])
             self.assertEqual(generated_code, "Generated code")
-            self.editor_mock.generate.assert_called_once_with(
+            editor_instance_mock.generate.assert_called_once_with(
                 plan="Sample plan",
                 prompt=ANY,
                 options="/noprojectinfo /exclude=\\btests?\\b|\\btesting\\b|\\btest_|_test\\b",
             )
 
             # Test apply method
-            patch = self.generator.apply("Generated code")
+            patch = self.generator.apply(1, "Generated code")
             self.assertIsInstance(patch, Patch)
             self.log_mock.assert_called_with(
-                "workflow/generator",
+                "workflow/generate-code",
                 "Applied code changes to /current/directory/file.py",
             )
-            self.editor_mock.apply.assert_called_once_with(
+            editor_instance_mock.apply.assert_called_once_with(
                 "/current/directory/file.py", "modified code", search="original code"
             )
 
