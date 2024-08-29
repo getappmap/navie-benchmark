@@ -17,13 +17,6 @@ def make_run_test_prep_commands(specs, env_name, custom_eval=True):
     # It just builds the commands that set everything up for the test command to actually run.
     # See make_run_test_command for the actual test command.
 
-    # Commands that are present in make_eval_script_list have been removed here, because
-    # the are run later. They are:
-    #
-    # cd {repo_directory}
-    # source /opt/miniconda3/bin/activate
-    # conda activate {env_name}
-
     repo_directory = f"/{env_name}"
 
     eval_commands = []
