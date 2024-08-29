@@ -16,12 +16,12 @@ from swebench.harness.constants import (
 from swebench.harness.test_spec import (
     get_test_specs_from_dataset,
     make_test_spec,
-    TestSpec
+    TestSpec,
 )
 from swebench.harness.docker_utils import (
     cleanup_container,
     remove_image,
-    find_dependent_images
+    find_dependent_images,
 )
 
 ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
@@ -70,14 +70,14 @@ def close_logger(logger):
 
 
 def build_image(
-        image_name: str,
-        setup_scripts: dict,
-        dockerfile: str,
-        platform: str,
-        client: docker.DockerClient,
-        build_dir: Path,
-        nocache: bool = False
-    ):
+    image_name: str,
+    setup_scripts: dict,
+    dockerfile: str,
+    platform: str,
+    client: docker.DockerClient,
+    build_dir: Path,
+    nocache: bool = False,
+):
     """
     Builds a docker image with the given name, setup scripts, dockerfile, and platform.
 
@@ -158,10 +158,8 @@ def build_image(
 
 
 def build_base_images(
-        client: docker.DockerClient,
-        dataset: list,
-        force_rebuild: bool = False
-    ):
+    client: docker.DockerClient, dataset: list, force_rebuild: bool = False
+):
     """
     Builds the base images required for the dataset if they do not already exist.
 
@@ -180,6 +178,7 @@ def build_base_images(
             remove_image(client, key, "quiet")
 
     # Build the base images
+    built_images = []
     for image_name, (dockerfile, platform) in base_images.items():
         try:
             # Check if the base image already exists
@@ -202,13 +201,19 @@ def build_base_images(
             client=client,
             build_dir=BASE_IMAGE_BUILD_DIR / image_name.replace(":", "__"),
         )
+        built_images.append(image_name)
     print("Base images built successfully.")
+
+    return (
+        built_images,
+        [],
+    )  # return successful and failed images, to match build_env_images
 
 
 def get_env_configs_to_build(
-        client: docker.DockerClient,
-        dataset: list,
-    ):
+    client: docker.DockerClient,
+    dataset: list,
+):
     """
     Returns a dictionary of image names to build scripts and dockerfiles for environment images.
     Returns only the environment images that need to be built.
@@ -261,11 +266,11 @@ def get_env_configs_to_build(
 
 
 def build_env_images(
-        client: docker.DockerClient,
-        dataset: list,
-        force_rebuild: bool = False,
-        max_workers: int = 4
-    ):
+    client: docker.DockerClient,
+    dataset: list,
+    force_rebuild: bool = False,
+    max_workers: int = 4,
+):
     """
     Builds the environment images required for the dataset if they do not already exist.
 
@@ -336,11 +341,11 @@ def build_env_images(
 
 
 def build_instance_images(
-        client: docker.DockerClient,
-        dataset: list,
-        force_rebuild: bool = False,
-        max_workers: int = 4
-    ):
+    client: docker.DockerClient,
+    dataset: list,
+    force_rebuild: bool = False,
+    max_workers: int = 4,
+):
     """
     Builds the instance images required for the dataset if they do not already exist.
 
@@ -359,9 +364,15 @@ def build_instance_images(
 
     if len(env_failed) > 0:
         # Don't build images for instances that depend on failed-to-build env images
-        dont_run_specs = [spec for spec in test_specs if spec.env_image_key in env_failed]
-        test_specs = [spec for spec in test_specs if spec.env_image_key not in env_failed]
-        print(f"Skipping {len(dont_run_specs)} instances - due to failed env image builds")
+        dont_run_specs = [
+            spec for spec in test_specs if spec.env_image_key in env_failed
+        ]
+        test_specs = [
+            spec for spec in test_specs if spec.env_image_key not in env_failed
+        ]
+        print(
+            f"Skipping {len(dont_run_specs)} instances - due to failed env image builds"
+        )
     print(f"Building instance images for {len(test_specs)} instances")
     successful, failed = list(), list()
 
@@ -411,11 +422,11 @@ def build_instance_images(
 
 
 def build_instance_image(
-        test_spec: TestSpec,
-        client: docker.DockerClient,
-        logger: logging.Logger,
-        nocache: bool,
-    ):
+    test_spec: TestSpec,
+    client: docker.DockerClient,
+    logger: logging.Logger,
+    nocache: bool,
+):
     """
     Builds the instance image for the given test spec if it does not already exist.
 
@@ -426,7 +437,9 @@ def build_instance_image(
         nocache (bool): Whether to use the cache when building
     """
     # Set up logging for the build process
-    build_dir = INSTANCE_IMAGE_BUILD_DIR / test_spec.instance_image_key.replace(":", "__")
+    build_dir = INSTANCE_IMAGE_BUILD_DIR / test_spec.instance_image_key.replace(
+        ":", "__"
+    )
     new_logger = False
     if logger is None:
         new_logger = True
@@ -485,13 +498,13 @@ def build_instance_image(
 
 
 def build_container(
-        test_spec: TestSpec,
-        client: docker.DockerClient,
-        run_id: str,
-        logger: logging.Logger,
-        nocache: bool,
-        force_rebuild: bool = False
-    ):
+    test_spec: TestSpec,
+    client: docker.DockerClient,
+    run_id: str,
+    logger: logging.Logger,
+    nocache: bool,
+    force_rebuild: bool = False,
+):
     """
     Builds the instance image for the given test spec and creates a container from the image.
 
