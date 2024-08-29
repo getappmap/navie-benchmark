@@ -77,6 +77,12 @@ class Patch:
     def __str__(self) -> str:
         return str(self.patch)
 
+    def __hash__(self) -> int:
+        return hash(str(self))
+
+    def __eq__(self, other) -> bool:
+        return str(self) == str(other)
+
     def list_files(self):
         return list_files_in_patch(str(self.patch))
 

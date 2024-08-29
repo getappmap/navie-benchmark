@@ -22,7 +22,7 @@ from solver.workflow.patch import Patch
 from solver.workflow.run_test import RunTest
 
 
-def main(instance_id: list, patch_file: str):
+def main(instance_id: list, test_patch: str, code_patch: str):
     """
     Run evaluation harness for the given dataset and predictions.
     """
@@ -38,18 +38,30 @@ def main(instance_id: list, patch_file: str):
     run_test_dir = navie_work_dir / "run_test"
     run_test_dir.mkdir(parents=True, exist_ok=True)
 
-    patch_file = Path(patch_file)
-    if not patch_file.exists():
-        print(f"Patch file {patch_file} not found.")
+    test_patch_file = Path(test_patch)
+    if not test_patch_file.exists():
+        print(f"Patch file {test_patch} not found.")
         sys.exit(1)
 
-    test_patch = Patch.load_file(patch_file)
+    test_patch = Patch.load_file(test_patch_file)
+
+    code_patches = []
+    if code_patch:
+        code_patch_file = Path(code_patch)
+        if not code_patch_file.exists():
+            print(f"Patch file {code_patch} not found.")
+            sys.exit(1)
+
+        code_patch = Patch.load_file(code_patch_file)
+        code_patches.append(code_patch)
 
     pull_or_build_instance_images(docker_client, dataset)
 
     run_test = RunTest(
         logger_fn, navie_work_dir, instance["repo"], instance["version"], test_spec
     )
+    if code_patches:
+        run_test.code_patches = code_patches
 
     run_test_result = run_test.run(docker_client, test_patch)
 
@@ -62,7 +74,10 @@ if __name__ == "__main__":
         "--instance_id", type=str, help="Instance ID to run", required=True
     )
     parser.add_argument(
-        "--patch_file", type=str, help="File containing the test patch", required=True
+        "--test_patch", type=str, help="File containing the test patch", required=True
+    )
+    parser.add_argument(
+        "--code_patch", type=str, help="File containing the code patch", required=False
     )
 
     args = parser.parse_args()

@@ -1,9 +1,10 @@
 from os import getcwd, listdir, path
 from pathlib import Path
 import subprocess
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Tuple, Union
 
 import docker
+import yaml
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
@@ -96,6 +97,7 @@ class Workflow:
         self.issue_text = issue_text
         self.limits = limits
 
+        self.edit_test_file = None
         self.test_patch = None
         self.inverted_patch = None
         self.code_patch = None
@@ -110,8 +112,46 @@ class Workflow:
             self.write_patch_file("test-inverted", self.inverted_patch)
 
         plan = self.generate_plan()
-        # TODO: Make this generate_and_validate_code
-        self.code_patch = self.generate_code(plan, 1)
+        (
+            code_patch,
+            code_patches,
+        ) = self.generate_and_validate_code(plan)
+
+        if code_patch:
+            self.log("workflow", f"Optimal code patch generated (for available tests)")
+            self.code_patch = code_patch
+        elif code_patches:
+            self.log("workflow", "Choosing best patch")
+
+            def patch_score(code_patch) -> int:
+                score = 0
+                if code_patch["pass_to_pass_test_status"] == TestStatus.PASSED:
+                    score += 1
+                if code_patch["test_patch_status"] == TestStatus.FAILED:
+                    score += 1
+                if code_patch["inverted_patch_status"] == TestStatus.PASSED:
+                    score += 1
+                return score
+
+            # Sort code_patches by score
+            code_patches.sort(
+                key=lambda patch: patch_score(patch),
+                reverse=True,
+            )
+            self.code_patch = code_patches[0]["patch"]
+
+            code_patches_repr = [p for p in code_patches]
+            for repr in code_patches_repr:
+                repr["patch"] = str(repr["patch"])
+            with open(path.join(self.navie_work_dir, "code_patches.yml"), "w") as f:
+                f.write(
+                    yaml.dump(
+                        code_patches_repr,
+                    )
+                )
+        else:
+            self.log("workflow", "No code patches generated")
+
         if self.code_patch:
             self.write_patch_file("code", self.code_patch)
 
@@ -277,6 +317,9 @@ Do not plan specific code changes. Just design the solution.
         if not edit_test_file:
             return
 
+        if not self.edit_test_file:
+            self.edit_test_file = edit_test_file
+
         self.log("workflow", f"Test file to be modified: {edit_test_file}")
 
         existing_test_files = "\n".join(listdir(Path(edit_test_file).parent))
@@ -347,7 +390,13 @@ Available packages: {self.environment.packages}
 
         return test_patch
 
-    def run_test(self, step, attempt: int, test_patch: Patch) -> RunTestResult:
+    def run_test(
+        self,
+        step,
+        attempt: int,
+        test_patch: Patch,
+        code_patches: list[Patch] = [],
+    ) -> RunTestResult:
         self.log("workflow", f"Running test for attempt {attempt}")
         work_dir = path.join(
             Workflow.generate_test_work_dir(
@@ -357,7 +406,98 @@ Available packages: {self.environment.packages}
             step,
         )
         run_test = RunTest(self.log, work_dir, self.repo, self.version, self.test_spec)
+        if code_patches:
+            run_test.code_patches = code_patches
         return run_test.run(self.docker_client, test_patch)
+
+    def generate_and_validate_code(
+        self, plan: str
+    ) -> Tuple[Optional[Patch], list[dict]]:
+        limit = self.limits.code_status_retry_limit
+
+        code_patch = None
+        code_patches = []
+        attempt = 1
+        while attempt <= limit and not code_patch:
+            code_patch = self.generate_code(plan, attempt)
+            pass_to_pass_test_status = None
+            test_patch_status = None
+            inverted_patch_status = None
+            if code_patch:
+                if self.edit_test_file:
+                    self.log(
+                        f"workflow", f"Running pass-to-pass test for attempt {attempt}"
+                    )
+                    empty_patch_for_edit_test_file = Patch(
+                        f"""diff --git a/{self.edit_test_file} b/{self.edit_test_file}
+index 0000000..0000000
+--- a/{self.edit_test_file}
++++ b/{self.edit_test_file}
+"""
+                    )
+
+                    run_test_result = self.run_test(
+                        "code", attempt, empty_patch_for_edit_test_file, [code_patch]
+                    )
+                    pass_to_pass_test_status = run_test_result.test_status
+
+                if self.test_patch:
+                    self.log("workflow", f"Running test patch for attempt {attempt}")
+                    run_test_result = self.run_test(
+                        "code", attempt, self.test_patch, [code_patch]
+                    )
+                    test_patch_status = run_test_result.test_status
+
+                if self.inverted_patch:
+                    self.log(
+                        f"workflow",
+                        f"Running inverted test patch for attempt {attempt}",
+                    )
+                    run_test_result = self.run_test(
+                        "code", attempt, self.inverted_patch, [code_patch]
+                    )
+                    inverted_patch_status = run_test_result.test_status
+
+                code_patches.append(
+                    {
+                        "patch": code_patch,
+                        "pass_to_pass_test_status": pass_to_pass_test_status,
+                        "test_patch_status": test_patch_status,
+                        "inverted_patch_status": inverted_patch_status,
+                    }
+                )
+
+                if (
+                    pass_to_pass_test_status == TestStatus.PASSED
+                    and test_patch_status == TestStatus.FAILED
+                    and inverted_patch_status == TestStatus.PASSED
+                ):
+                    self.log(
+                        "workflow",
+                        "Code patch succeeded in the pass-to-pass test, failed the test patch, and passed the inverted test patch. Accepting code patch.",
+                    )
+                elif (
+                    pass_to_pass_test_status == TestStatus.PASSED
+                    and not self.test_patch
+                    and not self.inverted_patch
+                ):
+                    self.log(
+                        "workflow",
+                        "Code patch succeeded the pass-to-pass test, and there are no test patches to try. Accepting code patch.",
+                    )
+                else:
+                    self.log(
+                        "workflow",
+                        "Code patch is not optimal. Will look for a better patch.",
+                    )
+                    code_patch = None
+
+            attempt += 1
+
+        return (
+            code_patch,
+            code_patches,
+        )
 
     def generate_code(self, plan, attempt) -> Optional[Patch]:
         self.clean_git_state()

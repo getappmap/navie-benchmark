@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import docker
+import requests
 
 from solver.harness.build_extended_image import build_extended_image
 from solver.ioutil import make_path
@@ -31,14 +32,20 @@ class RunTestResult:
         return f"RunTestResult(test_status={self.test_status}, run_succeeded={self.run_succeeded})"
 
 
+DEFAULT_TIMEOUT = 120
+
+
 class RunTest:
-    def __init__(self, log, work_dir, repo, version, test_spec):
+    def __init__(
+        self, log, work_dir, repo, version, test_spec, timeout=DEFAULT_TIMEOUT
+    ):
         self.log = log
         self.work_dir = work_dir
-
+        self.timeout = timeout
         self.repo = repo
         self.version = version
         self.test_spec = test_spec
+        self.code_patches = []
 
     def run(self, docker_client: docker.APIClient, test_patch: Patch) -> RunTestResult:
         test_files = test_patch.list_files()
@@ -113,20 +120,24 @@ class RunTest:
             ]
         )
 
-        test_script = "\n".join(
-            [
-                "#!/bin/bash",
-                "set -x",
-                "",
-            ]
-            + [
-                f"cd {repo_directory}",
-                "source /opt/miniconda3/bin/activate",
-                f"conda activate {env_name}",
-                "git apply /tmp/test.patch",
-                f"exec {run_test_command}",
-            ]
-        )
+        test_script_lines = [
+            f"""#!/bin/bash
+
+set -x
+
+cd {repo_directory}
+source /opt/miniconda3/bin/activate
+conda activate {env_name}
+"""
+        ]
+
+        for code_patch_index, code_patch in enumerate(self.code_patches):
+            test_script_lines.append(f"git apply /tmp/code_{code_patch_index}.patch")
+
+        test_script_lines.append("git apply /tmp/test.patch")
+        test_script_lines.append(run_test_command)
+
+        test_script = "\n".join(test_script_lines)
 
         os.makedirs(self.work_dir, exist_ok=True)
         error_log_file = path.join(self.work_dir, "run_test_error.log")
@@ -139,62 +150,87 @@ class RunTest:
         patch_file = path.join(self.work_dir, "test.patch")
         with open(patch_file, "w") as f:
             f.write(str(test_patch))
+        for code_patch_index, code_patch in enumerate(self.code_patches):
+            code_patch_file = path.join(self.work_dir, f"code_{code_patch_index}.patch")
+            with open(code_patch_file, "w") as f:
+                f.write(str(code_patch))
 
         # Start the container
         self.log(
             "run-test",
             f"Running test {test_file}, with log available in {log_file}.",
         )
+        if self.code_patches:
+            self.log(
+                "run-test",
+                f"Test run includes {len(self.code_patches)} code patches.",
+            )
+
+        volumes = {
+            path.abspath(patch_file): {
+                "bind": "/tmp/test.patch",
+                "mode": "ro",
+            },
+            path.abspath(script_file): {
+                "bind": "/tmp/run_test.sh",
+                "mode": "ro",
+            },
+            path.abspath(log_file): {
+                "bind": "/tmp/run_test.log",
+                "mode": "rw",
+            },
+        }
+        for code_patch_index, code_patch in enumerate(self.code_patches):
+            code_patch_file = path.join(self.work_dir, f"code_{code_patch_index}.patch")
+            volumes[path.abspath(code_patch_file)] = {
+                "bind": f"/tmp/code_{code_patch_index}.patch",
+                "mode": "ro",
+            }
 
         succeeded = False
+        test_status = None
+        test_output = None
         try:
-            docker_client.containers.run(
+            container = docker_client.containers.run(
                 image=run_test_image_name,
                 command="/tmp/run_test.sh",
                 entrypoint="/bin/bash",
                 user=user,
-                remove=True,
+                detach=True,
                 platform=self.test_spec.platform,
-                volumes={
-                    path.abspath(patch_file): {
-                        "bind": "/tmp/test.patch",
-                        "mode": "ro",
-                    },
-                    path.abspath(script_file): {
-                        "bind": "/tmp/run_test.sh",
-                        "mode": "ro",
-                    },
-                    path.abspath(log_file): {
-                        "bind": "/tmp/run_test.log",
-                        "mode": "rw",
-                    },
-                },
+                volumes=volumes,
             )
-            succeeded = True
-        except docker.errors.ContainerError as e:
-            container_log = e.stderr.decode("utf-8")
-            with open(error_log_file, "w") as f:
-                f.write(container_log)
+            result = container.wait(timeout=self.timeout)
+
+            exit_code = result["StatusCode"]
+            if exit_code == 0:
+                succeeded = True
+
+            test_output = container.logs().decode("utf-8")
         except Exception as e:
-            self.log("run-test", f"Unexpected error: {e}")
+            self.log("run-test", f"{e.__class__.__name__}: {e}")
+            test_status = TestStatus.ERROR
             with open(error_log_file, "w") as f:
                 f.write(str(e))
 
-        with open(log_file, "r") as f:
-            test_output = f.read()
+        try:
+            container.remove()
+        except Exception as e:
+            self.log("run-test", f"Failed to remove container: {e}")
 
-        log_parser = MAP_REPO_TO_PARSER[self.repo]
-        test_status_dict = log_parser(test_output)
+        if not test_status:
+            log_parser = MAP_REPO_TO_PARSER[self.repo]
+            test_status_dict = log_parser(test_output)
 
-        # If the test status is not found, assume that the test was not run due to a setup error.
-        if test_status_dict:
-            test_status = TestStatus(test_status_dict.popitem()[1])
-        else:
-            self.log(
-                "run-test",
-                "No test status was detected in the output file",
-            )
-            test_status = TestStatus.ERROR
+            # If the test status is not found, assume that the test was not run due to a setup error.
+            if test_status_dict:
+                test_status = TestStatus(test_status_dict.popitem()[1])
+            else:
+                self.log(
+                    "run-test",
+                    "No test status was detected in the output file",
+                )
+                test_status = TestStatus.ERROR
 
         self.log(
             "run-test",

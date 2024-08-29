@@ -79,9 +79,6 @@ def main(
         if not source_dir.exists():
             checkout_code(logger_fn, container, source_dir, tmp_dir)
 
-        # Run the plan script
-        logger_fn("solve", "Running plan script")
-
         # os chdir to source_dir
         pwd = Path.cwd()
         logger_fn("solve", f"Changing directory to {source_dir}")
@@ -99,7 +96,7 @@ def main(
             chdir(pwd)
 
     except Exception as e:
-        print(f"[solve_instance] Error running plan for {instance_id}: {e}")
+        print(f"[solve_instance] Error solving {instance_id}: {e}")
         import traceback
 
         traceback.print_exc()
