@@ -178,4 +178,5 @@ predictions.jsonl
 
 # Evaluation
 *.validate-*.json
+*.smoke.json
 

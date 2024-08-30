@@ -59,6 +59,25 @@ def main(
     docker_client = docker.from_env()
     pull_instance_images(docker_client, dataset)
 
+    if instance_set:
+        predictions_name = instance_set
+    else:
+        predictions_name = "predictions"
+
+    predictions_dir = Path(__file__).resolve().parents[1] / "predictions"
+    predictions_dir.mkdir(parents=True, exist_ok=True)
+    predictions_path = predictions_dir / f"{predictions_name}.jsonl"
+    if predictions_path.exists():
+        new_predictions_path = (
+            predictions_dir
+            / f"{predictions_name}.{int(predictions_path.stat().st_mtime)}.jsonl"
+        )
+
+        predictions_path.rename(new_predictions_path)
+        print(
+            f"[solve] Renamed existing predictions file from {predictions_path} to {new_predictions_path}"
+        )
+
     # TODO: Stop building these; they should be pulled and made available instead.
     build_base_images(docker_client, dataset)
     build_env_images(docker_client, dataset)
@@ -74,6 +93,8 @@ def main(
             str(solver_path),
             "--instance_id",
             instance["instance_id"],
+            "--predictions",
+            str(predictions_path),
         ]
         if clean_work_dir:
             solve_args.append("--clean_work_dir")
@@ -88,6 +109,19 @@ def main(
 
         if solve_result.returncode != 0:
             print(f"[solve] Failed to run instance {instance['instance_id']}")
+
+    print("[solve] Copying predictions to predictions.jsonl")
+    if not predictions_path.exists():
+        print(
+            f"[solve] WARNING No predictions found at {predictions_path}. predictions.jsonl will not be updated."
+        )
+    else:
+        with predictions_path.open("r") as f:
+            predictions = f.read()
+        with Path("predictions.jsonl").open("w") as f:
+            f.write(predictions)
+
+    print("[solve] Done!")
 
 
 if __name__ == "__main__":
@@ -120,6 +154,8 @@ if __name__ == "__main__":
 
     if environ.get("OPENAI_API_KEY"):
         print("[solve] Running with OpenAI API key")
+    elif environ.get("ANTHROPIC_API_KEY"):
+        print("[solve] Running with Anthropic API key")
     else:
         print("[solve] WARNING: OpenAI API key not found in environment")
 

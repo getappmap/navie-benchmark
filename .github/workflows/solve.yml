@@ -183,6 +183,13 @@ jobs:
             --instance_set "${instance_set}" \
             --runner_index "${{ matrix.index }}"
 
+      - name: Report predictions
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: predictions
+          path: predictions.jsonl
+
       - name: Report harness logs
         uses: actions/upload-artifact@v4
         if: always()
@@ -206,3 +213,44 @@ jobs:
           name: patch-files
           path:
             solve/**/*.patch
+
+  evaluate:
+    needs: solve
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    env:
+      INSTANCE_SET: ${{ inputs.instance_set }}
+    defaults:
+      run:
+        shell: bash -leo pipefail {0}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install virtualenv
+          virtualenv venv
+          . ./venv/bin/activate
+          pip install -e .
+
+      - name: Evaluate predictions
+        run: |
+          . ./venv/bin/activate
+
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          instance_set="${INSTANCE_SET:-smoke}"
+
+          python swebench.harness.run_evaluation \
+            --instance_set "${instance_set}"
+
+      - name: Report evaluation logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluation-output
+          path: "*.json"
