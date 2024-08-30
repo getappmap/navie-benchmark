@@ -170,3 +170,11 @@ cython_debug/
 data/repos/copies
 notebooks/
 *logs/
+work/
+
+# Solve
+solve
+
+# Evaluation
+*.validate-*.json
+
