@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from os import getenv
 from pathlib import Path
 import sys
 from typing import Callable, Dict, List, Optional
@@ -51,12 +52,13 @@ def build_and_push_images(
             docker_client.images.get(image_name).tag(remote_image_key)
             try:
                 docker_client.images.push(remote_image_key)
-            except docker.errors.APIError as e: # type: ignore
+            except docker.errors.APIError as e:  # type: ignore
                 print(f"Error pushing image: {remote_image_key}. Error: {e}")
 
 
 def main(instance_ids: list, instance_set: str, max_workers: int = 4):
-    docker_client = docker.from_env()
+    docker_timeout = int(getenv("DOCKER_TIMEOUT", 600))
+    docker_client = docker.from_env(timeout=docker_timeout)
 
     if not instance_ids:
         instance_ids = []
