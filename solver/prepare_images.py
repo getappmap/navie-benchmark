@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import sys
+from typing import Callable, Dict, List, Optional
 
 import docker
 
@@ -17,14 +18,17 @@ from solver.solve import DATASET_NAME
 
 
 def build_and_push_images(
-    docker_client: docker.APIClient,
+    docker_client: docker.DockerClient,
     images_to_build_dataset: list,
-    build_images_func: callable,
+    build_images_func: Callable[
+        [docker.DockerClient, List[str], Optional[int]],
+        tuple,
+    ],
     max_workers: int,
 ):
     if images_to_build_dataset:
         (successful_images, failed_images) = build_images_func(
-            docker_client, images_to_build_dataset, max_workers=max_workers
+            docker_client, images_to_build_dataset, max_workers
         )
 
         if failed_images:
@@ -78,8 +82,12 @@ def main(instance_ids: list, instance_set: str, max_workers: int = 4):
     env_images_to_build_dataset = pull_env_images(
         docker_client, dataset, max_workers=max_workers
     )
+
+    def wrap_build_env_images(docker_client, dataset, max_workers):
+        return build_env_images(docker_client, dataset, max_workers=max_workers)
+
     build_and_push_images(
-        docker_client, env_images_to_build_dataset, build_env_images, max_workers
+        docker_client, env_images_to_build_dataset, wrap_build_env_images, max_workers
     )
 
 

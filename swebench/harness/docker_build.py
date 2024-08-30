@@ -424,7 +424,7 @@ def build_instance_images(
 def build_instance_image(
     test_spec: TestSpec,
     client: docker.DockerClient,
-    logger: logging.Logger,
+    logger: Optional[logging.Logger],
     nocache: bool,
 ):
     """

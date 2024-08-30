@@ -6,11 +6,17 @@ from typing import Callable, List, Optional, Tuple, Union
 import docker
 import yaml
 
-from navie.editor import Editor
-from navie.fences import extract_fenced_content
 from swebench.harness.constants import TestStatus
 from swebench.harness.test_spec import TestSpec
 
+from navie.editor import Editor
+from navie.fences import extract_fenced_content
+
+from .generate_and_validate_code import (
+    CodePatchResult,
+    Context as GenerateCodeContext,
+    generate_and_validate_code,
+)
 from .code_environment import Environment
 from .choose_test_file import choose_test_file
 from .generate_code import GenerateCode
@@ -74,10 +80,16 @@ class WorkflowLimits:
         ]
 
 
+class GenerateTestResult:
+    def __init__(self, test_patch: Optional[Patch], inverted_patch: Optional[Patch]):
+        self.test_patch = test_patch
+        self.inverted_patch = inverted_patch
+
+
 class Workflow:
     def __init__(
         self,
-        log: callable,
+        log: Callable[[str, str], None],
         navie_work_dir: Path,
         environment: Environment,
         docker_client: docker.DockerClient,
@@ -97,56 +109,67 @@ class Workflow:
         self.issue_text = issue_text
         self.limits = limits
 
-        self.edit_test_file = None
-        self.test_patch = None
-        self.inverted_patch = None
-        self.code_patch = None
+        self.edit_test_file: Optional[Path] = None
+        self.test_patch: Optional[Patch] = None
+        self.inverted_patch: Optional[Patch] = None
+        self.code_patch: Optional[Patch] = None
 
     def run(self):
-        (test_patch, inverted_patch) = self.generate_and_validate_test()
-        if test_patch:
-            self.test_patch = test_patch
+        generate_test_result = self.generate_and_validate_test()
+        if generate_test_result.test_patch:
+            self.test_patch = generate_test_result.test_patch
             self.write_patch_file("test", self.test_patch)
-        if inverted_patch:
-            self.inverted_patch = inverted_patch
+        if generate_test_result.inverted_patch:
+            self.inverted_patch = generate_test_result.inverted_patch
             self.write_patch_file("test-inverted", self.inverted_patch)
 
         plan = self.generate_plan()
-        (
-            code_patch,
-            code_patches,
-        ) = self.generate_and_validate_code(plan)
 
-        if code_patch:
-            self.log("workflow", f"Optimal code patch generated (for available tests)")
-            self.code_patch = code_patch
-        elif code_patches:
+        generate_code_result = generate_and_validate_code(
+            GenerateCodeContext(
+                self.limits,
+                self.log,
+                self.docker_client,
+                self.repo,
+                self.version,
+                self.test_spec,
+            ),
+            plan,
+            self.generate_code,
+            self.run_test,
+            self.edit_test_file,
+            self.test_patch,
+            self.inverted_patch,
+        )
+
+        if generate_code_result.patch:
+            self.log("workflow", "Optimal code patch generated (for available tests)")
+            self.code_patch = generate_code_result.patch
+        elif generate_code_result.code_patches:
             self.log("workflow", "Choosing best patch")
 
-            def patch_score(code_patch) -> int:
+            def patch_score(code_patch_result: CodePatchResult) -> int:
                 score = 0
-                if code_patch["pass_to_pass_test_status"] == TestStatus.PASSED:
+                if code_patch_result.pass_to_pass_test_status == TestStatus.PASSED:
                     score += 1
-                if code_patch["test_patch_status"] == TestStatus.FAILED:
+                if code_patch_result.test_patch_status == TestStatus.FAILED:
                     score += 1
-                if code_patch["inverted_patch_status"] == TestStatus.PASSED:
+                if code_patch_result.inverted_patch_status == TestStatus.PASSED:
                     score += 1
                 return score
 
             # Sort code_patches by score
+            code_patches = list(generate_code_result.code_patches)
             code_patches.sort(
                 key=lambda patch: patch_score(patch),
                 reverse=True,
             )
-            self.code_patch = code_patches[0]["patch"]
+            self.code_patch = code_patches[0].patch
 
-            code_patches_repr = [p for p in code_patches]
-            for repr in code_patches_repr:
-                repr["patch"] = str(repr["patch"])
             with open(path.join(self.navie_work_dir, "code_patches.yml"), "w") as f:
                 f.write(
                     yaml.dump(
-                        code_patches_repr,
+                        [p.to_h() for p in code_patches],
                     )
                 )
         else:
@@ -180,7 +203,7 @@ Do not plan specific code changes. Just design the solution.
             options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 
-    def generate_and_validate_test(self) -> Optional[Patch]:
+    def generate_and_validate_test(self) -> GenerateTestResult:
         limit = self.limits.test_status_retry_limit
         observed_errors = []
 
@@ -206,13 +229,14 @@ Do not plan specific code changes. Just design the solution.
                     )
                     observed_error = run_test_result.test_output
                     # Truncate it, if it's too long.
-                    if len(observed_error) > 10000:
+                    if observed_error and len(observed_error) > 10000:
                         self.log(
                             "workflow",
                             f"Observed error is too long ({len(observed_error)} characters). Truncating it to 10000 characters.",
                         )
                         observed_error = observed_error[:10000] + "..."
-                    observed_errors.append(observed_error)
+                    if observed_error:
+                        observed_errors.append(observed_error)
                     test_patch = None
 
             attempt += 1
@@ -233,10 +257,10 @@ Do not plan specific code changes. Just design the solution.
                     )
                     inverted_patch = None
 
-                inverted_test_output_contains_marker_error = (
-                    "__BUG__HERE__" in inverted_run_test_result.test_output
-                )
-                if inverted_test_output_contains_marker_error:
+                if (
+                    inverted_run_test_result.test_output
+                    and "__BUG__HERE__" in inverted_run_test_result.test_output
+                ):
                     self.log(
                         "workflow",
                         "Inverted test failed with the expected marker error. Accepting test.",
@@ -248,23 +272,23 @@ Do not plan specific code changes. Just design the solution.
                     )
                     inverted_patch = None
 
-        return [test_patch, inverted_patch]
+        return GenerateTestResult(test_patch, inverted_patch)
 
     @staticmethod
     def generate_test_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
         if isinstance(navie_work_dir, str):
             navie_work_dir = Path(navie_work_dir)
 
-        return str(navie_work_dir / "generate-test" / str(attempt))
+        return navie_work_dir / "generate-test" / str(attempt)
 
     @staticmethod
     def generate_code_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
         if isinstance(navie_work_dir, str):
             navie_work_dir = Path(navie_work_dir)
 
-        return str(navie_work_dir / "generate-code" / str(attempt))
+        return navie_work_dir / "generate-code" / str(attempt)
 
-    def invert_test(self, test_patch: Patch) -> Patch:
+    def invert_test(self, test_patch: Patch) -> Optional[Patch]:
         self.log("workflow", "Inverting test")
 
         self.clean_git_state()
@@ -285,15 +309,19 @@ Do not plan specific code changes. Just design the solution.
             self.environment.packages,
         )
 
-        def generate(attempt, lint_errors: list = []):
+        def generate(attempt: int, lint_errors: list[str] = []) -> Optional[Patch]:
             patch = generator.invert(str(test_patch), attempt, lint_errors)
             return generator.apply(test_file_path, patch)
 
         lint_repair_result = self.lint_repair(
             "invert-test", self.limits.test_lint_retry_limit, generate
         )
+        self.clean_git_state()
 
-        test_patch = lint_repair_result.patch
+        test_patch_inverted = lint_repair_result.patch
+        if not test_patch_inverted:
+            self.log("invert-test", "Inverted test patch is empty.")
+            return
 
         self.log(
             "invert-test",
@@ -301,12 +329,10 @@ Do not plan specific code changes. Just design the solution.
         )
         self.log(
             "invert-test",
-            f"Inverted test patch:\n{test_patch}",
+            f"Inverted test patch:\n{test_patch_inverted}",
         )
 
-        self.clean_git_state()
-
-        return test_patch
+        return test_patch_inverted
 
     def generate_test(self, attempt: int, observed_errors: list) -> Optional[Patch]:
         self.clean_git_state()
@@ -359,7 +385,7 @@ Available packages: {self.environment.packages}
                 "generate-test",
                 f"WARNING: The test file name {test_file_name} is different from the base file name {test_base_file_name}. The base file name will be used.",
             )
-        test_file_path = str(Path(edit_test_file).parent / test_base_file_name)
+        test_file_path = Path(edit_test_file).parent / test_base_file_name
 
         generator = GenerateTest(
             self.log,
@@ -410,95 +436,6 @@ Available packages: {self.environment.packages}
             run_test.code_patches = code_patches
         return run_test.run(self.docker_client, test_patch)
 
-    def generate_and_validate_code(
-        self, plan: str
-    ) -> Tuple[Optional[Patch], list[dict]]:
-        limit = self.limits.code_status_retry_limit
-
-        code_patch = None
-        code_patches = []
-        attempt = 1
-        while attempt <= limit and not code_patch:
-            code_patch = self.generate_code(plan, attempt)
-            pass_to_pass_test_status = None
-            test_patch_status = None
-            inverted_patch_status = None
-            if code_patch:
-                if self.edit_test_file:
-                    self.log(
-                        f"workflow", f"Running pass-to-pass test for attempt {attempt}"
-                    )
-                    empty_patch_for_edit_test_file = Patch(
-                        f"""diff --git a/{self.edit_test_file} b/{self.edit_test_file}
-index 0000000..0000000
---- a/{self.edit_test_file}
-+++ b/{self.edit_test_file}
-"""
-                    )
-
-                    run_test_result = self.run_test(
-                        "code", attempt, empty_patch_for_edit_test_file, [code_patch]
-                    )
-                    pass_to_pass_test_status = run_test_result.test_status
-
-                if self.test_patch:
-                    self.log("workflow", f"Running test patch for attempt {attempt}")
-                    run_test_result = self.run_test(
-                        "code", attempt, self.test_patch, [code_patch]
-                    )
-                    test_patch_status = run_test_result.test_status
-
-                if self.inverted_patch:
-                    self.log(
-                        f"workflow",
-                        f"Running inverted test patch for attempt {attempt}",
-                    )
-                    run_test_result = self.run_test(
-                        "code", attempt, self.inverted_patch, [code_patch]
-                    )
-                    inverted_patch_status = run_test_result.test_status
-
-                code_patches.append(
-                    {
-                        "patch": code_patch,
-                        "pass_to_pass_test_status": pass_to_pass_test_status,
-                        "test_patch_status": test_patch_status,
-                        "inverted_patch_status": inverted_patch_status,
-                    }
-                )
-
-                if (
-                    pass_to_pass_test_status == TestStatus.PASSED
-                    and test_patch_status == TestStatus.FAILED
-                    and inverted_patch_status == TestStatus.PASSED
-                ):
-                    self.log(
-                        "workflow",
-                        "Code patch succeeded in the pass-to-pass test, failed the test patch, and passed the inverted test patch. Accepting code patch.",
-                    )
-                elif (
-                    pass_to_pass_test_status == TestStatus.PASSED
-                    and not self.test_patch
-                    and not self.inverted_patch
-                ):
-                    self.log(
-                        "workflow",
-                        "Code patch succeeded the pass-to-pass test, and there are no test patches to try. Accepting code patch.",
-                    )
-                else:
-                    self.log(
-                        "workflow",
-                        "Code patch is not optimal. Will look for a better patch.",
-                    )
-                    code_patch = None
-
-            attempt += 1
-
-        return (
-            code_patch,
-            code_patches,
-        )
-
     def generate_code(self, plan, attempt) -> Optional[Patch]:
         self.clean_git_state()
 
@@ -520,15 +457,18 @@ index 0000000..0000000
         lint_repair_result = self.lint_repair(
             "code", self.limits.code_lint_retry_limit, generate
         )
+        self.clean_git_state()
 
         patch = lint_repair_result.patch
+
+        if not patch:
+            self.log("generate-code", "Code patch is empty.")
+            return
 
         self.log(
             "generate-code",
             f"Code patch generated after {lint_repair_result.attempts} attempts.",
         )
-
-        self.clean_git_state()
 
         return patch
 
@@ -536,7 +476,7 @@ index 0000000..0000000
         self,
         step_name: str,
         max_retries: int,
-        generator: Callable[[int, List[str]], None],
+        generator: Callable[[int, List[str]], Optional[Patch]],
     ) -> LintRepairResult:
         linter = Flake8Linter()
 

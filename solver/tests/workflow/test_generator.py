@@ -10,7 +10,7 @@ from solver.workflow.generate_code import GenerateCode
 class TestGenerator(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
-        self.work_dir = "/work/directory"
+        self.work_dir = Path("/work/directory")
         self.plan = "Sample plan"
         self.generator = GenerateCode(
             log=self.log_mock,

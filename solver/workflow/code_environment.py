@@ -1,20 +1,25 @@
 from os import path
 import os
+from pathlib import Path
 from typing import List
 import docker
+
+from swebench.harness.test_spec import TestSpec
 from solver.harness.make_run_commands import make_run_test_prep_commands
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.docker_build import build_instance_image
 
 
 class Environment:
-    def __init__(self, python_version: str, packages: List[str]):
+    def __init__(self, python_version: str, packages: str):
         self.python_version = python_version
         self.packages = packages
 
 
 class DetectEnvironment:
-    def __init__(self, log, work_dir, repo, version, test_spec):
+    def __init__(
+        self, log, work_dir: Path, repo: str, version: str, test_spec: TestSpec
+    ):
         self.log = log
         self.work_dir = work_dir
 
@@ -98,8 +103,21 @@ source /opt/miniconda3/bin/activate
                         "bind": f"/tmp/{script_name}",
                         "mode": "ro",
                     }
-                },
+                },  # type: ignore
             )
+            if not script_output:
+                self.log(
+                    "detect-environment",
+                    f"No output from {script_name} for {self.test_spec.instance_id}",
+                )
+                return ""
+            if not isinstance(script_output, bytes):
+                self.log(
+                    "detect-environment",
+                    f"Output from {script_name} for {self.test_spec.instance_id} is not bytes",
+                )
+                return ""
+
             return script_output.decode("utf-8").strip()
 
         python_version = run_command("python_version.sh", "python --version")

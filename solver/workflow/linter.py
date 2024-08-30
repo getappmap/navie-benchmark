@@ -1,6 +1,7 @@
 from abc import abstractmethod
 import re
 from subprocess import run
+from typing import List, Optional, Set
 
 from navie.editor import Editor
 
@@ -11,10 +12,10 @@ FLAKE8_LINT_COMMAND = [
 
 
 class Linter:
-    def __init__(self, lint_command: list) -> None:
+    def __init__(self, lint_command: List[str]) -> None:
         self.lint_command = lint_command
 
-    def lint(self, file_path: str) -> list:
+    def lint(self, file_path: str) -> List[str]:
         command = []
         command.extend(self.lint_command)
         command.append(file_path)
@@ -22,7 +23,9 @@ class Linter:
         lint_error_str = lint_result.stdout.decode("utf-8").strip()
         return lint_error_str.split("\n")
 
-    def select_lint_errors(self, lint_error_lines: list, line_numbers: set) -> list:
+    def select_lint_errors(
+        self, lint_error_lines: List[str], line_numbers: Set[int]
+    ) -> List[str]:
         result = []
         for line in lint_error_lines:
             line_number = self.lint_error_line_number(line)
@@ -31,7 +34,7 @@ class Linter:
         return result
 
     @abstractmethod
-    def lint_error_line_number(self, lint_error_line):
+    def lint_error_line_number(self, lint_error_line: str) -> Optional[int]:
         pass
 
 
@@ -45,7 +48,7 @@ class Flake8Linter(Linter):
     def __init__(self) -> None:
         super().__init__(FLAKE8_LINT_COMMAND)
 
-    def lint_error_line_number(self, lint_error_line):
+    def lint_error_line_number(self, lint_error_line: str) -> Optional[int]:
         match = Flake8Linter.LINE_NUMBER_PATTERN.search(lint_error_line)
         if match:
             return int(match.group(1))

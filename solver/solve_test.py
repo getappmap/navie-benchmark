@@ -28,7 +28,7 @@ from swebench.harness.docker_build import setup_logger
 
 
 def main(
-    instance_id: list,
+    instance_id: str,
     run_id: str,
     limits: dict,
 ):
@@ -39,7 +39,7 @@ def main(
     docker_client = docker.from_env()
     work_dir = build_work_dir(run_id)
     logger_fn = build_logger(work_dir, instance_id)
-    limits = build_limits(limits)
+    limits_obj = build_limits(limits)
     dataset = load_dataset(DATASET_NAME, [instance_id])
 
     pull_or_build_instance_images(docker_client, dataset)
@@ -59,7 +59,7 @@ def main(
     chdir(source_dir)
 
     workflow = build_workflow(
-        logger_fn, navie_work_dir, docker_client, instance, limits
+        logger_fn, navie_work_dir, docker_client, instance, limits_obj
     )
 
     test_patch = workflow.generate_and_validate_test()

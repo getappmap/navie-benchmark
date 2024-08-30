@@ -15,7 +15,7 @@ def lint_repair(
     step_name: str,
     max_retries: int,
     linter: Linter,
-    generator: Callable[[int, List[str]], Patch],
+    generator: Callable[[int, List[str]], Optional[Patch]],
     clean_repo: Callable[[], None],
 ) -> LintRepairResult:
     log_label = "/".join([step_name, "lint-repair"])
@@ -44,7 +44,7 @@ def lint_repair(
             file_lint_errors = linter.lint(file_path)
             patch_lines = patch.modified_lines(file_path)
             lint_errors_in_patch = linter.select_lint_errors(
-                file_lint_errors, patch_lines
+                file_lint_errors, set(patch_lines)
             )
             if lint_errors_in_patch:
                 lint_errors_in_patch_str = "\n".join(lint_errors_in_patch)
