@@ -1,5 +1,6 @@
 from os import path
 import os
+from pathlib import Path
 from subprocess import run
 from typing import Callable, Optional
 
@@ -19,10 +20,10 @@ class GenerateTest:
     def __init__(
         self,
         log: Callable[[str, str], None],
-        work_dir: str,
-        test_file_path: str,
+        work_dir: Path,
+        test_file_path: Path,
         issue_text: str,
-        observed_errors: list,
+        observed_errors: list[str],
         python_version: str,
         packages: str,
     ):
@@ -172,7 +173,7 @@ Do not use any packages that are not available in this environment.
         )
 
     # Apply code changes to the files in the current directory and return a patch.
-    def apply(self, test_file_name: str, code: str) -> Optional[Patch]:
+    def apply(self, test_file_name: Path, code: str) -> Optional[Patch]:
         content = extract_fenced_content(code)
         if not content:
             self.log("generate-test", "No changes detected")

@@ -1,6 +1,7 @@
 from os import path
 import os
 from pathlib import Path
+from typing import Optional
 
 import docker
 import requests
@@ -20,7 +21,9 @@ from ..harness.make_run_commands import (
 
 
 class RunTestResult:
-    def __init__(self, test_status: TestStatus, test_output: str, run_succeeded: bool):
+    def __init__(
+        self, test_status: TestStatus, test_output: Optional[str], run_succeeded: bool
+    ):
         self.test_status = test_status
         self.test_output = test_output
         self.run_succeeded = run_succeeded
@@ -47,7 +50,9 @@ class RunTest:
         self.test_spec = test_spec
         self.code_patches = []
 
-    def run(self, docker_client: docker.APIClient, test_patch: Patch) -> RunTestResult:
+    def run(
+        self, docker_client: docker.DockerClient, test_patch: Patch
+    ) -> RunTestResult:
         test_files = test_patch.list_files()
 
         if len(test_files) != 1:
@@ -90,7 +95,7 @@ class RunTest:
         test_image = None
         try:
             test_image = docker_client.images.get(run_test_image_name)
-        except docker.errors.ImageNotFound:
+        except docker.errors.ImageNotFound as e:  # type: ignore
             pass
 
         if test_image and test_image.attrs["Created"] < instance_image_created_at:
@@ -187,6 +192,7 @@ conda activate {env_name}
                 "mode": "ro",
             }
 
+        container = None
         succeeded = False
         test_status = None
         test_output = None
@@ -198,7 +204,7 @@ conda activate {env_name}
                 user=user,
                 detach=True,
                 platform=self.test_spec.platform,
-                volumes=volumes,
+                volumes=volumes,  # type: ignore
             )
             result = container.wait(timeout=self.timeout)
 
@@ -213,14 +219,20 @@ conda activate {env_name}
             with open(error_log_file, "w") as f:
                 f.write(str(e))
 
-        try:
-            container.remove()
-        except Exception as e:
-            self.log("run-test", f"Failed to remove container: {e}")
+        if container:
+            try:
+                container.remove()
+            except Exception as e:
+                self.log("run-test", f"Failed to remove container: {e}")
 
         if not test_status:
             log_parser = MAP_REPO_TO_PARSER[self.repo]
-            test_status_dict = log_parser(test_output)
+            if not log_parser:
+                raise ValueError(f"No log parser found for repo {self.repo}")
+
+            test_status_dict: dict[str, str] = {}
+            if test_output:
+                test_status_dict.update(log_parser(test_output))
 
             # If the test status is not found, assume that the test was not run due to a setup error.
             if test_status_dict:

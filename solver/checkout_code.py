@@ -52,8 +52,10 @@ def checkout_code(log, container, source_dir, tmp_dir):
         log("checkout-code", f"Committed {len(commit_output_lines)} files")
     except Exception as e:
         log("checkout-code", f"Failed to commit: {e}")
-        log("checkout-code", f"stdout: {e.output.decode()}")
-        log("checkout-code", f"stderr: {e.stderr.decode()}")
+        if hasattr(e, "output"):
+            log("checkout-code", f"stdout: {e.output.decode()}") # type: ignore
+        if hasattr(e, "stderr"):
+            log("checkout-code", f"stderr: {e.stderr.decode()}") # type: ignore
         raise
     finally:
         chdir(pwd)

@@ -38,7 +38,7 @@ from swebench.harness.test_spec import make_test_spec
 
 
 def main(
-    instance_id: list,
+    instance_id: str,
     limits: dict,
 ):
     """
@@ -50,7 +50,7 @@ def main(
     docker_log_file = work_dir / "docker.log"
     docker_logger = setup_logger(instance_id, docker_log_file)
     logger_fn = build_logger(work_dir, instance_id)
-    limits = build_limits(limits)
+    limits_obj = build_limits(limits)
     dataset = load_dataset(DATASET_NAME, [instance_id])
     instance = dataset[0]
 
@@ -89,7 +89,7 @@ def main(
                 navie_work_dir,
                 docker_client,
                 instance,
-                limits,
+                limits_obj,
             )
             workflow.run()
         finally:

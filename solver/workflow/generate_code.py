@@ -1,4 +1,5 @@
 from os import getcwd, path
+from pathlib import Path
 from posixpath import relpath
 from typing import Callable, Optional
 import traceback
@@ -20,7 +21,7 @@ class GenerateCode:
     def __init__(
         self,
         log: Callable[[str, str], None],
-        work_dir: str,
+        work_dir: Path,
         plan: str,
         python_version: str,
         packages: str,

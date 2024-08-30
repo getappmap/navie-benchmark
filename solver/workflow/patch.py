@@ -1,3 +1,4 @@
+from pathlib import Path
 from subprocess import run
 from typing import Union
 from unidiff import PatchSet
@@ -83,11 +84,11 @@ class Patch:
     def __eq__(self, other) -> bool:
         return str(self) == str(other)
 
-    def list_files(self):
+    def list_files(self) -> list[str]:
         return list_files_in_patch(str(self.patch))
 
-    def modified_lines(self, file):
-        patched_file = next((pf for pf in self.patch if pf.path == file), None)
+    def modified_lines(self, file_name: str) -> list[int]:
+        patched_file = next((pf for pf in self.patch if pf.path == file_name), None)
         if patched_file is None:
             return []
 
@@ -99,6 +100,8 @@ class Patch:
         return line_numbers
 
     @staticmethod
-    def load_file(file_path: str):
-        with open(file_path, "r") as file:
+    def load_file(file_path: Union[Path, str]):  # type: ignore
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        with file_path.open() as file:
             return Patch(file.read())

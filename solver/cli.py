@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import shutil
+from typing import Callable
 
 import docker
 
@@ -40,9 +41,9 @@ def apply_limits(args) -> None:
 
 
 def build_limits(limits: dict) -> WorkflowLimits:
-    limits = WorkflowLimits.from_dict(limits)
-    print(f"Using limits: {limits}")
-    return limits
+    limits_obj = WorkflowLimits.from_dict(limits)
+    print(f"Using limits: {limits_obj}")
+    return limits_obj
 
 
 def configure_clean_option(parser: ArgumentParser) -> None:
@@ -94,7 +95,7 @@ def build_work_dir(instance_id) -> Path:
     return work_dir
 
 
-def build_logger(work_dir: str, instance_id: str) -> callable:
+def build_logger(work_dir: Path, instance_id: str) -> Callable[[str, str], None]:
     log_dir = work_dir / "logs" / "plan" / instance_id
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = work_dir / "logs" / "solve.log"
@@ -109,16 +110,19 @@ def build_logger(work_dir: str, instance_id: str) -> callable:
 
 
 def build_images(
-    docker_client: docker.APIClient, dataset: list, force_rebuild=False, max_workers=4
+    docker_client: docker.DockerClient,
+    dataset: list,
+    force_rebuild=False,
+    max_workers=4,
 ):
     build_env_images(docker_client, dataset, force_rebuild, max_workers)
     build_instance_images(docker_client, dataset, force_rebuild, max_workers)
 
 
 def build_workflow(
-    log: callable,
+    log: Callable[[str, str], None],
     navie_work_dir: Path,
-    docker_client: docker.APIClient,
+    docker_client: docker.DockerClient,
     instance: SWEbenchInstance,
     limits: WorkflowLimits,
 ):
@@ -145,7 +149,10 @@ def build_workflow(
 
 
 def pull_or_build_instance_images(
-    docker_client: docker.APIClient, dataset: list, force_rebuild=False, max_workers=4
+    docker_client: docker.DockerClient,
+    dataset: list,
+    force_rebuild=False,
+    max_workers=4,
 ):
     # Base and env images will be pulled, but will not be built.
     # That's beacuse there may be multiple processes running at the same time

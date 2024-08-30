@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Optional
 
 from navie.editor import Editor
@@ -6,7 +7,7 @@ from navie.fences import extract_fenced_content
 
 
 # Choose a test case file that is most related to the issue.
-def choose_test_file(log, work_dir, issue_content) -> Optional[str]:
+def choose_test_file(log, work_dir, issue_content) -> Optional[Path]:
     test_to_modify_str = Editor(
         os.path.join(work_dir, "choose"), log_dir=work_dir
     ).search(
@@ -57,4 +58,4 @@ Do not include line numbers or any location within the file. Just the file path.
 
     log("choose_test_file", f"Chose test file: {test_file}")
 
-    return test_file
+    return Path(test_file)
