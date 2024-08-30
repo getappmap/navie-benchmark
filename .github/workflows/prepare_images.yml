@@ -6,6 +6,12 @@ on:
       instance_set:
         description: "Instance set to solve"
         type: string
+      force:
+        # Currently this job is not running properly, due to timeouts in pushing the images.
+        # So this flag is here to prevent it from being used accidentally.
+        description: "Set this flag to run this job"
+        type: boolean
+        default: false
 
 run-name: Prepare images (${{ inputs.instance_set }})
 
@@ -16,7 +22,7 @@ permissions:
 
 jobs:
   prepare_images:
-    runs-on: ubuntu-latest
+    runs-on: SWE-Bench_Larger
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,7 +51,14 @@ jobs:
       - name: Prepare images
         env:
           INSTANCE_SET: ${{ inputs.instance_set }}
+          FORCE: ${{ inputs.force }}
         run: |
+          # Bail out if the force flag is not set. See comment above.
+          if [[ "$FORCE" != "true" ]]; then
+              echo "Force flag not set, exiting"
+              exit 1
+          fi
+
           . ./venv/bin/activate
           instance_set="${INSTANCE_SET:-smoke}"
           python solver/prepare_images.py \

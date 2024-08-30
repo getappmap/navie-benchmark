@@ -7,7 +7,7 @@ from solver.workflow.patch import Patch
 from solver.workflow.generate_code import GenerateCode
 
 
-class TestGenerator(unittest.TestCase):
+class TestGenerateCode(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
         self.work_dir = Path("/work/directory")
@@ -25,7 +25,7 @@ class TestGenerator(unittest.TestCase):
     @patch("solver.workflow.generate_code.relpath")
     @patch("solver.workflow.generate_code.getcwd")
     @patch("solver.workflow.generate_code.Editor")
-    def test_generate(
+    def test_generate_code(
         self,
         Editor_mock,
         getcwd_mock,

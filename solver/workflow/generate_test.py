@@ -196,6 +196,6 @@ Do not use any packages that are not available in this environment.
             self.log("workflow/generate-test", "No changes detected")
             return None
 
-        self.log("workflow/generate-test", f"Generated test patch:\n{patch_str}")
+        self.log("generate-test", f"Generated test patch:\n{patch_str}")
 
         return Patch(patch_str)

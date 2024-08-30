@@ -58,6 +58,8 @@ def main(
 
     docker_client = docker.from_env()
     pull_instance_images(docker_client, dataset)
+
+    # TODO: Stop building these; they should be pulled and made available instead.
     build_base_images(docker_client, dataset)
     build_env_images(docker_client, dataset)
 

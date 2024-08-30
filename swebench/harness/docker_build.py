@@ -157,9 +157,16 @@ def build_image(
         close_logger(logger)  # functions that create loggers should close them
 
 
+class DockerBuildResult:
+    def __init__(self, images: list[str], successful: list[str], failed: list[str]):
+        self.images = images
+        self.successful = successful
+        self.failed = failed
+
+
 def build_base_images(
     client: docker.DockerClient, dataset: list, force_rebuild: bool = False
-):
+) -> DockerBuildResult:
     """
     Builds the base images required for the dataset if they do not already exist.
 
@@ -204,10 +211,7 @@ def build_base_images(
         built_images.append(image_name)
     print("Base images built successfully.")
 
-    return (
-        built_images,
-        [],
-    )  # return successful and failed images, to match build_env_images
+    return DockerBuildResult(list(base_images.keys()), built_images, [])
 
 
 def get_env_configs_to_build(
@@ -270,7 +274,7 @@ def build_env_images(
     dataset: list,
     force_rebuild: bool = False,
     max_workers: int = 4,
-):
+) -> DockerBuildResult:
     """
     Builds the environment images required for the dataset if they do not already exist.
 
@@ -287,57 +291,58 @@ def build_env_images(
             remove_image(client, key, "quiet")
     build_base_images(client, dataset, force_rebuild)
     configs_to_build = get_env_configs_to_build(client, dataset)
-    if len(configs_to_build) == 0:
-        print("No environment images need to be built.")
-        return [], []
-    print(f"Environment images to build: {', '.join(configs_to_build.keys())}")
-
-    # Build the environment images
     successful, failed = list(), list()
-    with tqdm(
-        total=len(configs_to_build), smoothing=0, desc="Building environment images"
-    ) as pbar:
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Create a future for each image to build
-            futures = {
-                executor.submit(
-                    build_image,
-                    image_name,
-                    {"setup_env.sh": config["setup_script"]},
-                    config["dockerfile"],
-                    config["platform"],
-                    client,
-                    ENV_IMAGE_BUILD_DIR / image_name.replace(":", "__"),
-                ): image_name
-                for image_name, config in configs_to_build.items()
-            }
-
-            # Wait for each future to complete
-            for future in as_completed(futures):
-                pbar.update(1)
-                try:
-                    # Update progress bar, check if image built successfully
-                    future.result()
-                    successful.append(futures[future])
-                except BuildImageError as e:
-                    print(f"BuildImageError {e.image_name}")
-                    traceback.print_exc()
-                    failed.append(futures[future])
-                    continue
-                except Exception as e:
-                    print(f"Error building image")
-                    traceback.print_exc()
-                    failed.append(futures[future])
-                    continue
-
-    # Show how many images failed to build
-    if len(failed) == 0:
-        print("All environment images built successfully.")
+    if not len(configs_to_build):
+        print("No environment images need to be built.")
     else:
-        print(f"{len(failed)} environment images failed to build.")
+        print(f"Environment images to build: {', '.join(configs_to_build.keys())}")
+        with tqdm(
+            total=len(configs_to_build), smoothing=0, desc="Building environment images"
+        ) as pbar:
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                # Create a future for each image to build
+                futures = {
+                    executor.submit(
+                        build_image,
+                        image_name,
+                        {"setup_env.sh": config["setup_script"]},
+                        config["dockerfile"],
+                        config["platform"],
+                        client,
+                        ENV_IMAGE_BUILD_DIR / image_name.replace(":", "__"),
+                    ): image_name
+                    for image_name, config in configs_to_build.items()
+                }
 
-    # Return the list of (un)successfuly built images
-    return successful, failed
+                # Wait for each future to complete
+                for future in as_completed(futures):
+                    pbar.update(1)
+                    try:
+                        # Update progress bar, check if image built successfully
+                        future.result()
+                        successful.append(futures[future])
+                    except BuildImageError as e:
+                        print(f"BuildImageError {e.image_name}")
+                        traceback.print_exc()
+                        failed.append(futures[future])
+                        continue
+                    except Exception as e:
+                        print(f"Error building image")
+                        traceback.print_exc()
+                        failed.append(futures[future])
+                        continue
+
+        # Show how many images failed to build
+        if len(failed) == 0:
+            print("All environment images built successfully.")
+        else:
+            print(f"{len(failed)} environment images failed to build.")
+
+    return DockerBuildResult(
+        list({x.env_image_key for x in get_test_specs_from_dataset(dataset)}),
+        successful,
+        failed,
+    )
 
 
 def build_instance_images(
@@ -345,7 +350,7 @@ def build_instance_images(
     dataset: list,
     force_rebuild: bool = False,
     max_workers: int = 4,
-):
+) -> DockerBuildResult:
     """
     Builds the instance images required for the dataset if they do not already exist.
 
@@ -360,7 +365,8 @@ def build_instance_images(
     if force_rebuild:
         for spec in test_specs:
             remove_image(client, spec.instance_image_key, "quiet")
-    _, env_failed = build_env_images(client, test_specs, force_rebuild, max_workers)
+    build_env_result = build_env_images(client, test_specs, force_rebuild, max_workers)
+    env_failed = build_env_result.failed
 
     if len(env_failed) > 0:
         # Don't build images for instances that depend on failed-to-build env images
@@ -373,6 +379,7 @@ def build_instance_images(
         print(
             f"Skipping {len(dont_run_specs)} instances - due to failed env image builds"
         )
+
     print(f"Building instance images for {len(test_specs)} instances")
     successful, failed = list(), list()
 
@@ -389,7 +396,7 @@ def build_instance_images(
                     client,
                     None,  # logger is created in build_instance_image, don't make loggers before you need them
                     False,
-                ): test_spec
+                ): test_spec.instance_image_key
                 for test_spec in test_specs
             }
 
@@ -417,8 +424,11 @@ def build_instance_images(
     else:
         print(f"{len(failed)} instance images failed to build.")
 
-    # Return the list of (un)successfuly built images
-    return successful, failed
+    return DockerBuildResult(
+        list({x.instance_image_key for x in test_specs}),
+        successful,
+        failed,
+    )
 
 
 def build_instance_image(
