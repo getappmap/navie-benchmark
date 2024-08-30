@@ -10,43 +10,49 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from swebench.harness.docker_build import build_base_images, build_env_images
+from swebench.harness.docker_build import (
+    build_base_images,
+    build_env_images,
+    build_instance_images,
+    DockerBuildResult,
+)
 
-from solver.harness.pull_images import pull_base_images, pull_env_images, tag_image
+from solver.harness.pull_images import pull_instance_images, tag_image
 from solver.cli import load_dataset
 from solver.solve import DATASET_NAME
 
 
 def build_and_push_images(
     docker_client: docker.DockerClient,
-    images_to_build_dataset: list,
     build_images_func: Callable[
-        [docker.DockerClient, List[str], Optional[int]],
-        tuple,
+        [docker.DockerClient, Optional[int]],
+        DockerBuildResult,
     ],
     max_workers: int,
 ):
-    if images_to_build_dataset:
-        (successful_images, failed_images) = build_images_func(
-            docker_client, images_to_build_dataset, max_workers
-        )
+    build_result = build_images_func(docker_client, max_workers)
 
-        if failed_images:
-            print(f"Failed to build: {failed_images}")
-            sys.exit(1)
+    if build_result.failed:
+        print(f"WARNING: Failed to build some images: {", ".join(build_result.failed)}")
 
-        built_image_names = successful_images
-        print(f"Built images: {built_image_names}")
-        remote_image_keys = [
-            f"ghcr.io/getappmap/{tag_image(image_name)}"
-            for image_name in built_image_names
-        ]
-        # Tag each image, then push
-        for image_name, remote_image_key in zip(built_image_names, remote_image_keys):
-            print(f"Tagging {image_name} as {remote_image_key}")
-            docker_client.images.get(image_name).tag(remote_image_key)
+    print(f"Built images: {", ".join(build_result.successful)}")
+
+    remote_image_keys = [
+        f"ghcr.io/getappmap/{tag_image(image_name)}"
+        for image_name in build_result.images
+    ]
+    # Tag each image, then push
+    for image_name, remote_image_key in zip(build_result.images, remote_image_keys):
+        if image_name in build_result.failed:
+            print(f"Skipping {image_name} because it failed to build")
+            continue
+        else:
             print(f"Pushing {remote_image_key}")
-            docker_client.images.push(remote_image_key)
+            docker_client.images.get(image_name).tag(remote_image_key)
+            try:
+                docker_client.images.push(remote_image_key)
+            except docker.errors.APIError as e: # type: ignore
+                print(f"Error pushing image: {remote_image_key}. Error: {e}")
 
 
 def main(instance_ids: list, instance_set: str, max_workers: int = 4):
@@ -66,29 +72,23 @@ def main(instance_ids: list, instance_set: str, max_workers: int = 4):
 
     dataset = load_dataset(DATASET_NAME, instance_ids)
 
-    # Build one image at a time
-    base_images_to_build_dataset = pull_base_images(
-        docker_client, dataset, max_workers=1
-    )
+    pull_instance_images(docker_client, dataset, max_workers=max_workers)
 
-    # max_workers is not used here
-    def wrap_build_base_images(docker_client, dataset, max_workers):
+    def wrap_build_base_images(docker_client, max_workers):
+        # max_workers is not used here
         return build_base_images(docker_client, dataset)
 
-    build_and_push_images(
-        docker_client, base_images_to_build_dataset, wrap_build_base_images, max_workers
-    )
+    build_and_push_images(docker_client, wrap_build_base_images, max_workers)
 
-    env_images_to_build_dataset = pull_env_images(
-        docker_client, dataset, max_workers=max_workers
-    )
-
-    def wrap_build_env_images(docker_client, dataset, max_workers):
+    def wrap_build_env_images(docker_client, max_workers):
         return build_env_images(docker_client, dataset, max_workers=max_workers)
 
-    build_and_push_images(
-        docker_client, env_images_to_build_dataset, wrap_build_env_images, max_workers
-    )
+    build_and_push_images(docker_client, wrap_build_env_images, max_workers)
+
+    def wrap_build_instance_images(docker_client, max_workers):
+        return build_instance_images(docker_client, dataset, max_workers)
+
+    build_and_push_images(docker_client, wrap_build_instance_images, max_workers)
 
 
 if __name__ == "__main__":
