@@ -32,7 +32,7 @@ on:
         required: false
 
   pull_request:
-    types: [opened, synchronize, labeled]
+    types: [opened, synchronize]
 
 run-name: ${{ inputs.name || github.event.pull_request.title || github.event.workflow.name }}
 
