@@ -3,6 +3,7 @@ from os import environ
 from pathlib import Path
 from subprocess import run
 import sys
+from typing import Optional
 
 import docker
 
@@ -13,7 +14,13 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from swebench.harness.docker_build import build_base_images, build_env_images
 
-from solver.cli import configure_clean_option, configure_limits, load_dataset
+from solver.cli import (
+    configure_clean_option,
+    configure_limits,
+    configure_runner_index,
+    load_dataset,
+    select_instances_for_runner,
+)
 from solver.harness.pull_images import pull_instance_images
 
 DATASET_NAME = "princeton-nlp/SWE-bench_Verified"
@@ -23,9 +30,10 @@ DATASET_SPLIT = "test"
 def main(
     instance_set: str,
     instance_ids: list,
-    runner_index: int,
     clean_work_dir: bool,
     limit: list,
+    num_runners: Optional[int] = None,
+    runner_index: Optional[int] = None,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -44,11 +52,7 @@ def main(
             instance_ids.extend([id for id in f.read().splitlines() if id])
 
     dataset = load_dataset(DATASET_NAME, instance_ids)
-
-    if runner_index:
-        dataset = [
-            instance for i, instance in enumerate(dataset) if i % runner_index == 0
-        ]
+    dataset = select_instances_for_runner(dataset, num_runners, runner_index)
 
     if not dataset:
         print("[solve] No instances to run.")
@@ -61,6 +65,8 @@ def main(
 
     if instance_set:
         predictions_name = instance_set
+        if num_runners is not None and runner_index is not None:
+            predictions_name += f"-{runner_index}_{num_runners}"
     else:
         predictions_name = "predictions"
 
@@ -110,7 +116,7 @@ def main(
         if solve_result.returncode != 0:
             print(f"[solve] Failed to run instance {instance['instance_id']}")
 
-    print("[solve] Copying predictions to predictions.jsonl")
+    print("[solve] Writing predictions to predictions.jsonl")
     if not predictions_path.exists():
         print(
             f"[solve] WARNING No predictions found at {predictions_path}. predictions.jsonl will not be updated."
@@ -118,7 +124,7 @@ def main(
     else:
         with predictions_path.open("r") as f:
             predictions = f.read()
-        with Path("predictions.jsonl").open("w") as f:
+        with Path("predictions.jsonl").open("a") as f:
             f.write(predictions)
 
     print("[solve] Done!")
@@ -137,12 +143,7 @@ if __name__ == "__main__":
         type=str,
         help="Instance set to run",
     )
-    parser.add_argument(
-        "--runner_index",
-        type=int,
-        help="Select instances based on the runner index (instance index % runner_index == 0)",
-    )
-
+    configure_runner_index(parser)
     configure_clean_option(parser)
     configure_limits(parser)
 

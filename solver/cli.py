@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import shutil
-from typing import Callable
+from typing import Callable, Optional
 
 import docker
 
@@ -162,3 +162,29 @@ def pull_or_build_instance_images(
     pull_instance_images(docker_client, dataset, max_workers)
 
     build_instance_images(docker_client, dataset, force_rebuild)
+
+
+def configure_runner_index(parser: ArgumentParser) -> None:
+    parser.add_argument(
+        "--num_runners",
+        type=int,
+        help="Number of runners",
+    )
+    parser.add_argument(
+        "--runner_index",
+        type=int,
+        help="Select instances based on the runner index (instance index % num_runners == runner_index)",
+    )
+
+
+def select_instances_for_runner(
+    dataset: list, num_runners: Optional[int], runner_index: Optional[int]
+) -> list:
+    if num_runners is None or runner_index is None:
+        return dataset
+
+    return [
+        instance
+        for i, instance in enumerate(dataset)
+        if i % num_runners == runner_index
+    ]

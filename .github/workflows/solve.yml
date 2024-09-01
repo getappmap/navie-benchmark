@@ -113,7 +113,9 @@ jobs:
       matrix:
         index: ${{ fromJson(needs['prepare-matrix'].outputs.matrix) }}
     env:
+      NUM_RUNNERS: ${{ inputs.num_runners }}
       INSTANCE_SET: ${{ inputs.instance_set }}
+      LLM: ${{ inputs.llm }}
     defaults:
       run:
         shell: bash -leo pipefail {0}
@@ -153,8 +155,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Solve instances
-        env:
-          LLM: ${{ inputs.llm }}
         run: |
           pip install virtualenv
           virtualenv venv
@@ -178,10 +178,18 @@ jobs:
           fi
 
           instance_set="${INSTANCE_SET:-smoke}"
+          num_runners="${NUM_RUNNERS:-1}"
+          runner_index="${{ matrix.index }}"
 
-          python solver/solve.py \
+          python -m solver.prepare_images \
             --instance_set "${instance_set}" \
-            --runner_index "${{ matrix.index }}"
+            --num_runners "${num_runners}" \
+            --runner_index "${runner_index}"
+
+          python -m solver.solve \
+            --instance_set "${instance_set}" \
+            --num_runners "${num_runners}" \
+            --runner_index "${runner_index}" \
 
       - name: Report predictions
         uses: actions/upload-artifact@v4
@@ -245,8 +253,14 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           instance_set="${INSTANCE_SET:-smoke}"
 
-          python swebench.harness.run_evaluation \
-            --instance_set "${instance_set}"
+          python -m solver.prepare_images \
+            --instance_set "${instance_set}" \
+            --no_push
+
+          python -m swebench.harness.run_evaluation \
+            --instance_set "${instance_set}" \
+            --predictions_path predictions.jsonl \
+            --run_id "${instance_set}"
 
       - name: Report evaluation logs
         uses: actions/upload-artifact@v4
