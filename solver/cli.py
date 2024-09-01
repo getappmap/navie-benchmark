@@ -5,10 +5,10 @@ from typing import Callable, Optional
 
 import docker
 
-from solver.harness.pull_images import pull_instance_images
-from solver.workflow.code_environment import DetectEnvironment
-from solver.workflow.workflow import Workflow, WorkflowLimits
-from swebench.harness.constants import KEY_INSTANCE_ID, SWEbenchInstance
+from swebench.harness.constants import (
+    KEY_INSTANCE_ID,
+    SWEbenchInstance,
+)
 from swebench.harness.docker_build import (
     build_env_images,
     build_instance_images,
@@ -16,6 +16,10 @@ from swebench.harness.docker_build import (
 )
 from swebench.harness.test_spec import make_test_spec
 from swebench.harness.utils import load_swebench_dataset
+
+from solver.harness.pull_images import pull_instance_images
+from solver.workflow.code_environment import DetectEnvironment
+from solver.workflow.workflow import Workflow, WorkflowLimits
 
 
 def configure_limits(parser: ArgumentParser) -> None:
@@ -151,7 +155,6 @@ def build_workflow(
 def pull_or_build_instance_images(
     docker_client: docker.DockerClient,
     dataset: list,
-    force_rebuild=False,
     max_workers=4,
 ):
     # Base and env images will be pulled, but will not be built.
@@ -161,7 +164,9 @@ def pull_or_build_instance_images(
 
     pull_instance_images(docker_client, dataset, max_workers)
 
-    build_instance_images(docker_client, dataset, force_rebuild)
+    build_instance_images(
+        docker_client, dataset, force_rebuild=False, max_workers=max_workers
+    )
 
 
 def configure_runner_index(parser: ArgumentParser) -> None:
