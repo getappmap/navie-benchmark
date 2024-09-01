@@ -12,8 +12,6 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from swebench.harness.docker_build import build_base_images, build_env_images
-
 from solver.cli import (
     configure_clean_option,
     configure_limits,

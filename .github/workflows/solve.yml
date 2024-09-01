@@ -191,25 +191,38 @@ jobs:
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}" \
 
+          python -m swebench.harness.run_evaluation \
+            --predictions_path predictions.jsonl \
+            --run_id "${instance_set}"
+
+          cp "navie_*.${instance_set}.json" evaluations.json
+
       - name: Report predictions
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: predictions
+          name: predictions-${{ matrix.index }}
           path: predictions.jsonl
+
+      - name: Report evaluations
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluations-${{ matrix.index }}
+          path: evaulations.json
 
       - name: Report harness logs
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: harness-logs
+          name: harness-logs-${{ matrix.index }}
           path: logs
 
       - name: Report solver logs
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: solver-logs
+          name: solver-logs-${{ matrix.index }}
           path: |
             solve
             !solve/*/source
@@ -218,55 +231,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: patch-files
+          name: patch-files-${{ matrix.index }}
           path:
             solve/**/*.patch
-
-  evaluate:
-    needs: solve
-    runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
-    env:
-      INSTANCE_SET: ${{ inputs.instance_set }}
-    defaults:
-      run:
-        shell: bash -leo pipefail {0}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          pip install virtualenv
-          virtualenv venv
-          . ./venv/bin/activate
-          pip install -e .
-
-      - name: Evaluate predictions
-        run: |
-          . ./venv/bin/activate
-
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
-          instance_set="${INSTANCE_SET:-smoke}"
-
-          python -m solver.prepare_images \
-            --instance_set "${instance_set}" \
-            --no_push
-
-          python -m swebench.harness.run_evaluation \
-            --instance_set "${instance_set}" \
-            --predictions_path predictions.jsonl \
-            --run_id "${instance_set}"
-
-      - name: Report evaluation logs
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: evaluation-output
-          path: "*.json"
