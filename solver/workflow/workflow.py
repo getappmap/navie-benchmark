@@ -306,7 +306,6 @@ Do not plan specific code changes. Just design the solution.
             self.issue_text,
             [],
             self.environment.python_version,
-            self.environment.packages,
         )
 
         def generate(attempt: int, lint_errors: list[str] = []) -> Optional[Patch]:
@@ -394,7 +393,6 @@ Available packages: {self.environment.packages}
             self.issue_text,
             observed_errors,
             self.environment.python_version,
-            self.environment.packages,
         )
 
         def generate(attempt, lint_errors: list = []):
@@ -446,7 +444,6 @@ Available packages: {self.environment.packages}
             work_dir,
             plan,
             self.environment.python_version,
-            self.environment.packages,
             self.limits.file_limit,
         )
 

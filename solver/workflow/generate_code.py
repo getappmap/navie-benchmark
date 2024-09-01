@@ -24,14 +24,12 @@ class GenerateCode:
         work_dir: Path,
         plan: str,
         python_version: str,
-        packages: str,
         file_limit: int = 1,
     ):
         self.log = log
         self.work_dir = work_dir
         self.plan = plan
         self.python_version = python_version
-        self.packages = packages
         self.file_limit = file_limit
 
     # Generate a code change plan and return it as a string.
@@ -62,11 +60,7 @@ Ensure that the following lint errors do not occur:
 
 Do not use Python features that are not available in this Python version.
 
-Do not use any packages that are not available in this environment.
-
 {self.python_version}
-
-{self.packages}
 """
         ]
 

@@ -21,7 +21,6 @@ class TestGenerateTest(unittest.TestCase):
             issue_text=self.issue_text,
             observed_errors=self.observed_errors,
             python_version="3.8",
-            packages="numpy",
         )
 
     @patch("solver.workflow.generate_test.extract_fenced_content")

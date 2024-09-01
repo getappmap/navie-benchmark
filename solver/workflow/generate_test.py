@@ -25,7 +25,6 @@ class GenerateTest:
         issue_text: str,
         observed_errors: list[str],
         python_version: str,
-        packages: str,
     ):
         self.log = log
         self.work_dir = work_dir
@@ -33,7 +32,6 @@ class GenerateTest:
         self.issue_text = issue_text
         self.observed_errors = observed_errors
         self.python_version = python_version
-        self.packages = packages
 
     # Generate a code change and return it as a string.
     # If lint_errors is provided, include prompting to avoid them.
@@ -97,11 +95,7 @@ Never use the @skipIf annotation.
 
 Do not use Python features that are not available in this Python version.
 
-Do not use any packages that are not available in this environment.
-
 {self.python_version}
-
-{self.packages}
 """
         ]
 
@@ -158,11 +152,7 @@ Never use the @skipIf annotation.
 
 Do not use Python features that are not available in this Python version.
 
-Do not use any packages that are not available in this environment.
-
 {self.python_version}
-
-{self.packages}
 """
         ]
 

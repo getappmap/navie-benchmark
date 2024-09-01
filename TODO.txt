@@ -1,0 +1,31 @@
+* Test with Anthropic
+* Remove step to list packages? Just report presence of test frameworks (pytest, unittest) to the solver?
+* Increase context size on retries
+* Run solver test suite in CI
+* Compact the package list?
+* Do not use the built-in timeout for run_evaluation, it's 1_800 seconds (30 minutes). Report evaluation timeout separately, so the instances can be re-run if desired.
+* Continue to add code coverage
+* Continue to expand the built images
+
+* "Code patch is not optimal" can be emitted when there is no successful edit test file
+
+[generate-and-validate-code] (django__django-13658) Code patch is not optimal. Will look for a better patch.
+
+* Why are instance images being rebuilt? No cacheable Dockerfile?
+
+Building instance images for 32 instances
+Building instance images:   3%|▋                    | 1/32 [00:01<00:39,  1.28s/it]
+
+
+appmap-js
+
+* ModelChoiceField doesn't select the expected file (django/forms/models)
+
+Context: ModelChoiceField Value ValidationError invalid choice Django
+Instructions: Summarize the issue and design a solution involving at most one file modification.
+---
+Terms: +ModelChoiceField ValidationError invalid invalid_choice value template Django
+940ms [vectorTerms] +ModelChoiceField ValidationError invalid invalid_choice value template Django
+Explain received context request: search
+[collectContext] keywords: model choice modelchoice field choicefield validation error validationerror invalid invalid choice invalidchoice value template django
+
