@@ -7,13 +7,12 @@ from typing import Optional
 
 import docker
 
-from solver.predictions_manager import PredictionsManager
-
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.predictions_manager import PredictionsManager
 from solver.cli import (
     configure_clean_option,
     configure_limits,

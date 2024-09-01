@@ -195,7 +195,12 @@ jobs:
             --predictions_path predictions.jsonl \
             --run_id "${instance_set}"
 
-          cp "navie_*.${instance_set}.json" evaluations.json
+          evaluations_file_name=$(
+            python -m solver.evaluations_file_name  \
+              --run_id "${instance_set}" \
+              --predictions_path predictions.jsonl
+          )
+          cp $evaluations_file_name evaluations.json
 
       - name: Report predictions
         uses: actions/upload-artifact@v4

@@ -386,7 +386,7 @@ def make_run_report(
     for instance in full_dataset:
         instance_id = instance[KEY_INSTANCE_ID]
         if instance_id not in predictions:
-            # skip instances without 
+            # skip instances without
             incomplete_ids.add(instance_id)
             continue
         prediction = predictions[instance_id]
@@ -459,15 +459,16 @@ def make_run_report(
         "unremoved_images": list(sorted(unremoved_images)),
         "schema_version": 2,
     }
-    report_file = Path(
-        list(predictions.values())[0]["model_name_or_path"].replace("/", "__")
-        + f".{run_id}"
-        + ".json"
-    )
+    model_name = list(predictions.values())[0]["model_name_or_path"]
+    report_file = report_file_name(model_name, run_id)
     with open(report_file, "w") as f:
         print(json.dumps(report, indent=4), file=f)
     print(f"Report written to {report_file}")
     return report_file
+
+
+def report_file_name(model_name_or_path: str, run_id: str) -> Path:
+    return Path(".".join([model_name_or_path.replace("/", "__"), run_id, "json"]))
 
 
 def get_gold_predictions(dataset_name: str, split: str):
