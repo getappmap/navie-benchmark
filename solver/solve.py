@@ -19,9 +19,9 @@ from solver.cli import (
     configure_limits,
     configure_runner_index,
     load_dataset,
+    pull_or_build_instance_images,
     select_instances_for_runner,
 )
-from solver.harness.pull_images import pull_instance_images
 
 DATASET_NAME = "princeton-nlp/SWE-bench_Verified"
 DATASET_SPLIT = "test"
@@ -61,7 +61,7 @@ def main(
     print(f"[solve] Running {len(dataset)} unevaluated instances...")
 
     docker_client = docker.from_env()
-    pull_instance_images(docker_client, dataset)
+    pull_or_build_instance_images(docker_client, dataset)
 
     if instance_set:
         predictions_name = instance_set
@@ -83,10 +83,6 @@ def main(
         print(
             f"[solve] Renamed existing predictions file from {predictions_path} to {new_predictions_path}"
         )
-
-    # TODO: Stop building these; they should be pulled and made available instead.
-    build_base_images(docker_client, dataset)
-    build_env_images(docker_client, dataset)
 
     # TODO: Parallelize this
     # Make inferences
