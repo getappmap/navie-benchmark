@@ -1,0 +1,41 @@
+* Test with Anthropic
+
+* Remove step to list packages? Just report presence of test frameworks (pytest, unittest) to the solver?
+
+* Increase context size on retries
+
+* Run solver test suite in CI
+
+* Continue to add code coverage
+
+* Found 2 changes, but the limit is 1
+
+https://github.com/getappmap/navie-benchmark/actions/runs/10655942503/job/29534052664
+[workflow/generate-code] (pytest-dev__pytest-7490) Found 2 changes, but the limit is 1
+[workflow/generate-code] (pytest-dev__pytest-7490) Applied code changes to src/_pytest/skipping.py, src/_pytest/nodes.py
+[code/lint-repair] (pytest-dev__pytest-7490) Code has lint errors: src/_pytest/nodes.py:287:25: F821 undefined name 'xfailed_key'
+
+* Only request image build for instances that can't be pulled. It doesn't seem to check the cache.
+  build_instance_images
+
+  elif spec.instance_image_key not in existing_images:
+      data_to_build.append(instance)
+
+  print(f"Building instance images for {len(test_specs)} instances")
+  successful, failed = list(), list()
+
+* Continue to expand the built images
+
+* "Code patch is not optimal" can be emitted when there is no successful edit test file
+
+[generate-and-validate-code] (django__django-13658) Code patch is not optimal. Will look for a better patch.
+
+* ModelChoiceField doesn't select the expected file (django/forms/models)
+
+Context: ModelChoiceField Value ValidationError invalid choice Django
+Instructions: Summarize the issue and design a solution involving at most one file modification.
+---
+Terms: +ModelChoiceField ValidationError invalid invalid_choice value template Django
+940ms [vectorTerms] +ModelChoiceField ValidationError invalid invalid_choice value template Django
+Explain received context request: search
+[collectContext] keywords: model choice modelchoice field choicefield validation error validationerror invalid invalid choice invalidchoice value template django

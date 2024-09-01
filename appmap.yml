@@ -1,0 +1,5 @@
+name: navie-benchmark
+language: python
+appmap_dir: tmp/appmap
+packages:
+- path: solver

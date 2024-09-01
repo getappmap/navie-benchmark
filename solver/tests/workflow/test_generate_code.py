@@ -16,8 +16,7 @@ class TestGenerateCode(unittest.TestCase):
             log=self.log_mock,
             work_dir=self.work_dir,
             plan=self.plan,
-            python_version="3.8",
-            packages="numpy",
+            python_version="3.8"
         )
 
     @patch("solver.workflow.generate_code.extract_changes")

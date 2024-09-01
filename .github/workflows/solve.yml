@@ -16,7 +16,7 @@ on:
       runner:
         description: "Runner type"
         required: true
-        default: ubuntu-latest
+        default: SWE-Bench_Larger
         type: choice
         options:
           - ubuntu-latest
@@ -25,7 +25,7 @@ on:
       num_runners:
         description: "Number of runners to split the workload across"
         required: true
-        default: "1"
+        default: "2"
       name:
         description: "Assign a name to the workflow run"
         type: string
@@ -98,7 +98,7 @@ jobs:
       - name: Prepare matrix
         id: prepare-matrix
         run: |
-          num_runners=${NUM_RUNNERS:-1}
+          num_runners=${NUM_RUNNERS:-2}
           echo "Number of runners: $num_runners"
           indices=$(seq 0 $(($num_runners - 1)) | jq -R 'tonumber' | jq -s -c)
           echo "Matrix: $indices"
@@ -108,12 +108,14 @@ jobs:
     needs:
       - build-appmap-js
       - prepare-matrix
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
     strategy:
       matrix:
         index: ${{ fromJson(needs['prepare-matrix'].outputs.matrix) }}
     env:
+      NUM_RUNNERS: ${{ inputs.num_runners }}
       INSTANCE_SET: ${{ inputs.instance_set }}
+      LLM: ${{ inputs.llm }}
     defaults:
       run:
         shell: bash -leo pipefail {0}
@@ -153,8 +155,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Solve instances
-        env:
-          LLM: ${{ inputs.llm }}
         run: |
           pip install virtualenv
           virtualenv venv
@@ -178,23 +178,56 @@ jobs:
           fi
 
           instance_set="${INSTANCE_SET:-smoke}"
+          num_runners="${NUM_RUNNERS:-2}"
+          runner_index="${{ matrix.index }}"
 
-          python solver/solve.py \
+          python -m solver.prepare_images \
             --instance_set "${instance_set}" \
-            --runner_index "${{ matrix.index }}"
+            --num_runners "${num_runners}" \
+            --runner_index "${runner_index}"
+
+          python -m solver.solve \
+            --instance_set "${instance_set}" \
+            --num_runners "${num_runners}" \
+            --runner_index "${runner_index}" \
+
+          python -m swebench.harness.run_evaluation \
+            --predictions_path predictions.jsonl \
+            --run_id "${instance_set}"
+
+          evaluations_file_name=$(
+            python -m solver.evaluations_file_name  \
+              --run_id "${instance_set}" \
+              --predictions_path predictions.jsonl
+          )
+          cp $evaluations_file_name evaluations.json
+
+      - name: Report predictions
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: predictions-${{ matrix.index }}
+          path: predictions.jsonl
+
+      - name: Report evaluations
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluations-${{ matrix.index }}
+          path: evaulations.json
 
       - name: Report harness logs
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: harness-logs
+          name: harness-logs-${{ matrix.index }}
           path: logs
 
       - name: Report solver logs
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: solver-logs
+          name: solver-logs-${{ matrix.index }}
           path: |
             solve
             !solve/*/source
@@ -203,6 +236,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: patch-files
+          name: patch-files-${{ matrix.index }}
           path:
             solve/**/*.patch

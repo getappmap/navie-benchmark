@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from os import getenv
 from pathlib import Path
 import sys
 from typing import Callable, Dict, List, Optional
@@ -18,7 +19,7 @@ from swebench.harness.docker_build import (
 )
 
 from solver.harness.pull_images import pull_instance_images, tag_image
-from solver.cli import load_dataset
+from solver.cli import configure_runner_index, load_dataset, select_instances_for_runner
 from solver.solve import DATASET_NAME
 
 
@@ -29,6 +30,7 @@ def build_and_push_images(
         DockerBuildResult,
     ],
     max_workers: int,
+    push: bool = True,
 ):
     build_result = build_images_func(docker_client, max_workers)
 
@@ -47,16 +49,25 @@ def build_and_push_images(
             print(f"Skipping {image_name} because it failed to build")
             continue
         else:
-            print(f"Pushing {remote_image_key}")
             docker_client.images.get(image_name).tag(remote_image_key)
-            try:
-                docker_client.images.push(remote_image_key)
-            except docker.errors.APIError as e: # type: ignore
-                print(f"Error pushing image: {remote_image_key}. Error: {e}")
+            if push:
+                print(f"Pushing {remote_image_key}")
+                try:
+                    docker_client.images.push(remote_image_key)
+                except docker.errors.APIError as e:  # type: ignore
+                    print(f"Error pushing image: {remote_image_key}. Error: {e}")
 
 
-def main(instance_ids: list, instance_set: str, max_workers: int = 4):
-    docker_client = docker.from_env()
+def main(
+    instance_ids: list,
+    instance_set: str,
+    max_workers: int = 4,
+    no_push: bool = False,
+    num_runners: Optional[int] = None,
+    runner_index: Optional[int] = None,
+):
+    docker_timeout = int(getenv("DOCKER_TIMEOUT", 600))
+    docker_client = docker.from_env(timeout=docker_timeout)
 
     if not instance_ids:
         instance_ids = []
@@ -71,6 +82,9 @@ def main(instance_ids: list, instance_set: str, max_workers: int = 4):
             instance_ids.extend([id for id in f.read().splitlines() if id])
 
     dataset = load_dataset(DATASET_NAME, instance_ids)
+    dataset = select_instances_for_runner(dataset, num_runners, runner_index)
+
+    push = not no_push
 
     pull_instance_images(docker_client, dataset, max_workers=max_workers)
 
@@ -78,17 +92,17 @@ def main(instance_ids: list, instance_set: str, max_workers: int = 4):
         # max_workers is not used here
         return build_base_images(docker_client, dataset)
 
-    build_and_push_images(docker_client, wrap_build_base_images, max_workers)
+    build_and_push_images(docker_client, wrap_build_base_images, max_workers, push)
 
     def wrap_build_env_images(docker_client, max_workers):
         return build_env_images(docker_client, dataset, max_workers=max_workers)
 
-    build_and_push_images(docker_client, wrap_build_env_images, max_workers)
+    build_and_push_images(docker_client, wrap_build_env_images, max_workers, push)
 
     def wrap_build_instance_images(docker_client, max_workers):
         return build_instance_images(docker_client, dataset, max_workers)
 
-    build_and_push_images(docker_client, wrap_build_instance_images, max_workers)
+    build_and_push_images(docker_client, wrap_build_instance_images, max_workers, push)
 
 
 if __name__ == "__main__":
@@ -110,6 +124,13 @@ if __name__ == "__main__":
         default=4,
         help="Maximum number of workers to use for building images",
     )
+    parser.add_argument(
+        "--no_push",
+        action="store_true",
+        help="Don't push images after building",
+    )
+
+    configure_runner_index(parser)
 
     args = parser.parse_args()
 

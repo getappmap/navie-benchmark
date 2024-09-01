@@ -3,6 +3,7 @@ from os import environ
 from pathlib import Path
 from subprocess import run
 import sys
+from typing import Optional
 
 import docker
 
@@ -11,10 +12,15 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from swebench.harness.docker_build import build_base_images, build_env_images
-
-from solver.cli import configure_clean_option, configure_limits, load_dataset
-from solver.harness.pull_images import pull_instance_images
+from solver.predictions_manager import PredictionsManager
+from solver.cli import (
+    configure_clean_option,
+    configure_limits,
+    configure_runner_index,
+    load_dataset,
+    pull_or_build_instance_images,
+    select_instances_for_runner,
+)
 
 DATASET_NAME = "princeton-nlp/SWE-bench_Verified"
 DATASET_SPLIT = "test"
@@ -23,9 +29,10 @@ DATASET_SPLIT = "test"
 def main(
     instance_set: str,
     instance_ids: list,
-    runner_index: int,
     clean_work_dir: bool,
     limit: list,
+    num_runners: Optional[int] = None,
+    runner_index: Optional[int] = None,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -44,11 +51,7 @@ def main(
             instance_ids.extend([id for id in f.read().splitlines() if id])
 
     dataset = load_dataset(DATASET_NAME, instance_ids)
-
-    if runner_index:
-        dataset = [
-            instance for i, instance in enumerate(dataset) if i % runner_index == 0
-        ]
+    dataset = select_instances_for_runner(dataset, num_runners, runner_index)
 
     if not dataset:
         print("[solve] No instances to run.")
@@ -57,11 +60,17 @@ def main(
     print(f"[solve] Running {len(dataset)} unevaluated instances...")
 
     docker_client = docker.from_env()
-    pull_instance_images(docker_client, dataset)
+    pull_or_build_instance_images(docker_client, dataset)
 
-    # TODO: Stop building these; they should be pulled and made available instead.
-    build_base_images(docker_client, dataset)
-    build_env_images(docker_client, dataset)
+    def log_fn(context, msg):
+        print(f"[{context}] {msg}")
+
+    predictions_manager = PredictionsManager(
+        log_fn,
+        instance_set,
+        num_runners,
+        runner_index,
+    )
 
     # TODO: Parallelize this
     # Make inferences
@@ -74,6 +83,8 @@ def main(
             str(solver_path),
             "--instance_id",
             instance["instance_id"],
+            "--predictions",
+            str(predictions_manager.predictions_path),
         ]
         if clean_work_dir:
             solve_args.append("--clean_work_dir")
@@ -89,6 +100,11 @@ def main(
         if solve_result.returncode != 0:
             print(f"[solve] Failed to run instance {instance['instance_id']}")
 
+    print("[solve] Writing predictions to predictions.jsonl")
+    predictions_manager.collect_predictions(Path("predictions.jsonl"))
+
+    print("[solve] Done!")
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -103,12 +119,7 @@ if __name__ == "__main__":
         type=str,
         help="Instance set to run",
     )
-    parser.add_argument(
-        "--runner_index",
-        type=int,
-        help="Select instances based on the runner index (instance index % runner_index == 0)",
-    )
-
+    configure_runner_index(parser)
     configure_clean_option(parser)
     configure_limits(parser)
 
@@ -120,6 +131,8 @@ if __name__ == "__main__":
 
     if environ.get("OPENAI_API_KEY"):
         print("[solve] Running with OpenAI API key")
+    elif environ.get("ANTHROPIC_API_KEY"):
+        print("[solve] Running with Anthropic API key")
     else:
         print("[solve] WARNING: OpenAI API key not found in environment")
 
