@@ -3,7 +3,7 @@ from json import dumps
 from os import chdir, getenv
 from pathlib import Path
 import sys
-from typing import Union
+from typing import Optional, Union
 import docker
 
 
@@ -12,6 +12,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.predictions_manager import PredictionsManager
 from swebench.harness.constants import SWEbenchInstance
 
 from solver.solve import DATASET_NAME
@@ -43,7 +44,7 @@ from swebench.harness.test_spec import make_test_spec
 def main(
     instance_id: str,
     limits: dict,
-    predictions: str,
+    predictions_file: Optional[str],
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -126,11 +127,7 @@ def main(
         add_prediction("model_inverted_patch", workflow.inverted_patch)
         add_prediction("model_edit_test_file", workflow.edit_test_file)
 
-        if predictions:
-            with open(predictions, "a") as f:
-                f.write(dumps(prediction) + "\n")
-        else:
-            print(dumps(prediction))
+        PredictionsManager.add_prediction(predictions_file, prediction)
 
     except Exception as e:
         print(f"[solve_instance] Error solving {instance_id}: {e}")
@@ -165,4 +162,6 @@ if __name__ == "__main__":
     apply_limits(args)
     apply_clean_option(args)
 
+    args.predictions_file = args.predictions
+    del args.predictions  # type: ignore
     main(**vars(args))

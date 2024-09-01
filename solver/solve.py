@@ -7,6 +7,8 @@ from typing import Optional
 
 import docker
 
+from solver.predictions_manager import PredictionsManager
+
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
 )
@@ -61,26 +63,15 @@ def main(
     docker_client = docker.from_env()
     pull_or_build_instance_images(docker_client, dataset)
 
-    if instance_set:
-        predictions_name = instance_set
-        if num_runners is not None and runner_index is not None:
-            predictions_name += f"-{runner_index}_{num_runners}"
-    else:
-        predictions_name = "predictions"
+    def log_fn(context, msg):
+        print(f"[{context}] {msg}")
 
-    predictions_dir = Path(__file__).resolve().parents[1] / "predictions"
-    predictions_dir.mkdir(parents=True, exist_ok=True)
-    predictions_path = predictions_dir / f"{predictions_name}.jsonl"
-    if predictions_path.exists():
-        new_predictions_path = (
-            predictions_dir
-            / f"{predictions_name}.{int(predictions_path.stat().st_mtime)}.jsonl"
-        )
-
-        predictions_path.rename(new_predictions_path)
-        print(
-            f"[solve] Renamed existing predictions file from {predictions_path} to {new_predictions_path}"
-        )
+    predictions_manager = PredictionsManager(
+        log_fn,
+        instance_set,
+        num_runners,
+        runner_index,
+    )
 
     # TODO: Parallelize this
     # Make inferences
@@ -94,7 +85,7 @@ def main(
             "--instance_id",
             instance["instance_id"],
             "--predictions",
-            str(predictions_path),
+            str(predictions_manager.predictions_path),
         ]
         if clean_work_dir:
             solve_args.append("--clean_work_dir")
@@ -111,15 +102,7 @@ def main(
             print(f"[solve] Failed to run instance {instance['instance_id']}")
 
     print("[solve] Writing predictions to predictions.jsonl")
-    if not predictions_path.exists():
-        print(
-            f"[solve] WARNING No predictions found at {predictions_path}. predictions.jsonl will not be updated."
-        )
-    else:
-        with predictions_path.open("r") as f:
-            predictions = f.read()
-        with Path("predictions.jsonl").open("a") as f:
-            f.write(predictions)
+    predictions_manager.collect_predictions(Path("predictions.jsonl"))
 
     print("[solve] Done!")
 
