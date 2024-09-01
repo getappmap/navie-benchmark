@@ -25,7 +25,7 @@ on:
       num_runners:
         description: "Number of runners to split the workload across"
         required: true
-        default: "1"
+        default: "2"
       name:
         description: "Assign a name to the workflow run"
         type: string
@@ -98,7 +98,7 @@ jobs:
       - name: Prepare matrix
         id: prepare-matrix
         run: |
-          num_runners=${NUM_RUNNERS:-1}
+          num_runners=${NUM_RUNNERS:-2}
           echo "Number of runners: $num_runners"
           indices=$(seq 0 $(($num_runners - 1)) | jq -R 'tonumber' | jq -s -c)
           echo "Matrix: $indices"
@@ -178,7 +178,7 @@ jobs:
           fi
 
           instance_set="${INSTANCE_SET:-smoke}"
-          num_runners="${NUM_RUNNERS:-1}"
+          num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
 
           python -m solver.prepare_images \

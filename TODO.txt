@@ -2,9 +2,17 @@
 * Remove step to list packages? Just report presence of test frameworks (pytest, unittest) to the solver?
 * Increase context size on retries
 * Run solver test suite in CI
-* Compact the package list?
-* Do not use the built-in timeout for run_evaluation, it's 1_800 seconds (30 minutes). Report evaluation timeout separately, so the instances can be re-run if desired.
 * Continue to add code coverage
+* Only request image build for instances that can't be pulled. It doesn't seem to check the cache.
+  build_instance_images
+
+  elif spec.instance_image_key not in existing_images:
+      data_to_build.append(instance)
+
+
+  print(f"Building instance images for {len(test_specs)} instances")
+  successful, failed = list(), list()
+
 * Continue to expand the built images
 
 * "Code patch is not optimal" can be emitted when there is no successful edit test file
@@ -29,3 +37,5 @@ Terms: +ModelChoiceField ValidationError invalid invalid_choice value template D
 Explain received context request: search
 [collectContext] keywords: model choice modelchoice field choicefield validation error validationerror invalid invalid choice invalidchoice value template django
 
+
+* Do not use the built-in timeout for run_evaluation, it's 1_800 seconds (30 minutes). Report evaluation timeout separately, so the instances can be re-run if desired.
