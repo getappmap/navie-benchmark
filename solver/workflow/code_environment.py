@@ -7,7 +7,6 @@ import docker
 from swebench.harness.test_spec import TestSpec
 from solver.harness.make_run_commands import make_run_test_prep_commands
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
-from swebench.harness.docker_build import build_instance_image
 
 
 class Environment:
@@ -49,8 +48,6 @@ class DetectEnvironment:
 
         script_dir = path.join(self.work_dir, "scripts")
         os.makedirs(script_dir, exist_ok=True)
-
-        build_instance_image(self.test_spec, docker_client, None, False)
 
         config = MAP_REPO_VERSION_TO_SPECS[self.test_spec.repo][self.test_spec.version]
         user = "root" if not config.get("execute_test_as_nonroot", False) else "nonroot"
