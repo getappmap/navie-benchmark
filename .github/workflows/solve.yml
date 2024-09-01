@@ -16,7 +16,7 @@ on:
       runner:
         description: "Runner type"
         required: true
-        default: ubuntu-latest
+        default: SWE-Bench_Larger
         type: choice
         options:
           - ubuntu-latest
@@ -108,7 +108,7 @@ jobs:
     needs:
       - build-appmap-js
       - prepare-matrix
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
     strategy:
       matrix:
         index: ${{ fromJson(needs['prepare-matrix'].outputs.matrix) }}
@@ -224,7 +224,7 @@ jobs:
 
   evaluate:
     needs: solve
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
     env:
       INSTANCE_SET: ${{ inputs.instance_set }}
     defaults:
