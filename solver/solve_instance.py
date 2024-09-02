@@ -119,8 +119,7 @@ def main(
         prediction: dict = instance.copy()  # type: ignore
 
         def add_prediction(key: str, value: Union[str, Patch, Path, None]):
-            if value:
-                prediction[key] = str(value)
+            prediction[key] = str(value) if value else None
 
         model_name_or_path = f"navie_082024+{llm}"
 
