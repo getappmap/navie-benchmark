@@ -12,13 +12,15 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from swebench.harness.test_spec import make_test_spec
+
+from solver.harness.image_store import ImageStore
 from solver.predictions_manager import PredictionsManager
 from solver.cli import (
     configure_clean_option,
     configure_limits,
     configure_runner_index,
     load_dataset,
-    pull_or_build_instance_images,
     select_instances_for_runner,
 )
 
@@ -60,7 +62,13 @@ def main(
     print(f"[solve] Running {len(dataset)} unevaluated instances...")
 
     docker_client = docker.from_env()
-    pull_or_build_instance_images(docker_client, dataset)
+
+    test_specs = [make_test_spec(instance) for instance in dataset]
+    image_store = ImageStore(
+        docker_client,
+    )
+    image_store.set_image_types(["base", "env"])
+    image_store.ensure(test_specs)
 
     def log_fn(context, msg):
         print(f"[{context}] {msg}")

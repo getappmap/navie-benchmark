@@ -10,14 +10,11 @@ from swebench.harness.constants import (
     SWEbenchInstance,
 )
 from swebench.harness.docker_build import (
-    build_env_images,
-    build_instance_images,
     setup_logger,
 )
 from swebench.harness.test_spec import make_test_spec
 from swebench.harness.utils import load_swebench_dataset
 
-from solver.harness.pull_images import pull_instance_images
 from solver.workflow.code_environment import DetectEnvironment
 from solver.workflow.workflow import Workflow, WorkflowLimits
 
@@ -113,16 +110,6 @@ def build_logger(work_dir: Path, instance_id: str) -> Callable[[str, str], None]
     return logger_fn
 
 
-def build_images(
-    docker_client: docker.DockerClient,
-    dataset: list,
-    force_rebuild=False,
-    max_workers=4,
-):
-    build_env_images(docker_client, dataset, force_rebuild, max_workers)
-    build_instance_images(docker_client, dataset, force_rebuild, max_workers)
-
-
 def build_workflow(
     log: Callable[[str, str], None],
     navie_work_dir: Path,
@@ -152,23 +139,6 @@ def build_workflow(
     )
 
 
-def pull_or_build_instance_images(
-    docker_client: docker.DockerClient,
-    dataset: list,
-    max_workers=4,
-):
-    # Base and env images will be pulled, but will not be built.
-    # That's beacuse there may be multiple processes running at the same time
-    # that want to do this, and we don't want to build the same image multiple times.
-    # Base and env images should be pre-allocated before running any command that needs this function.
-
-    pull_instance_images(docker_client, dataset, max_workers)
-
-    build_instance_images(
-        docker_client, dataset, force_rebuild=False, max_workers=max_workers
-    )
-
-
 def configure_runner_index(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--num_runners",
@@ -183,8 +153,10 @@ def configure_runner_index(parser: ArgumentParser) -> None:
 
 
 def select_instances_for_runner(
-    dataset: list, num_runners: Optional[int], runner_index: Optional[int]
-) -> list:
+    dataset: list,
+    num_runners: Optional[int],
+    runner_index: Optional[int],
+) -> list[SWEbenchInstance]:
     if num_runners is None or runner_index is None:
         return dataset
 

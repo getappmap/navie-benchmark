@@ -1,16 +1,12 @@
 from os import path
 import os
-from pathlib import Path
 from typing import Optional
 
 import docker
-import requests
 
 from solver.harness.build_extended_image import build_extended_image
-from solver.ioutil import make_path
 from solver.workflow.patch import Patch
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS, TestStatus
-from swebench.harness.docker_build import build_instance_image
 from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
 
 from ..harness.make_test_directives import make_test_directives
@@ -64,8 +60,6 @@ class RunTest:
 
         instance_image_name = self.test_spec.instance_image_key.split(":")[0]
         run_test_image_name = ".".join([instance_image_name, "run_test"])
-
-        build_instance_image(self.test_spec, docker_client, None, False)
 
         # Get configurations for how container should be created
         config = MAP_REPO_VERSION_TO_SPECS[self.test_spec.repo][self.test_spec.version]

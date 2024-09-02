@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from os import getenv
 from pathlib import Path
 import sys
-from typing import Callable, Dict, List, Optional
+from typing import Optional
 
 import docker
 
@@ -11,51 +11,12 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from swebench.harness.docker_build import (
-    build_base_images,
-    build_env_images,
-    build_instance_images,
-    DockerBuildResult,
-)
+from swebench.harness.test_spec import make_test_spec
 
-from solver.harness.pull_images import pull_instance_images, tag_image
+from solver.harness.image_store import ImageStore
+
 from solver.cli import configure_runner_index, load_dataset, select_instances_for_runner
 from solver.solve import DATASET_NAME
-
-
-def build_and_push_images(
-    docker_client: docker.DockerClient,
-    build_images_func: Callable[
-        [docker.DockerClient, Optional[int]],
-        DockerBuildResult,
-    ],
-    max_workers: int,
-    push: bool = True,
-):
-    build_result = build_images_func(docker_client, max_workers)
-
-    if build_result.failed:
-        print(f"WARNING: Failed to build some images: {", ".join(build_result.failed)}")
-
-    print(f"Built images: {", ".join(build_result.successful)}")
-
-    remote_image_keys = [
-        f"ghcr.io/getappmap/{tag_image(image_name)}"
-        for image_name in build_result.images
-    ]
-    # Tag each image, then push
-    for image_name, remote_image_key in zip(build_result.images, remote_image_keys):
-        if image_name in build_result.failed:
-            print(f"Skipping {image_name} because it failed to build")
-            continue
-        else:
-            docker_client.images.get(image_name).tag(remote_image_key)
-            if push:
-                print(f"Pushing {remote_image_key}")
-                try:
-                    docker_client.images.push(remote_image_key)
-                except docker.errors.APIError as e:  # type: ignore
-                    print(f"Error pushing image: {remote_image_key}. Error: {e}")
 
 
 def main(
@@ -83,26 +44,13 @@ def main(
 
     dataset = load_dataset(DATASET_NAME, instance_ids)
     dataset = select_instances_for_runner(dataset, num_runners, runner_index)
+    test_specs = [make_test_spec(instance) for instance in dataset]
 
     push = not no_push
 
-    pull_instance_images(docker_client, dataset, max_workers=max_workers)
-
-    def wrap_build_base_images(docker_client, max_workers):
-        # max_workers is not used here
-        return build_base_images(docker_client, dataset)
-
-    build_and_push_images(docker_client, wrap_build_base_images, max_workers, push)
-
-    def wrap_build_env_images(docker_client, max_workers):
-        return build_env_images(docker_client, dataset, max_workers=max_workers)
-
-    build_and_push_images(docker_client, wrap_build_env_images, max_workers, push)
-
-    def wrap_build_instance_images(docker_client, max_workers):
-        return build_instance_images(docker_client, dataset, max_workers)
-
-    build_and_push_images(docker_client, wrap_build_instance_images, max_workers, push)
+    image_store = ImageStore(docker_client, build_if_not_found=True, push_images=push)
+    image_store.max_workers = max_workers
+    image_store.ensure(test_specs)
 
 
 if __name__ == "__main__":

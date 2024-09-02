@@ -10,6 +10,9 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from swebench.harness.test_spec import make_test_spec
+
+from solver.harness.image_store import ImageStore
 from solver.solve import DATASET_NAME
 from solver.cli import (
     apply_limits,
@@ -21,10 +24,7 @@ from solver.cli import (
     configure_limits,
     configure_clean_option,
     load_dataset,
-    pull_or_build_instance_images,
 )
-from solver.workflow.workflow import WorkflowLimits
-from swebench.harness.docker_build import setup_logger
 
 
 def main(
@@ -42,8 +42,6 @@ def main(
     limits_obj = build_limits(limits)
     dataset = load_dataset(DATASET_NAME, [instance_id])
 
-    pull_or_build_instance_images(docker_client, dataset)
-
     instance = dataset[0]
     navie_work_dir = work_dir / "navie"
     source_dir = work_dir / "source"
@@ -54,6 +52,10 @@ def main(
         raise Exception(
             f"Source directory {source_dir} does not exist. It should already be checked out to run this script. Try running solve.py first, then using this script for re-runs."
         )
+
+    test_spec = make_test_spec(instance)
+    image_store = ImageStore(docker_client)
+    image_store.ensure([test_spec])
 
     print(f"[solve_test]Changing directory to {source_dir}")
     chdir(source_dir)

@@ -109,6 +109,7 @@ jobs:
       - build-appmap-js
       - prepare-matrix
     runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
+    continue-on-error: true
     strategy:
       matrix:
         index: ${{ fromJson(needs['prepare-matrix'].outputs.matrix) }}
@@ -200,7 +201,7 @@ jobs:
               --run_id "${instance_set}" \
               --predictions_path predictions.jsonl
           )
-          cp $evaluations_file_name evaluations.json
+          cp "${evaluations_file_name}" evaluations.json
 
       - name: Report predictions
         uses: actions/upload-artifact@v4

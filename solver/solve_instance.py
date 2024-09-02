@@ -12,6 +12,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.harness.image_store import ImageStore
 from solver.predictions_manager import PredictionsManager
 from swebench.harness.constants import SWEbenchInstance
 
@@ -26,7 +27,6 @@ from solver.cli import (
     configure_clean_option,
     configure_limits,
     load_dataset,
-    pull_or_build_instance_images,
 )
 from solver.checkout_code import checkout_code
 from solver.workflow.patch import Patch
@@ -70,11 +70,14 @@ def main(
             "Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is set; what LLM are we using?"
         )
 
-    pull_or_build_instance_images(docker_client, dataset)
-
     instance_id = instance["instance_id"]
 
     test_spec = make_test_spec(instance)
+
+    image_store = ImageStore(
+        docker_client,
+    )
+    image_store.ensure([test_spec])
 
     tmp_dir = work_dir / "tmp"
     tmp_dir.mkdir(parents=True, exist_ok=True)
@@ -116,8 +119,7 @@ def main(
         prediction: dict = instance.copy()  # type: ignore
 
         def add_prediction(key: str, value: Union[str, Patch, Path, None]):
-            if value:
-                prediction[key] = str(value)
+            prediction[key] = str(value) if value else None
 
         model_name_or_path = f"navie_082024+{llm}"
 

@@ -10,14 +10,14 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from solver.solve import DATASET_NAME
 from swebench.harness.test_spec import make_test_spec
 
+from solver.harness.image_store import ImageStore
+from solver.solve import DATASET_NAME
 from solver.cli import (
     build_logger,
     build_work_dir,
     load_dataset,
-    pull_or_build_instance_images,
 )
 from solver.workflow.patch import Patch
 from solver.workflow.run_test import RunTest
@@ -39,6 +39,9 @@ def main(instance_id: str, test_patch: str, code_patch: str):
     run_test_dir = navie_work_dir / "run_test"
     run_test_dir.mkdir(parents=True, exist_ok=True)
 
+    image_store = ImageStore(docker_client)
+    image_store.ensure([test_spec])
+
     test_patch_path = Path(test_patch)
     if not test_patch_path.exists():
         print(f"Patch file {test_patch} not found.")
@@ -55,8 +58,6 @@ def main(instance_id: str, test_patch: str, code_patch: str):
 
         code_patch_p = Patch.load_file(code_patch_file)
         code_patches.append(code_patch_p)
-
-    pull_or_build_instance_images(docker_client, dataset)
 
     run_test = RunTest(
         logger_fn, navie_work_dir, instance["repo"], instance["version"], test_spec
