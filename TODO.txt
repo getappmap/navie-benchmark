@@ -1,12 +1,27 @@
-* Test with Anthropic
+* Report trajectories
 
-* Remove step to list packages? Just report presence of test frameworks (pytest, unittest) to the solver?
+* Just report presence of test frameworks (pytest, unittest) to the solver?
 
 * Increase context size on retries
+
+* Split workflow.run into solve_test and solve_code
+
+* Provide GitHub workflow file for solve_test
+
+* Output additional information and statistics that can be used to rate and improve the solver
+
+* Create the following instance sets:
+  * verified_100 - Select every 5th instance from the verified set
+  * verified_50 - Select every 10th instance from the verified set
+
+* Experiment with increasing the edited file limit and look at the solve stats and success rate
 
 * Run solver test suite in CI
 
 * Continue to add code coverage
+
+* Test with Anthropic
+  Bug in progress https://github.com/getappmap/appmap-js/issues/1966
 
 * Found 2 changes, but the limit is 1
 

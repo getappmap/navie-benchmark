@@ -1,0 +1,38 @@
+
+name: Run tests
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install virtualenv
+          virtualenv venv
+          . ./venv/bin/activate
+          pip install -e .
+
+      - name: Run pytest
+        run: |
+          . ./venv/bin/activate
+          export PYTHONPATH=$PYTHONPATH:$(pwd):$(pwd)/submodules/navie-editor
+          python -m pytest solver/tests
