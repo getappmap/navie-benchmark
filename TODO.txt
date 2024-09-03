@@ -23,6 +23,40 @@
 * Test with Anthropic
   Bug in progress https://github.com/getappmap/appmap-js/issues/1966
 
+* How to report the problem when there is an LLM error? Global retry?
+
+      File "/Users/kgilpin/source/appland/navie-benchmark/solver/workflow/workflow.py", line 362, in generate_test
+        test_file_answer = editor.ask(
+                          ^^^^^^^^^^^
+      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/editor.py", line 126, in ask
+        with_cache(
+      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/with_cache.py", line 25, in with_cache
+        result = implementation_func()
+                ^^^^^^^^^^^^^^^^^^^^^
+      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/editor.py", line 113, in _ask
+        self._build_client(work_dir).ask(
+      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/client.py", line 81, in ask
+        self._execute(command, log_file)
+      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/client.py", line 356, in _execute
+        raise RuntimeError(
+    RuntimeError: Failed to execute command APPMAP_NAVIE_TEMPERATURE=0.0 /Users/kgilpin/source/appland/appmap-js/packages/cli/built/cli.js -v navie --log-navie -i /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-test/1/test_file_name/ask.input.txt --trajectory-file /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/trajectory.jsonl -o /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-test/1/test_file_name/ask.md > /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-test/1/test_file_name/ask.log 2>&1. See /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-test/1/test_file_name/ask.log for details.
+    [solve_instance] Cleaning up container 7b56b0ee9a0f90b49b4f5a629645c68e5b1550daf52b9cbb469a7dfbdef1dd8e
+    [solve] Running instance pytest-dev__pytest-7490...
+    [solve] Running: python /Users/kgilpin/source/appland/navie-benchmark/solver/solve_instance.py --instance_id pytest-dev__pytest-7490 --predictions /Users/kgilpin/source/appland/navie-benchmark/predictions/smoke.jsonl --limit test_lint_retry=2 test_status_retry=2 code_lint_retry=2 code_status_retry=2
+    Using limits: file=1, test_lint_retry=2, test_status_retry=2, code_lint_retry=2, code_status_retry=2
+    Using Docker architecture: x86_64
+    All base images are already present locally.
+    All env images are already present locally.
+    All instance images are already present locally.
+    [solve] (pytest-dev__pytest-7490) Container started: f475cadc5ac2f37fb2a6f4cb451d4e0fa3321fe70837a6e6250777c1229f3596
+    [checkout-code] (pytest-dev__pytest-7490) Creating git archive in the container
+    [checkout-code] (pytest-dev__pytest-7490) Copying git archive out of the container and unpacking it to /Users/kgilpin/source/appland/navie-benchmark/solve/pytest-dev__pytest-7490/source
+    Initialized empty Git repository in /Users/kgilpin/source/appland/navie-benchmark/solve/pytest-dev__pytest-7490/source/.git/
+    [checkout-code] (pytest-dev__pytest-7490) Committed 481 files
+    [solve] (pytest-dev__pytest-7490) Changing directory to /Users/kgilpin/source/appland/navie-benchmark/solve/pytest-dev__pytest-7490/source
+    [detect-environment] (pytest-dev__pytest-7490) Detecting Python environment for pytest-dev__pytest-7490...
+
+
 * Found 2 changes, but the limit is 1
 
 https://github.com/getappmap/navie-benchmark/actions/runs/10655942503/job/29534052664

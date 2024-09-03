@@ -22,12 +22,14 @@ class GenerateCode:
         self,
         log: Callable[[str, str], None],
         work_dir: Path,
+        trajectory_file: str,
         plan: str,
         python_version: str,
         file_limit: int = 1,
     ):
         self.log = log
         self.work_dir = work_dir
+        self.trajectory_file = trajectory_file
         self.plan = plan
         self.python_version = python_version
         self.file_limit = file_limit
@@ -64,7 +66,10 @@ Do not use Python features that are not available in this Python version.
 """
         ]
 
-        editor = Editor(path.join(self.work_dir, "generate", str(attempt)))
+        editor = Editor(
+            path.join(self.work_dir, "generate", str(attempt)),
+            trajectory_file=self.trajectory_file,
+        )
         return editor.generate(
             plan="\n\n".join(plan),
             prompt="\n\n".join(prompt),
@@ -81,7 +86,10 @@ Do not use Python features that are not available in this Python version.
                 f"Found {len(changes)} changes, but the limit is {self.file_limit}",
             )
 
-        editor = Editor(path.join(self.work_dir, "generate", str(attempt), "apply"))
+        editor = Editor(
+            path.join(self.work_dir, "generate", str(attempt), "apply"),
+            self.trajectory_file,
+        )
         for change in changes:
             change.file = relpath(change.file, getcwd())
             if not change.original:

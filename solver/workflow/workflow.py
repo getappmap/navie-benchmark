@@ -109,6 +109,10 @@ class Workflow:
         self.issue_text = issue_text
         self.limits = limits
 
+        trajectory_file: Path = navie_work_dir / "trajectory.jsonl"
+        trajectory_file.parent.mkdir(parents=True, exist_ok=True)
+        self.trajectory_file = str(trajectory_file)
+
         self.edit_test_file: Optional[Path] = None
         self.test_patch: Optional[Patch] = None
         self.inverted_patch: Optional[Patch] = None
@@ -187,8 +191,8 @@ class Workflow:
         with open(patch_path, "w") as f:
             f.write(str(patch))
 
-    def generate_plan(self):
-        editor = Editor(self.navie_work_dir)
+    def generate_plan(self) -> str:
+        editor = Editor(self.navie_work_dir, trajectory_file=self.trajectory_file)
         issue_text = f"""{self.issue_text}
 
 In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
@@ -302,6 +306,7 @@ Do not plan specific code changes. Just design the solution.
         generator = GenerateTest(
             self.log,
             self.navie_work_dir,
+            self.trajectory_file,
             test_file_path,
             self.issue_text,
             [],
@@ -336,9 +341,14 @@ Do not plan specific code changes. Just design the solution.
     def generate_test(self, attempt: int, observed_errors: list) -> Optional[Patch]:
         self.clean_git_state()
 
-        editor = Editor(Workflow.generate_test_work_dir(self.navie_work_dir, attempt))
+        editor = Editor(
+            Workflow.generate_test_work_dir(self.navie_work_dir, attempt),
+            trajectory_file=self.trajectory_file,
+        )
 
-        edit_test_file = choose_test_file(self.log, editor.work_dir, self.issue_text)
+        edit_test_file = choose_test_file(
+            self.log, editor.work_dir, self.trajectory_file, self.issue_text
+        )
         if not edit_test_file:
             return
 
@@ -389,6 +399,7 @@ Available packages: {self.environment.packages}
         generator = GenerateTest(
             self.log,
             editor.work_dir,
+            self.trajectory_file,
             test_file_path,
             self.issue_text,
             observed_errors,
@@ -442,6 +453,7 @@ Available packages: {self.environment.packages}
         generator = GenerateCode(
             self.log,
             work_dir,
+            self.trajectory_file,
             plan,
             self.environment.python_version,
             self.limits.file_limit,

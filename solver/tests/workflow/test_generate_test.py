@@ -11,15 +11,17 @@ class TestGenerateTest(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
         self.work_dir = Path("/work/directory")
+        self.trajectory_file = str(self.work_dir / "trajectory.jsonl")
         self.test_file_path = Path("/work/directory/test_file.py")
         self.issue_text = "Sample issue text"
         self.observed_errors = ["Error 1", "Error 2"]
         self.generator = GenerateTest(
-            log=self.log_mock,
-            work_dir=self.work_dir,
-            test_file_path=self.test_file_path,
-            issue_text=self.issue_text,
-            observed_errors=self.observed_errors,
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.test_file_path,
+            self.issue_text,
+            self.observed_errors,
             python_version="3.8",
         )
 

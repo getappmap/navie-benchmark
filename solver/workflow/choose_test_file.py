@@ -7,9 +7,11 @@ from navie.fences import extract_fenced_content
 
 
 # Choose a test case file that is most related to the issue.
-def choose_test_file(log, work_dir, issue_content) -> Optional[Path]:
+def choose_test_file(log, work_dir, trajectory_file, issue_content) -> Optional[Path]:
     test_to_modify_str = Editor(
-        os.path.join(work_dir, "choose"), log_dir=work_dir
+        os.path.join(work_dir, "choose"),
+        log_dir=work_dir,
+        trajectory_file=trajectory_file,
     ).search(
         f"""Identify a single test case that is most related to the following issue:
 

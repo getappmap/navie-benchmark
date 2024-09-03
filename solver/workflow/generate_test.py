@@ -21,6 +21,7 @@ class GenerateTest:
         self,
         log: Callable[[str, str], None],
         work_dir: Path,
+        trajectory_file: str,
         test_file_path: Path,
         issue_text: str,
         observed_errors: list[str],
@@ -28,6 +29,7 @@ class GenerateTest:
     ):
         self.log = log
         self.work_dir = work_dir
+        self.trajectory_file = trajectory_file
         self.test_file_path = test_file_path
         self.issue_text = issue_text
         self.observed_errors = observed_errors
@@ -99,7 +101,7 @@ Do not use Python features that are not available in this Python version.
 """
         ]
 
-        return Editor(work_dir).test(
+        return Editor(work_dir, trajectory_file=self.trajectory_file).test(
             issue="\n\n".join(plan),
             prompt="\n\n".join(prompt),
             options=r"/noprojectinfo",
@@ -156,7 +158,7 @@ Do not use Python features that are not available in this Python version.
 """
         ]
 
-        return Editor(work_dir).test(
+        return Editor(work_dir, trajectory_file=self.trajectory_file).test(
             issue="\n\n".join(plan),
             prompt="\n\n".join(prompt),
             options=r"/noprojectinfo /nocontext",

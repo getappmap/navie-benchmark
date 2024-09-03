@@ -9,6 +9,7 @@ class TestChooseTestFile(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
         self.work_dir = "./work/directory"
+        self.trajectory_file = os.path.join(self.work_dir, "trajectory.jsonl")
         self.issue_content = "Sample issue content"
 
     @patch("solver.workflow.choose_test_file.Editor")
@@ -20,7 +21,9 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: work/directory/test_file.py -->"
         )
 
-        result = choose_test_file(self.log_mock, self.work_dir, self.issue_content)
+        result = choose_test_file(
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+        )
         assert result is not None
         # Convert to relative path to this dir
         result_rel = result.relative_to(self.work_dir)
@@ -40,7 +43,9 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: test_file1.py -->\n<!-- file: test_file2.py -->"
         )
 
-        result = choose_test_file(self.log_mock, self.work_dir, self.issue_content)
+        result = choose_test_file(
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+        )
         self.assertEqual(result, Path("test_file1.py"))
         self.log_mock.assert_any_call(
             "choose-test-file",
@@ -54,7 +59,9 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock = Editor_mock.return_value
         editor_instance_mock.search.return_value = ""
 
-        result = choose_test_file(self.log_mock, self.work_dir, self.issue_content)
+        result = choose_test_file(
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+        )
         self.assertIsNone(result)
         self.log_mock.assert_called_with(
             "choose-test-file", "Found no existing test files in "
@@ -69,7 +76,9 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: /work/directory/test_file.py -->"
         )
 
-        result = choose_test_file(self.log_mock, self.work_dir, self.issue_content)
+        result = choose_test_file(
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+        )
         self.assertEqual(result, Path("work/directory/test_file.py"))
 
     @patch("solver.workflow.choose_test_file.Editor")
@@ -81,7 +90,9 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock = Editor_mock.return_value
         editor_instance_mock.search.return_value = "<!-- file: /work/directory/invalid_test_file.py -->\n<!-- file: /work/directory/valid_test_file.py -->"
 
-        result = choose_test_file(self.log_mock, self.work_dir, self.issue_content)
+        result = choose_test_file(
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+        )
         self.assertEqual(result, Path("../../work/directory/valid_test_file.py"))
         self.log_mock.assert_called_with(
             "choose_test_file",
@@ -97,7 +108,9 @@ class TestChooseTestFile(unittest.TestCase):
             "```python\n<!-- file: test_file.py -->\n```"
         )
 
-        result = choose_test_file(self.log_mock, self.work_dir, self.issue_content)
+        result = choose_test_file(
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+        )
         self.assertEqual(result, Path("test_file.py"))
 
 

@@ -11,12 +11,14 @@ class TestGenerateCode(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
         self.work_dir = Path("/work/directory")
+        self.trajectory_file = str(self.work_dir / "trajectory.jsonl")
         self.plan = "Sample plan"
         self.generator = GenerateCode(
-            log=self.log_mock,
-            work_dir=self.work_dir,
-            plan=self.plan,
-            python_version="3.8"
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.plan,
+            python_version="3.8",
         )
 
     @patch("solver.workflow.generate_code.extract_changes")
