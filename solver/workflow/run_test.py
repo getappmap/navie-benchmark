@@ -4,16 +4,18 @@ from typing import Optional
 
 import docker
 
-from solver.harness.build_extended_image import build_extended_image
-from solver.workflow.patch import Patch
-from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS, TestStatus
+from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
 
+from ..harness.build_extended_image import build_extended_image
 from ..harness.make_test_directives import make_test_directives
 from ..harness.make_run_commands import (
     make_run_test_command,
     make_run_test_prep_commands,
 )
+
+from .patch import Patch
+from .solve_listener import TestStatus
 
 
 class RunTestResult:
@@ -56,7 +58,7 @@ class RunTest:
 
         test_file = test_files[0]
 
-        self.log("run-test", f"Running tests {test_file}...")
+        self.log("run-test", f"Running tests {test_file} in {self.work_dir}")
 
         instance_image_name = self.test_spec.instance_image_key.split(":")[0]
         run_test_image_name = ".".join([instance_image_name, "run_test"])
@@ -141,8 +143,6 @@ conda activate {env_name}
         os.makedirs(self.work_dir, exist_ok=True)
         error_log_file = path.join(self.work_dir, "run_test_error.log")
         log_file = path.join(self.work_dir, "run_test.log")
-        with open(log_file, "w") as f:
-            f.write("")
         script_file = path.join(self.work_dir, "run_test.sh")
         with open(script_file, "w") as f:
             f.write(str(test_script))
@@ -154,11 +154,6 @@ conda activate {env_name}
             with open(code_patch_file, "w") as f:
                 f.write(str(code_patch))
 
-        # Start the container
-        self.log(
-            "run-test",
-            f"Running test {test_file}, with log available in {log_file}.",
-        )
         if self.code_patches:
             self.log(
                 "run-test",
@@ -173,10 +168,6 @@ conda activate {env_name}
             path.abspath(script_file): {
                 "bind": "/tmp/run_test.sh",
                 "mode": "ro",
-            },
-            path.abspath(log_file): {
-                "bind": "/tmp/run_test.log",
-                "mode": "rw",
             },
         }
         for code_patch_index, code_patch in enumerate(self.code_patches):
@@ -212,6 +203,10 @@ conda activate {env_name}
             test_status = TestStatus.ERROR
             with open(error_log_file, "w") as f:
                 f.write(str(e))
+
+        if test_output:
+            with open(log_file, "w") as f:
+                f.write(test_output)
 
         if container:
             try:

@@ -1,20 +1,39 @@
 from pathlib import Path
 from typing import Callable, List, Optional
+import docker
 
-from solver.workflow.run_test import RunTestResult
-from swebench.harness.constants import TestStatus
+from swebench.harness.test_spec import TestSpec
+
+from .workflow_limits import WorkflowLimits
+from .run_test import RunTestResult
+from .solve_listener import (
+    PatchType,
+    SolveListener,
+    TestStatus,
+    TestType,
+)
 
 from .patch import Patch
 
 
 class Context:
-    def __init__(self, limits, log, docker_client, repo, version, test_spec):
+    def __init__(
+        self,
+        limits: WorkflowLimits,
+        log: Callable[[str, str], None],
+        docker_client: docker.DockerClient,
+        repo: str,
+        version: str,
+        test_spec: TestSpec,
+        solve_listeners: List[SolveListener],
+    ):
         self.limits = limits
         self.log = log
         self.docker_client = docker_client
         self.repo = repo
         self.version = version
         self.test_spec = test_spec
+        self.solve_listeners = solve_listeners
 
 
 class CodePatchResult:
@@ -61,7 +80,7 @@ def generate_and_validate_code(
     context: Context,
     plan: str,
     generate_code: Callable[[str, int], Optional[Patch]],
-    run_test: Callable[[str, int, Patch, List[Patch]], RunTestResult],
+    run_test: Callable[[Patch, List[Patch], int], RunTestResult],
     pass_to_pass_test_file: Optional[Path],
     test_patch: Optional[Patch],
     test_patch_inverted: Optional[Patch],
@@ -72,6 +91,9 @@ def generate_and_validate_code(
     code_patches = []
     attempt = 1
     while attempt <= limit and not code_patch:
+        for listener in context.solve_listeners:
+            listener.on_start_patch(PatchType.CODE)
+
         code_patch = generate_code(plan, attempt)
         pass_to_pass_test_status = None
         test_patch_status = None
@@ -91,27 +113,47 @@ index 0000000..0000000
                 )
 
                 run_test_result = run_test(
-                    "code", attempt, empty_patch_for_edit_test_file, [code_patch]
+                    empty_patch_for_edit_test_file, [code_patch], attempt
                 )
                 pass_to_pass_test_status = run_test_result.test_status
+                for listener in context.solve_listeners:
+                    listener.on_run_test(
+                        TestType.PASS_TO_PASS,
+                        [code_patch],
+                        empty_patch_for_edit_test_file,
+                        pass_to_pass_test_status,
+                    )
 
             if test_patch:
                 context.log(
                     "generate-and-validate-code",
                     f"Running test patch for attempt {attempt}",
                 )
-                run_test_result = run_test("code", attempt, test_patch, [code_patch])
+                run_test_result = run_test(test_patch, [code_patch], attempt)
                 test_patch_status = run_test_result.test_status
+                for listener in context.solve_listeners:
+                    listener.on_run_test(
+                        TestType.PASS_TO_FAIL,
+                        [code_patch],
+                        test_patch,
+                        test_patch_status,
+                    )
 
             if test_patch_inverted:
                 context.log(
                     "generate-and-validate-code",
                     f"Running inverted test patch for attempt {attempt}",
                 )
-                run_test_result = run_test(
-                    "code", attempt, test_patch_inverted, [code_patch]
-                )
+                run_test_result = run_test(test_patch_inverted, [code_patch], attempt)
                 inverted_patch_status = run_test_result.test_status
+
+                for listener in context.solve_listeners:
+                    listener.on_run_test(
+                        TestType.FAIL_TO_PASS,
+                        [code_patch],
+                        test_patch_inverted,
+                        inverted_patch_status,
+                    )
 
             code_patch_result = CodePatchResult(
                 patch=code_patch,
@@ -148,6 +190,9 @@ index 0000000..0000000
                 code_patch = None
 
         attempt += 1
+
+        for listener in context.solve_listeners:
+            listener.on_end_patch()
 
     return Result(
         code_patch,

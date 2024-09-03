@@ -12,9 +12,11 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from swebench.harness.constants import SWEbenchInstance
+
+from solver.workflow.solution_listener import SolutionListener, solution_to_plain_types
 from solver.harness.image_store import ImageStore
 from solver.predictions_manager import PredictionsManager
-from swebench.harness.constants import SWEbenchInstance
 
 from solver.solve import DATASET_NAME
 from solver.cli import (
@@ -44,7 +46,7 @@ from swebench.harness.test_spec import make_test_spec
 def main(
     instance_id: str,
     limits: dict,
-    predictions_file: Optional[str],
+    predictions_file: str,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -58,6 +60,7 @@ def main(
     limits_obj = build_limits(limits)
     dataset = load_dataset(DATASET_NAME, [instance_id])
     instance: SWEbenchInstance = dataset[0]
+    assert predictions_file
 
     if getenv("APPMAP_NAVIE_MODEL"):
         llm = getenv("APPMAP_NAVIE_MODEL")
@@ -69,6 +72,7 @@ def main(
         raise Exception(
             "Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is set; what LLM are we using?"
         )
+    print(f"Using LLM: {llm}")
 
     instance_id = instance["instance_id"]
 
@@ -101,6 +105,8 @@ def main(
         # os chdir to source_dir
         pwd = Path.cwd()
         logger_fn("solve", f"Changing directory to {source_dir}")
+
+        solution_listener = SolutionListener()
         chdir(source_dir)
         workflow = None
         try:
@@ -111,9 +117,15 @@ def main(
                 instance,
                 limits_obj,
             )
+            workflow.solve_listeners.append(solution_listener)
             workflow.run()
         finally:
             chdir(pwd)
+
+        solution = solution_listener.build_solution()
+        solution_attrs = solution_to_plain_types(solution)
+        with open(navie_work_dir / "solution.json", "w") as f:
+            f.write(dumps(solution_attrs, indent=2))
 
         # Clone the instance as predictions
         prediction: dict = instance.copy()  # type: ignore
@@ -164,6 +176,6 @@ if __name__ == "__main__":
     apply_limits(args)
     apply_clean_option(args)
 
-    args.predictions_file = args.predictions
+    args.predictions_file = args.predictions or "predictions.jsonl"
     del args.predictions  # type: ignore
     main(**vars(args))

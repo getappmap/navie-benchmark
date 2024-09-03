@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Callable, List, Optional
 
 from .linter import Linter

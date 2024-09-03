@@ -15,8 +15,9 @@ from swebench.harness.docker_build import (
 from swebench.harness.test_spec import make_test_spec
 from swebench.harness.utils import load_swebench_dataset
 
+from solver.workflow.workflow_limits import WorkflowLimits
 from solver.workflow.code_environment import DetectEnvironment
-from solver.workflow.workflow import Workflow, WorkflowLimits
+from solver.workflow.workflow import Workflow
 
 
 def configure_limits(parser: ArgumentParser) -> None:

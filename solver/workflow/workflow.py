@@ -1,17 +1,19 @@
+import hashlib
 from os import getcwd, listdir, path
 from pathlib import Path
 import subprocess
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Union
 
 import docker
 import yaml
 
-from swebench.harness.constants import TestStatus
 from swebench.harness.test_spec import TestSpec
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
 
+from .workflow_limits import WorkflowLimits
+from .solve_listener import PatchType, SolveListener, TestStatus, TestType
 from .generate_and_validate_code import (
     CodePatchResult,
     Context as GenerateCodeContext,
@@ -26,58 +28,9 @@ from .lint_repair import LintRepairResult, lint_repair
 from .patch import Patch
 from .run_test import RunTest, RunTestResult
 
-FILE_LIMIT = 1
-TEST_LINT_RETRY_LIMIT = 2
-TEST_STATUS_RETRY_LIMIT = 2
-CODE_LINT_RETRY_LIMIT = 2
-CODE_STATUS_RETRY_LIMIT = 2
-
 TEST_PASSED = 1
 TEST_FAILED_WITH_SIGNAL_ERROR = 2
 TEST_FAILED = 3
-
-
-class WorkflowLimits:
-    def __init__(
-        self,
-        file_limit: int = FILE_LIMIT,
-        test_lint_retry_limit: int = TEST_LINT_RETRY_LIMIT,
-        test_status_retry_limit: int = TEST_STATUS_RETRY_LIMIT,
-        code_lint_retry_limit: int = CODE_LINT_RETRY_LIMIT,
-        code_status_retry_limit: int = CODE_STATUS_RETRY_LIMIT,
-    ):
-        self.file_limit = file_limit
-        self.test_lint_retry_limit = test_lint_retry_limit
-        self.test_status_retry_limit = test_status_retry_limit
-        self.code_lint_retry_limit = code_lint_retry_limit
-        self.code_status_retry_limit = code_status_retry_limit
-
-    def __str__(self):
-        return f"file={self.file_limit}, test_lint_retry={self.test_lint_retry_limit}, test_status_retry={self.test_status_retry_limit}, code_lint_retry={self.code_lint_retry_limit}, code_status_retry={self.code_status_retry_limit}"
-
-    @staticmethod
-    def from_dict(data: dict):
-        return WorkflowLimits(
-            file_limit=data.get("file", FILE_LIMIT),
-            test_lint_retry_limit=data.get("test_lint_retry", TEST_LINT_RETRY_LIMIT),
-            test_status_retry_limit=data.get(
-                "test_status_retry", TEST_STATUS_RETRY_LIMIT
-            ),
-            code_lint_retry_limit=data.get("code_lint_retry", CODE_LINT_RETRY_LIMIT),
-            code_status_retry_limit=data.get(
-                "code_status_retry", CODE_STATUS_RETRY_LIMIT
-            ),
-        )
-
-    @staticmethod
-    def limit_names():
-        return [
-            "file",
-            "test_lint_retry",
-            "test_status_retry",
-            "code_lint_retry",
-            "code_status_retry",
-        ]
 
 
 class GenerateTestResult:
@@ -113,12 +66,17 @@ class Workflow:
         trajectory_file.parent.mkdir(parents=True, exist_ok=True)
         self.trajectory_file = str(trajectory_file)
 
+        self.solve_listeners: List[SolveListener] = []
+
         self.edit_test_file: Optional[Path] = None
         self.test_patch: Optional[Patch] = None
         self.inverted_patch: Optional[Patch] = None
         self.code_patch: Optional[Patch] = None
 
     def run(self):
+        for listener in self.solve_listeners:
+            listener.on_solve_start(self.navie_work_dir)
+
         generate_test_result = self.generate_and_validate_test()
         if generate_test_result.test_patch:
             self.test_patch = generate_test_result.test_patch
@@ -129,6 +87,12 @@ class Workflow:
 
         plan = self.generate_plan()
 
+        def run_test_for_code(
+            test_patch: Patch, code_patches: List[Patch], attempt: int
+        ) -> RunTestResult:
+            work_dir = self.generate_code_work_dir(self.navie_work_dir, attempt)
+            return self.run_test(work_dir, test_patch, code_patches)
+
         generate_code_result = generate_and_validate_code(
             GenerateCodeContext(
                 self.limits,
@@ -137,30 +101,45 @@ class Workflow:
                 self.repo,
                 self.version,
                 self.test_spec,
+                self.solve_listeners,
             ),
             plan,
             self.generate_code,
-            self.run_test,
+            run_test_for_code,
             self.edit_test_file,
             self.test_patch,
             self.inverted_patch,
         )
 
+        def patch_score(code_patch_result: CodePatchResult) -> int:
+            score = 0
+            if code_patch_result.pass_to_pass_test_status == TestStatus.PASSED:
+                score += 1
+            if code_patch_result.test_patch_status == TestStatus.FAILED:
+                score += 1
+            if code_patch_result.inverted_patch_status == TestStatus.PASSED:
+                score += 1
+            return score
+
         if generate_code_result.patch:
             self.log("workflow", "Optimal code patch generated (for available tests)")
             self.code_patch = generate_code_result.patch
+            score = max(
+                [
+                    patch_score(code_patch_result)
+                    for code_patch_result in generate_code_result.code_patches
+                ]
+            )
+            for listener in self.solve_listeners:
+                listener.on_code_patch(
+                    generate_code_result.patch,
+                    True,
+                    self.test_patch != None,
+                    self.inverted_patch != None,
+                    score,
+                )
         elif generate_code_result.code_patches:
             self.log("workflow", "Choosing best patch")
-
-            def patch_score(code_patch_result: CodePatchResult) -> int:
-                score = 0
-                if code_patch_result.pass_to_pass_test_status == TestStatus.PASSED:
-                    score += 1
-                if code_patch_result.test_patch_status == TestStatus.FAILED:
-                    score += 1
-                if code_patch_result.inverted_patch_status == TestStatus.PASSED:
-                    score += 1
-                return score
 
             # Sort code_patches by score
             code_patches = list(generate_code_result.code_patches)
@@ -168,7 +147,18 @@ class Workflow:
                 key=lambda patch: patch_score(patch),
                 reverse=True,
             )
-            self.code_patch = code_patches[0].patch
+            code_patch_result = code_patches[0]
+            assert code_patch_result.patch
+            self.code_patch = code_patch_result.patch
+
+            for listener in self.solve_listeners:
+                listener.on_code_patch(
+                    self.code_patch,
+                    code_patch_result.pass_to_pass_test_status == TestStatus.PASSED,
+                    code_patch_result.test_patch_status == TestStatus.FAILED,
+                    code_patch_result.inverted_patch_status == TestStatus.PASSED,
+                    patch_score(code_patches[0]),
+                )
 
             with open(path.join(self.navie_work_dir, "code_patches.yml"), "w") as f:
                 f.write(
@@ -181,6 +171,9 @@ class Workflow:
 
         if self.code_patch:
             self.write_patch_file("code", self.code_patch)
+
+        for listener in self.solve_listeners:
+            listener.on_completed()
 
     def write_patch_file(self, patch_name: str, patch: Patch):
         patch_path = path.join(self.navie_work_dir, f"{patch_name}.patch")
@@ -217,9 +210,22 @@ Do not plan specific code changes. Just design the solution.
         # Re-run test generation up to the limit, or until a test patch is available.
         attempt = 1
         while attempt <= limit and not test_patch:
+            for listener in self.solve_listeners:
+                listener.on_start_patch(PatchType.TEST)
+
             test_patch = self.generate_test(attempt, observed_errors)
             if test_patch:
-                run_test_result = self.run_test("test", attempt, test_patch)
+                work_dir = self.generate_test_work_dir(self.navie_work_dir, attempt)
+                run_test_result = self.run_test(work_dir, test_patch, [])
+
+                for listener in self.solve_listeners:
+                    listener.on_run_test(
+                        TestType.PASS_TO_FAIL,
+                        [],
+                        test_patch,
+                        run_test_result.test_status,
+                    )
+
                 test_status = run_test_result.test_status
                 if test_status == TestStatus.PASSED:
                     self.log(
@@ -245,13 +251,18 @@ Do not plan specific code changes. Just design the solution.
 
             attempt += 1
 
+            for listener in self.solve_listeners:
+                listener.on_end_patch()
+
         if test_patch:
+            for listener in self.solve_listeners:
+                listener.on_start_patch(PatchType.TEST_INVERTED)
+
             # For fun, let's also invert the test, then run it and look for the marker error.
+            work_dir = self.generarte_test_invert_work_dir(self.navie_work_dir, 1)
             inverted_patch = self.invert_test(test_patch)
             if inverted_patch:
-                inverted_run_test_result = self.run_test(
-                    "inverted-test", 1, inverted_patch
-                )
+                inverted_run_test_result = self.run_test(work_dir, inverted_patch, [])
                 inverted_test_status = inverted_run_test_result.test_status
 
                 if inverted_test_status == TestStatus.PASSED:
@@ -276,6 +287,15 @@ Do not plan specific code changes. Just design the solution.
                     )
                     inverted_patch = None
 
+            for listener in self.solve_listeners:
+                listener.on_end_patch()
+
+        for listener in self.solve_listeners:
+            if test_patch:
+                listener.on_test_patch(test_patch)
+            if inverted_patch:
+                listener.on_test_inverted_patch(inverted_patch)
+
         return GenerateTestResult(test_patch, inverted_patch)
 
     @staticmethod
@@ -284,6 +304,15 @@ Do not plan specific code changes. Just design the solution.
             navie_work_dir = Path(navie_work_dir)
 
         return navie_work_dir / "generate-test" / str(attempt)
+
+    @staticmethod
+    def generarte_test_invert_work_dir(
+        navie_work_dir: Union[Path, str], attempt: int
+    ) -> Path:
+        if isinstance(navie_work_dir, str):
+            navie_work_dir = Path(navie_work_dir)
+
+        return navie_work_dir / "invert-test" / str(attempt)
 
     @staticmethod
     def generate_code_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
@@ -354,6 +383,8 @@ Do not plan specific code changes. Just design the solution.
 
         if not self.edit_test_file:
             self.edit_test_file = edit_test_file
+            for listener in self.solve_listeners:
+                listener.on_edit_test_file(edit_test_file)
 
         self.log("workflow", f"Test file to be modified: {edit_test_file}")
 
@@ -427,19 +458,19 @@ Available packages: {self.environment.packages}
 
     def run_test(
         self,
-        step,
-        attempt: int,
+        work_dir: Path,
         test_patch: Patch,
         code_patches: list[Patch] = [],
     ) -> RunTestResult:
-        self.log("workflow", f"Running test for attempt {attempt}")
-        work_dir = path.join(
-            Workflow.generate_test_work_dir(
-                self.navie_work_dir,
-                attempt,
-            ),
-            step,
-        )
+        self.log("workflow", f"Running test")
+
+        sha256 = hashlib.sha256()
+        sha256.update(str(test_patch).encode("utf-8"))
+        for patch in code_patches:
+            sha256.update(str(patch).encode("utf-8"))
+        digest = sha256.hexdigest()
+
+        work_dir = work_dir / "run_test" / digest
         run_test = RunTest(self.log, work_dir, self.repo, self.version, self.test_spec)
         if code_patches:
             run_test.code_patches = code_patches
@@ -500,7 +531,7 @@ Available packages: {self.environment.packages}
 
             subprocess.run(["git", "checkout", "."], check=True)
 
-        return lint_repair(
+        lint_repair_result = lint_repair(
             self.log,
             step_name,
             max_retries,
@@ -508,6 +539,13 @@ Available packages: {self.environment.packages}
             generator,
             clean_repo,
         )
+
+        for listener in self.solve_listeners:
+            listener.on_lint_repair(
+                lint_repair_result.attempts, lint_repair_result.patch != None
+            )
+
+        return lint_repair_result
 
     def clean_git_state(self):
         if not Workflow.in_git_controlled_source_dir():

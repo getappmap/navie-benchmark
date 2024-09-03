@@ -1,27 +1,38 @@
-* Report trajectories
-
-* Just report presence of test frameworks (pytest, unittest) to the solver?
-
-* Increase context size on retries
+* Generate a comprehensive CSV report after a solve run
+  Combine the predictions output with the solutions.json
 
 * Split workflow.run into solve_test and solve_code
-
-* Provide GitHub workflow file for solve_test
-
-* Output additional information and statistics that can be used to rate and improve the solver
 
 * Create the following instance sets:
   * verified_100 - Select every 5th instance from the verified set
   * verified_50 - Select every 10th instance from the verified set
 
-* Experiment with increasing the edited file limit and look at the solve stats and success rate
-
-* Run solver test suite in CI
-
-* Continue to add code coverage
+* Analyze performance vis a vis parameters:
+  Edited file limit
+  Lint retries
+  Test retries
+  Code retries
 
 * Test with Anthropic
   Bug in progress https://github.com/getappmap/appmap-js/issues/1966
+
+* Provide GitHub workflow file for solve_test
+
+* Increase context size on retries
+
+* Pulling images that are not present locally: sweb.eval.x86_64.django__django-13658:latest, sweb.eval.x86_64.scikit-learn__scikit-learn-13779:latest
+  Pulling images:   0%|          | 0/2 [00:00<?, ?img/s]
+  Pulling images:  50%|█████     | 1/2 [00:08<00:08,  8.20s/img]
+  Pulling images: 100%|██████████| 2/2 [00:09<00:00,  4.03s/img]
+  Pulling images: 100%|██████████| 2/2 [00:09<00:00,  4.66s/img]
+  Initialized empty Git repository in /home/runner/work/navie-benchmark/navie-benchmark/solve/django__django-13658/source/.git/
+  HEAD is now at 7c1fe5a Baseline commit
+  HEAD is now at 7c1fe5a Baseline commit
+  HEAD is now at 7c1fe5a Baseline commit
+  HEAD is now at 7c1fe5a Baseline commit
+  HEAD is now at 7c1fe5a Baseline commit
+  HEAD is now at 7c1fe5a Baseline commit
+  HEAD is now at 7c1fe5a Baseline commit
 
 * How to report the problem when there is an LLM error? Global retry?
 
@@ -56,22 +67,12 @@
     [solve] (pytest-dev__pytest-7490) Changing directory to /Users/kgilpin/source/appland/navie-benchmark/solve/pytest-dev__pytest-7490/source
     [detect-environment] (pytest-dev__pytest-7490) Detecting Python environment for pytest-dev__pytest-7490...
 
-
 * Found 2 changes, but the limit is 1
 
 https://github.com/getappmap/navie-benchmark/actions/runs/10655942503/job/29534052664
 [workflow/generate-code] (pytest-dev__pytest-7490) Found 2 changes, but the limit is 1
 [workflow/generate-code] (pytest-dev__pytest-7490) Applied code changes to src/_pytest/skipping.py, src/_pytest/nodes.py
 [code/lint-repair] (pytest-dev__pytest-7490) Code has lint errors: src/_pytest/nodes.py:287:25: F821 undefined name 'xfailed_key'
-
-* Only request image build for instances that can't be pulled. It doesn't seem to check the cache.
-  build_instance_images
-
-  elif spec.instance_image_key not in existing_images:
-      data_to_build.append(instance)
-
-  print(f"Building instance images for {len(test_specs)} instances")
-  successful, failed = list(), list()
 
 * Continue to expand the built images
 
@@ -88,3 +89,6 @@ Terms: +ModelChoiceField ValidationError invalid invalid_choice value template D
 940ms [vectorTerms] +ModelChoiceField ValidationError invalid invalid_choice value template Django
 Explain received context request: search
 [collectContext] keywords: model choice modelchoice field choicefield validation error validationerror invalid invalid choice invalidchoice value template django
+
+* Just report presence of test frameworks (pytest, unittest) to the solver?
+
