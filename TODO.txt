@@ -1,11 +1,15 @@
+* Collect and report on the artifacts, per:
+  
+  https://github.com/getappmap/navie-benchmark/actions/runs/10701737269/job/29668765427#step:5:273
+
 * Generate a comprehensive CSV report after a solve run
   Combine the predictions output with the solutions.json
 
 * Split workflow.run into solve_test and solve_code
 
 * Create the following instance sets:
-  * verified_100 - Select every 5th instance from the verified set
-  * verified_50 - Select every 10th instance from the verified set
+  * verified_20_pct - Select every 5th instance from the verified set
+  * verified_10_pct - Select every 10th instance from the verified set
 
 * Analyze performance vis a vis parameters:
   Edited file limit
