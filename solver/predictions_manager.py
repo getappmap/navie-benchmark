@@ -52,12 +52,9 @@ class PredictionsManager:
                 f.write(predictions)
 
     @staticmethod
-    def add_prediction(predictions_file: Optional[str], prediction: dict) -> None:
-        if predictions_file:
-            with open(predictions_file, "a") as f:
-                f.write(dumps(prediction) + "\n")
-        else:
-            print(dumps(prediction))
+    def add_prediction(predictions_file: str, prediction: dict) -> None:
+        with open(predictions_file, "a") as f:
+            f.write(dumps(prediction) + "\n")
 
     @staticmethod
     def _generate_predictions_name(instance_set, num_runners, runner_index) -> str:
