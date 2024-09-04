@@ -13,6 +13,16 @@ on:
       instance_set:
         description: "Instance set to solve"
         type: string
+      limits:
+        description: "Limits to apply to the solver"
+        type: choice
+        required: true
+        options:
+          - file=1 test_lint_retry=1 test_status_retry=1 code_lint_retry=1 code_status_retry=1
+          - file=1 test_lint_retry=2 test_status_retry=2 code_lint_retry=2 code_status_retry=2
+          - file=1 test_lint_retry=2 test_status_retry=3 code_lint_retry=2 code_status_retry=3
+          - file=1 test_lint_retry=3 test_status_retry=4 code_lint_retry=3 code_status_retry=4
+          - file=1 test_lint_retry=3 test_status_retry=5 code_lint_retry=3 code_status_retry=5
       runner:
         description: "Runner type"
         required: true
@@ -49,6 +59,7 @@ jobs:
         run: |
           echo "llm: ${{ github.event.inputs.llm }}"
           echo "instance_set: ${{ github.event.inputs.instance_set }}"
+          echo "limits: ${{ github.event.inputs.limits }}"
           echo "runner: ${{ github.event.inputs.runner }}"
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
           echo "name: ${{ github.event.inputs.name }}"
@@ -116,6 +127,7 @@ jobs:
     env:
       NUM_RUNNERS: ${{ inputs.num_runners }}
       INSTANCE_SET: ${{ inputs.instance_set }}
+      LIMITS: ${{ inputs.limits }}
       LLM: ${{ inputs.llm }}
     defaults:
       run:
@@ -179,6 +191,7 @@ jobs:
           fi
 
           instance_set="${INSTANCE_SET:-smoke}"
+          limits="${LIMITS:-file=1 test_lint_retry=2 test_status_retry=2 code_lint_retry=2 code_status_retry=2}"
           num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
 
@@ -189,8 +202,9 @@ jobs:
 
           python -m solver.solve \
             --instance_set "${instance_set}" \
+            --limit ${limits} \
             --num_runners "${num_runners}" \
-            --runner_index "${runner_index}" \
+            --runner_index "${runner_index}"
 
           python -m swebench.harness.run_evaluation \
             --predictions_path predictions.jsonl \
