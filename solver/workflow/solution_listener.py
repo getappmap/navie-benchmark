@@ -14,6 +14,7 @@ from solver.workflow.patch import Patch
 
 
 class Solution(TypedDict):
+    instance_id: str
     code_patch: Optional[Patch]
     test_patch: Optional[Patch]
     test_inverted_patch: Optional[Patch]
