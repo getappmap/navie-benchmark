@@ -209,19 +209,12 @@ jobs:
           name: predictions-${{ matrix.index }}
           path: predictions.jsonl
 
-      - name: Report evaluations
+      - name: Report harness logs
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: evaluations-${{ matrix.index }}
-          path: evaluations
-
-      - name: Report harness logs
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: harness-logs-${{ matrix.index }}
-          path: logs
+          name: run_evaluation-${{ matrix.index }}
+          path: logs/run_evaluation
 
       - name: Report solver logs
         uses: actions/upload-artifact@v4
@@ -248,10 +241,6 @@ jobs:
         with:
           path: artifacts
 
-      # - name: Unpack artifacts
-      #   run: |
-      #     ./bin/unpack_artifacts.sh
-
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -264,15 +253,65 @@ jobs:
           . ./venv/bin/activate
           pip install -e .
 
-          find artifacts
+          find artifacts -maxdepth 3
 
-      # - name: Report results
-      #   run: |
-      #     . ./venv/bin/activate
-      #     python -m solver.report
+          # Artifacts dir contains files like this:
+          # artifacts/solve-0
+          # artifacts/solve-0/scikit-learn__scikit-learn-13779
+          # artifacts/solve-0/scikit-learn__scikit-learn-13779/navie
+          # artifacts/solve-0/scikit-learn__scikit-learn-13779/navie/solution.json
+          # artifacts/solve-0/scikit-learn__scikit-learn-13779/navie/plan
+          # artifacts/solve-1
+          # artifacts/solve-1/django__django-13779
+          # ...
+          # Create a solve directory and rsync the contents of each solve-* directory into it
+          # solution.json files and other structured data that will be used by the report script is left as-is
+          mkdir -p solve
+          for dir in artifacts/solve-*; do
+            rsync -a $dir/ solve/
+          done
 
-      # - name: Upload report
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: report
-      #     path: report.csv
+          # Artifacts dir contains files like this:
+          # artifacts/run_evaluation-1
+          # artifacts/run_evaluation-1/...
+          # artifacts/run_evaluation-0
+          # artifacts/run_evaluation-0/...
+          # Roughly mimic the run_evaluation directory structure, except don't worry about the model name or run_id
+          mkdir -p logs/run_evaluation
+          for dir in artifacts/run_evaluation-*; do
+            rsync -a $dir/ logs/run_evaluation/
+          done
+
+          # Artifacts dir contains files like this:
+          # logs/solve/evaluations-1
+          # artifacts/evaluations-1/navie_082024+gpt-4o.smoke.json
+          # artifacts/evaluations-0
+          # artifacts/evaluations-0/navie_082024+gpt-4o.smoke.json
+          # These can be left as-is, because being JSON they need to be combined by the report script
+
+
+          # Predictions are available:
+          # artifacts/predictions-1
+          # artifacts/predictions-1/predictions.jsonl
+          # artifacts/predictions-0
+          # artifacts/predictions-0/predictions.jsonl
+          # Concatenate these into a single file
+          for file in artifacts/predictions-*/*.jsonl; do
+            cat $file >> predictions.jsonl
+          done
+
+          # TODO: Remove this, just printing now for checking purposes
+          find solve -maxdepth 3
+          ls -al predictions.jsonl
+          find logs -maxdepth 3
+
+      - name: Report results
+        run: |
+          . ./venv/bin/activate
+          python -m solver.report
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: report.csv
