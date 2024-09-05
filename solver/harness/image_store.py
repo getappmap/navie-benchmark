@@ -157,6 +157,12 @@ class ImageStore:
 
         remote_image_key = f"ghcr.io/getappmap/{image_name}"
         try:
+            self.docker_client.images.get(image_name).tag(remote_image_key)
+        except docker.errors.ImageNotFound as e:  # type: ignore
+            print(f"Error tagging image: {image_name}. Error: {e}")
+            return
+
+        try:
             self.docker_client.images.push(remote_image_key)
         except docker.errors.APIError as e:  # type: ignore
             print(f"Error pushing image: {remote_image_key}. Error: {e}")
