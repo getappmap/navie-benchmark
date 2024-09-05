@@ -83,6 +83,20 @@ class TestChooseTestFile(unittest.TestCase):
 
     @patch("solver.workflow.choose_test_file.Editor")
     @patch("solver.workflow.choose_test_file.os.path.exists")
+    def test_remove_line_numbers_from_path(self, exists_mock, Editor_mock):
+        test = "test_file.py:1-10"
+
+        exists_mock.return_value = True
+        editor_instance_mock = Editor_mock.return_value
+        editor_instance_mock.search.return_value = f"<!-- file: {test} -->"
+
+        result = choose_test_file(
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+        )
+        self.assertEqual(result, Path("test_file.py"))
+
+    @patch("solver.workflow.choose_test_file.Editor")
+    @patch("solver.workflow.choose_test_file.os.path.exists")
     @patch("solver.workflow.choose_test_file.os.getcwd")
     def test_invalid_file_paths(self, getcwd_mock, exists_mock, Editor_mock):
         getcwd_mock.return_value = "/other/directory"

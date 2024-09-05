@@ -45,7 +45,15 @@ Do not include line numbers or any location within the file. Just the file path.
                 return test_relative
         return test
 
+    def normalize_path(test: str) -> str:
+        """
+        The path may be generated with line numbers, like path/to/file.py:1-10
+        Match the path without line numbers.
+        """
+        return test.split(":")[0]
+
     tests_to_modify = [resolve_test_path(test) for test in tests_to_modify]
+    tests_to_modify = [normalize_path(test) for test in tests_to_modify]
     tests_to_modify = [test for test in tests_to_modify if os.path.exists(test)]
 
     if len(tests_to_modify) == 0:
