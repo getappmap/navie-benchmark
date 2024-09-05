@@ -174,7 +174,8 @@ Do not use Python features that are not available in this Python version.
         all_content = "\n".join(content)
 
         test_dir = path.dirname(test_file_name)
-        os.makedirs(test_dir, exist_ok=True)
+        if test_dir:
+            os.makedirs(test_dir, exist_ok=True)
         with open(test_file_name, "w") as f:
             f.write(all_content)
 
