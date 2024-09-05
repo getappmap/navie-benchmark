@@ -101,7 +101,7 @@ class ImageStore:
             dataset_to_build = self.image_list_to_dataset(
                 image_key_function, build_images, dataset
             )
-            image_names = [image_key_function(x) for x in dataset_to_build]
+            image_names = {image_key_function(x) for x in dataset_to_build}
             message = [f"Building"]
             if self.push_images:
                 message.append("and pushing")
@@ -120,7 +120,16 @@ class ImageStore:
         image_type: str,
         dataset: list[TestSpec],
     ):
-        image_names = {image_key_function(x) for x in dataset}
+        image_names = set()
+        datasets_to_build = set()
+        for test_spec in dataset:
+            image_name = image_key_function(test_spec)
+            if image_name in image_names:
+                continue
+
+            image_names.add(image_name)
+            datasets_to_build.add(test_spec)
+
         print(f"Building {image_type} images: {', '.join(image_names)}")
 
         def build_and_push_image(test_spec: TestSpec):
@@ -129,7 +138,9 @@ class ImageStore:
                 self.push_image(image_key_function(test_spec))
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = [executor.submit(build_and_push_image, x) for x in dataset]
+            futures = [
+                executor.submit(build_and_push_image, x) for x in datasets_to_build
+            ]
             with tqdm(
                 futures, desc=f"Building {image_type} images", unit="img"
             ) as pbar:
@@ -200,11 +211,11 @@ class ImageStore:
         image_names = [ImageStore.ensure_image_tag(x) for x in image_names]
         not_found_images = []
 
-        unavailable_images = [
+        unavailable_images = {
             name
             for name in image_names
             if not self.docker_client.images.list(name=name)
-        ]
+        }
         if not unavailable_images:
             print(f"All {image_type} images are already present locally.")
             return []
