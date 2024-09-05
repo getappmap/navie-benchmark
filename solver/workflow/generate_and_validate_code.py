@@ -76,6 +76,16 @@ class Result:
         self.code_patches = code_patches
 
 
+def empty_patch(file_name: Path) -> Patch:
+    return Patch(
+        f"""diff --git a/{file_name} b/{file_name}
+index 0000000..0000000
+--- a/{file_name}
++++ b/{file_name}
+"""
+    )
+
+
 def generate_and_validate_code(
     context: Context,
     plan: str,
@@ -104,13 +114,7 @@ def generate_and_validate_code(
                     "generate-and-validate-code",
                     f"Running pass-to-pass test for attempt {attempt}",
                 )
-                empty_patch_for_edit_test_file = Patch(
-                    f"""diff --git a/{pass_to_pass_test_file} b/{pass_to_pass_test_file}
-index 0000000..0000000
---- a/{pass_to_pass_test_file}
-+++ b/{pass_to_pass_test_file}
-"""
-                )
+                empty_patch_for_edit_test_file = empty_patch(pass_to_pass_test_file)
 
                 run_test_result = run_test(
                     empty_patch_for_edit_test_file, [code_patch], attempt
@@ -189,10 +193,10 @@ index 0000000..0000000
                 )
                 code_patch = None
 
-        attempt += 1
+            for listener in context.solve_listeners:
+                listener.on_end_patch()
 
-        for listener in context.solve_listeners:
-            listener.on_end_patch()
+        attempt += 1
 
     return Result(
         code_patch,

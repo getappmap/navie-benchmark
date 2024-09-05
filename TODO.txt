@@ -1,15 +1,6 @@
-* Collect and report on the artifacts, per:
-  
-  https://github.com/getappmap/navie-benchmark/actions/runs/10701737269/job/29668765427#step:5:273
-
-* Generate a comprehensive CSV report after a solve run
-  Combine the predictions output with the solutions.json
+* Build and push images for verified_20_pct
 
 * Split workflow.run into solve_test and solve_code
-
-* Create the following instance sets:
-  * verified_20_pct - Select every 5th instance from the verified set
-  * verified_10_pct - Select every 10th instance from the verified set
 
 * Analyze performance vis a vis parameters:
   Edited file limit
@@ -17,12 +8,97 @@
   Test retries
   Code retries
 
-* Test with Anthropic
-  Bug in progress https://github.com/getappmap/appmap-js/issues/1966
+* Try including the failed patch in the prompt for a follow-up testgen to a failed test
 
 * Provide GitHub workflow file for solve_test
 
-* Increase context size on retries
+* Increase context size on retries?
+
+* Found 2 changes, but the limit is 1
+
+  Does this cause the solver to abort?
+
+* Error in navie
+
+https://github.com/getappmap/navie-benchmark/actions/runs/10706489181/job/29684658972
+
+The issue description will be provided as context within a `<issue-description>` tag.
+Tokens (prompt/compl/total): 3286/18/3304, cost: $0.02
+List files response:
+{
+  "file_names": ["tests/postgres_tests/test_query.py"]
+}
+TypeError: fileNames.join is not a function
+    at ContextService.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:53:95)
+    at Generator.next (<anonymous>)
+    at /home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:8:71
+    at new Promise (<anonymous>)
+    at __awaiter (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:4:12)
+    at ContextService.locationContext (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:52:16)
+    at FileContentFetcher.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:23:39)
+    at Generator.next (<anonymous>)
+    at fulfilled (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:5:58)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Handling exception: TypeError: fileNames.join is not a function
+    at ContextService.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:53:95)
+    at Generator.next (<anonymous>)
+    at /home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:8:71
+    at new Promise (<anonymous>)
+    at __awaiter (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:4:12)
+    at ContextService.locationContext (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:52:16)
+    at FileContentFetcher.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:23:39)
+    at Generator.next (<anonymous>)
+    at fulfilled (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:5:58)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Stack trace: TypeError: fileNames.join is not a function
+    at ContextService.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:53:95)
+    at Generator.next (<anonymous>)
+    at /home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:8:71
+    at new Promise (<anonymous>)
+    at __awaiter (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:4:12)
+    at ContextService.locationContext (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:52:16)
+    at FileContentFetcher.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:23:39)
+    at Generator.next (<anonymous>)
+    at fulfilled (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:5:58)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+* Malformed patch
+
+<change>
+<file change-number-for-this-file="3">/home/runner/work/navie-benchmark/navie-benchmark/solve/astropy__astropy-14365/source/astropy/io/ascii/qdp.py</file>
+<original line-count="14" no-ellipsis="true"><![CDATA[
+if datatype.startswith("data"):
+            # The first time I find data, I define err_specs
+            if err_specs == {} and command_lines != "":
+                for cline in command_lines.strip().split("\n"):
+                    command = cline.strip().split()
+                    # This should never happen, but just in case.
+                    if len(command) < 3:
+                        continue
+                    err_specs[command[1].lower()] = [int(c) for c in command[2:]]
+            if colnames is None:
+                colnames = _interpret_err_lines(err_specs, ncol, names=input_colnames)
+
+            if current_rows is None:
+                current_rows = []
+]]></original>
+<modified line-count="14" no-ellipsis="true"><![CDATA[
+if datatype.startswith("data"):
+            # The first time I find data, I define err_specs
+            if err_specs == {} and command_lines != "":
+                for cline in command_lines.strip().split("\n"):
+                    command = cline.strip().split()
+                    # This should never happen, but just in case.
+                    if len(command) < 3:
+                        continue
+                    err_specs[command[1].lower()] = [int(c) for c in command[2:]]
+            if colnames is None:
+                colnames = _interpret_err_lines(err_specs, ncol, names=input_colnames)
+
+            if current_rows is None:
+                current_rows = []
+]]></modified>
+</change>
 
 * Pulling images that are not present locally: sweb.eval.x86_64.django__django-13658:latest, sweb.eval.x86_64.scikit-learn__scikit-learn-13779:latest
   Pulling images:   0%|          | 0/2 [00:00<?, ?img/s]
