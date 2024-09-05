@@ -23,7 +23,7 @@ Output the result as the file path, and nothing else.
 
 Do not include line numbers or any location within the file. Just the file path.
 """,
-        options="/noprojectinfo /include=test",
+        options="/noprojectinfo /noterms /noclassify /include=test",
         extension="txt",
     )
 

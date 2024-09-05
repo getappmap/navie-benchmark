@@ -73,7 +73,7 @@ Do not use Python features that are not available in this Python version.
         return editor.generate(
             plan="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
+            options=r"/noprojectinfo /noterms /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 
     # Apply code changes to the files in the current directory and return a patch.

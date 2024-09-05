@@ -104,7 +104,7 @@ Do not use Python features that are not available in this Python version.
         return Editor(work_dir, trajectory_file=self.trajectory_file).test(
             issue="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo",
+            options=r"/noprojectinfo /noterms /noclassify",
         )
 
     # Invert the outcome of the test case, so that the test will now fail specifically
@@ -161,7 +161,7 @@ Do not use Python features that are not available in this Python version.
         return Editor(work_dir, trajectory_file=self.trajectory_file).test(
             issue="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo /nocontext",
+            options=r"/noprojectinfo /noterms /noclassify",
         )
 
     # Apply code changes to the files in the current directory and return a patch.

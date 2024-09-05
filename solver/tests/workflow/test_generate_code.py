@@ -58,7 +58,7 @@ class TestGenerateCode(unittest.TestCase):
             editor_instance_mock.generate.assert_called_once_with(
                 plan="Sample plan",
                 prompt=ANY,
-                options="/noprojectinfo /exclude=\\btests?\\b|\\btesting\\b|\\btest_|_test\\b",
+                options="/noprojectinfo /noterms /noclassify /exclude=\\btests?\\b|\\btesting\\b|\\btest_|_test\\b",
             )
 
             # Test apply method
