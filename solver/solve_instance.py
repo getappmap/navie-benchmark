@@ -106,7 +106,7 @@ def main(
         pwd = Path.cwd()
         logger_fn("solve", f"Changing directory to {source_dir}")
 
-        solution_listener = SolutionListener()
+        solution_listener = SolutionListener(instance_id)
         chdir(source_dir)
         workflow = None
         try:

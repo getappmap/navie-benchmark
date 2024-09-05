@@ -51,9 +51,34 @@ index 1ba093e..e411e86 100644
 class TestSolveListenerTestCase:
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.listener = SolutionListener()
+        self.instance_id = "django__django-11095"
+        self.listener = SolutionListener(self.instance_id)
 
-    @patch.object(SolutionListener, 'count_llm_chars', return_value=(1000, 20))
+    @patch.object(SolutionListener, "count_llm_chars", return_value=(1000, 20))
+    def test_minimal_events_received(self, mock_count_llm_chars):
+        self.listener.on_solve_start(Path("path/to/work_dir"))
+        self.listener.on_completed()
+
+        solution = self.listener.build_solution()
+        solution_attrs = solution_to_plain_types(solution)
+        assert solution_attrs == {
+            "instance_id": "django__django-11095",
+            "code_patch": None,
+            "test_patch": None,
+            "test_inverted_patch": None,
+            "num_sent_chars": 1000,
+            "num_received_chars": 20,
+            "elapsed_time": solution["elapsed_time"],
+            "lint_repair_count": 0,
+            "test_generation_attempts": 0,
+            "code_generation_attempts": 0,
+            "pass_to_pass": False,
+            "pass_to_fail": False,
+            "fail_to_pass": False,
+            "code_patch_score": None,
+        }
+
+    @patch.object(SolutionListener, "count_llm_chars", return_value=(1000, 20))
     def test_workflow_simulation(self, mock_count_llm_chars):
         # Simulate the workflow
         self.listener.on_solve_start(Path("path/to/work_dir"))
@@ -73,6 +98,7 @@ class TestSolveListenerTestCase:
         solution = self.listener.build_solution()
         solution_attrs = solution_to_plain_types(solution)
         assert solution_attrs == {
+            "instance_id": "django__django-11095",
             "code_patch": CODE_PATCH,
             "test_patch": TEST_PATCH,
             "test_inverted_patch": None,
