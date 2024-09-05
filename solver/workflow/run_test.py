@@ -124,8 +124,6 @@ class RunTest:
         test_script_lines = [
             f"""#!/bin/bash
 
-set -x
-
 cd {repo_directory}
 source /opt/miniconda3/bin/activate
 conda activate {env_name}
