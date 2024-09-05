@@ -120,7 +120,7 @@ class ImageStore:
         image_type: str,
         dataset: list[TestSpec],
     ):
-        image_names = [image_key_function(x) for x in dataset]
+        image_names = {image_key_function(x) for x in dataset}
         print(f"Building {image_type} images: {', '.join(image_names)}")
 
         def build_and_push_image(test_spec: TestSpec):
