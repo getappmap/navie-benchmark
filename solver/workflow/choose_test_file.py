@@ -13,11 +13,12 @@ def choose_test_file(log, work_dir, trajectory_file, issue_content) -> Optional[
         log_dir=work_dir,
         trajectory_file=trajectory_file,
     ).search(
-        f"""Identify a single test case that is most related to the following issue:
+        issue_content,
+        prompt="""## Task
 
-{issue_content}
-""",
-        format="""## Format instructions
+Identify a single test case that is most related to the issue.        
+        
+## Format instructions
         
 Output the result as the file path, and nothing else.
 

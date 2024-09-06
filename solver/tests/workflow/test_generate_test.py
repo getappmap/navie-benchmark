@@ -12,13 +12,15 @@ class TestGenerateTest(unittest.TestCase):
         self.log_mock = MagicMock()
         self.work_dir = Path("/work/directory")
         self.trajectory_file = str(self.work_dir / "trajectory.jsonl")
-        self.test_file_path = Path("/work/directory/test_file.py")
+        self.edit_test_file = Path("/work/directory/base_test_file.py")
+        self.test_file_path = Path("/work/directory/new_test_file.py")
         self.issue_text = "Sample issue text"
         self.observed_errors = ["Error 1", "Error 2"]
         self.generator = GenerateTest(
             self.log_mock,
             self.work_dir,
             self.trajectory_file,
+            self.edit_test_file,
             self.test_file_path,
             self.issue_text,
             self.observed_errors,
@@ -41,7 +43,7 @@ class TestGenerateTest(unittest.TestCase):
         extract_fenced_content_mock,
     ):
         git_diff_mock.return_value = (
-            "diff --git a/test_file.py b/test_file.py\nindex 123..456 789"
+            "diff --git a/test_new.py b/test_new.py\nindex 123..456 789"
         )
         extract_fenced_content_mock.return_value = ["Generated test content"]
 

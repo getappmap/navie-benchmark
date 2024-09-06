@@ -38,22 +38,35 @@ class GenerateCode:
     # If lint_errors is provided, include prompting to avoid them.
     def generate(self, attempt: int, lint_errors: list = []) -> str:
         plan = [
-            self.plan,
+            f"""<plan>
+{self.plan}
+</plan>
+""",
         ]
         if lint_errors:
             lint_errors_str = "\n".join(lint_errors)
             plan.append(
-                f"""## Preventing linter errors
-                
-Ensure that the following lint errors do not occur:
-
-<lint-errors>                        
+                f"""<lint-errors>                        
 {lint_errors_str}
 </lint-errors>
 """
             )
 
         prompt = [
+            """## Task
+                  
+Implement the code changes described in the plan.
+"""
+        ]
+        if lint_errors:
+            prompt.append(
+                f"""## Lint errors
+
+Ensure that the indicated lint errors do not occur in your solution.
+"""
+            )
+
+        prompt.append(
             f"""## Output format
 
 {xml_format_instructions()}
@@ -64,7 +77,7 @@ Do not use Python features that are not available in this Python version.
 
 {self.python_version}
 """
-        ]
+        )
 
         editor = Editor(
             path.join(self.work_dir, "generate", str(attempt)),
