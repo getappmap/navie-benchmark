@@ -121,14 +121,14 @@ class ImageStore:
         dataset: list[TestSpec],
     ):
         image_names = set()
-        datasets_to_build = set()
+        test_specs_to_build_by_instance_id = {}
         for test_spec in dataset:
             image_name = image_key_function(test_spec)
             if image_name in image_names:
                 continue
 
             image_names.add(image_name)
-            datasets_to_build.add(test_spec)
+            test_specs_to_build_by_instance_id[image_name] = test_spec
 
         print(f"Building {image_type} images: {', '.join(image_names)}")
 
@@ -139,7 +139,8 @@ class ImageStore:
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             futures = [
-                executor.submit(build_and_push_image, x) for x in datasets_to_build
+                executor.submit(build_and_push_image, x)
+                for x in test_specs_to_build_by_instance_id.values()
             ]
             with tqdm(
                 futures, desc=f"Building {image_type} images", unit="img"
