@@ -150,11 +150,15 @@ test case code.
 
 Never use the @skipIf annotation.
 
-## Python environment
+## Python version
 
 Do not use Python features that are not available in this Python version.
 
 {self.python_version}
+
+Do not write conditional logic in the test that checks the Python version. The specific
+version of Python that you need has been installed and configured for this test. The
+test will only ever run against the specified Python version.
 """
         ]
 

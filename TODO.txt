@@ -1,6 +1,16 @@
-* Build and push images for verified_20_pct
+* Test - generate one test function only
 
-* Split workflow.run into solve_test and solve_code
+* Test - if test fails, feedback patch and test failure back into the generator?
+
+* Test - Utilize bigger context?
+
+* Generates the same bad patch on both run_test
+  
+  /Users/kgilpin/Downloads/solve-0/scikit-learn__scikit-learn-13328/navie/generate-code/2/run_test/6db4f467feabd60a471aa9f5d3169f28326cd0bd40bbc7a8f8b20a84adbf91a2/run_test.log
+
+  Try a new test to patch
+
+* Sonnet is timing out, per the error logs
 
 * Analyze performance vis a vis parameters:
   Edited file limit
@@ -12,55 +22,55 @@
 
 * Provide GitHub workflow file for solve_test
 
-* Increase context size on retries?
+* Increase context size on retries? Or overall? Or make configurable?
 
-* Found 2 changes, but the limit is 1
+* Sonnet is generating test changes
+  Prompt: Do not generate test cases. Test cases are being created separately.
+  Filter: Remove test cases from code patches.
 
-  Does this cause the solver to abort?
+  [workflow/generate-code] (django__django-15572) Found 2 changes, but the limit is 1
+  [workflow/generate-code] (django__django-15572) Applied code changes to django/template/autoreload.py, tests/template_tests/test_autoreload.py
 
-* Error in navie
+* "Code patch is not optimal" can be emitted when there is no successful edit test file
 
-https://github.com/getappmap/navie-benchmark/actions/runs/10706489181/job/29684658972
+[generate-and-validate-code] (django__django-13658) Code patch is not optimal. Will look for a better patch.
 
-The issue description will be provided as context within a `<issue-description>` tag.
-Tokens (prompt/compl/total): 3286/18/3304, cost: $0.02
-List files response:
-{
-  "file_names": ["tests/postgres_tests/test_query.py"]
-}
-TypeError: fileNames.join is not a function
-    at ContextService.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:53:95)
-    at Generator.next (<anonymous>)
-    at /home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:8:71
-    at new Promise (<anonymous>)
-    at __awaiter (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:4:12)
-    at ContextService.locationContext (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:52:16)
-    at FileContentFetcher.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:23:39)
-    at Generator.next (<anonymous>)
-    at fulfilled (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:5:58)
+* ModelChoiceField doesn't select the expected file (django/forms/models)
+
+Context: ModelChoiceField Value ValidationError invalid choice Django
+Instructions: Summarize the issue and design a solution involving at most one file modification.
+---
+Terms: +ModelChoiceField ValidationError invalid invalid_choice value template Django
+940ms [vectorTerms] +ModelChoiceField ValidationError invalid invalid_choice value template Django
+Explain received context request: search
+[collectContext] keywords: model choice modelchoice field choicefield validation error validationerror invalid invalid choice invalidchoice value template django
+
+* Just report presence of test frameworks (pytest, unittest) to the solver?
+
+* Anthropic - backoff and retry
+
+The question will be provided as context within a `<question>` tag.
+[context-service] Searching for context
+Error: Failed to complete: Connection error.
+    at AnthropicCompletionService.complete_1 (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:185:23)
+    at complete_1.throw (<anonymous>)
+    at resume (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:24:44)
+    at reject (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:27:30)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-Handling exception: TypeError: fileNames.join is not a function
-    at ContextService.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:53:95)
-    at Generator.next (<anonymous>)
-    at /home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:8:71
-    at new Promise (<anonymous>)
-    at __awaiter (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:4:12)
-    at ContextService.locationContext (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:52:16)
-    at FileContentFetcher.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:23:39)
-    at Generator.next (<anonymous>)
-    at fulfilled (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:5:58)
+Handling exception: Error: Failed to complete: Connection error.
+    at AnthropicCompletionService.complete_1 (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:185:23)
+    at complete_1.throw (<anonymous>)
+    at resume (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:24:44)
+    at reject (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:27:30)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-Stack trace: TypeError: fileNames.join is not a function
-    at ContextService.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:53:95)
-    at Generator.next (<anonymous>)
-    at /home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:8:71
-    at new Promise (<anonymous>)
-    at __awaiter (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:4:12)
-    at ContextService.locationContext (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/context-service.js:52:16)
-    at FileContentFetcher.<anonymous> (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:23:39)
-    at Generator.next (<anonymous>)
-    at fulfilled (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/file-content-fetcher.js:5:58)
+Stack trace: Error: Failed to complete: Connection error.
+    at AnthropicCompletionService.complete_1 (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:185:23)
+    at complete_1.throw (<anonymous>)
+    at resume (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:24:44)
+    at reject (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:27:30)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+* Split workflow.run into solve_test and solve_code
 
 * Malformed patch
 
@@ -99,20 +109,6 @@ if datatype.startswith("data"):
                 current_rows = []
 ]]></modified>
 </change>
-
-* Pulling images that are not present locally: sweb.eval.x86_64.django__django-13658:latest, sweb.eval.x86_64.scikit-learn__scikit-learn-13779:latest
-  Pulling images:   0%|          | 0/2 [00:00<?, ?img/s]
-  Pulling images:  50%|█████     | 1/2 [00:08<00:08,  8.20s/img]
-  Pulling images: 100%|██████████| 2/2 [00:09<00:00,  4.03s/img]
-  Pulling images: 100%|██████████| 2/2 [00:09<00:00,  4.66s/img]
-  Initialized empty Git repository in /home/runner/work/navie-benchmark/navie-benchmark/solve/django__django-13658/source/.git/
-  HEAD is now at 7c1fe5a Baseline commit
-  HEAD is now at 7c1fe5a Baseline commit
-  HEAD is now at 7c1fe5a Baseline commit
-  HEAD is now at 7c1fe5a Baseline commit
-  HEAD is now at 7c1fe5a Baseline commit
-  HEAD is now at 7c1fe5a Baseline commit
-  HEAD is now at 7c1fe5a Baseline commit
 
 * How to report the problem when there is an LLM error? Global retry?
 
@@ -153,22 +149,4 @@ https://github.com/getappmap/navie-benchmark/actions/runs/10655942503/job/295340
 [workflow/generate-code] (pytest-dev__pytest-7490) Found 2 changes, but the limit is 1
 [workflow/generate-code] (pytest-dev__pytest-7490) Applied code changes to src/_pytest/skipping.py, src/_pytest/nodes.py
 [code/lint-repair] (pytest-dev__pytest-7490) Code has lint errors: src/_pytest/nodes.py:287:25: F821 undefined name 'xfailed_key'
-
-* Continue to expand the built images
-
-* "Code patch is not optimal" can be emitted when there is no successful edit test file
-
-[generate-and-validate-code] (django__django-13658) Code patch is not optimal. Will look for a better patch.
-
-* ModelChoiceField doesn't select the expected file (django/forms/models)
-
-Context: ModelChoiceField Value ValidationError invalid choice Django
-Instructions: Summarize the issue and design a solution involving at most one file modification.
----
-Terms: +ModelChoiceField ValidationError invalid invalid_choice value template Django
-940ms [vectorTerms] +ModelChoiceField ValidationError invalid invalid_choice value template Django
-Explain received context request: search
-[collectContext] keywords: model choice modelchoice field choicefield validation error validationerror invalid invalid choice invalidchoice value template django
-
-* Just report presence of test frameworks (pytest, unittest) to the solver?
 
