@@ -1,27 +1,4 @@
-* /Users/kgilpin/source/appland/navie-benchmark/solve/astropy__astropy-12907/navie/generate-code/1/generate/1/generate/generate.log
-
-List files response:
-```json
-[
-  "/Users/kgilpin/source/appland/navie-benchmark/solve/astropy__astropy-12907/source/astropy/modeling/separable.py"
-]
-```
-[context-service] Retrieving full context of files: /Users/kgilpin/source/appland/navie-benchmark/solve/astropy__astropy-12907/source/astropy/modeling/separable.py
-Explain received context request: search
-[collectContext] keywords: 
-No context found
-1032ms [contextLookup] not found
-[context-service] Added 0 characters of file context
-[context-service] Searching for context
-Explain received context request: search
-
-Absolute paths don't resolve.
-
-* Review use of /noterms - move context to the codeSelection due to performance considerations?
-
 * Test - generate one test function only
-
-* Is there any use of codeSelection needed?
 
 * Test - if test fails, feedback patch and test failure back into the generator?
 

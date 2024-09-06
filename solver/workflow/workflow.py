@@ -371,17 +371,20 @@ Do not plan specific code changes. Just design the solution.
             trajectory_file=self.trajectory_file,
         )
 
-        edit_test_file = choose_test_file(
+        edit_test_files = choose_test_file(
             self.log, editor.work_dir, self.trajectory_file, self.issue_text
         )
-        if not edit_test_file:
+        if not edit_test_files:
             return
+
+        edit_test_file = edit_test_files[0]
 
         if not self.edit_test_file:
             self.edit_test_file = edit_test_file
             for listener in self.solve_listeners:
                 listener.on_edit_test_file(edit_test_file)
 
+        # TODO: At this point, we can try more than one file
         self.log("workflow", f"Test file to be modified: {edit_test_file}")
 
         existing_test_files = "\n".join(listdir(Path(edit_test_file).parent))

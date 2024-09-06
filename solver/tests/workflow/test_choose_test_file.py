@@ -21,17 +21,16 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: work/directory/test_file.py -->"
         )
 
-        result = choose_test_file(
+        results = choose_test_file(
             self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
         )
-        assert result is not None
-        # Convert to relative path to this dir
-        result_rel = result.relative_to(self.work_dir)
-        print(result_rel)
+        assert results is not None
+        result = results[0]
 
         self.assertEqual(result, Path("work/directory/test_file.py"))
         self.log_mock.assert_called_with(
-            "choose_test_file", "Chose test file: work/directory/test_file.py"
+            "choose-test-file",
+            "Recommended tests to modify: work/directory/test_file.py",
         )
 
     @patch("solver.workflow.choose_test_file.Editor")
@@ -43,14 +42,10 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: test_file1.py -->\n<!-- file: test_file2.py -->"
         )
 
-        result = choose_test_file(
+        results = choose_test_file(
             self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
         )
-        self.assertEqual(result, Path("test_file1.py"))
-        self.log_mock.assert_any_call(
-            "choose-test-file",
-            "Found multiple test files in <!-- file: test_file1.py -->\n<!-- file: test_file2.py -->",
-        )
+        self.assertEqual(results, [Path("test_file1.py"), Path("test_file2.py")])
 
     @patch("solver.workflow.choose_test_file.Editor")
     @patch("solver.workflow.choose_test_file.os.path.exists")
@@ -76,10 +71,10 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: /work/directory/test_file.py -->"
         )
 
-        result = choose_test_file(
+        results = choose_test_file(
             self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
         )
-        self.assertEqual(result, Path("work/directory/test_file.py"))
+        self.assertEqual(results, [Path("work/directory/test_file.py")])
 
     @patch("solver.workflow.choose_test_file.Editor")
     @patch("solver.workflow.choose_test_file.os.path.exists")
@@ -90,10 +85,10 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock = Editor_mock.return_value
         editor_instance_mock.search.return_value = f"<!-- file: {test} -->"
 
-        result = choose_test_file(
+        results = choose_test_file(
             self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
         )
-        self.assertEqual(result, Path("test_file.py"))
+        self.assertEqual(results, [Path("test_file.py")])
 
     @patch("solver.workflow.choose_test_file.Editor")
     @patch("solver.workflow.choose_test_file.os.path.exists")
@@ -104,14 +99,10 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock = Editor_mock.return_value
         editor_instance_mock.search.return_value = "<!-- file: /work/directory/invalid_test_file.py -->\n<!-- file: /work/directory/valid_test_file.py -->"
 
-        result = choose_test_file(
+        results = choose_test_file(
             self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
         )
-        self.assertEqual(result, Path("../../work/directory/valid_test_file.py"))
-        self.log_mock.assert_called_with(
-            "choose_test_file",
-            "Chose test file: ../../work/directory/valid_test_file.py",
-        )
+        self.assertEqual(results, [Path("../../work/directory/valid_test_file.py")])
 
     @patch("solver.workflow.choose_test_file.Editor")
     @patch("solver.workflow.choose_test_file.os.path.exists")
@@ -122,10 +113,10 @@ class TestChooseTestFile(unittest.TestCase):
             "```python\n<!-- file: test_file.py -->\n```"
         )
 
-        result = choose_test_file(
+        results = choose_test_file(
             self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
         )
-        self.assertEqual(result, Path("test_file.py"))
+        self.assertEqual(results, [Path("test_file.py")])
 
 
 if __name__ == "__main__":
