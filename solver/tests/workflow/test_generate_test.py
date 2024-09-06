@@ -64,7 +64,7 @@ class TestGenerateTest(unittest.TestCase):
         self.assertIsInstance(patch, Patch)
         self.log_mock.assert_called_with(
             "generate-test",
-            f"Generated test patch:\n{str(patch)}",
+            "Generated test patch",
         )
         makedirs_mock.assert_called_once_with(
             str(self.test_file_path.parent), exist_ok=True

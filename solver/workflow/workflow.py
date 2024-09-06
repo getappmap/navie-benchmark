@@ -177,10 +177,7 @@ class Workflow:
 
     def write_patch_file(self, patch_name: str, patch: Patch):
         patch_path = path.join(self.navie_work_dir, f"{patch_name}.patch")
-        self.log(
-            "workflow",
-            f"Patch file generated to {patch_path}:\n{patch}",
-        )
+        self.log("workflow", f"Patch file generated to {patch_path}")
         with open(patch_path, "w") as f:
             f.write(str(patch))
 
@@ -358,10 +355,6 @@ Do not plan specific code changes. Just design the solution.
         self.log(
             "invert-test",
             f"Test patch inverted after {lint_repair_result.attempts} attempts.",
-        )
-        self.log(
-            "invert-test",
-            f"Inverted test patch:\n{test_patch_inverted}",
         )
 
         return test_patch_inverted

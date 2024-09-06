@@ -190,9 +190,9 @@ test will only ever run against the specified Python version.
         patch_str = filter_patch_include_tests(git_diff())
 
         if not patch_str:
-            self.log("workflow/generate-test", "No changes detected")
+            self.log("generate-test", "No changes detected")
             return None
 
-        self.log("generate-test", f"Generated test patch:\n{patch_str}")
+        self.log("generate-test", "Generated test patch")
 
         return Patch(patch_str)
