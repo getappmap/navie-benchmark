@@ -13,7 +13,7 @@ from navie.editor import Editor
 from navie.fences import extract_fenced_content
 
 from .workflow_limits import WorkflowLimits
-from .solve_listener import PatchType, SolveListener, TestStatus, TestType
+from .solve_listener import SolveListener, TestStatus
 from .generate_and_validate_code import (
     CodePatchResult,
     Context as GenerateCodeContext,
