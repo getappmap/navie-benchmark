@@ -112,9 +112,6 @@ class SolutionListener(SolveListener):
         self.navie_work_dir = navie_work_dir
         self.start_time = time()
 
-    def on_edit_test_file(self, edit_test_file: Path):
-        self.edit_test_file = edit_test_file
-
     def on_start_patch(self, patch_name: PatchType):
         self.patch_name_in_progress = patch_name
 
@@ -131,11 +128,15 @@ class SolutionListener(SolveListener):
     def on_end_patch(self):
         self.patch_name_in_progress = None
 
-    def on_test_patch(self, patch: Patch):
+    def on_test_patch(
+        self,
+        edit_test_file: Path,
+        patch: Optional[Patch],
+        inverted_patch: Optional[Patch],
+    ):
+        self.edit_test_file = edit_test_file
         self.test_patch = patch
-
-    def on_test_inverted_patch(self, patch: Patch):
-        self.test_inverted_patch = patch
+        self.test_inverted_patch = inverted_patch
 
     def on_code_patch(
         self,

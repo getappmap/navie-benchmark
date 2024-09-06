@@ -12,6 +12,11 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from swebench.harness.test_spec import make_test_spec
 
+from solver.workflow.choose_test_file import choose_test_file
+from solver.workflow.generate_and_validate_test import (
+    generate_and_validate_test,
+    Context,
+)
 from solver.harness.image_store import ImageStore
 from solver.solve import DATASET_NAME
 from solver.cli import (
@@ -64,13 +69,32 @@ def main(
         logger_fn, navie_work_dir, docker_client, instance, limits_obj
     )
 
-    test_patch = workflow.generate_and_validate_test()
-
-    if test_patch is None:
-        print("[solve_test] No test patch generated.")
+    edit_test_files = choose_test_file(
+        logger_fn, navie_work_dir, workflow.trajectory_file, workflow.issue_text
+    )
+    if not edit_test_files:
+        print("[solve_test] No test files to edit.")
         return
 
-    print(f"[solve_test]Generated test patch:\n{test_patch}")
+    (patch, patches) = generate_and_validate_test(
+        Context(
+            limits_obj, logger_fn, docker_client, test_spec.repo, test_spec.version, []
+        ),
+        edit_test_files,
+        workflow.generate_test,
+        workflow.run_test,
+        workflow.invert_test,
+    )
+
+    if patch:
+        print(f"[solve_test]Generated optimal test patch:\n{patch}")
+        return
+
+    if not patches:
+        print("[solve_test] No test patches generated.")
+        return
+
+    print(f"[solve_test]Generated test patch:\n{patches[0]}")
 
 
 if __name__ == "__main__":

@@ -35,8 +35,20 @@ class CollectSolveListener(SolveListener):
     def on_end_patch(self):
         self.messages.append(("on_end_patch",))
 
-    def on_test_patch(self, patch: Patch):
-        self.messages.append(("on_test_patch", trim_patch(patch)))
+    def on_test_patch(
+        self,
+        edit_test_file: Path,
+        patch: Optional[Patch],
+        inverted_patch: Optional[Patch],
+    ):
+        self.messages.append(
+            (
+                "on_test_patch",
+                edit_test_file,
+                trim_patch(patch),
+                trim_patch(inverted_patch),
+            )
+        )
 
     def on_test_inverted_patch(self, patch: Patch):
         self.messages.append(("on_test_inverted_patch", trim_patch(patch)))

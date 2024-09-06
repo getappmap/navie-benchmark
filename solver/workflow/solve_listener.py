@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 
 from solver.workflow.patch import Patch
@@ -33,8 +33,13 @@ class SolveListener:
         pass
 
     @abstractmethod
-    def on_edit_test_file(self, edit_test_file: Path):
-        """Called when the test file to be edited is determined."""
+    def on_start_edit_test_file(self, edit_test_file: Path):
+        """Called when the a test file to be edited is activated."""
+        pass
+
+    @abstractmethod
+    def on_end_edit_test_file(self):
+        """Called when the test file edit process is completed."""
         pass
 
     @abstractmethod
@@ -53,13 +58,13 @@ class SolveListener:
         pass
 
     @abstractmethod
-    def on_test_patch(self, patch: Patch):
+    def on_test_patch(
+        self,
+        edit_test_file: Path,
+        patch: Optional[Patch],
+        inverted_patch: Optional[Patch],
+    ):
         """Called when a test patch is generated."""
-        pass
-
-    @abstractmethod
-    def on_test_inverted_patch(self, patch: Patch):
-        """Called when an inverted test patch is generated."""
         pass
 
     @abstractmethod
