@@ -22,8 +22,7 @@ class GenerateTest:
         log: Callable[[str, str], None],
         work_dir: Path,
         trajectory_file: str,
-        base_test_file: Path,
-        new_test_file: Path,
+        test_file_path: Path,
         issue_text: str,
         observed_errors: list[str],
         python_version: str,
@@ -31,8 +30,7 @@ class GenerateTest:
         self.log = log
         self.work_dir = work_dir
         self.trajectory_file = trajectory_file
-        self.base_test_file = base_test_file
-        self.new_test_file = new_test_file
+        self.test_file_path = test_file_path
         self.issue_text = issue_text
         self.observed_errors = observed_errors
         self.python_version = python_version
@@ -43,21 +41,13 @@ class GenerateTest:
         work_dir = path.join(self.work_dir, "test", str(attempt))
 
         plan = [
-            f"""<base-test-file>
-{self.base_test_file}
-</base-test-file>
+            f"""Reproduce the following issue with a test case.
 
 <issue>
 {self.issue_text}
 </issue>
-"""
-        ]
-        prompt = [
-            f"""## Task
 
-Reproduce the described issue with a test case, based on the provided base test file.
-
-The name of the generated test case file should be: {self.new_test_file}.
+The name of the generated test case file should be: {self.test_file_path}.
 
 Do not try and solve the issue. Just reproduce it with the test case.
 
@@ -66,40 +56,34 @@ issue describes an exception, the test should assert that the exception is raise
 
 If the issue describes some output that is incorrect, the test should assert that
 the incorrect output is produced.
-
-                  """
+"""
         ]
         if self.observed_errors:
             observed_errors_str = "\n".join(self.observed_errors)
             plan.append(
-                f"""<test-errors>
+                f"""## Preventing test execution errors
+                
+Ensure that the following test execution errors do not occur:
+
+<test-errors>
 {observed_errors_str}
 </test-errors>
 """
             )
-            prompt.append(
-                """## Preventing errors
-            
-Ensure that the provided errors do not occur when the test is run.
-"""
-            )
-
         if lint_errors:
             lint_errors_str = "\n".join(lint_errors)
             plan.append(
-                f"""<lint-errors>                        
+                f"""## Preventing linter errors
+                
+Ensure that the following lint errors do not occur:
+
+<lint-errors>                        
 {lint_errors_str}
 </lint-errors>
 """
             )
-            prompt.append(
-                """## Lint errors
-                          
-Ensure that the indicated lint errors do not occur in your solution.
-                          """
-            )
 
-        prompt.append(
+        prompt = [
             f"""## Output
 
 Output a completely new and self-contained test case, that is based on the original
@@ -115,7 +99,7 @@ Do not use Python features that are not available in this Python version.
 
 {self.python_version}
 """
-        )
+        ]
 
         return Editor(work_dir, trajectory_file=self.trajectory_file).test(
             issue="\n\n".join(plan),
@@ -129,42 +113,36 @@ Do not use Python features that are not available in this Python version.
         work_dir = path.join(self.work_dir, "invert-test", str(attempt))
 
         plan = [
-            f"""<test-code>
+            f"""Alter the test case code so that it will now FAIL when the issue is observed.
+
+This test was written to PASS when the issue is observed. Now, the test should FAIL
+specifically at the location where the presence of the bug was previously asserted.
+
+When the bug is observed and the test fails, the following error message should be raised: "__BUG__HERE__"
+
+<code>
 {code}
-</test-code>
+</code>
 
 <issue>
 {self.issue_text}
 </issue>
 """
         ]
-        prompt = [
-            """## Task
-
-Alter the test case code so that it will now FAIL when the issue is observed.
-
-This test was written to PASS when the issue is observed. Now, the test should FAIL
-specifically at the location where the presence of the bug was previously asserted.
-
-When the bug is observed and the test fails, the following error message should be raised: "__BUG__HERE__"
-"""
-        ]
         if lint_errors:
             lint_errors_str = "\n".join(lint_errors)
             plan.append(
-                f"""<lint-errors>                        
+                f"""## Preventing linter errors
+                
+Ensure that the following lint errors do not occur:
+
+<lint-errors>                        
 {lint_errors_str}
 </lint-errors>
 """
             )
-            prompt.append(
-                """## Lint errors
 
-Ensure that the indicated lint errors do not occur in your solution.
-"""
-            )
-
-        prompt.append(
+        prompt = [
             f"""## Output
 
 Output a completely new and self-contained test case, that is based on the original
@@ -182,7 +160,7 @@ Do not write conditional logic in the test that checks the Python version. The s
 version of Python that you need has been installed and configured for this test. The
 test will only ever run against the specified Python version.
 """
-        )
+        ]
 
         return Editor(work_dir, trajectory_file=self.trajectory_file).test(
             issue="\n\n".join(plan),

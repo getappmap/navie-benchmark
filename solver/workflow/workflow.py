@@ -321,8 +321,6 @@ Do not plan specific code changes. Just design the solution.
     def invert_test(self, test_patch: Patch) -> Optional[Patch]:
         self.log("workflow", "Inverting test")
 
-        assert self.edit_test_file
-
         self.clean_git_state()
 
         test_file_name = test_patch.list_files()[0]
@@ -335,7 +333,6 @@ Do not plan specific code changes. Just design the solution.
             self.log,
             self.navie_work_dir,
             self.trajectory_file,
-            self.edit_test_file,
             test_file_path,
             self.issue_text,
             [],
@@ -389,19 +386,18 @@ Do not plan specific code changes. Just design the solution.
 
         existing_test_files = "\n".join(listdir(Path(edit_test_file).parent))
 
-        question = f"""
+        test_file_answer = editor.ask(
+            f"""Generate a new test file name for a test that will address the following issue:
+
 <issue>
 {self.issue_text}
 </issue>
 
+Avoid using any of the following names, because these files already exist:
+
 <existing-files>
 {existing_test_files}
 </existing-files>
-"""
-        prompt = f"""
-Generate a new test file name for a test that will address the provided issue.
-
-Avoid using any of the existing file names, because these files already exist.
 
 Output the file name, and nothing else. Do not include directory paths.
 
@@ -410,12 +406,10 @@ Do not include directory names in the file name. Just choose a base file name.
 ## Environment
 
 Python version: {self.environment.python_version}
-"""
 
-        test_file_answer = editor.ask(
-            question,
-            prompt=prompt,
-            options=r"/noprojectinfo /nocontext /noclassify",
+Available packages: {self.environment.packages}
+""",
+            options=r"/noprojectinfo /nocontext",
             question_name="test_file_name",
         )
         test_file_name = (
@@ -433,7 +427,6 @@ Python version: {self.environment.python_version}
             self.log,
             editor.work_dir,
             self.trajectory_file,
-            self.edit_test_file,
             test_file_path,
             self.issue_text,
             observed_errors,
@@ -465,6 +458,8 @@ Python version: {self.environment.python_version}
         test_patch: Patch,
         code_patches: list[Patch] = [],
     ) -> RunTestResult:
+        self.log("workflow", f"Running test")
+
         sha256 = hashlib.sha256()
         sha256.update(str(test_patch).encode("utf-8"))
         for patch in code_patches:

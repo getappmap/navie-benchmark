@@ -56,10 +56,7 @@ class TestGenerateCode(unittest.TestCase):
             generated_code = self.generator.generate(1, [])
             self.assertEqual(generated_code, "Generated code")
             editor_instance_mock.generate.assert_called_once_with(
-                plan="""<plan>
-Sample plan
-</plan>
-""",
+                plan="Sample plan",
                 prompt=ANY,
                 options="/noprojectinfo /noterms /noclassify /exclude=\\btests?\\b|\\btesting\\b|\\btest_|_test\\b",
             )

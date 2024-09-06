@@ -15,21 +15,11 @@ def choose_test_file(
         log_dir=work_dir,
         trajectory_file=trajectory_file,
     ).search(
-        issue_content,
-        prompt="""## Task
+        f"""Identify a single test case that is most related to the following issue:
 
-Identify 3 test files that are most related to the issue. Put the most relevant file first,
-followed by less relevant files.
-
-The files must all be different.
-
-Example:
-
-path/to/test_1.py
-path/to/test_2.py
-path/to/test_3.py
-
-## Format instructions
+{issue_content}
+""",
+        format="""## Format instructions
         
 Output the results as one file path on each line, and nothing else.
 
