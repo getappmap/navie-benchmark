@@ -183,8 +183,9 @@ class Workflow:
 
     def generate_plan(self) -> str:
         editor = Editor(self.navie_work_dir, trajectory_file=self.trajectory_file)
-        issue_text = self.issue_text
-        prompt = f"""In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
+        issue_text = f"""{self.issue_text}
+
+In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
 
 Limit your solution to modify at most {self.limits.file_limit} file(s).
 
@@ -193,8 +194,7 @@ Do not plan specific code changes. Just design the solution.
 
         return editor.plan(
             issue_text,
-            prompt=prompt,
-            options=r"/noprojectinfo /noterms /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
+            options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 
     def generate_and_validate_test(self) -> GenerateTestResult:

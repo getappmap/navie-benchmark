@@ -56,7 +56,7 @@ class TestGenerateTest(unittest.TestCase):
             editor_instance_mock.test.assert_called_once_with(
                 issue=ANY,
                 prompt=ANY,
-                options="/noprojectinfo /noterms /noclassify",
+                options="/noprojectinfo",
             )
 
         # Test apply method
