@@ -406,8 +406,6 @@ Do not include directory names in the file name. Just choose a base file name.
 ## Environment
 
 Python version: {self.environment.python_version}
-
-Available packages: {self.environment.packages}
 """,
             options=r"/noprojectinfo /nocontext",
             question_name="test_file_name",
