@@ -30,6 +30,7 @@ class WorkflowLimits:
     def from_dict(data: dict):
         return WorkflowLimits(
             file_limit=data.get("file", FILE_LIMIT),
+            test_files_limit=data.get("test_files", TEST_FILES_LIMIT),
             test_lint_retry_limit=data.get("test_lint_retry", TEST_LINT_RETRY_LIMIT),
             test_status_retry_limit=data.get(
                 "test_status_retry", TEST_STATUS_RETRY_LIMIT

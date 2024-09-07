@@ -11,6 +11,7 @@ from solver.workflow.solve_listener import (
     TestStatus,
     TestType,
 )
+from solver.workflow.work_dir import WorkDir
 from solver.workflow.workflow_limits import WorkflowLimits
 
 
@@ -29,6 +30,7 @@ class Context:
         self,
         limits: WorkflowLimits,
         log: Callable[[str, str], None],
+        work_dir: WorkDir,
         docker_client: docker.DockerClient,
         repo: str,
         version: str,
@@ -36,6 +38,7 @@ class Context:
     ):
         self.limits = limits
         self.log = log
+        self.work_dir = work_dir
         self.docker_client = docker_client
         self.repo = repo
         self.version = version
@@ -44,11 +47,12 @@ class Context:
 
 def generate_test_for_test_file(
     context: Context,
+    work_dir: WorkDir,
     edit_test_file: Path,
     attempt: int,
-    generate_test: Callable[[Path, int, List[str]], Optional[Patch]],
-    run_test: Callable[[Path, Patch, List[Patch]], RunTestResult],
-    invert_test: Callable[[Patch], Optional[Patch]],
+    generate_test: Callable[[WorkDir, Path, List[str]], Optional[Patch]],
+    run_test: Callable[[WorkDir, Patch], RunTestResult],
+    invert_test: Callable[[WorkDir, Patch], Optional[Patch]],
 ) -> Optional[TestPatchResult]:
 
     limit = context.limits.test_status_retry_limit
@@ -61,12 +65,12 @@ def generate_test_for_test_file(
             for listener in context.solve_listeners:
                 listener.on_start_patch(PatchType.TEST)
 
-            test_patch = generate_test(edit_test_file, attempt, observed_errors)
+            test_dir = work_dir.test(attempt)
+            test_patch = generate_test(test_dir, edit_test_file, observed_errors)
             if not test_patch:
                 return None
 
-            work_dir = edit_test_file.parent / f"generate-test-{attempt}"
-            run_test_result = run_test(work_dir, test_patch, [])
+            run_test_result = run_test(test_dir.run_test_patch(), test_patch)
 
             for listener in context.solve_listeners:
                 listener.on_run_test(
@@ -102,10 +106,9 @@ def generate_test_for_test_file(
             for listener in context.solve_listeners:
                 listener.on_start_patch(PatchType.TEST_INVERTED)
 
-            work_dir = edit_test_file.parent / f"invert-test-{attempt}"
-            inverted_patch = invert_test(test_patch)
+            inverted_patch = invert_test(work_dir.invert_test(attempt), test_patch)
             if inverted_patch:
-                inverted_run_test_result = run_test(work_dir, inverted_patch, [])
+                inverted_run_test_result = run_test(work_dir, inverted_patch)
                 inverted_test_status = inverted_run_test_result.test_status
 
                 if inverted_test_status == TestStatus.PASSED:
@@ -141,9 +144,9 @@ def generate_test_for_test_file(
 def generate_and_validate_test(
     context: Context,
     edit_test_files: List[Path],
-    generate_test: Callable[[Path, int, List[str]], Optional[Patch]],
-    run_test: Callable[[Path, Patch, List[Patch]], RunTestResult],
-    invert_test: Callable[[Patch], Optional[Patch]],
+    generate_test: Callable[[WorkDir, Path, List[str]], Optional[Patch]],
+    run_test: Callable[[WorkDir, Patch], RunTestResult],
+    invert_test: Callable[[WorkDir, Patch], Optional[Patch]],
 ) -> tuple[Optional[TestPatchResult], List[TestPatchResult]]:
     """
     Try up to WorkflowLimits.test_files_limit times to generate a test patch. Each attempt uses a base
@@ -158,15 +161,22 @@ def generate_and_validate_test(
 
     test_patch_results: List[TestPatchResult] = []
     test_patch_result: Optional[TestPatchResult] = None
-    attempt = 0
+    attempt = 1
     while attempt <= limit and not test_patch_result:
         edit_test_file = edit_test_files[attempt % len(edit_test_files)]
 
         for listener in context.solve_listeners:
             listener.on_start_edit_test_file(edit_test_file)
 
+        work_dir = context.work_dir.generate_test(edit_test_file, attempt)
         test = generate_test_for_test_file(
-            context, edit_test_file, attempt, generate_test, run_test, invert_test
+            context,
+            work_dir,
+            edit_test_file,
+            attempt,
+            generate_test,
+            run_test,
+            invert_test,
         )
         attempt += 1
 

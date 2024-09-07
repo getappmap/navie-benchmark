@@ -4,22 +4,31 @@ from typing import List, Optional
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
+from solver.workflow.work_dir import WorkDir
 
 
 # Choose a test case file that is most related to the issue.
 def choose_test_file(
-    log, work_dir, trajectory_file, issue_content
+    log, work_dir: WorkDir, trajectory_file, issue_content
 ) -> Optional[List[Path]]:
     tests_to_modify_str = Editor(
-        os.path.join(work_dir, "choose"),
-        log_dir=work_dir,
+        work_dir.choose_test_files().path_name,
+        log_dir=work_dir.root.path_name,
         trajectory_file=trajectory_file,
     ).search(
-        f"""Identify a single test case that is most related to the following issue:
+        issue_content,
+        prompt="""## Task
 
-{issue_content}
-""",
-        format="""## Format instructions
+Identify 3 test files that are most related to the issue. Put the most relevant file first,
+followed by less relevant files.
+
+The files must all be different.
+
+Example:
+
+path/to/test_1.py
+path/to/test_2.py
+path/to/test_3.py
         
 Output the results as one file path on each line, and nothing else.
 

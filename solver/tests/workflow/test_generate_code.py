@@ -5,13 +5,14 @@ from tempfile import TemporaryDirectory
 
 from solver.workflow.patch import Patch
 from solver.workflow.generate_code import GenerateCode
+from solver.workflow.work_dir import WorkDir
 
 
 class TestGenerateCode(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
-        self.work_dir = Path("/work/directory")
-        self.trajectory_file = str(self.work_dir / "trajectory.jsonl")
+        self.work_dir = WorkDir("/work/directory", write_sequence=False)
+        self.trajectory_file = str(self.work_dir.path / "trajectory.jsonl")
         self.plan = "Sample plan"
         self.generator = GenerateCode(
             self.log_mock,

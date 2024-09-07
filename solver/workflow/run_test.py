@@ -1,11 +1,13 @@
 from os import path
 import os
+from pathlib import Path
 from typing import Optional
 
 import docker
 
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
+from swebench.harness.test_spec import TestSpec
 
 from ..harness.build_extended_image import build_extended_image
 from ..harness.make_test_directives import make_test_directives
@@ -38,7 +40,13 @@ DEFAULT_TIMEOUT = 120
 
 class RunTest:
     def __init__(
-        self, log, work_dir, repo, version, test_spec, timeout=DEFAULT_TIMEOUT
+        self,
+        log,
+        work_dir: Path,
+        repo: str,
+        version: str,
+        test_spec: TestSpec,
+        timeout=DEFAULT_TIMEOUT,
     ):
         self.log = log
         self.work_dir = work_dir

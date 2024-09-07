@@ -3,13 +3,14 @@ import unittest
 from unittest.mock import MagicMock, patch, mock_open
 from pathlib import Path
 from solver.workflow.choose_test_file import choose_test_file
+from solver.workflow.work_dir import WorkDir
 
 
 class TestChooseTestFile(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
-        self.work_dir = "./work/directory"
-        self.trajectory_file = os.path.join(self.work_dir, "trajectory.jsonl")
+        self.work_dir = WorkDir("./work/directory", write_sequence = False)
+        self.trajectory_file = os.path.join(self.work_dir.path_name, "trajectory.jsonl")
         self.issue_content = "Sample issue content"
 
     @patch("solver.workflow.choose_test_file.Editor")

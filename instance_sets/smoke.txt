@@ -1,4 +1,4 @@
-django__django-13658
-pytest-dev__pytest-7490
-scikit-learn__scikit-learn-13779
-sympy__sympy-22714
+django__django-13568
+django__django-14559
+pytest-dev__pytest-10051
+scikit-learn__scikit-learn-10844

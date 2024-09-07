@@ -1,12 +1,12 @@
-import hashlib
 from os import getcwd, listdir, path
 from pathlib import Path
 import subprocess
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
 import docker
 import yaml
 
+from solver.workflow.work_dir import WorkDir
 from swebench.harness.test_spec import TestSpec
 
 from navie.editor import Editor
@@ -42,7 +42,7 @@ class Workflow:
     def __init__(
         self,
         log: Callable[[str, str], None],
-        navie_work_dir: Path,
+        work_dir: Path,
         environment: Environment,
         docker_client: docker.DockerClient,
         repo: str,
@@ -52,7 +52,7 @@ class Workflow:
         limits: WorkflowLimits,
     ):
         self.log = log
-        self.navie_work_dir = navie_work_dir
+        self.work_dir = WorkDir(work_dir)
         self.environment = environment
         self.docker_client = docker_client
         self.repo = repo
@@ -61,7 +61,7 @@ class Workflow:
         self.issue_text = issue_text
         self.limits = limits
 
-        trajectory_file: Path = navie_work_dir / "trajectory.jsonl"
+        trajectory_file: Path = work_dir / "trajectory.jsonl"
         trajectory_file.parent.mkdir(parents=True, exist_ok=True)
         self.trajectory_file = str(trajectory_file)
 
@@ -74,10 +74,10 @@ class Workflow:
 
     def run(self):
         for listener in self.solve_listeners:
-            listener.on_solve_start(self.navie_work_dir)
+            listener.on_solve_start(self.work_dir.path)
 
         edit_test_files = choose_test_file(
-            self.log, self.navie_work_dir, self.trajectory_file, self.issue_text
+            self.log, self.work_dir, self.trajectory_file, self.issue_text
         )
         if edit_test_files:
             generate_test_result = self.generate_and_validate_test(edit_test_files)
@@ -99,16 +99,11 @@ class Workflow:
 
         plan = self.generate_plan()
 
-        def run_test_for_code(
-            test_patch: Patch, code_patches: List[Patch], attempt: int
-        ) -> RunTestResult:
-            work_dir = self.generate_code_work_dir(self.navie_work_dir, attempt)
-            return self.run_test(work_dir, test_patch, code_patches)
-
         generate_code_result = generate_and_validate_code(
             GenerateCodeContext(
                 self.limits,
                 self.log,
+                self.work_dir,
                 self.docker_client,
                 self.repo,
                 self.version,
@@ -117,7 +112,7 @@ class Workflow:
             ),
             plan,
             self.generate_code,
-            run_test_for_code,
+            self.run_test,
             self.edit_test_file,
             self.test_patch,
             self.inverted_patch,
@@ -172,7 +167,7 @@ class Workflow:
                     patch_score(code_patches[0]),
                 )
 
-            with open(path.join(self.navie_work_dir, "code_patches.yml"), "w") as f:
+            with (self.work_dir.path / "code_patches.yml").open("w") as f:
                 f.write(
                     yaml.dump(
                         [p.to_h() for p in code_patches],
@@ -188,13 +183,17 @@ class Workflow:
             listener.on_completed()
 
     def write_patch_file(self, patch_name: str, patch: Patch):
-        patch_path = path.join(self.navie_work_dir, f"{patch_name}.patch")
+        patch_path = self.work_dir.path / f"{patch_name}.patch"
         self.log("workflow", f"Patch file generated to {patch_path}")
-        with open(patch_path, "w") as f:
+        with patch_path.open("w") as f:
             f.write(str(patch))
 
     def generate_plan(self) -> str:
-        editor = Editor(self.navie_work_dir, trajectory_file=self.trajectory_file)
+        editor = Editor(
+            self.work_dir.plan().path_name,
+            log_dir=self.work_dir.root.path_name,
+            trajectory_file=self.trajectory_file,
+        )
         issue_text = f"""{self.issue_text}
 
 In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
@@ -225,6 +224,7 @@ Do not plan specific code changes. Just design the solution.
             GenerateTestContext(
                 self.limits,
                 self.log,
+                self.work_dir,
                 self.docker_client,
                 self.repo,
                 self.version,
@@ -253,32 +253,7 @@ Do not plan specific code changes. Just design the solution.
         )
         return notify_listeners(patches[0])
 
-    @staticmethod
-    def generate_test_work_dir(
-        navie_work_dir: Union[Path, str], edit_test_file: str, attempt: int
-    ) -> Path:
-        if isinstance(navie_work_dir, str):
-            navie_work_dir = Path(navie_work_dir)
-
-        return navie_work_dir / "generate-test" / edit_test_file / str(attempt)
-
-    @staticmethod
-    def generate_test_invert_work_dir(
-        navie_work_dir: Union[Path, str], edit_test_file: str, attempt: int
-    ) -> Path:
-        if isinstance(navie_work_dir, str):
-            navie_work_dir = Path(navie_work_dir)
-
-        return navie_work_dir / "invert-test" / edit_test_file / str(attempt)
-
-    @staticmethod
-    def generate_code_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
-        if isinstance(navie_work_dir, str):
-            navie_work_dir = Path(navie_work_dir)
-
-        return navie_work_dir / "generate-code" / str(attempt)
-
-    def invert_test(self, test_patch: Patch) -> Optional[Patch]:
+    def invert_test(self, work_dir: WorkDir, test_patch: Patch) -> Optional[Patch]:
         self.log("workflow", "Inverting test")
 
         self.clean_git_state()
@@ -291,7 +266,7 @@ Do not plan specific code changes. Just design the solution.
 
         generator = GenerateTest(
             self.log,
-            self.navie_work_dir,
+            work_dir,
             self.trajectory_file,
             test_file_path,
             self.issue_text,
@@ -321,14 +296,16 @@ Do not plan specific code changes. Just design the solution.
         return test_patch_inverted
 
     def generate_test(
-        self, edit_test_file: Path, attempt: int, observed_errors: list
+        self,
+        work_dir: WorkDir,
+        edit_test_file: Path,
+        observed_errors: list,
     ) -> Optional[Patch]:
         self.clean_git_state()
 
         editor = Editor(
-            Workflow.generate_test_work_dir(
-                self.navie_work_dir, Path(edit_test_file).name, attempt
-            ),
+            work_dir.path_name,
+            log_dir=self.work_dir.root.path_name,
             trajectory_file=self.trajectory_file,
         )
 
@@ -373,7 +350,7 @@ Python version: {self.environment.python_version}
 
         generator = GenerateTest(
             self.log,
-            editor.work_dir,
+            work_dir,
             self.trajectory_file,
             test_file_path,
             self.issue_text,
@@ -382,7 +359,7 @@ Python version: {self.environment.python_version}
         )
 
         def generate(attempt, lint_errors: list = []):
-            test_patch = generator.generate(attempt, lint_errors)
+            test_patch = generator.generate(edit_test_file, attempt, lint_errors)
             return generator.apply(test_file_path, test_patch)
 
         lint_repair_result = self.lint_repair(
@@ -402,28 +379,21 @@ Python version: {self.environment.python_version}
 
     def run_test(
         self,
-        work_dir: Path,
+        work_dir: WorkDir,
         test_patch: Patch,
         code_patches: list[Patch] = [],
     ) -> RunTestResult:
         self.log("workflow", f"Running test")
 
-        sha256 = hashlib.sha256()
-        sha256.update(str(test_patch).encode("utf-8"))
-        for patch in code_patches:
-            sha256.update(str(patch).encode("utf-8"))
-        digest = sha256.hexdigest()
-
-        work_dir = work_dir / "run_test" / digest
-        run_test = RunTest(self.log, work_dir, self.repo, self.version, self.test_spec)
+        run_test = RunTest(
+            self.log, work_dir.path, self.repo, self.version, self.test_spec
+        )
         if code_patches:
             run_test.code_patches = code_patches
         return run_test.run(self.docker_client, test_patch)
 
-    def generate_code(self, plan, attempt) -> Optional[Patch]:
+    def generate_code(self, work_dir: WorkDir, plan: str) -> Optional[Patch]:
         self.clean_git_state()
-
-        work_dir = Workflow.generate_code_work_dir(self.navie_work_dir, attempt)
 
         generator = GenerateCode(
             self.log,
