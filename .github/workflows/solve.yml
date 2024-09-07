@@ -21,6 +21,7 @@ on:
           - file=1 test_files=1 test_lint_retry=1 test_status_retry=1 code_lint_retry=1 code_status_retry=1
           - file=1 test_files=2 test_lint_retry=2 test_status_retry=2 code_lint_retry=2 code_status_retry=2
           - file=1 test_files=3 test_lint_retry=2 test_status_retry=6 code_lint_retry=2 code_status_retry=2
+          - file=1 test_files=3 test_lint_retry=2 test_status_retry=6 code_lint_retry=2 code_status_retry=6
       runner:
         description: "Runner type"
         required: true
