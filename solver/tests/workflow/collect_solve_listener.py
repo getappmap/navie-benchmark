@@ -23,8 +23,11 @@ class CollectSolveListener(SolveListener):
     def on_solve_start(self, navie_work_dir: Path):
         self.messages.append(("on_solve_start", navie_work_dir))
 
-    def on_edit_test_file(self, edit_test_file: Path):
-        self.messages.append(("on_edit_test_file", edit_test_file))
+    def on_start_edit_test_file(self, edit_test_file: Path):
+        self.messages.append(("on_start_edit_test_file", edit_test_file))
+
+    def on_end_edit_test_file(self):
+        self.messages.append(("on_end_edit_test_file",))
 
     def on_start_patch(self, patch_name: PatchType):
         self.messages.append(("on_start_patch", patch_name.value))

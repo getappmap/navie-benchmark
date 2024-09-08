@@ -1,4 +1,14 @@
+* Extend the token limit by the size of the observed errors
+
 * Test - generate one test function only
+
+* No test patch generated
+
+  Linter - https://github.com/getappmap/navie-benchmark/actions/runs/10753222821/job/29822491458#step:7:830
+
+* Generate multiple sets of pass to fail and fail to pass examples?
+
+* Score the patch based on passing all the pass_to_pass tests?
 
 * Test - if test fails, feedback patch and test failure back into the generator?
 
@@ -23,6 +33,18 @@
 * Provide GitHub workflow file for solve_test
 
 * Increase context size on retries? Or overall? Or make configurable?
+
+* Test is getting "SKIPPED"
+
+  https://github.com/getappmap/navie-benchmark/actions/runs/10753160219/job/29822284291#step:7:397
+
+  [generate-code] (django__django-14559) Code patch generated after 1 attempts.
+  [generate-and-validate-code] (django__django-14559) Running pass-to-pass test for attempt 2
+  [workflow] (django__django-14559) Running test
+  [run-test] (django__django-14559) Running tests tests/postgres_tests/test_bulk_update.py in /home/runner/work/navie-benchmark/navie-benchmark/solve/django__django-14559/navie/generate-code/attempt-2/run-test/pass-to-pass
+  [run-test] (django__django-14559) Creating run-test container for django__django-14559...
+  [run-test] (django__django-14559) Test run includes 1 code patches.
+  [run-test] (django__django-14559) Test tests/postgres_tests/test_bulk_update.py completed with status TestStatus.SKIPPED.
 
 * Sonnet is generating test changes
   Prompt: Do not generate test cases. Test cases are being created separately.

@@ -119,7 +119,7 @@ Do not use Python features that are not available in this Python version.
     # Invert the outcome of the test case, so that the test will now fail specifically
     # at the location where the issue was asserted.
     def invert(self, code: str, attempt: int, lint_errors: list = []) -> str:
-        work_dir = self.work_dir.invert_test(attempt)
+        work_dir = self.work_dir.invert()
 
         plan = [
             f"""Alter the test case code so that it will now FAIL when the issue is observed.
@@ -205,7 +205,5 @@ test will only ever run against the specified Python version.
         if not patch_str:
             self.log("generate-test", "No changes detected")
             return None
-
-        self.log("generate-test", "Generated test patch")
 
         return Patch(patch_str)

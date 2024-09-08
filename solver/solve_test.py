@@ -19,6 +19,8 @@ from solver.workflow.generate_and_validate_test import (
     TestPatchResult,
     generate_and_validate_test,
     Context,
+    is_optimal_test_patch,
+    patch_score,
 )
 from solver.harness.image_store import ImageStore
 from solver.solve import DATASET_NAME
@@ -78,7 +80,7 @@ def main(
         print("[solve_test] No test files to edit.")
         return
 
-    (patch, patches) = generate_and_validate_test(
+    patches = generate_and_validate_test(
         Context(
             limits_obj,
             logger_fn,
@@ -100,16 +102,20 @@ def main(
         print("[solve_test] Inverted test patch:")
         print(patch["inverted_patch"])
 
-    if patch:
-        print(f"[solve_test] Generated optimal test patch:")
-        print_patch(patch)
-        return
-
     if not patches:
         print("[solve_test] No test patches generated.")
         return
 
+    optimal_patches = [patch for patch in patches if is_optimal_test_patch(patch)]
+    if optimal_patches:
+        print(f"[solve_test] Generated optimal test patch:")
+        for patch in optimal_patches:
+            print_patch(patch)
+        return
+
     print(f"[solve_test] Generated sub-optimal test patch:")
+
+    patches.sort(key=patch_score, reverse=True)
     patch = patches[0]
     print_patch(patch)
 

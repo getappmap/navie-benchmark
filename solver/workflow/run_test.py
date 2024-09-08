@@ -75,12 +75,6 @@ class RunTest:
         config = MAP_REPO_VERSION_TO_SPECS[self.test_spec.repo][self.test_spec.version]
         user = "root" if not config.get("execute_test_as_nonroot", False) else "nonroot"
 
-        # Create the container
-        self.log(
-            "run-test",
-            f"Creating run-test container for {self.test_spec.instance_id}...",
-        )
-
         test_directives = make_test_directives(self.repo, [test_file])
 
         env_name = "testbed"
@@ -211,6 +205,7 @@ conda activate {env_name}
                 f.write(str(e))
 
         if test_output:
+            self.log("run-test", f"Interpreting test output from log file: {log_file}")
             with open(log_file, "w") as f:
                 f.write(test_output)
 

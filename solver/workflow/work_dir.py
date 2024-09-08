@@ -29,6 +29,12 @@ class WorkDir:
                 with sequence_file.open("a") as f:
                     f.write(f"{dir_relative_to_root}\n")
 
+    def __repr__(self) -> str:
+        return f"WorkDir({self._dir})"
+
+    def __str__(self) -> str:
+        return str(self._dir)
+
     @property
     def path(self) -> Path:
         return self._dir
@@ -62,8 +68,8 @@ class WorkDir:
     def test(self, attempt: int) -> WorkDir:
         return WorkDir(self._dir / f"test-{str(attempt)}", self)
 
-    def invert_test(self, attempt: int) -> WorkDir:
-        return WorkDir(self._dir / f"invert-test-{str(attempt)}", self)
+    def invert(self) -> WorkDir:
+        return WorkDir(self._dir / f"invert", self)
 
     def generate_code(self, attempt: int) -> WorkDir:
         return WorkDir(self._dir / "generate-code" / f"attempt-{str(attempt)}", self)

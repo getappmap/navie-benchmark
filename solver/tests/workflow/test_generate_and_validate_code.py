@@ -45,6 +45,16 @@ index 123..456 789
 +Modified test code
 """
 
+EXAMPLE_TEST_PATCH_INVERTED = """
+diff --git a/test_file b/test_file
+index 123..456 789
+--- a/test_file
++++ b/test_file
+@@ -1,1 +1,1 @@
+-Modified test code
++Inverted test code
+"""
+
 
 class TestGenerateAndValidateCode(unittest.TestCase):
     def setUp(self):

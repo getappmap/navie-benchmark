@@ -23,6 +23,8 @@ from .generate_and_validate_test import (
     TestPatchResult,
     Context as GenerateTestContext,
     generate_and_validate_test,
+    is_optimal_test_patch,
+    patch_score,
 )
 from .code_environment import Environment
 from .choose_test_file import choose_test_file
@@ -81,21 +83,28 @@ class Workflow:
         )
         if edit_test_files:
             generate_test_result = self.generate_and_validate_test(edit_test_files)
-            for listener in self.solve_listeners:
-                listener.on_test_patch(
-                    generate_test_result["edit_test_file"],
-                    generate_test_result["test_patch"],
-                    generate_test_result["inverted_patch"],
-                )
+            if generate_test_result:
+                for listener in self.solve_listeners:
+                    listener.on_test_patch(
+                        generate_test_result["edit_test_file"],
+                        generate_test_result["test_patch"],
+                        generate_test_result["inverted_patch"],
+                    )
 
-            if generate_test_result["edit_test_file"]:
-                self.edit_test_file = generate_test_result["edit_test_file"]
-            if generate_test_result["test_patch"]:
-                self.test_patch = generate_test_result["test_patch"]
-                self.write_patch_file("test", self.test_patch)
-            if generate_test_result["inverted_patch"]:
-                self.inverted_patch = generate_test_result["inverted_patch"]
-                self.write_patch_file("test-inverted", self.inverted_patch)
+                if generate_test_result["edit_test_file"]:
+                    self.edit_test_file = generate_test_result["edit_test_file"]
+                if generate_test_result["test_patch"]:
+                    self.test_patch = generate_test_result["test_patch"]
+                    self.write_patch_file("test", self.test_patch)
+                if generate_test_result["inverted_patch"]:
+                    self.inverted_patch = generate_test_result["inverted_patch"]
+                    self.write_patch_file("test-inverted", self.inverted_patch)
+            else:
+                self.log(
+                    "workflow",
+                    f"No test patch generated. Choosing first test file {edit_test_files[0]}",
+                )
+                self.edit_test_file = edit_test_files[0]
 
         plan = self.generate_plan()
 
@@ -130,6 +139,7 @@ class Workflow:
 
         if generate_code_result.patch:
             self.log("workflow", "Optimal code patch generated (for available tests)")
+
             self.code_patch = generate_code_result.patch
             score = max(
                 [
@@ -210,7 +220,7 @@ Do not plan specific code changes. Just design the solution.
 
     def generate_and_validate_test(
         self, edit_test_files: List[Path]
-    ) -> TestPatchResult:
+    ) -> Optional[TestPatchResult]:
         def notify_listeners(patch: TestPatchResult) -> TestPatchResult:
             for listener in self.solve_listeners:
                 listener.on_test_patch(
@@ -220,7 +230,7 @@ Do not plan specific code changes. Just design the solution.
                 )
             return patch
 
-        (patch, patches) = generate_and_validate_test(
+        patches = generate_and_validate_test(
             GenerateTestContext(
                 self.limits,
                 self.log,
@@ -235,17 +245,25 @@ Do not plan specific code changes. Just design the solution.
             self.run_test,
             self.invert_test,
         )
-        if patch:
+        optimal_patches = [patch for patch in patches if is_optimal_test_patch(patch)]
+        if optimal_patches:
+            patch = optimal_patches[0]
             self.log(
                 "workflow",
                 f"Optimal test patch generated for {patch['edit_test_file']}",
             )
             return notify_listeners(patch)
 
+        if not patches:
+            self.log("workflow", "No test patches generated")
+            return None
+
         self.log(
             "workflow",
             f"Choosing best test patch from {len(patches)} available patches",
         )
+
+        patches.sort(key=patch_score, reverse=True)
 
         self.log(
             "workflow",
@@ -383,8 +401,6 @@ Python version: {self.environment.python_version}
         test_patch: Patch,
         code_patches: list[Patch] = [],
     ) -> RunTestResult:
-        self.log("workflow", f"Running test")
-
         run_test = RunTest(
             self.log, work_dir.path, self.repo, self.version, self.test_spec
         )
