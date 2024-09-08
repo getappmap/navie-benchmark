@@ -44,7 +44,8 @@ class GenerateTest:
         work_dir = self.work_dir.code(attempt)
 
         plan = [
-            f"""Reproduce the following issue with a test case.
+            f"""Reproduce the following issue with a test case. Generate exactly
+one test case that reproduces the issue.
 
 <issue>
 {self.issue_text}
@@ -93,6 +94,9 @@ Ensure that the following lint errors do not occur:
 
 Output a completely new and self-contained test case, that is based on the original
 test case code. 
+
+The generated test case should include only one test. It should not include duplication
+of existing test cases.
 
 Remove all other test classes and functions aside from the one that is being generated.
 
