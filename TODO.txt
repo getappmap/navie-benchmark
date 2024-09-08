@@ -172,3 +172,18 @@ https://github.com/getappmap/navie-benchmark/actions/runs/10655942503/job/295340
 [workflow/generate-code] (pytest-dev__pytest-7490) Applied code changes to src/_pytest/skipping.py, src/_pytest/nodes.py
 [code/lint-repair] (pytest-dev__pytest-7490) Code has lint errors: src/_pytest/nodes.py:287:25: F821 undefined name 'xfailed_key'
 
+
+* astropy example fails due to a too-advanced version of numpy
+
+https://stackoverflow.com/questions/74946845/attributeerror-module-numpy-has-no-attribute-int
+
+sweb.eval.x86_64.astropy__astropy-8707
+
+astropy/table/_np_utils.pyx:15: in init astropy.table._np_utils
+    DTYPE = np.int
+/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/numpy/__init__.py:319: in __getattr__
+    raise AttributeError(__former_attrs__[attr])
+E   AttributeError: module 'numpy' has no attribute 'int'.
+E   `np.int` was a deprecated alias for the builtin `int`. To avoid this error in existing code, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+E   The aliases was originally deprecated in NumPy 1.20; for more details and guidance see the original release note at:
+E       https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations

@@ -113,7 +113,7 @@ Do not use Python features that are not available in this Python version.
         ).test(
             issue="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo",
+            options=r"/noprojectinfo /noclassify",
         )
 
     # Invert the outcome of the test case, so that the test will now fail specifically
@@ -178,7 +178,7 @@ test will only ever run against the specified Python version.
         ).test(
             issue="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo /nocontext",
+            options=r"/noprojectinfo /noclassify /nocontext",
         )
 
     # Apply code changes to the files in the current directory and return a patch.

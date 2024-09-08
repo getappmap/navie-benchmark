@@ -215,7 +215,7 @@ Do not plan specific code changes. Just design the solution.
 
         return editor.plan(
             issue_text,
-            options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
+            options=r"/noprojectinfo /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 
     def generate_and_validate_test(

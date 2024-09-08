@@ -34,7 +34,7 @@ Output the results as one file path on each line, and nothing else.
 
 Do not include line numbers or any location within the file. Just the file path.
 """,
-        options="/noprojectinfo /include=test",
+        options="/noprojectinfo /noclassify /include=test",
         extension="txt",
     )
 
