@@ -1,10 +1,20 @@
+* Feed test errors back into the solver
+
+[run-test] (sympy__sympy-17318) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/sympy__sympy-17318/navie/generate-test/attempt-1_from-test_sqrtdenest.py/test-2/run-test/test-patch/run_test.log
+
+[run-test] (sympy__sympy-17318) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/sympy__sympy-17318/navie/generate-test/attempt-3_from-test_radsimp.py/test-1/run-test/test-patch/run_test.log
+
+________________________________________________________________________________
+_________ /testbed/sympy/simplify/tests/test_sqrtdenest_indexerror.py __________
+Traceback (most recent call last):
+  File "/testbed/sympy/simplify/tests/test_sqrtdenest_indexerror.py", line 3, in <module>
+    from sympy.testing.pytest import raises
+ModuleNotFoundError: No module named 'sympy.testing'
+
+=========== tests finished: 0 passed, 1 exceptions, in 0.00 seconds ============
+DO *NOT* COMMIT!
+
 * Extend the token limit by the size of the observed errors
-
-* Test - generate one test function only
-
-* No test patch generated
-
-  Linter - https://github.com/getappmap/navie-benchmark/actions/runs/10753222821/job/29822491458#step:7:830
 
 * Generate multiple sets of pass to fail and fail to pass examples?
 
@@ -19,8 +29,6 @@
   /Users/kgilpin/Downloads/solve-0/scikit-learn__scikit-learn-13328/navie/generate-code/2/run_test/6db4f467feabd60a471aa9f5d3169f28326cd0bd40bbc7a8f8b20a84adbf91a2/run_test.log
 
   Try a new test to patch
-
-* Sonnet is timing out, per the error logs
 
 * Analyze performance vis a vis parameters:
   Edited file limit
@@ -47,6 +55,7 @@
   [run-test] (django__django-14559) Test tests/postgres_tests/test_bulk_update.py completed with status TestStatus.SKIPPED.
 
 * Sonnet is generating test changes
+
   Prompt: Do not generate test cases. Test cases are being created separately.
   Filter: Remove test cases from code patches.
 
@@ -68,29 +77,6 @@ Explain received context request: search
 [collectContext] keywords: model choice modelchoice field choicefield validation error validationerror invalid invalid choice invalidchoice value template django
 
 * Just report presence of test frameworks (pytest, unittest) to the solver?
-
-* Anthropic - backoff and retry
-
-The question will be provided as context within a `<question>` tag.
-[context-service] Searching for context
-Error: Failed to complete: Connection error.
-    at AnthropicCompletionService.complete_1 (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:185:23)
-    at complete_1.throw (<anonymous>)
-    at resume (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:24:44)
-    at reject (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:27:30)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-Handling exception: Error: Failed to complete: Connection error.
-    at AnthropicCompletionService.complete_1 (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:185:23)
-    at complete_1.throw (<anonymous>)
-    at resume (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:24:44)
-    at reject (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:27:30)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-Stack trace: Error: Failed to complete: Connection error.
-    at AnthropicCompletionService.complete_1 (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:185:23)
-    at complete_1.throw (<anonymous>)
-    at resume (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:24:44)
-    at reject (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:27:30)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
 
 * Split workflow.run into solve_test and solve_code
 
@@ -132,46 +118,12 @@ if datatype.startswith("data"):
 ]]></modified>
 </change>
 
-* How to report the problem when there is an LLM error? Global retry?
-
-      File "/Users/kgilpin/source/appland/navie-benchmark/solver/workflow/workflow.py", line 362, in generate_test
-        test_file_answer = editor.ask(
-                          ^^^^^^^^^^^
-      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/editor.py", line 126, in ask
-        with_cache(
-      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/with_cache.py", line 25, in with_cache
-        result = implementation_func()
-                ^^^^^^^^^^^^^^^^^^^^^
-      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/editor.py", line 113, in _ask
-        self._build_client(work_dir).ask(
-      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/client.py", line 81, in ask
-        self._execute(command, log_file)
-      File "/Users/kgilpin/source/appland/navie-benchmark/submodules/navie-editor/navie/client.py", line 356, in _execute
-        raise RuntimeError(
-    RuntimeError: Failed to execute command APPMAP_NAVIE_TEMPERATURE=0.0 /Users/kgilpin/source/appland/appmap-js/packages/cli/built/cli.js -v navie --log-navie -i /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-test/1/test_file_name/ask.input.txt --trajectory-file /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/trajectory.jsonl -o /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-test/1/test_file_name/ask.md > /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-test/1/test_file_name/ask.log 2>&1. See /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-test/1/test_file_name/ask.log for details.
-    [solve_instance] Cleaning up container 7b56b0ee9a0f90b49b4f5a629645c68e5b1550daf52b9cbb469a7dfbdef1dd8e
-    [solve] Running instance pytest-dev__pytest-7490...
-    [solve] Running: python /Users/kgilpin/source/appland/navie-benchmark/solver/solve_instance.py --instance_id pytest-dev__pytest-7490 --predictions /Users/kgilpin/source/appland/navie-benchmark/predictions/smoke.jsonl --limit test_lint_retry=2 test_status_retry=2 code_lint_retry=2 code_status_retry=2
-    Using limits: file=1, test_lint_retry=2, test_status_retry=2, code_lint_retry=2, code_status_retry=2
-    Using Docker architecture: x86_64
-    All base images are already present locally.
-    All env images are already present locally.
-    All instance images are already present locally.
-    [solve] (pytest-dev__pytest-7490) Container started: f475cadc5ac2f37fb2a6f4cb451d4e0fa3321fe70837a6e6250777c1229f3596
-    [checkout-code] (pytest-dev__pytest-7490) Creating git archive in the container
-    [checkout-code] (pytest-dev__pytest-7490) Copying git archive out of the container and unpacking it to /Users/kgilpin/source/appland/navie-benchmark/solve/pytest-dev__pytest-7490/source
-    Initialized empty Git repository in /Users/kgilpin/source/appland/navie-benchmark/solve/pytest-dev__pytest-7490/source/.git/
-    [checkout-code] (pytest-dev__pytest-7490) Committed 481 files
-    [solve] (pytest-dev__pytest-7490) Changing directory to /Users/kgilpin/source/appland/navie-benchmark/solve/pytest-dev__pytest-7490/source
-    [detect-environment] (pytest-dev__pytest-7490) Detecting Python environment for pytest-dev__pytest-7490...
-
 * Found 2 changes, but the limit is 1
 
 https://github.com/getappmap/navie-benchmark/actions/runs/10655942503/job/29534052664
 [workflow/generate-code] (pytest-dev__pytest-7490) Found 2 changes, but the limit is 1
 [workflow/generate-code] (pytest-dev__pytest-7490) Applied code changes to src/_pytest/skipping.py, src/_pytest/nodes.py
 [code/lint-repair] (pytest-dev__pytest-7490) Code has lint errors: src/_pytest/nodes.py:287:25: F821 undefined name 'xfailed_key'
-
 
 * astropy example fails due to a too-advanced version of numpy
 
@@ -187,3 +139,41 @@ E   AttributeError: module 'numpy' has no attribute 'int'.
 E   `np.int` was a deprecated alias for the builtin `int`. To avoid this error in existing code, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
 E   The aliases was originally deprecated in NumPy 1.20; for more details and guidance see the original release note at:
 E       https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+
+[run-test] (astropy__astropy-8707) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/astropy__astropy-8707/navie/generate-test/attempt-5_from-test_division.py/test-1/run-test/test-patch/run_test.log
+
+Also this other depercation warning
+
+self = <astropy.io.fits.tests.test_header_fromstring_bytes.TestHeaderFromStringBytes object at 0x400b83be50>
+request = <SubRequest '_xunit_setup_method_fixture_TestHeaderFromStringBytes' for <Function test_card_fromstring_str>>
+
+    @fixtures.fixture(
+        autouse=True,
+        scope="function",
+        # Use a unique name to speed up lookup.
+        name=f"_xunit_setup_method_fixture_{self.obj.__qualname__}",
+    )
+    def xunit_setup_method_fixture(self, request) -> Generator[None, None, None]:
+        method = request.function
+        if setup_method is not None:
+            func = getattr(self, setup_name)
+            _call_with_optional_argument(func, method)
+            if emit_nose_setup_warning:
+>               warnings.warn(
+                    NOSE_SUPPORT_METHOD.format(
+                        nodeid=request.node.nodeid, method="setup"
+                    ),
+                    stacklevel=2,
+                )
+E               pytest.PytestRemovedIn8Warning: Support for nose tests is deprecated and will be removed in a future release.
+E               astropy/io/fits/tests/test_header_fromstring_bytes.py::TestHeaderFromStringBytes::test_card_fromstring_str is using nose-specific method: `setup(self)`
+E               To remove this warning, rename it to `setup_method(self)`
+E               See docs: https://docs.pytest.org/en/stable/deprecations.html#support-for-tests-written-for-nose
+
+/opt/miniconda3/envs/testbed/lib/python3.9/site-packages/_pytest/python.py:898: PytestRemovedIn8Warning
+=========================== short test summary info ============================
+ERROR astropy/io/fits/tests/test_header_fromstring_bytes.py::TestHeaderFromStringBytes::test_header_fromstring_bytes
+ERROR astropy/io/fits/tests/test_header_fromstring_bytes.py::TestHeaderFromStringBytes::test_header_fromstring_str
+ERROR astropy/io/fits/tests/test_header_fromstring_bytes.py::TestHeaderFromStringBytes::test_card_fromstring_bytes
+ERROR astropy/io/fits/tests/test_header_fromstring_bytes.py::TestHeaderFromStringBytes::test_card_fromstring_str
+============================== 4 errors in 7.49s ===============================

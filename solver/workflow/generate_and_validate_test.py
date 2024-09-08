@@ -205,10 +205,11 @@ def generate_tests_for_test_file(
                 listener.on_start_patch(PatchType.TEST_INVERTED)
 
             try:
-                inverted_patch = invert_test(test_dir.invert(), test_patch)
+                invert_dir = test_dir.invert()
+                inverted_patch = invert_test(invert_dir, test_patch)
                 if inverted_patch:
                     accept = validate_test_inverted_patch(
-                        context, test_dir, inverted_patch, run_test
+                        context, invert_dir, inverted_patch, run_test
                     )
                     if not accept:
                         inverted_patch = None
