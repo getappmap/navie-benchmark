@@ -2,6 +2,29 @@
 
   TODO: Utilize the same logic with test generation?
 
+
+  Did the test errors get utilized?
+
+
+[generate-code] (django__django-14559) Code patch generated after 1 attempts.
+[generate-and-validate-code] (django__django-14559) Running pass-to-pass test for attempt 2
+[run-test] (django__django-14559) Running tests tests/queries/test_bulk_update.py in /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-14559/navie/generate-code/attempt-2/run-test/pass-to-pass
+[run-test] (django__django-14559) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-14559/navie/generate-code/attempt-2/run-test/pass-to-pass/run_test.log
+[run-test] (django__django-14559) No test status was detected in the output file
+[run-test] (django__django-14559) Test tests/queries/test_bulk_update.py completed with status TestStatus.ERROR.
+[summarize-test-errors] (django__django-14559) Extracted test errors: ```plaintext
+error: patch with only garbage at line 3
+AttributeError: 'DatabaseOperations' object has no attribute 'update'
+```
+[generate-and-validate-code] (django__django-14559) Running test patch for attempt 2
+[run-test] (django__django-14559) Running tests tests/queries/test_bulk_update_return_value.py in /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-14559/navie/generate-code/attempt-2/run-test/test-patch
+[run-test] (django__django-14559) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-14559/navie/generate-code/attempt-2/run-test/test-patch/run_test.log
+[run-test] (django__django-14559) No test status was detected in the output file
+[run-test] (django__django-14559) Test tests/queries/test_bulk_update_return_value.py completed with status TestStatus.ERROR.
+[summarize-test-errors] (django__django-14559) Extracted test errors: Here are the specific errors that caused the test to fail, with each unique error printed only once:
+
+* We can get the Python version from the harness constants and remove the Environment detector.
+
 * Patch file matches, but no solution obtained
 
   https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=539801750#gid=539801750
