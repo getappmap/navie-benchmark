@@ -75,6 +75,8 @@ class TestGenerateAndValidateCode(unittest.TestCase):
             FAIL_TO_PASS=[],
             PASS_TO_PASS=[],
         )
+        self.summarize_test_errors = Mock()
+        self.summarize_test_errors.return_value = []
         self.collect_solve_listener = CollectSolveListener()
         self.solve_listeners: List[SolveListener] = [self.collect_solve_listener]
         self.context = Context(
@@ -105,6 +107,7 @@ class TestGenerateAndValidateCode(unittest.TestCase):
             plan=self.plan,
             generate_code=self.generate_code,
             run_test=self.run_test,
+            summarize_test_errors=self.summarize_test_errors,
             pass_to_pass_test_file=Path("test_file"),
             test_patch=Patch(EXAMPLE_TEST_PATCH),
             test_patch_inverted=Patch(EXAMPLE_TEST_PATCH),
@@ -159,6 +162,7 @@ class TestGenerateAndValidateCode(unittest.TestCase):
             plan=self.plan,
             generate_code=self.generate_code,
             run_test=self.run_test,
+            summarize_test_errors=self.summarize_test_errors,
             pass_to_pass_test_file=Path("test_file"),
             test_patch=Patch(EXAMPLE_TEST_PATCH),
             test_patch_inverted=Patch(EXAMPLE_TEST_PATCH),
@@ -187,7 +191,7 @@ class TestGenerateAndValidateCode(unittest.TestCase):
             ],
         )
 
-    def test_generate_and_validate_code_partial_success(self):
+    def test_generate_and_validate_code_success_on_third_try(self):
         self.generate_code.side_effect = [
             None,
             Patch(EXAMPLE_CODE_PATCH),
@@ -219,13 +223,14 @@ class TestGenerateAndValidateCode(unittest.TestCase):
             plan=self.plan,
             generate_code=self.generate_code,
             run_test=self.run_test,
+            summarize_test_errors=self.summarize_test_errors,
             pass_to_pass_test_file=Path("test_file"),
             test_patch=Patch("test_patch"),
             test_patch_inverted=Patch("test_patch_inverted"),
         )
 
         self.assertEqual(result.patch, Patch(EXAMPLE_CODE_PATCH))
-        self.assertEqual(len(result.code_patches), 2)
+        self.assertEqual(len(result.code_patches), 1)
 
     def test_generate_and_validate_code_no_test_patches(self):
         patch = Patch(EXAMPLE_CODE_PATCH)
@@ -239,6 +244,7 @@ class TestGenerateAndValidateCode(unittest.TestCase):
             plan=self.plan,
             generate_code=self.generate_code,
             run_test=self.run_test,
+            summarize_test_errors=self.summarize_test_errors,
             pass_to_pass_test_file=Path("test_file"),
             test_patch=None,
             test_patch_inverted=None,

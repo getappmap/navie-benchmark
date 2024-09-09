@@ -1,18 +1,19 @@
 from os import getcwd, listdir, path
 from pathlib import Path
 import subprocess
-from typing import Callable, List, Optional
+from typing import Callable, Iterable, List, Optional
 
 import docker
 import yaml
 
-from solver.workflow.choose_code_files import choose_code_files
-from solver.workflow.work_dir import WorkDir
 from swebench.harness.test_spec import TestSpec
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
 
+from .summarize_test_errors import summarize_test_errors
+from .choose_code_files import choose_code_files
+from .work_dir import WorkDir
 from .workflow_limits import WorkflowLimits
 from .solve_listener import SolveListener, TestStatus
 from .generate_and_validate_code import (
@@ -153,6 +154,7 @@ class Workflow:
                 plan,
                 self.generate_code,
                 self.run_test,
+                self.summarize_test_errors,
                 self.edit_test_file,
                 self.test_patch,
                 self.inverted_patch,
@@ -436,7 +438,17 @@ Python version: {self.environment.python_version}
             run_test.code_patches = code_patches
         return run_test.run(self.docker_client, test_patch)
 
-    def generate_code(self, work_dir: WorkDir, plan: str) -> Optional[Patch]:
+    def summarize_test_errors(self, work_dir: WorkDir, test_output: str) -> str:
+        return summarize_test_errors(
+            self.log,
+            work_dir,
+            self.trajectory_file,
+            test_output,
+        )
+
+    def generate_code(
+        self, work_dir: WorkDir, plan: str, test_errors: List[str]
+    ) -> Optional[Patch]:
         self.clean_git_state()
 
         generator = GenerateCode(
@@ -448,8 +460,8 @@ Python version: {self.environment.python_version}
             self.limits.file_limit,
         )
 
-        def generate(attempt, lint_errors: list = []):
-            code = generator.generate(attempt, lint_errors)
+        def generate(attempt, lint_errors: List[str]):
+            code = generator.generate(attempt, lint_errors, test_errors)
             return generator.apply(attempt, code)
 
         lint_repair_result = self.lint_repair(

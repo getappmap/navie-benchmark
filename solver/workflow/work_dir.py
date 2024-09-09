@@ -74,6 +74,9 @@ class WorkDir:
     def invert(self) -> WorkDir:
         return WorkDir(self._dir / f"invert", self)
 
+    def summarize_test_errors(self) -> WorkDir:
+        return WorkDir(self._dir / "summarize-test-errors", self)
+
     def generate_code(self, attempt: int) -> WorkDir:
         return WorkDir(self._dir / "generate-code" / f"attempt-{str(attempt)}", self)
 

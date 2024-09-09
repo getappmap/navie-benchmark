@@ -1,4 +1,10 @@
-* Choose a list of code files to modify, and operate the code retries on these.
+* Feedback test errors into code generation
+
+  TODO: Utilize the same logic with test generation?
+
+* Patch file matches, but no solution obtained
+
+  https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=539801750#gid=539801750
 
 * Ignore user-provided Python versions
 
@@ -30,7 +36,6 @@ Python 3.11.5
 * Feed test errors back into the solver.
 
 [run-test] (sympy__sympy-17318) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/sympy__sympy-17318/navie/generate-test/attempt-1_from-test_sqrtdenest.py/test-2/run-test/test-patch/run_test.log
-
 [run-test] (sympy__sympy-17318) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/sympy__sympy-17318/navie/generate-test/attempt-3_from-test_radsimp.py/test-1/run-test/test-patch/run_test.log
 
 ________________________________________________________________________________
@@ -42,16 +47,6 @@ ModuleNotFoundError: No module named 'sympy.testing'
 
 =========== tests finished: 0 passed, 1 exceptions, in 0.00 seconds ============
 DO *NOT* COMMIT!
-
-All failed - seems suspicious:
-
-sphinx-doc__sphinx-7454 sphinx-doc__sphinx-8120 sphinx-doc__sphinx-8638
-sphinx-doc__sphinx-9602
-sympy__sympy-15599
-sympy__sympy-17318
-sympy__sympy-19495
-sympy__sympy-21379
-sympy__sympy-23413
 
 Ignore failures due to deprecation?
 

@@ -1,6 +1,6 @@
 from os import getcwd, path
 from posixpath import relpath
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 import traceback
 
 
@@ -36,7 +36,9 @@ class GenerateCode:
 
     # Generate a code change plan and return it as a string.
     # If lint_errors is provided, include prompting to avoid them.
-    def generate(self, attempt: int, lint_errors: list = []) -> str:
+    def generate(
+        self, attempt: int, lint_errors: List[str] = [], test_errors: List[str] = []
+    ) -> str:
         plan = [
             self.plan,
         ]
@@ -50,6 +52,19 @@ Ensure that the following lint errors do not occur:
 <lint-errors>                        
 {lint_errors_str}
 </lint-errors>
+"""
+            )
+
+        if test_errors:
+            test_errors_str = "\n".join(test_errors)
+            plan.append(
+                f"""## Preventing test errors
+
+Ensure that the following test errors do not occur:
+
+<test-errors>
+{test_errors_str}
+</test-errors>
 """
             )
 
@@ -80,8 +95,10 @@ Do not use Python features that are not available in this Python version.
     # Apply code changes to the files in the current directory and return a patch.
     def apply(self, attempt: int, code: str) -> Optional[Patch]:
         changes = extract_changes(code)
-        changed_files = set([change.file for change in changes])
-        if len(changed_files) > self.file_limit:
+        distinct_files = set(
+            [path.relpath(change.file, getcwd()) for change in changes]
+        )
+        if len(distinct_files) > self.file_limit:
             self.log(
                 "workflow/generate-code",
                 f"Found {len(changes)} changes, but the limit is {self.file_limit}",

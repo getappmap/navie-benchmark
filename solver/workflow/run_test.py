@@ -1,3 +1,4 @@
+from json import dumps
 from os import path
 import os
 from pathlib import Path
@@ -144,6 +145,8 @@ conda activate {env_name}
         error_log_file = path.join(self.work_dir, "run_test_error.log")
         log_file = path.join(self.work_dir, "run_test.log")
         script_file = path.join(self.work_dir, "run_test.sh")
+        image_name_file = path.join(self.work_dir, "image_name")
+        volumes_file = path.join(self.work_dir, "volumes.json")
         with open(script_file, "w") as f:
             f.write(str(test_script))
         patch_file = path.join(self.work_dir, "test.patch")
@@ -153,12 +156,8 @@ conda activate {env_name}
             code_patch_file = path.join(self.work_dir, f"code_{code_patch_index}.patch")
             with open(code_patch_file, "w") as f:
                 f.write(str(code_patch))
-
-        if self.code_patches:
-            self.log(
-                "run-test",
-                f"Test run includes {len(self.code_patches)} code patches.",
-            )
+        with open(image_name_file, "w") as f:
+            f.write(str(run_test_image_name))
 
         volumes = {
             path.abspath(patch_file): {
@@ -176,6 +175,9 @@ conda activate {env_name}
                 "bind": f"/tmp/code_{code_patch_index}.patch",
                 "mode": "ro",
             }
+
+        with open(volumes_file, "w") as f:
+            f.write(dumps(volumes, indent=2))
 
         container = None
         succeeded = False
@@ -196,24 +198,23 @@ conda activate {env_name}
             exit_code = result["StatusCode"]
             if exit_code == 0:
                 succeeded = True
-
-            test_output = container.logs().decode("utf-8")
         except Exception as e:
             self.log("run-test", f"{e.__class__.__name__}: {e}")
             test_status = TestStatus.ERROR
             with open(error_log_file, "w") as f:
                 f.write(str(e))
 
+        if container:
+            try:
+                test_output = container.logs().decode("utf-8")
+                container.remove()
+            except Exception as e:
+                self.log("run-test", f"Failed to get logs and shut down container: {e}")
+
         if test_output:
             self.log("run-test", f"Interpreting test output from log file: {log_file}")
             with open(log_file, "w") as f:
                 f.write(test_output)
-
-        if container:
-            try:
-                container.remove()
-            except Exception as e:
-                self.log("run-test", f"Failed to remove container: {e}")
 
         if not test_status:
             log_parser = MAP_REPO_TO_PARSER[self.repo]
