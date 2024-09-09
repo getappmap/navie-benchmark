@@ -1,11 +1,12 @@
 from os import getcwd, listdir, path
 from pathlib import Path
 import subprocess
-from typing import Callable, Iterable, List, Optional
+from typing import Callable, List, Optional
 
 import docker
 import yaml
 
+from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.test_spec import TestSpec
 
 from navie.editor import Editor
@@ -75,6 +76,10 @@ class Workflow:
         self.test_patch: Optional[Patch] = None
         self.inverted_patch: Optional[Patch] = None
         self.code_patch: Optional[Patch] = None
+
+    @property
+    def test_command(self) -> str:
+        return MAP_REPO_VERSION_TO_SPECS[self.repo][self.version]["test_cmd"]
 
     def run(self):
         for listener in self.solve_listeners:
@@ -316,6 +321,7 @@ Do not plan specific code changes. Just design the solution.
             self.log,
             work_dir,
             self.trajectory_file,
+            self.test_command,
             test_file_path,
             self.issue_text,
             [],
@@ -400,6 +406,7 @@ Python version: {self.environment.python_version}
             self.log,
             work_dir,
             self.trajectory_file,
+            self.test_command,
             test_file_path,
             self.issue_text,
             observed_errors,
