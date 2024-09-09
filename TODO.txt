@@ -1,4 +1,33 @@
-* Feed test errors back into the solver
+* Choose a list of code files to modify, and operate the code retries on these.
+
+* Ignore user-provided Python versions
+
+```sh
+python3.8 -m pip install --user --upgrade 'git+git://github.com/sphinx-doc/sphinx.git@3.0.x#egg=sphinx'
+```
+## Python environment
+
+Do not use Python features that are not available in this Python version.
+
+Python 3.11.5
+
+* Do not take the user description overly literally --- 
+
++        self.locale_dir = os.path.join(self.repo_dir, "locale", "da", "LC_MESSAGES")
++        self.build_dir = os.path.join(self.repo_dir, "_build", "html")
++        self.index_html = os.path.join(self.build_dir, "index.html")
++
++        # Clone the repository
++        subprocess.run(["git", "clone", self.repo_url, self.repo_dir], check=True)
++        subprocess.run(["git", "checkout", self.commit_hash], cwd=self.repo_dir, check=True)
++
++        # Create a virtual environment and install Sphinx
++        subprocess.run(["python3", "-m", "venv", "env"], cwd=self.repo_dir, check=True)
++        subprocess.run([os.path.join(self.repo_dir, "env", "bin", "pip"), "install", "sphinx"], check=True)
+
+* Require a code file to be present in the trace of the test case.
+
+* Feed test errors back into the solver.
 
 [run-test] (sympy__sympy-17318) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/sympy__sympy-17318/navie/generate-test/attempt-1_from-test_sqrtdenest.py/test-2/run-test/test-patch/run_test.log
 
@@ -16,9 +45,7 @@ DO *NOT* COMMIT!
 
 All failed - seems suspicious:
 
-sphinx-doc__sphinx-7454
-sphinx-doc__sphinx-8120
-sphinx-doc__sphinx-8638
+sphinx-doc__sphinx-7454 sphinx-doc__sphinx-8120 sphinx-doc__sphinx-8638
 sphinx-doc__sphinx-9602
 sympy__sympy-15599
 sympy__sympy-17318

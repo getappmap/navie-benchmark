@@ -6,6 +6,7 @@ from typing import Callable, List, Optional
 import docker
 import yaml
 
+from solver.workflow.choose_code_files import choose_code_files
 from solver.workflow.work_dir import WorkDir
 from swebench.harness.test_spec import TestSpec
 
@@ -27,7 +28,7 @@ from .generate_and_validate_test import (
     patch_score,
 )
 from .code_environment import Environment
-from .choose_test_file import choose_test_file
+from .choose_test_file import choose_test_files
 from .generate_code import GenerateCode
 from .generate_test import GenerateTest
 from .linter import Flake8Linter
@@ -78,7 +79,7 @@ class Workflow:
         for listener in self.solve_listeners:
             listener.on_solve_start(self.work_dir.path)
 
-        edit_test_files = choose_test_file(
+        edit_test_files = choose_test_files(
             self.log,
             self.work_dir,
             self.trajectory_file,
@@ -110,26 +111,16 @@ class Workflow:
                 )
                 self.edit_test_file = edit_test_files[0]
 
-        plan = self.generate_plan()
-
-        generate_code_result = generate_and_validate_code(
-            GenerateCodeContext(
-                self.limits,
-                self.log,
-                self.work_dir,
-                self.docker_client,
-                self.repo,
-                self.version,
-                self.test_spec,
-                self.solve_listeners,
-            ),
-            plan,
-            self.generate_code,
-            self.run_test,
-            self.edit_test_file,
-            self.test_patch,
-            self.inverted_patch,
+        code_files = choose_code_files(
+            self.log,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_text,
+            self.limits.code_files_limit,
         )
+        if not code_files:
+            self.log("workflow", "No code files chosen")
+            code_files = []
 
         def patch_score(code_patch_result: CodePatchResult) -> int:
             score = 0
@@ -141,29 +132,62 @@ class Workflow:
                 score += 1
             return score
 
-        if generate_code_result.patch:
-            self.log("workflow", "Optimal code patch generated (for available tests)")
+        generate_code_results: list[CodePatchResult] = []
+        code_patch: Optional[Patch] = None
+        for code_file in code_files:
+            self.log("workflow", f"Evaluating code file: {code_file}")
 
-            self.code_patch = generate_code_result.patch
-            score = max(
-                [
-                    patch_score(code_patch_result)
-                    for code_patch_result in generate_code_result.code_patches
-                ]
+            plan = self.generate_plan(code_file)
+
+            generate_code_result = generate_and_validate_code(
+                GenerateCodeContext(
+                    self.limits,
+                    self.log,
+                    self.work_dir,
+                    self.docker_client,
+                    self.repo,
+                    self.version,
+                    self.test_spec,
+                    self.solve_listeners,
+                ),
+                plan,
+                self.generate_code,
+                self.run_test,
+                self.edit_test_file,
+                self.test_patch,
+                self.inverted_patch,
             )
-            for listener in self.solve_listeners:
-                listener.on_code_patch(
-                    generate_code_result.patch,
-                    True,
-                    self.test_patch != None,
-                    self.inverted_patch != None,
-                    score,
-                )
-        elif generate_code_result.code_patches:
-            self.log("workflow", "Choosing best patch")
 
+            if generate_code_result.patch:
+                self.log(
+                    "workflow", "Optimal code patch generated (for available tests)"
+                )
+
+                self.code_patch = generate_code_result.patch
+                score = max(
+                    [
+                        patch_score(code_patch_result)
+                        for code_patch_result in generate_code_result.code_patches
+                    ]
+                )
+                for listener in self.solve_listeners:
+                    listener.on_code_patch(
+                        generate_code_result.patch,
+                        True,
+                        self.test_patch != None,
+                        self.inverted_patch != None,
+                        score,
+                    )
+
+                break
+
+            generate_code_results.extend(generate_code_result.code_patches)
+
+        self.log("workflow", "Choosing best patch")
+
+        if not code_patch and generate_code_results:
             # Sort code_patches by score
-            code_patches = list(generate_code_result.code_patches)
+            code_patches = list(generate_code_results)
             code_patches.sort(
                 key=lambda patch: patch_score(patch),
                 reverse=True,
@@ -187,11 +211,11 @@ class Workflow:
                         [p.to_h() for p in code_patches],
                     )
                 )
-        else:
-            self.log("workflow", "No code patches generated")
 
         if self.code_patch:
             self.write_patch_file("code", self.code_patch)
+        else:
+            self.log("workflow", "No code patches generated")
 
         for listener in self.solve_listeners:
             listener.on_completed()
@@ -202,17 +226,17 @@ class Workflow:
         with patch_path.open("w") as f:
             f.write(str(patch))
 
-    def generate_plan(self) -> str:
+    def generate_plan(self, edit_code_file: Path) -> str:
         editor = Editor(
             self.work_dir.plan().path_name,
             log_dir=self.work_dir.root.path_name,
             trajectory_file=self.trajectory_file,
         )
-        issue_text = f"""{self.issue_text}
+        issue_text = f"""Plan a solution to the following issue, by modifying the code in the file {edit_code_file}:
+
+{self.issue_text}
 
 In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
-
-Limit your solution to modify at most {self.limits.file_limit} file(s).
 
 Do not plan specific code changes. Just design the solution.
 """

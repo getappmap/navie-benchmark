@@ -14,7 +14,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from swebench.harness.test_spec import make_test_spec
 
 from solver.workflow.work_dir import WorkDir
-from solver.workflow.choose_test_file import choose_test_file
+from solver.workflow.choose_test_file import choose_test_files
 from solver.workflow.generate_and_validate_test import (
     TestPatchResult,
     generate_and_validate_test,
@@ -73,7 +73,7 @@ def main(
         logger_fn, navie_work_dir.path, docker_client, instance, limits_obj
     )
 
-    edit_test_files = choose_test_file(
+    edit_test_files = choose_test_files(
         logger_fn,
         navie_work_dir,
         workflow.trajectory_file,

@@ -54,6 +54,9 @@ class WorkDir:
     def choose_test_files(self) -> WorkDir:
         return WorkDir(self._dir / "choose-test-files", self)
 
+    def choose_code_files(self) -> WorkDir:
+        return WorkDir(self._dir / "choose-code-files", self)
+
     def plan(self) -> WorkDir:
         return WorkDir(self._dir / "plan", self)
 
