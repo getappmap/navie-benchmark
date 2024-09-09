@@ -82,13 +82,12 @@ class TestSolveListenerTestCase:
     def test_workflow_simulation(self, mock_count_llm_chars):
         # Simulate the workflow
         self.listener.on_solve_start(Path("path/to/work_dir"))
-        self.listener.on_edit_test_file(Path("edit_test_file.py"))
         self.listener.on_start_patch(PatchType.TEST)
         self.listener.on_lint_repair(2, True)
         self.listener.on_end_patch()
         self.listener.on_start_patch(PatchType.CODE)
         self.listener.on_end_patch()
-        self.listener.on_test_patch(Patch(TEST_PATCH))
+        self.listener.on_test_patch(Path("edit_test_file.py"), Patch(TEST_PATCH), None)
         self.listener.on_run_test(
             TestType.PASS_TO_PASS, [], Patch(TEST_PATCH), TestStatus.PASSED
         )

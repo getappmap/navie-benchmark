@@ -1,72 +1,54 @@
 import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from navie.editor import Editor
-from navie.fences import extract_fenced_content
+from solver.workflow.choose_code_files import extract_file_paths
+from solver.workflow.work_dir import WorkDir
 
 
-# Choose a test case file that is most related to the issue.
-def choose_test_file(log, work_dir, trajectory_file, issue_content) -> Optional[Path]:
-    test_to_modify_str = Editor(
-        os.path.join(work_dir, "choose"),
-        log_dir=work_dir,
+# Choose test case files that are most related to the issue.
+def choose_test_files(
+    log, work_dir: WorkDir, trajectory_file: str, issue_content: str, num_files: int
+) -> Optional[List[Path]]:
+    examples = "\n".join([f"path/to/test_{i}.py" for i in range(1, num_files + 1)])
+    token_limit = 3000 * num_files
+
+    tests_to_modify_str = Editor(
+        work_dir.choose_test_files().path_name,
+        log_dir=work_dir.root.path_name,
         trajectory_file=trajectory_file,
     ).search(
         issue_content,
-        prompt="""## Task
+        prompt=f"""## Task
 
-Identify a single test case that is most related to the issue.        
+Identify {num_files} test files that are most related to the issue. Put the most relevant file first,
+followed by less relevant files.
+
+The files must all be different.
+
+Example:
+
+{examples}
         
-## Format instructions
-        
-Output the result as the file path, and nothing else.
+Output the results as one file path on each line, and nothing else.
 
 Do not include line numbers or any location within the file. Just the file path.
 """,
-        options="/noprojectinfo /noterms /noclassify /include=test",
+        options=f"/noprojectinfo /noclassify /include=test /tokenlimit={token_limit}",
         extension="txt",
     )
 
-    tests_to_modify = []
+    tests_to_modify = extract_file_paths(tests_to_modify_str)
 
-    # Recognize all file paths like this: <!-- file: /home/runner/work/_temp/tmpcwaaevd8/sympy__sympy__1.11-3/sympy/printing/tests/test_pycode.py -->
-    for line in test_to_modify_str.split("\n"):
-        if line.startswith("<!-- file: "):
-            tests_to_modify.append(line[len("<!-- file: ") : -len(" -->")])
-
-    # Also recognized the fenced output, which should just be a list of files.
-    tests_to_modify_lines = "\n".join(extract_fenced_content(test_to_modify_str))
-    tests_to_modify.extend(tests_to_modify_lines.split("\n"))
-
-    def resolve_test_path(test):
-        if not os.path.exists(test):
-            test_relative = test.lstrip("/")
-            if os.path.exists(test_relative):
-                return test_relative
-        return test
-
-    def normalize_path(test: str) -> str:
-        """
-        The path may be generated with line numbers, like path/to/file.py:1-10
-        Match the path without line numbers.
-        """
-        return test.split(":")[0]
-
-    tests_to_modify = [resolve_test_path(test) for test in tests_to_modify]
-    tests_to_modify = [normalize_path(test) for test in tests_to_modify]
-    tests_to_modify = [test for test in tests_to_modify if os.path.exists(test)]
-
-    if len(tests_to_modify) == 0:
-        log("choose-test-file", f"Found no existing test files in {test_to_modify_str}")
+    if not tests_to_modify:
+        log(
+            "choose-test-file", f"Found no existing test files in {tests_to_modify_str}"
+        )
         return None
 
-    if len(tests_to_modify) > 1:
-        log("choose-test-file", f"Found multiple test files in {test_to_modify_str}")
+    log(
+        "choose-test-file", f"Recommended tests to modify: {", ".join([str(file) for file in tests_to_modify])}"
+    )
 
-    test_file = tests_to_modify[0]
-    test_file = os.path.relpath(test_file, os.getcwd())
-
-    log("choose_test_file", f"Chose test file: {test_file}")
-
-    return Path(test_file)
+    return tests_to_modify

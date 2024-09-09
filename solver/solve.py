@@ -15,7 +15,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from swebench.harness.test_spec import make_test_spec
 
 from solver.harness.image_store import ImageStore
-from solver.predictions_manager import PredictionsManager
+from solver.predictions_file import PredictionsFile
 from solver.cli import (
     configure_clean_option,
     configure_limits,
@@ -73,7 +73,7 @@ def main(
     def log_fn(context, msg):
         print(f"[{context}] {msg}")
 
-    predictions_manager = PredictionsManager(
+    predictions_manager = PredictionsFile(
         log_fn,
         instance_set,
         num_runners,

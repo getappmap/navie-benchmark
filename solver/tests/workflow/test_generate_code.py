@@ -5,13 +5,14 @@ from tempfile import TemporaryDirectory
 
 from solver.workflow.patch import Patch
 from solver.workflow.generate_code import GenerateCode
+from solver.workflow.work_dir import WorkDir
 
 
 class TestGenerateCode(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
-        self.work_dir = Path("/work/directory")
-        self.trajectory_file = str(self.work_dir / "trajectory.jsonl")
+        self.work_dir = WorkDir("/work/directory", write_sequence=False)
+        self.trajectory_file = str(self.work_dir.path / "trajectory.jsonl")
         self.plan = "Sample plan"
         self.generator = GenerateCode(
             self.log_mock,
@@ -56,12 +57,9 @@ class TestGenerateCode(unittest.TestCase):
             generated_code = self.generator.generate(1, [])
             self.assertEqual(generated_code, "Generated code")
             editor_instance_mock.generate.assert_called_once_with(
-                plan="""<plan>
-Sample plan
-</plan>
-""",
+                plan="Sample plan",
                 prompt=ANY,
-                options="/noprojectinfo /noterms /noclassify /exclude=\\btests?\\b|\\btesting\\b|\\btest_|_test\\b",
+                options="/noprojectinfo /noclassify /exclude=\\btests?\\b|\\btesting\\b|\\btest_|_test\\b",
             )
 
             # Test apply method

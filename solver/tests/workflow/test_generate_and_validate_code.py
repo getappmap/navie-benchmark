@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import Mock, call
 from pathlib import Path
 
+from solver.workflow.work_dir import WorkDir
 from swebench.harness.test_spec import TestSpec
 
 from solver.tests.workflow.collect_solve_listener import (
@@ -44,12 +45,23 @@ index 123..456 789
 +Modified test code
 """
 
+EXAMPLE_TEST_PATCH_INVERTED = """
+diff --git a/test_file b/test_file
+index 123..456 789
+--- a/test_file
++++ b/test_file
+@@ -1,1 +1,1 @@
+-Modified test code
++Inverted test code
+"""
+
 
 class TestGenerateAndValidateCode(unittest.TestCase):
     def setUp(self):
         self.limits = WorkflowLimits(code_status_retry_limit=3)
         self.log = Mock()
         self.docker_client = Mock()
+        self.work_dir = WorkDir("path/to/work_dir", write_sequence=False)
         self.repo = "test_repo"
         self.version = "1.0"
         self.test_spec = TestSpec(
@@ -66,13 +78,14 @@ class TestGenerateAndValidateCode(unittest.TestCase):
         self.collect_solve_listener = CollectSolveListener()
         self.solve_listeners: List[SolveListener] = [self.collect_solve_listener]
         self.context = Context(
-            limits=self.limits,
-            log=self.log,
-            docker_client=self.docker_client,
-            repo=self.repo,
-            version=self.version,
-            test_spec=self.test_spec,
-            solve_listeners=self.solve_listeners,
+            self.limits,
+            self.log,
+            self.work_dir,
+            self.docker_client,
+            self.repo,
+            self.version,
+            self.test_spec,
+            self.solve_listeners,
         )
         self.plan = "test_plan"
         self.generate_code = Mock()
