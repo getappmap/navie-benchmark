@@ -35,7 +35,7 @@ Output the results as one file path on each line, and nothing else.
 
 Do not include line numbers or any location within the file. Just the file path.
 """,
-        options=f"/noprojectinfo /noclassify /include=test /tokenlimit={token_limit}",
+        options=f"/noprojectinfo /noformat /noclassify /include=test /tokenlimit={token_limit}",
         extension="txt",
     )
 

@@ -382,7 +382,7 @@ Do not include directory names in the file name. Just choose a base file name.
 
 Python version: {self.environment.python_version}
 """,
-            options=r"/noprojectinfo /nocontext",
+            options=r"/noprojectinfo /nocontext /noclassify",
             question_name="test_file_name",
         )
         test_file_name = (

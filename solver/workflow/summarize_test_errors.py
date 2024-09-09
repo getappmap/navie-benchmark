@@ -28,7 +28,7 @@ Ignore errors like "error: patch with only garbage", as these are unrelated and 
 
     errors = editor.ask(
         question,
-        options="/nocontext /noclassify",
+        options="/noprojectinfo /nocontext /noclassify",
     )
     log(
         "summarize-test-errors",
