@@ -16,6 +16,17 @@ class WorkflowLimits:
         code_lint_retry_limit: int = CODE_LINT_RETRY_LIMIT,
         code_status_retry_limit: int = CODE_STATUS_RETRY_LIMIT,
     ):
+        """
+        Create a new WorkflowLimits object.
+
+        Args:
+            file_limit (int): The maximum number of files that the LLM will be prompted to modify.
+            test_files_limit (int): The number of different existing test case files that will be selected for modification into a test patch.
+            test_lint_retry_limit (int): The maximum number of times to retry linting a test patch.
+            test_status_retry_limit (int): The maximum number of times to retry running a test patch. This retry is activated by test failures.
+            code_lint_retry_limit (int): The maximum number of times to retry linting a code patch.
+            code_status_retry_limit (int): The maximum number of times to retry running a code patch. This retry is activated by test failures.
+        """
         self.file_limit = file_limit
         self.test_files_limit = test_files_limit
         self.test_lint_retry_limit = test_lint_retry_limit
@@ -45,6 +56,7 @@ class WorkflowLimits:
     def limit_names():
         return [
             "file",
+            "test_files",
             "test_lint_retry",
             "test_status_retry",
             "code_lint_retry",

@@ -23,7 +23,7 @@ class TestChooseTestFile(unittest.TestCase):
         )
 
         results = choose_test_file(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
         )
         assert results is not None
         result = results[0]
@@ -44,7 +44,7 @@ class TestChooseTestFile(unittest.TestCase):
         )
 
         results = choose_test_file(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 2
         )
         self.assertEqual(results, [Path("test_file1.py"), Path("test_file2.py")])
 
@@ -56,7 +56,7 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock.search.return_value = ""
 
         result = choose_test_file(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
         )
         self.assertIsNone(result)
         self.log_mock.assert_called_with(
@@ -73,7 +73,7 @@ class TestChooseTestFile(unittest.TestCase):
         )
 
         results = choose_test_file(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
         )
         self.assertEqual(results, [Path("work/directory/test_file.py")])
 
@@ -87,7 +87,7 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock.search.return_value = f"<!-- file: {test} -->"
 
         results = choose_test_file(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
         )
         self.assertEqual(results, [Path("test_file.py")])
 
@@ -101,7 +101,7 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock.search.return_value = "<!-- file: /work/directory/invalid_test_file.py -->\n<!-- file: /work/directory/valid_test_file.py -->"
 
         results = choose_test_file(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
         )
         self.assertEqual(results, [Path("../../work/directory/valid_test_file.py")])
 
@@ -115,7 +115,7 @@ class TestChooseTestFile(unittest.TestCase):
         )
 
         results = choose_test_file(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content
+            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
         )
         self.assertEqual(results, [Path("test_file.py")])
 

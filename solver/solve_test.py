@@ -74,7 +74,11 @@ def main(
     )
 
     edit_test_files = choose_test_file(
-        logger_fn, navie_work_dir, workflow.trajectory_file, workflow.issue_text
+        logger_fn,
+        navie_work_dir,
+        workflow.trajectory_file,
+        workflow.issue_text,
+        limits_obj.test_files_limit,
     )
     if not edit_test_files:
         print("[solve_test] No test files to edit.")

@@ -9,32 +9,33 @@ from solver.workflow.work_dir import WorkDir
 
 # Choose a test case file that is most related to the issue.
 def choose_test_file(
-    log, work_dir: WorkDir, trajectory_file, issue_content
+    log, work_dir: WorkDir, trajectory_file: str, issue_content: str, num_files: int
 ) -> Optional[List[Path]]:
+    examples = "\n".join([f"path/to/test_{i}.py" for i in range(1, num_files + 1)])
+    token_limit = 3000 * num_files
+
     tests_to_modify_str = Editor(
         work_dir.choose_test_files().path_name,
         log_dir=work_dir.root.path_name,
         trajectory_file=trajectory_file,
     ).search(
         issue_content,
-        prompt="""## Task
+        prompt=f"""## Task
 
-Identify 3 test files that are most related to the issue. Put the most relevant file first,
+Identify {num_files} test files that are most related to the issue. Put the most relevant file first,
 followed by less relevant files.
 
 The files must all be different.
 
 Example:
 
-path/to/test_1.py
-path/to/test_2.py
-path/to/test_3.py
+{examples}
         
 Output the results as one file path on each line, and nothing else.
 
 Do not include line numbers or any location within the file. Just the file path.
 """,
-        options="/noprojectinfo /noclassify /include=test",
+        options=f"/noprojectinfo /noclassify /include=test /tokenlimit={token_limit}",
         extension="txt",
     )
 

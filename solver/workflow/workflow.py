@@ -79,7 +79,11 @@ class Workflow:
             listener.on_solve_start(self.work_dir.path)
 
         edit_test_files = choose_test_file(
-            self.log, self.work_dir, self.trajectory_file, self.issue_text
+            self.log,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_text,
+            self.limits.test_files_limit,
         )
         if edit_test_files:
             generate_test_result = self.generate_and_validate_test(edit_test_files)
