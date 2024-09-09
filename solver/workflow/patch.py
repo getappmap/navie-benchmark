@@ -75,6 +75,9 @@ class Patch:
 
         self.patch = patch
 
+    def __repr__(self) -> str:
+        return str(self.patch)
+
     def __str__(self) -> str:
         return str(self.patch)
 

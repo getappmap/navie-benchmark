@@ -23,8 +23,11 @@ class CollectSolveListener(SolveListener):
     def on_solve_start(self, navie_work_dir: Path):
         self.messages.append(("on_solve_start", navie_work_dir))
 
-    def on_edit_test_file(self, edit_test_file: Path):
-        self.messages.append(("on_edit_test_file", edit_test_file))
+    def on_start_edit_test_file(self, edit_test_file: Path):
+        self.messages.append(("on_start_edit_test_file", edit_test_file))
+
+    def on_end_edit_test_file(self):
+        self.messages.append(("on_end_edit_test_file",))
 
     def on_start_patch(self, patch_name: PatchType):
         self.messages.append(("on_start_patch", patch_name.value))
@@ -35,8 +38,20 @@ class CollectSolveListener(SolveListener):
     def on_end_patch(self):
         self.messages.append(("on_end_patch",))
 
-    def on_test_patch(self, patch: Patch):
-        self.messages.append(("on_test_patch", trim_patch(patch)))
+    def on_test_patch(
+        self,
+        edit_test_file: Path,
+        patch: Optional[Patch],
+        inverted_patch: Optional[Patch],
+    ):
+        self.messages.append(
+            (
+                "on_test_patch",
+                edit_test_file,
+                trim_patch(patch),
+                trim_patch(inverted_patch),
+            )
+        )
 
     def on_test_inverted_patch(self, patch: Patch):
         self.messages.append(("on_test_inverted_patch", trim_patch(patch)))

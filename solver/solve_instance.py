@@ -3,7 +3,6 @@ from json import dumps
 from os import chdir, getenv
 from pathlib import Path
 import sys
-from typing import Optional, Union
 import docker
 
 
@@ -12,11 +11,25 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from swebench.harness.docker_build import (
+    build_container,
+    setup_logger,
+)
+from swebench.harness.docker_utils import (
+    cleanup_container,
+)
+from swebench.harness.test_spec import make_test_spec
 from swebench.harness.constants import SWEbenchInstance
 
-from solver.workflow.solution_listener import SolutionListener, solution_to_plain_types
+from solver.prediction import Prediction
+from solver.workflow.workflow import Workflow
+from solver.workflow.solution_listener import (
+    Solution,
+    SolutionListener,
+    solution_to_plain_types,
+)
 from solver.harness.image_store import ImageStore
-from solver.predictions_manager import PredictionsManager
+from solver.predictions_file import PredictionsFile
 
 from solver.solve import DATASET_NAME
 from solver.cli import (
@@ -31,16 +44,51 @@ from solver.cli import (
     load_dataset,
 )
 from solver.checkout_code import checkout_code
-from solver.workflow.patch import Patch
 
-from swebench.harness.docker_build import (
-    build_container,
-    setup_logger,
-)
-from swebench.harness.docker_utils import (
-    cleanup_container,
-)
-from swebench.harness.test_spec import make_test_spec
+
+def report_solution(
+    navie_work_dir: Path,
+    llm: str,
+    predictions_file: str,
+    instance: SWEbenchInstance,
+    workflow: Workflow,
+    solution: Solution,
+):
+    print(f"[solve_instance] Solution for {instance['instance_id']}: {solution}")
+    solution_attrs = solution_to_plain_types(solution)
+    with open(navie_work_dir / "solution.json", "w") as f:
+        f.write(dumps(solution_attrs, indent=2))
+
+    predictions = Prediction.build_predictions(instance, llm)
+    predictions.add_prediction("model_patch", workflow.code_patch)
+    predictions.add_prediction("model_test_patch", workflow.test_patch)
+    predictions.add_prediction("model_inverted_patch", workflow.inverted_patch)
+    predictions.add_prediction("model_edit_test_file", workflow.edit_test_file)
+
+    PredictionsFile.add_prediction(predictions_file, predictions.as_dict())
+
+
+def report_error(
+    navie_work_dir: Path,
+    llm: str,
+    predictions_file: str,
+    instance: SWEbenchInstance,
+    e: Exception,
+):
+    print(f"[solve_instance] Error solving {instance["instance_id"]}: {e}")
+    import traceback
+
+    traceback.print_exc()
+
+    with open(navie_work_dir / "error.txt", "w") as f:
+        f.write(str(e))
+        f.write("\n")
+        traceback.print_exc(file=f)
+
+    predictions = Prediction.build_predictions(instance, llm)
+    predictions.add_prediction("model_error", str(e))
+
+    PredictionsFile.add_prediction(predictions_file, predictions.as_dict())
 
 
 def main(
@@ -72,6 +120,7 @@ def main(
         raise Exception(
             "Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is set; what LLM are we using?"
         )
+    assert llm
     print(f"Using LLM: {llm}")
 
     instance_id = instance["instance_id"]
@@ -88,8 +137,8 @@ def main(
     source_dir = work_dir / "source"
     navie_work_dir = work_dir / "navie"
 
-    # plan the issue
     container = None
+    workflow = None
     try:
         # Build + start instance container (instance image should already be built)
         container = build_container(
@@ -108,7 +157,6 @@ def main(
 
         solution_listener = SolutionListener(instance_id)
         chdir(source_dir)
-        workflow = None
         try:
             workflow = build_workflow(
                 logger_fn,
@@ -123,31 +171,22 @@ def main(
             chdir(pwd)
 
         solution = solution_listener.build_solution()
-        solution_attrs = solution_to_plain_types(solution)
-        with open(navie_work_dir / "solution.json", "w") as f:
-            f.write(dumps(solution_attrs, indent=2))
-
-        # Clone the instance as predictions
-        prediction: dict = instance.copy()  # type: ignore
-
-        def add_prediction(key: str, value: Union[str, Patch, Path, None]):
-            prediction[key] = str(value) if value else None
-
-        model_name_or_path = f"navie_082024+{llm}"
-
-        add_prediction("model_patch", workflow.code_patch)
-        add_prediction("model_name_or_path", model_name_or_path)
-        add_prediction("model_test_patch", workflow.test_patch)
-        add_prediction("model_inverted_patch", workflow.inverted_patch)
-        add_prediction("model_edit_test_file", workflow.edit_test_file)
-
-        PredictionsManager.add_prediction(predictions_file, prediction)
-
+        report_solution(
+            navie_work_dir,
+            llm,
+            predictions_file,
+            instance,
+            workflow,
+            solution,
+        )
     except Exception as e:
-        print(f"[solve_instance] Error solving {instance_id}: {e}")
-        import traceback
-
-        traceback.print_exc()
+        report_error(
+            navie_work_dir,
+            llm,
+            predictions_file,
+            instance,
+            e,
+        )
     finally:
         # Remove instance container + image, close logger
         if container:

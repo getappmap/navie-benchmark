@@ -1,11 +1,13 @@
 from os import path
 import os
+from pathlib import Path
 from typing import Optional
 
 import docker
 
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
+from swebench.harness.test_spec import TestSpec
 
 from ..harness.build_extended_image import build_extended_image
 from ..harness.make_test_directives import make_test_directives
@@ -38,7 +40,13 @@ DEFAULT_TIMEOUT = 120
 
 class RunTest:
     def __init__(
-        self, log, work_dir, repo, version, test_spec, timeout=DEFAULT_TIMEOUT
+        self,
+        log,
+        work_dir: Path,
+        repo: str,
+        version: str,
+        test_spec: TestSpec,
+        timeout=DEFAULT_TIMEOUT,
     ):
         self.log = log
         self.work_dir = work_dir
@@ -66,12 +74,6 @@ class RunTest:
         # Get configurations for how container should be created
         config = MAP_REPO_VERSION_TO_SPECS[self.test_spec.repo][self.test_spec.version]
         user = "root" if not config.get("execute_test_as_nonroot", False) else "nonroot"
-
-        # Create the container
-        self.log(
-            "run-test",
-            f"Creating run-test container for {self.test_spec.instance_id}...",
-        )
 
         test_directives = make_test_directives(self.repo, [test_file])
 
@@ -203,6 +205,7 @@ conda activate {env_name}
                 f.write(str(e))
 
         if test_output:
+            self.log("run-test", f"Interpreting test output from log file: {log_file}")
             with open(log_file, "w") as f:
                 f.write(test_output)
 

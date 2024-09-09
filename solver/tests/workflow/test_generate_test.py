@@ -5,13 +5,15 @@ from tempfile import TemporaryDirectory
 
 from solver.workflow.patch import Patch
 from solver.workflow.generate_test import GenerateTest
+from solver.workflow.work_dir import WorkDir
 
 
 class TestGenerateTest(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
-        self.work_dir = Path("/work/directory")
-        self.trajectory_file = str(self.work_dir / "trajectory.jsonl")
+        self.work_dir = WorkDir("/work/directory", write_sequence=False)
+        self.trajectory_file = str(self.work_dir.path / "trajectory.jsonl")
+        self.edit_test_file = Path("/work/directory/edit_test_file.py")
         self.test_file_path = Path("/work/directory/test_file.py")
         self.issue_text = "Sample issue text"
         self.observed_errors = ["Error 1", "Error 2"]
@@ -51,12 +53,12 @@ class TestGenerateTest(unittest.TestCase):
 
         with TemporaryDirectory() as temp_dir:
             # Test generate method
-            generated_test = self.generator.generate(1, [])
+            generated_test = self.generator.generate(self.edit_test_file, 1, [])
             self.assertEqual(generated_test, "Generated test code")
             editor_instance_mock.test.assert_called_once_with(
                 issue=ANY,
                 prompt=ANY,
-                options="/noprojectinfo",
+                options="/noprojectinfo /noclassify",
             )
 
         # Test apply method
@@ -64,7 +66,7 @@ class TestGenerateTest(unittest.TestCase):
         self.assertIsInstance(patch, Patch)
         self.log_mock.assert_called_with(
             "generate-test",
-            "Generated test patch",
+            "Generated test file: /work/directory/test_file.py",
         )
         makedirs_mock.assert_called_once_with(
             str(self.test_file_path.parent), exist_ok=True

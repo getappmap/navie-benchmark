@@ -1,26 +1,34 @@
-import hashlib
 from os import getcwd, listdir, path
 from pathlib import Path
 import subprocess
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
 import docker
 import yaml
 
+from solver.workflow.choose_code_files import choose_code_files
+from solver.workflow.work_dir import WorkDir
 from swebench.harness.test_spec import TestSpec
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
 
 from .workflow_limits import WorkflowLimits
-from .solve_listener import PatchType, SolveListener, TestStatus, TestType
+from .solve_listener import SolveListener, TestStatus
 from .generate_and_validate_code import (
     CodePatchResult,
     Context as GenerateCodeContext,
     generate_and_validate_code,
 )
+from .generate_and_validate_test import (
+    TestPatchResult,
+    Context as GenerateTestContext,
+    generate_and_validate_test,
+    is_optimal_test_patch,
+    patch_score,
+)
 from .code_environment import Environment
-from .choose_test_file import choose_test_file
+from .choose_test_file import choose_test_files
 from .generate_code import GenerateCode
 from .generate_test import GenerateTest
 from .linter import Flake8Linter
@@ -33,17 +41,11 @@ TEST_FAILED_WITH_SIGNAL_ERROR = 2
 TEST_FAILED = 3
 
 
-class GenerateTestResult:
-    def __init__(self, test_patch: Optional[Patch], inverted_patch: Optional[Patch]):
-        self.test_patch = test_patch
-        self.inverted_patch = inverted_patch
-
-
 class Workflow:
     def __init__(
         self,
         log: Callable[[str, str], None],
-        navie_work_dir: Path,
+        work_dir: Path,
         environment: Environment,
         docker_client: docker.DockerClient,
         repo: str,
@@ -53,7 +55,7 @@ class Workflow:
         limits: WorkflowLimits,
     ):
         self.log = log
-        self.navie_work_dir = navie_work_dir
+        self.work_dir = WorkDir(work_dir)
         self.environment = environment
         self.docker_client = docker_client
         self.repo = repo
@@ -62,7 +64,7 @@ class Workflow:
         self.issue_text = issue_text
         self.limits = limits
 
-        trajectory_file: Path = navie_work_dir / "trajectory.jsonl"
+        trajectory_file: Path = work_dir / "trajectory.jsonl"
         trajectory_file.parent.mkdir(parents=True, exist_ok=True)
         self.trajectory_file = str(trajectory_file)
 
@@ -75,41 +77,50 @@ class Workflow:
 
     def run(self):
         for listener in self.solve_listeners:
-            listener.on_solve_start(self.navie_work_dir)
+            listener.on_solve_start(self.work_dir.path)
 
-        generate_test_result = self.generate_and_validate_test()
-        if generate_test_result.test_patch:
-            self.test_patch = generate_test_result.test_patch
-            self.write_patch_file("test", self.test_patch)
-        if generate_test_result.inverted_patch:
-            self.inverted_patch = generate_test_result.inverted_patch
-            self.write_patch_file("test-inverted", self.inverted_patch)
-
-        plan = self.generate_plan()
-
-        def run_test_for_code(
-            test_patch: Patch, code_patches: List[Patch], attempt: int
-        ) -> RunTestResult:
-            work_dir = self.generate_code_work_dir(self.navie_work_dir, attempt)
-            return self.run_test(work_dir, test_patch, code_patches)
-
-        generate_code_result = generate_and_validate_code(
-            GenerateCodeContext(
-                self.limits,
-                self.log,
-                self.docker_client,
-                self.repo,
-                self.version,
-                self.test_spec,
-                self.solve_listeners,
-            ),
-            plan,
-            self.generate_code,
-            run_test_for_code,
-            self.edit_test_file,
-            self.test_patch,
-            self.inverted_patch,
+        edit_test_files = choose_test_files(
+            self.log,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_text,
+            self.limits.test_files_limit,
         )
+        if edit_test_files:
+            generate_test_result = self.generate_and_validate_test(edit_test_files)
+            if generate_test_result:
+                for listener in self.solve_listeners:
+                    listener.on_test_patch(
+                        generate_test_result["edit_test_file"],
+                        generate_test_result["test_patch"],
+                        generate_test_result["inverted_patch"],
+                    )
+
+                if generate_test_result["edit_test_file"]:
+                    self.edit_test_file = generate_test_result["edit_test_file"]
+                if generate_test_result["test_patch"]:
+                    self.test_patch = generate_test_result["test_patch"]
+                    self.write_patch_file("test", self.test_patch)
+                if generate_test_result["inverted_patch"]:
+                    self.inverted_patch = generate_test_result["inverted_patch"]
+                    self.write_patch_file("test-inverted", self.inverted_patch)
+            else:
+                self.log(
+                    "workflow",
+                    f"No test patch generated. Choosing first test file {edit_test_files[0]}",
+                )
+                self.edit_test_file = edit_test_files[0]
+
+        code_files = choose_code_files(
+            self.log,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_text,
+            self.limits.code_files_limit,
+        )
+        if not code_files:
+            self.log("workflow", "No code files chosen")
+            code_files = []
 
         def patch_score(code_patch_result: CodePatchResult) -> int:
             score = 0
@@ -121,28 +132,62 @@ class Workflow:
                 score += 1
             return score
 
-        if generate_code_result.patch:
-            self.log("workflow", "Optimal code patch generated (for available tests)")
-            self.code_patch = generate_code_result.patch
-            score = max(
-                [
-                    patch_score(code_patch_result)
-                    for code_patch_result in generate_code_result.code_patches
-                ]
-            )
-            for listener in self.solve_listeners:
-                listener.on_code_patch(
-                    generate_code_result.patch,
-                    True,
-                    self.test_patch != None,
-                    self.inverted_patch != None,
-                    score,
-                )
-        elif generate_code_result.code_patches:
-            self.log("workflow", "Choosing best patch")
+        generate_code_results: list[CodePatchResult] = []
+        code_patch: Optional[Patch] = None
+        for code_file in code_files:
+            self.log("workflow", f"Evaluating code file: {code_file}")
 
+            plan = self.generate_plan(code_file)
+
+            generate_code_result = generate_and_validate_code(
+                GenerateCodeContext(
+                    self.limits,
+                    self.log,
+                    self.work_dir,
+                    self.docker_client,
+                    self.repo,
+                    self.version,
+                    self.test_spec,
+                    self.solve_listeners,
+                ),
+                plan,
+                self.generate_code,
+                self.run_test,
+                self.edit_test_file,
+                self.test_patch,
+                self.inverted_patch,
+            )
+
+            if generate_code_result.patch:
+                self.log(
+                    "workflow", "Optimal code patch generated (for available tests)"
+                )
+
+                self.code_patch = generate_code_result.patch
+                score = max(
+                    [
+                        patch_score(code_patch_result)
+                        for code_patch_result in generate_code_result.code_patches
+                    ]
+                )
+                for listener in self.solve_listeners:
+                    listener.on_code_patch(
+                        generate_code_result.patch,
+                        True,
+                        self.test_patch != None,
+                        self.inverted_patch != None,
+                        score,
+                    )
+
+                break
+
+            generate_code_results.extend(generate_code_result.code_patches)
+
+        self.log("workflow", "Choosing best patch")
+
+        if not code_patch and generate_code_results:
             # Sort code_patches by score
-            code_patches = list(generate_code_result.code_patches)
+            code_patches = list(generate_code_results)
             code_patches.sort(
                 key=lambda patch: patch_score(patch),
                 reverse=True,
@@ -160,165 +205,101 @@ class Workflow:
                     patch_score(code_patches[0]),
                 )
 
-            with open(path.join(self.navie_work_dir, "code_patches.yml"), "w") as f:
+            with (self.work_dir.path / "code_patches.yml").open("w") as f:
                 f.write(
                     yaml.dump(
                         [p.to_h() for p in code_patches],
                     )
                 )
-        else:
-            self.log("workflow", "No code patches generated")
 
         if self.code_patch:
             self.write_patch_file("code", self.code_patch)
+        else:
+            self.log("workflow", "No code patches generated")
 
         for listener in self.solve_listeners:
             listener.on_completed()
 
     def write_patch_file(self, patch_name: str, patch: Patch):
-        patch_path = path.join(self.navie_work_dir, f"{patch_name}.patch")
+        patch_path = self.work_dir.path / f"{patch_name}.patch"
         self.log("workflow", f"Patch file generated to {patch_path}")
-        with open(patch_path, "w") as f:
+        with patch_path.open("w") as f:
             f.write(str(patch))
 
-    def generate_plan(self) -> str:
-        editor = Editor(self.navie_work_dir, trajectory_file=self.trajectory_file)
-        issue_text = f"""{self.issue_text}
+    def generate_plan(self, edit_code_file: Path) -> str:
+        editor = Editor(
+            self.work_dir.plan().path_name,
+            log_dir=self.work_dir.root.path_name,
+            trajectory_file=self.trajectory_file,
+        )
+        issue_text = f"""Plan a solution to the following issue, by modifying the code in the file {edit_code_file}:
+
+{self.issue_text}
 
 In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
-
-Limit your solution to modify at most {self.limits.file_limit} file(s).
 
 Do not plan specific code changes. Just design the solution.
 """
 
         return editor.plan(
             issue_text,
-            options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
+            options=r"/noprojectinfo /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 
-    def generate_and_validate_test(self) -> GenerateTestResult:
-        limit = self.limits.test_status_retry_limit
-        observed_errors = []
-
-        test_patch = None
-        inverted_patch = None
-
-        # Re-run test generation up to the limit, or until a test patch is available.
-        attempt = 1
-        while attempt <= limit and not test_patch:
+    def generate_and_validate_test(
+        self, edit_test_files: List[Path]
+    ) -> Optional[TestPatchResult]:
+        def notify_listeners(patch: TestPatchResult) -> TestPatchResult:
             for listener in self.solve_listeners:
-                listener.on_start_patch(PatchType.TEST)
+                listener.on_test_patch(
+                    patch["edit_test_file"],
+                    patch["test_patch"],
+                    patch["inverted_patch"],
+                )
+            return patch
 
-            test_patch = self.generate_test(attempt, observed_errors)
-            if test_patch:
-                work_dir = self.generate_test_work_dir(self.navie_work_dir, attempt)
-                run_test_result = self.run_test(work_dir, test_patch, [])
+        patches = generate_and_validate_test(
+            GenerateTestContext(
+                self.limits,
+                self.log,
+                self.work_dir,
+                self.docker_client,
+                self.repo,
+                self.version,
+                self.solve_listeners,
+            ),
+            edit_test_files,
+            self.generate_test,
+            self.run_test,
+            self.invert_test,
+        )
+        optimal_patches = [patch for patch in patches if is_optimal_test_patch(patch)]
+        if optimal_patches:
+            patch = optimal_patches[0]
+            self.log(
+                "workflow",
+                f"Optimal test patch generated for {patch['edit_test_file']}",
+            )
+            return notify_listeners(patch)
 
-                for listener in self.solve_listeners:
-                    listener.on_run_test(
-                        TestType.PASS_TO_FAIL,
-                        [],
-                        test_patch,
-                        run_test_result.test_status,
-                    )
+        if not patches:
+            self.log("workflow", "No test patches generated")
+            return None
 
-                test_status = run_test_result.test_status
-                if test_status == TestStatus.PASSED:
-                    self.log(
-                        "workflow",
-                        "Test passed. Accepting test.",
-                    )
-                else:
-                    self.log(
-                        "workflow",
-                        "Test did not pass. Discarding test.",
-                    )
-                    observed_error = run_test_result.test_output
-                    # Truncate it, if it's too long.
-                    if observed_error and len(observed_error) > 10000:
-                        self.log(
-                            "workflow",
-                            f"Observed error is too long ({len(observed_error)} characters). Truncating it to 10000 characters.",
-                        )
-                        observed_error = observed_error[:10000] + "..."
-                    if observed_error:
-                        observed_errors.append(observed_error)
-                    test_patch = None
+        self.log(
+            "workflow",
+            f"Choosing best test patch from {len(patches)} available patches",
+        )
 
-            attempt += 1
+        patches.sort(key=patch_score, reverse=True)
 
-            for listener in self.solve_listeners:
-                listener.on_end_patch()
+        self.log(
+            "workflow",
+            f"Best test patch generated for {patches[0]['edit_test_file']}",
+        )
+        return notify_listeners(patches[0])
 
-        if test_patch:
-            for listener in self.solve_listeners:
-                listener.on_start_patch(PatchType.TEST_INVERTED)
-
-            # For fun, let's also invert the test, then run it and look for the marker error.
-            work_dir = self.generarte_test_invert_work_dir(self.navie_work_dir, 1)
-            inverted_patch = self.invert_test(test_patch)
-            if inverted_patch:
-                inverted_run_test_result = self.run_test(work_dir, inverted_patch, [])
-                inverted_test_status = inverted_run_test_result.test_status
-
-                if inverted_test_status == TestStatus.PASSED:
-                    self.log(
-                        "workflow",
-                        "Inverted test passed; this should not happen.",
-                    )
-                    inverted_patch = None
-
-                if (
-                    inverted_run_test_result.test_output
-                    and "__BUG__HERE__" in inverted_run_test_result.test_output
-                ):
-                    self.log(
-                        "workflow",
-                        "Inverted test failed with the expected marker error. Accepting test.",
-                    )
-                else:
-                    self.log(
-                        "workflow",
-                        "Inverted test did not fail with the expected marker error. Discarding test.",
-                    )
-                    inverted_patch = None
-
-            for listener in self.solve_listeners:
-                listener.on_end_patch()
-
-        for listener in self.solve_listeners:
-            if test_patch:
-                listener.on_test_patch(test_patch)
-            if inverted_patch:
-                listener.on_test_inverted_patch(inverted_patch)
-
-        return GenerateTestResult(test_patch, inverted_patch)
-
-    @staticmethod
-    def generate_test_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
-        if isinstance(navie_work_dir, str):
-            navie_work_dir = Path(navie_work_dir)
-
-        return navie_work_dir / "generate-test" / str(attempt)
-
-    @staticmethod
-    def generarte_test_invert_work_dir(
-        navie_work_dir: Union[Path, str], attempt: int
-    ) -> Path:
-        if isinstance(navie_work_dir, str):
-            navie_work_dir = Path(navie_work_dir)
-
-        return navie_work_dir / "invert-test" / str(attempt)
-
-    @staticmethod
-    def generate_code_work_dir(navie_work_dir: Union[Path, str], attempt: int) -> Path:
-        if isinstance(navie_work_dir, str):
-            navie_work_dir = Path(navie_work_dir)
-
-        return navie_work_dir / "generate-code" / str(attempt)
-
-    def invert_test(self, test_patch: Patch) -> Optional[Patch]:
+    def invert_test(self, work_dir: WorkDir, test_patch: Patch) -> Optional[Patch]:
         self.log("workflow", "Inverting test")
 
         self.clean_git_state()
@@ -331,7 +312,7 @@ Do not plan specific code changes. Just design the solution.
 
         generator = GenerateTest(
             self.log,
-            self.navie_work_dir,
+            work_dir,
             self.trajectory_file,
             test_file_path,
             self.issue_text,
@@ -360,29 +341,21 @@ Do not plan specific code changes. Just design the solution.
 
         return test_patch_inverted
 
-    def generate_test(self, attempt: int, observed_errors: list) -> Optional[Patch]:
+    def generate_test(
+        self,
+        work_dir: WorkDir,
+        edit_test_file: Path,
+        observed_errors: list,
+    ) -> Optional[Patch]:
         self.clean_git_state()
 
         editor = Editor(
-            Workflow.generate_test_work_dir(self.navie_work_dir, attempt),
+            work_dir.path_name,
+            log_dir=self.work_dir.root.path_name,
             trajectory_file=self.trajectory_file,
         )
 
-        edit_test_files = choose_test_file(
-            self.log, editor.work_dir, self.trajectory_file, self.issue_text
-        )
-        if not edit_test_files:
-            return
-
-        edit_test_file = edit_test_files[0]
-
-        if not self.edit_test_file:
-            self.edit_test_file = edit_test_file
-            for listener in self.solve_listeners:
-                listener.on_edit_test_file(edit_test_file)
-
-        # TODO: At this point, we can try more than one file
-        self.log("workflow", f"Test file to be modified: {edit_test_file}")
+        self.log("workflow", f"Adapting test file: {edit_test_file}")
 
         existing_test_files = "\n".join(listdir(Path(edit_test_file).parent))
 
@@ -423,7 +396,7 @@ Python version: {self.environment.python_version}
 
         generator = GenerateTest(
             self.log,
-            editor.work_dir,
+            work_dir,
             self.trajectory_file,
             test_file_path,
             self.issue_text,
@@ -432,7 +405,7 @@ Python version: {self.environment.python_version}
         )
 
         def generate(attempt, lint_errors: list = []):
-            test_patch = generator.generate(attempt, lint_errors)
+            test_patch = generator.generate(edit_test_file, attempt, lint_errors)
             return generator.apply(test_file_path, test_patch)
 
         lint_repair_result = self.lint_repair(
@@ -452,28 +425,19 @@ Python version: {self.environment.python_version}
 
     def run_test(
         self,
-        work_dir: Path,
+        work_dir: WorkDir,
         test_patch: Patch,
         code_patches: list[Patch] = [],
     ) -> RunTestResult:
-        self.log("workflow", f"Running test")
-
-        sha256 = hashlib.sha256()
-        sha256.update(str(test_patch).encode("utf-8"))
-        for patch in code_patches:
-            sha256.update(str(patch).encode("utf-8"))
-        digest = sha256.hexdigest()
-
-        work_dir = work_dir / "run_test" / digest
-        run_test = RunTest(self.log, work_dir, self.repo, self.version, self.test_spec)
+        run_test = RunTest(
+            self.log, work_dir.path, self.repo, self.version, self.test_spec
+        )
         if code_patches:
             run_test.code_patches = code_patches
         return run_test.run(self.docker_client, test_patch)
 
-    def generate_code(self, plan, attempt) -> Optional[Patch]:
+    def generate_code(self, work_dir: WorkDir, plan: str) -> Optional[Patch]:
         self.clean_git_state()
-
-        work_dir = Workflow.generate_code_work_dir(self.navie_work_dir, attempt)
 
         generator = GenerateCode(
             self.log,
