@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 
-class PredictionsManager:
+class PredictionsFile:
     def __init__(
         self,
         log: Callable[[str, str], None],
@@ -13,7 +13,7 @@ class PredictionsManager:
         directory: Path = Path(__file__).resolve().parents[1] / "predictions",
     ):
         self.log = log
-        self.predictions_name = PredictionsManager._generate_predictions_name(
+        self.predictions_name = PredictionsFile._generate_predictions_name(
             instance_set, num_runners, runner_index
         )
         self.predictions_dir = directory

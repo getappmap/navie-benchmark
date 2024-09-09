@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Callable, List, Optional
 import docker
 
+from solver.workflow.work_dir import WorkDir
 from swebench.harness.test_spec import TestSpec
 
 from .workflow_limits import WorkflowLimits
@@ -21,6 +22,7 @@ class Context:
         self,
         limits: WorkflowLimits,
         log: Callable[[str, str], None],
+        work_dir: WorkDir,
         docker_client: docker.DockerClient,
         repo: str,
         version: str,
@@ -29,6 +31,7 @@ class Context:
     ):
         self.limits = limits
         self.log = log
+        self.work_dir = work_dir
         self.docker_client = docker_client
         self.repo = repo
         self.version = version
@@ -76,11 +79,21 @@ class Result:
         self.code_patches = code_patches
 
 
+def empty_patch(file_name: Path) -> Patch:
+    return Patch(
+        f"""diff --git a/{file_name} b/{file_name}
+index 0000000..0000000
+--- a/{file_name}
++++ b/{file_name}
+"""
+    )
+
+
 def generate_and_validate_code(
     context: Context,
     plan: str,
-    generate_code: Callable[[str, int], Optional[Patch]],
-    run_test: Callable[[Patch, List[Patch], int], RunTestResult],
+    generate_code: Callable[[WorkDir, str], Optional[Patch]],
+    run_test: Callable[[WorkDir, Patch, List[Patch]], RunTestResult],
     pass_to_pass_test_file: Optional[Path],
     test_patch: Optional[Patch],
     test_patch_inverted: Optional[Patch],
@@ -94,7 +107,8 @@ def generate_and_validate_code(
         for listener in context.solve_listeners:
             listener.on_start_patch(PatchType.CODE)
 
-        code_patch = generate_code(plan, attempt)
+        generate_code_dir = context.work_dir.generate_code(attempt)
+        code_patch = generate_code(generate_code_dir, plan)
         pass_to_pass_test_status = None
         test_patch_status = None
         inverted_patch_status = None
@@ -104,16 +118,12 @@ def generate_and_validate_code(
                     "generate-and-validate-code",
                     f"Running pass-to-pass test for attempt {attempt}",
                 )
-                empty_patch_for_edit_test_file = Patch(
-                    f"""diff --git a/{pass_to_pass_test_file} b/{pass_to_pass_test_file}
-index 0000000..0000000
---- a/{pass_to_pass_test_file}
-+++ b/{pass_to_pass_test_file}
-"""
-                )
+                empty_patch_for_edit_test_file = empty_patch(pass_to_pass_test_file)
 
                 run_test_result = run_test(
-                    empty_patch_for_edit_test_file, [code_patch], attempt
+                    generate_code_dir.run_pass_to_pass(),
+                    empty_patch_for_edit_test_file,
+                    [code_patch],
                 )
                 pass_to_pass_test_status = run_test_result.test_status
                 for listener in context.solve_listeners:
@@ -129,7 +139,9 @@ index 0000000..0000000
                     "generate-and-validate-code",
                     f"Running test patch for attempt {attempt}",
                 )
-                run_test_result = run_test(test_patch, [code_patch], attempt)
+                run_test_result = run_test(
+                    generate_code_dir.run_test_patch(), test_patch, [code_patch]
+                )
                 test_patch_status = run_test_result.test_status
                 for listener in context.solve_listeners:
                     listener.on_run_test(
@@ -144,7 +156,12 @@ index 0000000..0000000
                     "generate-and-validate-code",
                     f"Running inverted test patch for attempt {attempt}",
                 )
-                run_test_result = run_test(test_patch_inverted, [code_patch], attempt)
+
+                run_test_result = run_test(
+                    generate_code_dir.run_test_inverted_patch(),
+                    test_patch_inverted,
+                    [code_patch],
+                )
                 inverted_patch_status = run_test_result.test_status
 
                 for listener in context.solve_listeners:
@@ -189,10 +206,10 @@ index 0000000..0000000
                 )
                 code_patch = None
 
-        attempt += 1
+            for listener in context.solve_listeners:
+                listener.on_end_patch()
 
-        for listener in context.solve_listeners:
-            listener.on_end_patch()
+        attempt += 1
 
     return Result(
         code_patch,

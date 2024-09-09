@@ -1,5 +1,4 @@
 from os import getcwd, path
-from pathlib import Path
 from posixpath import relpath
 from typing import Callable, Optional
 import traceback
@@ -8,6 +7,7 @@ import traceback
 from navie.editor import Editor
 from navie.format_instructions import xml_format_instructions
 from navie.extract_changes import extract_changes
+from solver.workflow.work_dir import WorkDir
 
 from .patch import (
     Patch,
@@ -21,7 +21,7 @@ class GenerateCode:
     def __init__(
         self,
         log: Callable[[str, str], None],
-        work_dir: Path,
+        work_dir: WorkDir,
         trajectory_file: str,
         plan: str,
         python_version: str,
@@ -67,13 +67,14 @@ Do not use Python features that are not available in this Python version.
         ]
 
         editor = Editor(
-            path.join(self.work_dir, "generate", str(attempt)),
+            self.work_dir.code(attempt).path_name,
+            log_dir=self.work_dir.root.path_name,
             trajectory_file=self.trajectory_file,
         )
         return editor.generate(
             plan="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
+            options=r"/noprojectinfo /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 
     # Apply code changes to the files in the current directory and return a patch.
@@ -87,8 +88,9 @@ Do not use Python features that are not available in this Python version.
             )
 
         editor = Editor(
-            path.join(self.work_dir, "generate", str(attempt), "apply"),
-            self.trajectory_file,
+            self.work_dir.apply().path_name,
+            log_dir=self.work_dir.root.path_name,
+            trajectory_file=self.trajectory_file,
         )
         for change in changes:
             change.file = relpath(change.file, getcwd())

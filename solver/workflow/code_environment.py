@@ -10,9 +10,8 @@ from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 
 
 class Environment:
-    def __init__(self, python_version: str, packages: str):
+    def __init__(self, python_version: str):
         self.python_version = python_version
-        self.packages = packages
 
 
 class DetectEnvironment:
@@ -36,15 +35,12 @@ class DetectEnvironment:
         os.makedirs(environment_dir, exist_ok=True)
 
         python_version_file = path.join(environment_dir, "python_version.txt")
-        packages_file = path.join(environment_dir, "packages.txt")
 
-        if path.exists(python_version_file) and path.exists(packages_file):
+        if path.exists(python_version_file):
             self.log("detect-environment", "Using cached environment...")
             with open(python_version_file, "r") as f:
                 python_version = f.read().strip()
-            with open(packages_file, "r") as f:
-                packages = f.read()
-            return Environment(python_version, packages)
+            return Environment(python_version)
 
         script_dir = path.join(self.work_dir, "scripts")
         os.makedirs(script_dir, exist_ok=True)
@@ -118,11 +114,8 @@ source /opt/miniconda3/bin/activate
             return script_output.decode("utf-8").strip()
 
         python_version = run_command("python_version.sh", "python --version")
-        packages = run_command("list_packages.sh", "pip list")
 
         with open(python_version_file, "w") as f:
             f.write(python_version)
-        with open(packages_file, "w") as f:
-            f.write(packages)
 
-        return Environment(python_version, packages)
+        return Environment(python_version)

@@ -7,6 +7,7 @@ from typing import Callable, Optional
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
+from solver.workflow.work_dir import WorkDir
 
 from .patch import (
     Patch,
@@ -20,7 +21,7 @@ class GenerateTest:
     def __init__(
         self,
         log: Callable[[str, str], None],
-        work_dir: Path,
+        work_dir: WorkDir,
         trajectory_file: str,
         test_file_path: Path,
         issue_text: str,
@@ -37,15 +38,20 @@ class GenerateTest:
 
     # Generate a code change and return it as a string.
     # If lint_errors is provided, include prompting to avoid them.
-    def generate(self, attempt: int, lint_errors: list = []) -> str:
-        work_dir = path.join(self.work_dir, "test", str(attempt))
+    def generate(
+        self, edit_test_file: Path, attempt: int, lint_errors: list = []
+    ) -> str:
+        work_dir = self.work_dir.code(attempt)
 
         plan = [
-            f"""Reproduce the following issue with a test case.
+            f"""Reproduce the following issue with a test case. Generate exactly
+one test case that reproduces the issue.
 
 <issue>
 {self.issue_text}
 </issue>
+
+The test case should be based on the existing test case file: {edit_test_file}.
 
 The name of the generated test case file should be: {self.test_file_path}.
 
@@ -89,6 +95,9 @@ Ensure that the following lint errors do not occur:
 Output a completely new and self-contained test case, that is based on the original
 test case code. 
 
+The generated test case should include only one test. It should not include duplication
+of existing test cases.
+
 Remove all other test classes and functions aside from the one that is being generated.
 
 Never use the @skipIf annotation.
@@ -101,16 +110,20 @@ Do not use Python features that are not available in this Python version.
 """
         ]
 
-        return Editor(work_dir, trajectory_file=self.trajectory_file).test(
+        return Editor(
+            work_dir.path_name,
+            log_dir=work_dir.root.path_name,
+            trajectory_file=self.trajectory_file,
+        ).test(
             issue="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo",
+            options=r"/noprojectinfo /noclassify",
         )
 
     # Invert the outcome of the test case, so that the test will now fail specifically
     # at the location where the issue was asserted.
     def invert(self, code: str, attempt: int, lint_errors: list = []) -> str:
-        work_dir = path.join(self.work_dir, "invert-test", str(attempt))
+        work_dir = self.work_dir.invert()
 
         plan = [
             f"""Alter the test case code so that it will now FAIL when the issue is observed.
@@ -150,18 +163,26 @@ test case code.
 
 Never use the @skipIf annotation.
 
-## Python environment
+## Python version
 
 Do not use Python features that are not available in this Python version.
 
 {self.python_version}
+
+Do not write conditional logic in the test that checks the Python version. The specific
+version of Python that you need has been installed and configured for this test. The
+test will only ever run against the specified Python version.
 """
         ]
 
-        return Editor(work_dir, trajectory_file=self.trajectory_file).test(
+        return Editor(
+            work_dir.path_name,
+            log_dir=work_dir.root.path_name,
+            trajectory_file=self.trajectory_file,
+        ).test(
             issue="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo /nocontext",
+            options=r"/noprojectinfo /noclassify /nocontext",
         )
 
     # Apply code changes to the files in the current directory and return a patch.
@@ -174,7 +195,8 @@ Do not use Python features that are not available in this Python version.
         all_content = "\n".join(content)
 
         test_dir = path.dirname(test_file_name)
-        os.makedirs(test_dir, exist_ok=True)
+        if test_dir:
+            os.makedirs(test_dir, exist_ok=True)
         with open(test_file_name, "w") as f:
             f.write(all_content)
 
@@ -185,9 +207,7 @@ Do not use Python features that are not available in this Python version.
         patch_str = filter_patch_include_tests(git_diff())
 
         if not patch_str:
-            self.log("workflow/generate-test", "No changes detected")
+            self.log("generate-test", "No changes detected")
             return None
-
-        self.log("generate-test", f"Generated test patch:\n{patch_str}")
 
         return Patch(patch_str)

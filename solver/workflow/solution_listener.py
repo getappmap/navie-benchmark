@@ -27,7 +27,7 @@ class Solution(TypedDict):
     pass_to_pass: bool
     pass_to_fail: bool
     fail_to_pass: bool
-    code_patch_score: int
+    code_patch_score: Optional[int]
 
 
 def solution_to_plain_types(solution: Solution) -> dict:
@@ -40,7 +40,9 @@ def solution_to_plain_types(solution: Solution) -> dict:
 
 
 class SolutionListener(SolveListener):
-    def __init__(self):
+    def __init__(self, instance_id: str):
+        self.instance_id = instance_id
+
         self.start_time = None
         self.end_time = None
         self.navie_work_dir: Optional[Path] = None
@@ -54,6 +56,7 @@ class SolutionListener(SolveListener):
         self.pass_to_pass: bool = False
         self.pass_to_fail: bool = False
         self.fail_to_pass: bool = False
+        self.score: Optional[int] = None
 
         self.lint_repair_count: int = 0
         self.patch_name_in_progress: Optional[PatchType] = None
@@ -70,6 +73,7 @@ class SolutionListener(SolveListener):
         elapsed_time = self.end_time - self.start_time
 
         return Solution(
+            instance_id=self.instance_id,
             code_patch=self.code_patch,
             test_patch=self.test_patch,
             test_inverted_patch=self.test_inverted_patch,
@@ -108,9 +112,6 @@ class SolutionListener(SolveListener):
         self.navie_work_dir = navie_work_dir
         self.start_time = time()
 
-    def on_edit_test_file(self, edit_test_file: Path):
-        self.edit_test_file = edit_test_file
-
     def on_start_patch(self, patch_name: PatchType):
         self.patch_name_in_progress = patch_name
 
@@ -127,11 +128,15 @@ class SolutionListener(SolveListener):
     def on_end_patch(self):
         self.patch_name_in_progress = None
 
-    def on_test_patch(self, patch: Patch):
+    def on_test_patch(
+        self,
+        edit_test_file: Path,
+        patch: Optional[Patch],
+        inverted_patch: Optional[Patch],
+    ):
+        self.edit_test_file = edit_test_file
         self.test_patch = patch
-
-    def on_test_inverted_patch(self, patch: Patch):
-        self.test_inverted_patch = patch
+        self.test_inverted_patch = inverted_patch
 
     def on_code_patch(
         self,
