@@ -102,7 +102,7 @@ class ImageStore:
                 image_key_function, build_images, dataset
             )
             image_names = {image_key_function(x) for x in dataset_to_build}
-            message = [f"Building"]
+            message = ["Building"]
             if self.push_images:
                 message.append("and pushing")
             message.append(

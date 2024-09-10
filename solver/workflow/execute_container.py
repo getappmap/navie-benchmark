@@ -1,4 +1,6 @@
 from json import dumps
+from os import path
+import os
 from pathlib import Path
 from typing import Callable, Optional
 import docker
@@ -10,6 +12,55 @@ from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from solver.harness.make_run_commands import make_run_test_prep_commands
 
 from solver.workflow.solve_listener import TestStatus
+
+
+def run_script_in_container(
+    log,
+    docker_client: docker.DockerClient,
+    work_dir: Path,
+    test_spec: TestSpec,
+    script: str,
+    volumes: dict[str, dict[str, str]],
+    timeout: int,
+    container_fn: Optional[
+        Callable[[docker.models.containers.Container], None]
+    ] = None,
+) -> tuple[bool, TestStatus | None, Optional[str]]:
+    run_test_image_name = build_run_test_image(
+        log,
+        docker_client,
+        test_spec,
+    )
+
+    config = MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
+    user = "root" if not config.get("execute_test_as_nonroot", False) else "nonroot"
+
+    os.makedirs(work_dir, exist_ok=True)
+
+    script_file = path.join(work_dir, "run_test.sh")
+    with open(script_file, "w") as f:
+        f.write(str(script))
+
+    volumes.update(
+        {
+            path.abspath(script_file): {
+                "bind": "/tmp/run_test.sh",
+                "mode": "ro",
+            },
+        }
+    )
+
+    return execute_container(
+        log,
+        docker_client,
+        run_test_image_name,
+        test_spec,
+        timeout,
+        user,
+        volumes,
+        work_dir,
+        container_fn=container_fn,
+    )
 
 
 def build_run_test_image(
@@ -66,6 +117,7 @@ def execute_container(
     user: str,
     volumes: dict,
     work_dir: Path,
+    container_fn: Optional[Callable[[docker.models.containers.Container], None]] = None,
 ) -> tuple[bool, Optional[TestStatus], Optional[str]]:
 
     work_dir.mkdir(parents=True, exist_ok=True)
@@ -109,6 +161,10 @@ def execute_container(
     if container:
         try:
             test_output = container.logs().decode("utf-8")
+
+            if container_fn:
+                container_fn(container)
+
             container.remove()
         except Exception as e:
             log("execute-container", f"Failed to get logs and shut down container: {e}")

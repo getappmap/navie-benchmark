@@ -6,6 +6,9 @@ from typing import Callable, List, Optional
 import docker
 import yaml
 
+from solver.workflow.collect_appmap_context import collect_appmap_context_from_directory
+from solver.workflow.generate_plan import GeneratePlan
+from solver.workflow.observe_test import ObserveTest, is_observable
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.test_spec import TestSpec
 
@@ -20,6 +23,7 @@ from .solve_listener import SolveListener, TestStatus
 from .generate_and_validate_code import (
     CodePatchResult,
     Context as GenerateCodeContext,
+    empty_patch,
     generate_and_validate_code,
 )
 from .generate_and_validate_test import (
@@ -234,24 +238,32 @@ class Workflow:
             f.write(str(patch))
 
     def generate_plan(self, edit_code_file: Path) -> str:
-        editor = Editor(
-            self.work_dir.plan().path_name,
-            log_dir=self.work_dir.root.path_name,
-            trajectory_file=self.trajectory_file,
-        )
-        issue_text = f"""Plan a solution to the following issue, by modifying the code in the file {edit_code_file}:
+        work_dir = self.work_dir.plan()
 
-{self.issue_text}
+        context: Optional[dict[str, str]] = None
 
-In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
+        if self.edit_test_file and is_observable(self.log, self.test_spec):
+            observe_dir = work_dir.observe()
+            observe_test = ObserveTest(
+                self.log,
+                observe_dir.path,
+                self.test_spec,
+            )
+            appmap_data_dir = observe_test.run(
+                self.docker_client, empty_patch(self.edit_test_file)
+            )
 
-Do not plan specific code changes. Just design the solution.
-"""
+            if appmap_data_dir:
+                context = collect_appmap_context_from_directory(
+                    self.log, appmap_data_dir
+                )
 
-        return editor.plan(
-            issue_text,
-            options=r"/noprojectinfo /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
-        )
+        return GeneratePlan(
+            self.log,
+            work_dir,
+            self.trajectory_file,
+            self.issue_text,
+        ).run(edit_code_file, context)
 
     def generate_and_validate_test(
         self, edit_test_files: List[Path]

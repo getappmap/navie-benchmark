@@ -40,8 +40,10 @@ setuptools.setup(
         'python-dotenv',
         'requests',
         'rich',
-        'unidiff',
         'tqdm',
+        'tree-sitter',
+        'tree-sitter-python',
+        'unidiff',
     ],
     extras_require={
         'inference': [

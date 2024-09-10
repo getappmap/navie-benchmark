@@ -60,6 +60,9 @@ class WorkDir:
     def plan(self) -> WorkDir:
         return WorkDir(self._dir / "plan", self)
 
+    def observe(self) -> WorkDir:
+        return WorkDir(self._dir / "observe", self)
+
     def generate_test(self, edit_test_file: Path, attempt: int) -> WorkDir:
         return WorkDir(
             self._dir
@@ -72,7 +75,7 @@ class WorkDir:
         return WorkDir(self._dir / f"test-{str(attempt)}", self)
 
     def invert(self) -> WorkDir:
-        return WorkDir(self._dir / f"invert", self)
+        return WorkDir(self._dir / "invert", self)
 
     def summarize_test_errors(self) -> WorkDir:
         return WorkDir(self._dir / "summarize-test-errors", self)

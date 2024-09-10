@@ -1,12 +1,10 @@
 from os import path
-import os
 from pathlib import Path
 from typing import Optional
 
 import docker
 
-from solver.workflow.execute_container import build_run_test_image, execute_container
-from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
+from solver.workflow.execute_container import run_script_in_container
 from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
 from swebench.harness.test_spec import TestSpec
 
@@ -58,6 +56,8 @@ class RunTest:
     def run(
         self, docker_client: docker.DockerClient, test_patch: Patch
     ) -> RunTestResult:
+        self.work_dir.mkdir(parents=True, exist_ok=True)
+
         test_files = test_patch.list_files()
 
         if len(test_files) != 1:
@@ -67,12 +67,6 @@ class RunTest:
 
         self.log("run-test", f"Running tests {test_file} in {self.work_dir}")
 
-        run_test_image_name = build_run_test_image(
-            self.log, docker_client, self.test_spec
-        )
-
-        config = MAP_REPO_VERSION_TO_SPECS[self.test_spec.repo][self.test_spec.version]
-        user = "root" if not config.get("execute_test_as_nonroot", False) else "nonroot"
         test_directives = make_test_directives(self.repo, [test_file])
         run_test_command = " ".join(
             [
@@ -100,11 +94,6 @@ conda activate {env_name}
 
         test_script = "\n".join(test_script_lines)
 
-        os.makedirs(self.work_dir, exist_ok=True)
-
-        script_file = path.join(self.work_dir, "run_test.sh")
-        with open(script_file, "w") as f:
-            f.write(str(test_script))
         patch_file = path.join(self.work_dir, "test.patch")
         with open(patch_file, "w") as f:
             f.write(str(test_patch))
@@ -118,10 +107,6 @@ conda activate {env_name}
                 "bind": "/tmp/test.patch",
                 "mode": "ro",
             },
-            path.abspath(script_file): {
-                "bind": "/tmp/run_test.sh",
-                "mode": "ro",
-            },
         }
         for code_patch_index, code_patch in enumerate(self.code_patches):
             code_patch_file = path.join(self.work_dir, f"code_{code_patch_index}.patch")
@@ -130,15 +115,14 @@ conda activate {env_name}
                 "mode": "ro",
             }
 
-        succeeded, test_status, test_output = execute_container(
+        succeeded, test_status, test_output = run_script_in_container(
             self.log,
             docker_client,
-            run_test_image_name,
-            self.test_spec,
-            self.timeout,
-            user,
-            volumes,
             self.work_dir,
+            self.test_spec,
+            test_script,
+            volumes,
+            self.timeout,
         )
 
         if not test_status:

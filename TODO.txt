@@ -1,3 +1,7 @@
+* Ensure that edit_test_file PASSES before using it
+
+* Custom context should be "system" prompt rather than user code selection, at least to match the behavior of the frontend.
+
 * Verify that this test passes if the patch is reverted:
 
     solve/django__django-13658/navie/generate-code/attempt-1/run-test/test-patch/code_0.patch
