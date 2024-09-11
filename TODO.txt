@@ -1,3 +1,17 @@
+- [ ] Ensure that the pass to pass test actually passes
+
+- [ ] Limit the size of AppMap derived context 
+
+* Needs to be a limit on the amount of context selected for the edit test file
+
+  Select edit test file with the smallest AppMap data?
+
+* Require selected tests to be different
+
+  tests/template_tests/test_autoreloader.py
+  tests/template_tests/test_autoreloader.py
+  tests/template_tests/test_autoreloader.py
+
 * Ensure that edit_test_file PASSES before using it
 
 * Custom context should be "system" prompt rather than user code selection, at least to match the behavior of the frontend.

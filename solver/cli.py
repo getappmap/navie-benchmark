@@ -55,6 +55,12 @@ def configure_clean_option(parser: ArgumentParser) -> None:
         help="Remove the work directory, if it exists, before running",
         default=False,
     )
+    parser.add_argument(
+        "--clean_navie",
+        action="store_true",
+        help="Remove the navie work directory, if it exists, before running",
+        default=False,
+    )
 
 
 def apply_clean_option(args) -> None:
@@ -63,9 +69,17 @@ def apply_clean_option(args) -> None:
     clean_work_dir = args.clean_work_dir
     del args.clean_work_dir
 
+    clean_navie = args.clean_navie
+    del args.clean_navie
+
     if clean_work_dir and work_dir.exists():
         print(f"Deleting work directory {work_dir}")
         shutil.rmtree(work_dir)
+
+    navie_work_dir = work_dir / "navie"
+    if clean_navie and navie_work_dir.exists():
+        print(f"Deleting navie work directory {navie_work_dir}")
+        shutil.rmtree(navie_work_dir)
 
 
 def load_dataset(dataset_name: str, instance_ids: list) -> list:

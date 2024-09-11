@@ -28,6 +28,9 @@ class Solution(TypedDict):
     pass_to_fail: bool
     fail_to_pass: bool
     code_patch_score: Optional[int]
+    appmap_data_test_status: Optional[str]
+    appmap_data_file_count: Optional[int]
+    appmap_data_file_size: Optional[int]
 
 
 def solution_to_plain_types(solution: Solution) -> dict:
@@ -61,6 +64,10 @@ class SolutionListener(SolveListener):
         self.lint_repair_count: int = 0
         self.patch_name_in_progress: Optional[PatchType] = None
 
+        self.observe_test_status: Optional[TestStatus] = None
+        self.observe_appmap_files: Optional[List[Path]] = None
+        self.observe_test_context: Optional[dict[str, str]] = None
+
     def build_solution(self) -> Solution:
         assert self.navie_work_dir
         assert self.start_time
@@ -71,6 +78,20 @@ class SolutionListener(SolveListener):
         )
 
         elapsed_time = self.end_time - self.start_time
+        appmap_data_test_status = (
+            self.observe_test_status.value if self.observe_test_status else None
+        )
+        appmap_data_file_count = (
+            len(self.observe_appmap_files) if self.observe_appmap_files else None
+        )
+        appmap_data_file_size = (
+            sum(
+                len(context_value)
+                for context_value in self.observe_test_context.values()
+            )
+            if self.observe_test_context
+            else None
+        )
 
         return Solution(
             instance_id=self.instance_id,
@@ -87,7 +108,10 @@ class SolutionListener(SolveListener):
             pass_to_fail=self.pass_to_fail,
             fail_to_pass=self.fail_to_pass,
             code_patch_score=self.score,
-        )
+            appmap_data_test_status=appmap_data_test_status,
+            appmap_data_file_count=appmap_data_file_count,
+            appmap_data_file_size=appmap_data_file_size,
+        )  # type: ignore
 
     @staticmethod
     def count_llm_chars(trajectory_file: Path) -> tuple[int, int]:
@@ -137,6 +161,16 @@ class SolutionListener(SolveListener):
         self.edit_test_file = edit_test_file
         self.test_patch = patch
         self.test_inverted_patch = inverted_patch
+
+    def on_observe_test_patch(
+        self,
+        status: TestStatus,
+        appmap_files: List[Path],
+        context: dict[str, str],
+    ):
+        self.observe_test_status = status
+        self.observe_appmap_files = appmap_files
+        self.observe_test_context = context
 
     def on_code_patch(
         self,

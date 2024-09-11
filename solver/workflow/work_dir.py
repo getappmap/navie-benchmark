@@ -13,6 +13,8 @@ class WorkDir:
         if isinstance(dir, str):
             dir = Path(dir)
         self._dir = dir
+        self._dir.mkdir(parents=True, exist_ok=True)
+
         self._parent = parent
         self._write_sequence = write_sequence
 

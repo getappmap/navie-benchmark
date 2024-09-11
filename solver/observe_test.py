@@ -63,10 +63,11 @@ def main(patch: str):
 
     observe_test = ObserveTest(logger_fn, work_dir, test_spec)
 
-    appmap_dir = observe_test.run(docker_client, test_patch_p)
-    if not appmap_dir:
-        raise Exception("AppMap data not found")
+    observe_test_result = observe_test.run(docker_client, test_patch_p)
+    if not observe_test_result or not observe_test_result.appmap_dir:
+        raise Exception("No AppMap data found")
 
+    appmap_dir = observe_test_result.appmap_dir
     print(f"AppMap data stored in {appmap_dir}")
     # Recursively find *.appmap.json in the appmap_dir
     for appmap_file in appmap_dir.rglob("*.appmap.json"):

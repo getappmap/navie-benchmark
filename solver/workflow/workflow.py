@@ -24,7 +24,6 @@ from .solve_listener import SolveListener, TestStatus
 from .generate_and_validate_code import (
     CodePatchResult,
     Context as GenerateCodeContext,
-    empty_patch,
     generate_and_validate_code,
 )
 from .generate_and_validate_test import (
@@ -253,9 +252,23 @@ class Workflow:
             )
             observe_test_result = observe_test.run(self.docker_client, self.test_patch)
 
+            if (
+                observe_test_result
+                and observe_test_result.test_status == TestStatus.PASSED
+                and observe_test_result.appmap_dir
+            ):
                 context = collect_appmap_context_from_directory(
-                    self.log, appmap_data_dir
+                    self.log, observe_test_result.appmap_dir
                 )
+                observe_appmap_files = list(
+                    observe_test_result.appmap_dir.rglob("*.appmap.json")
+                )
+                for listener in self.solve_listeners:
+                    listener.on_observe_test_patch(
+                        observe_test_result.test_status,
+                        observe_appmap_files,
+                        context,
+                    )
 
         return GeneratePlan(
             self.log,

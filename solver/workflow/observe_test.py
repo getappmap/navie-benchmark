@@ -8,6 +8,7 @@ from solver.harness.python_version import (
     python_version_for_test_spec,
     python_version_ok_for_test_spec,
 )
+from solver.workflow.solve_listener import TestStatus
 from swebench.harness.test_spec import TestSpec
 
 from solver.harness.make_run_commands import make_run_test_command
@@ -33,6 +34,20 @@ def is_observable(log, test_spec: TestSpec) -> bool:
     return True
 
 
+class ObserveTestResult:
+    def __init__(
+        self,
+        succeedeed: bool,
+        test_status: Optional[TestStatus],
+        test_output: Optional[str],
+        appmap_dir: Optional[Path],
+    ):
+        self.succeedeed = succeedeed
+        self.test_status = test_status
+        self.test_output = test_output
+        self.appmap_dir = appmap_dir
+
+
 class ObserveTest:
     def __init__(
         self,
@@ -50,13 +65,15 @@ class ObserveTest:
 
     def run(
         self, docker_client: docker.DockerClient, test_patch: Patch
-    ) -> Optional[Path]:
+    ) -> Optional[ObserveTestResult]:
         """ "
         Run the test in the given patch and return the directory path where the AppMap data is stored.
         """
 
-        def examine_appmap_dir():
-            file_count_in_appmap_dir = len(list(appmap_extract_dir.rglob("*")))
+        def examine_appmap_dir() -> Optional[Path]:
+            file_count_in_appmap_dir = len(
+                list(appmap_extract_dir.rglob("*.appmap.json"))
+            )
             self.log(
                 "observe-test",
                 f"Extracted {file_count_in_appmap_dir} AppMap data files to {appmap_extract_dir}",
@@ -77,7 +94,7 @@ class ObserveTest:
                 "observe-test",
                 f"AppMap data already exists in {appmap_extract_dir}, using cached data",
             )
-            return examine_appmap_dir()
+            return ObserveTestResult(True, TestStatus.PASSED, None, appmap_extract_dir)
 
         if not is_observable(self.log, self.test_spec):
             self.log(
@@ -161,9 +178,10 @@ set +e
         if not succeeded:
             self.log("observe-test", f"Test failed with status {test_status}")
             self.log("observe-test", f"Test output: {test_output}")
+            return ObserveTestResult(succeeded, test_status, test_output, None)
 
         if appmap_tar_file.exists():
             with tarfile.open(appmap_tar_file, "r") as tar:
                 tar.extractall(path=appmap_extract_dir)
 
-        return examine_appmap_dir()
+        return ObserveTestResult(True, test_status, test_output, examine_appmap_dir())
