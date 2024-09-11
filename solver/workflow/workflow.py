@@ -6,6 +6,7 @@ from typing import Callable, List, Optional
 import docker
 import yaml
 
+from solver.harness.python_version import python_version_for_test_spec
 from solver.workflow.collect_appmap_context import collect_appmap_context_from_directory
 from solver.workflow.generate_plan import GeneratePlan
 from solver.workflow.observe_test import ObserveTest, is_observable
@@ -33,7 +34,6 @@ from .generate_and_validate_test import (
     is_optimal_test_patch,
     patch_score,
 )
-from .code_environment import Environment
 from .choose_test_file import choose_test_files
 from .generate_code import GenerateCode
 from .generate_test import GenerateTest
@@ -52,7 +52,6 @@ class Workflow:
         self,
         log: Callable[[str, str], None],
         work_dir: Path,
-        environment: Environment,
         docker_client: docker.DockerClient,
         repo: str,
         version: str,
@@ -62,7 +61,6 @@ class Workflow:
     ):
         self.log = log
         self.work_dir = WorkDir(work_dir)
-        self.environment = environment
         self.docker_client = docker_client
         self.repo = repo
         self.version = version
@@ -84,6 +82,10 @@ class Workflow:
     @property
     def test_command(self) -> str:
         return MAP_REPO_VERSION_TO_SPECS[self.repo][self.version]["test_cmd"]
+
+    @property
+    def python_version(self) -> str:
+        return python_version_for_test_spec(self.test_spec)
 
     def run(self):
         for listener in self.solve_listeners:
@@ -337,7 +339,7 @@ class Workflow:
             test_file_path,
             self.issue_text,
             [],
-            self.environment.python_version,
+            self.python_version,
         )
 
         def generate(attempt: int, lint_errors: list[str] = []) -> Optional[Patch]:
@@ -398,7 +400,7 @@ Do not include directory names in the file name. Just choose a base file name.
 
 ## Environment
 
-Python version: {self.environment.python_version}
+Python version: {self.python_version}
 """,
             options=r"/noprojectinfo /nocontext /noclassify",
             question_name="test_file_name",
@@ -422,7 +424,7 @@ Python version: {self.environment.python_version}
             test_file_path,
             self.issue_text,
             observed_errors,
-            self.environment.python_version,
+            self.python_version,
         )
 
         def generate(attempt, lint_errors: list = []):
@@ -475,7 +477,7 @@ Python version: {self.environment.python_version}
             work_dir,
             self.trajectory_file,
             plan,
-            self.environment.python_version,
+            self.python_version,
             self.limits.file_limit,
         )
 

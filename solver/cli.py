@@ -5,6 +5,7 @@ from typing import Callable, Optional
 
 import docker
 
+from solver.harness.python_version import python_version_for_test_spec
 from swebench.harness.constants import (
     KEY_INSTANCE_ID,
     SWEbenchInstance,
@@ -16,7 +17,6 @@ from swebench.harness.test_spec import make_test_spec
 from swebench.harness.utils import load_swebench_dataset
 
 from solver.workflow.workflow_limits import WorkflowLimits
-from solver.workflow.code_environment import DetectEnvironment
 from solver.workflow.workflow import Workflow
 
 
@@ -123,14 +123,9 @@ def build_workflow(
     problem_statement = instance["problem_statement"]
     test_spec = make_test_spec(instance)
 
-    environment = DetectEnvironment(
-        log, navie_work_dir, repo, version, test_spec
-    ).detect(docker_client)
-
     return Workflow(
         log,
         navie_work_dir,
-        environment,
         docker_client,
         repo,
         version,

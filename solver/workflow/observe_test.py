@@ -4,8 +4,11 @@ import tarfile
 from typing import Optional
 import docker
 
+from solver.harness.python_version import (
+    python_version_for_test_spec,
+    python_version_ok_for_test_spec,
+)
 from swebench.harness.test_spec import TestSpec
-from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 
 from solver.harness.make_run_commands import make_run_test_command
 from solver.harness.make_test_directives import make_test_directives
@@ -18,20 +21,16 @@ def is_observable(log, test_spec: TestSpec) -> bool:
     """
     Check if the test is observable.
     """
-    config = MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
-    if not config.get("python"):
-        return False
 
-    python_version = config["python"]
-    parsed_version = tuple(map(int, python_version.split(".")))
-    version_ok = parsed_version >= (3, 8)
-    if not version_ok:
+    if not python_version_ok_for_test_spec(test_spec, 3, 8):
+        python_version = python_version_for_test_spec(test_spec)
         log(
             "observe-test",
             f"Python version {python_version} of {test_spec.instance_id} must be at least 3.8",
         )
+        return False
 
-    return version_ok
+    return True
 
 
 class ObserveTest:
