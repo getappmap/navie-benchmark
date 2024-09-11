@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 from pathlib import Path
 from typing import Optional, Union
 
@@ -13,13 +14,13 @@ class WorkDir:
         if isinstance(dir, str):
             dir = Path(dir)
         self._dir = dir
-        self._dir.mkdir(parents=True, exist_ok=True)
 
         self._parent = parent
         self._write_sequence = write_sequence
 
         if self._parent is None:
             if write_sequence:
+                self._dir.mkdir(parents=True, exist_ok=True)
                 sequence_file = self._dir / "sequence.txt"
                 with sequence_file.open("w") as f:
                     f.write("")
