@@ -174,12 +174,12 @@ def main(
 
     optimal_patches = [patch for patch in patches if is_optimal_test_patch(patch)]
     if optimal_patches:
-        print(f"[solve_test] Generated optimal test patch:")
+        print("[solve_test] Generated optimal test patch:")
         for patch in optimal_patches:
             print_patch(patch)
         return
 
-    print(f"[solve_test] Generated sub-optimal test patch:")
+    print("[solve_test] Generated sub-optimal test patch:")
 
     patches.sort(key=patch_score, reverse=True)
     patch = patches[0]

@@ -19,7 +19,7 @@ from solver.workflow.execute_container import (
     run_script_in_container,
 )
 from solver.workflow.patch import Patch
-from solver.workflow.run_test import DEFAULT_TIMEOUT, run_script_in_container
+from solver.workflow.run_test import DEFAULT_TIMEOUT
 
 
 def is_observable(log, test_spec: TestSpec) -> bool:
