@@ -74,6 +74,9 @@ class WorkDir:
             self,
         )
 
+    def validate_test_file(self, test_file: Path) -> WorkDir:
+        return WorkDir(self._dir / "validate-test-file" / test_file.name, self)
+
     def test(self, attempt: int) -> WorkDir:
         return WorkDir(self._dir / f"test-{str(attempt)}", self)
 

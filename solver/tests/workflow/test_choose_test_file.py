@@ -38,6 +38,26 @@ class TestAskForTestFiles(unittest.TestCase):
 
     @patch("solver.workflow.choose_test_file.Editor")
     @patch("solver.workflow.choose_test_file.os.path.exists")
+    def test_ignore_previously_listed(self, exists_mock, Editor_mock):
+        exists_mock.return_value = True
+        editor_instance_mock = Editor_mock.return_value
+        editor_instance_mock.search.return_value = (
+            "<!-- file: work/directory/test_file.py -->"
+        )
+
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            {Path("work/directory/test_file.py")},
+            1,
+        )
+        self.assertEqual(results, [])
+
+    @patch("solver.workflow.choose_test_file.Editor")
+    @patch("solver.workflow.choose_test_file.os.path.exists")
     def test_multiple_test_files(self, exists_mock, Editor_mock):
         exists_mock.return_value = True
         editor_instance_mock = Editor_mock.return_value
@@ -217,6 +237,8 @@ class TestChooseTestFiles(unittest.TestCase):
         self.work_dir = WorkDir("./work/directory", write_sequence=False)
         self.trajectory_file = os.path.join(self.work_dir.path_name, "trajectory.jsonl")
         self.issue_content = "Sample issue content"
+        self.validate_true = lambda x, y: True
+        self.validate_false = lambda x, y: False
 
     @patch("solver.workflow.choose_test_file.ask_for_test_files")
     def test_choose_test_files_single_attempt(self, ask_for_test_files_mock):
@@ -226,7 +248,12 @@ class TestChooseTestFiles(unittest.TestCase):
         ]
 
         results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 2
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            2,
+            self.validate_true,
         )
         self.assertEqual(results, [Path("test_file1.py"), Path("test_file2.py")])
         ask_for_test_files_mock.assert_called_once()
@@ -240,29 +267,56 @@ class TestChooseTestFiles(unittest.TestCase):
         ]
 
         results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 2
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            2,
+            self.validate_true,
         )
         self.assertEqual(results, [Path("test_file1.py"), Path("test_file2.py")])
         self.assertEqual(ask_for_test_files_mock.call_count, 2)
 
     @patch("solver.workflow.choose_test_file.ask_for_test_files")
-    def test_choose_test_files_repeated_files(self, ask_for_test_files_mock):
+    def test_choose_test_files_stop_attempts(self, ask_for_test_files_mock):
         ask_for_test_files_mock.side_effect = [
             [Path("test_file1.py")],
-            [Path("test_file1.py"), Path("test_file2.py")],
             [Path("test_file2.py")],
+            [Path("test_file3.py")],
+            [Path("test_file4.py")],
         ]
 
         results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 3
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            3,
+            self.validate_true,
         )
         self.assertEqual(
             results,
             [
                 Path("test_file1.py"),
                 Path("test_file2.py"),
+                Path("test_file3.py"),
             ],
         )
+        self.assertEqual(ask_for_test_files_mock.call_count, 3)
+
+    @patch("solver.workflow.choose_test_file.ask_for_test_files")
+    def test_invalid_test_files_are_filtered_out(self, ask_for_test_files_mock):
+        ask_for_test_files_mock.return_value = [Path("test_file1.p")]
+
+        results = choose_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            2,
+            self.validate_false,
+        )
+        self.assertEqual(results, [])
         self.assertEqual(ask_for_test_files_mock.call_count, 3)
 
 

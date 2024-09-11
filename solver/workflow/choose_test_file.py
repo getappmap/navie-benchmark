@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 from navie.editor import Editor
 from solver.workflow.choose_code_files import extract_file_paths
@@ -13,7 +13,7 @@ def ask_for_test_files(
         trajectory_file: str,
         issue_content: str,
         num_files: int,
-        not_test_files: set[Path],
+        tests_previously_listed: set[Path],
         attempt: int,
         ) -> List[Path]:
 
@@ -41,8 +41,8 @@ Do not include line numbers or any location within the file. Just the file path.
 {examples}
     """
 
-    if not_test_files:
-        known_files = "\n".join([str(file) for file in not_test_files])
+    if tests_previously_listed:
+        known_files = "\n".join([str(file) for file in tests_previously_listed])
         question += f"""Do not emit any of the following files, because they are already known:
 
 {known_files}
@@ -60,7 +60,7 @@ Do not include line numbers or any location within the file. Just the file path.
     )
 
     files = extract_file_paths(tests_to_modify_str) or []
-    files = [file for file in files if file not in not_test_files]
+    files = [file for file in files if file not in tests_previously_listed]
     if not files:
         log("choose-test-file", f"Found no existing test files in {tests_to_modify_str}")
         return []
@@ -71,31 +71,36 @@ Do not include line numbers or any location within the file. Just the file path.
 
 # Choose test case files that are most related to the issue.
 def choose_test_files(
-    log, work_dir: WorkDir, trajectory_file: str, issue_content: str, num_files: int
+    log, work_dir: WorkDir, trajectory_file: str, issue_content: str, num_files: int, 
+    validate: Callable[[WorkDir, Path], bool] 
 ) -> Optional[List[Path]]:
     work_dir = work_dir.choose_test_files()
 
-    tests_to_modify = []    
+    listed_test_files = set()
+    validated_test_files = []    
     for attempt in range(1, 4):
         test_file_batch = ask_for_test_files(
             log,
             work_dir,
             trajectory_file,
             issue_content,
-            num_files - len(tests_to_modify),
-            set(tests_to_modify),
+            num_files - len(validated_test_files),
+            listed_test_files,
             attempt
         )
         for file in test_file_batch:
-            if file not in tests_to_modify:
-                tests_to_modify.append(file)
+            validation_dir = work_dir.validate_test_file(file)
+            if validate(validation_dir, file):
+                validated_test_files.append(file)
+            else:
+                log("choose-test-file", f"Skipping {file} because validation failed.")
 
-        if len(tests_to_modify) >= num_files:
+        if len(validated_test_files) >= num_files:
             break
 
     log(
-        "choose-test-file", f"Recommended tests to modify: {", ".join([str(file) for file in tests_to_modify])}"
+        "choose-test-file", f"Recommended tests to modify: {", ".join([str(file) for file in validated_test_files])}"
     )
 
 
-    return tests_to_modify
+    return validated_test_files

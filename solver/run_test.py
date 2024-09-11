@@ -59,9 +59,7 @@ def main(instance_id: str, test_patch: str, code_patch: str):
         code_patch_p = Patch.load_file(code_patch_file)
         code_patches.append(code_patch_p)
 
-    run_test = RunTest(
-        logger_fn, navie_work_dir, instance["repo"], instance["version"], test_spec
-    )
+    run_test = RunTest(logger_fn, navie_work_dir, test_spec)
     if code_patches:
         run_test.code_patches = code_patches
 

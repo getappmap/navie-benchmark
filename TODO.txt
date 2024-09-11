@@ -1,5 +1,3 @@
-- [ ] Ensure that the pass to pass test actually passes
-
 - [ ] Limit the size of AppMap derived context 
 
 * Needs to be a limit on the amount of context selected for the edit test file
