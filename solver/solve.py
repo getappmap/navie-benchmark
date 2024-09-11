@@ -32,6 +32,7 @@ def main(
     instance_set: str,
     instance_ids: list,
     clean_work_dir: bool,
+    clean_navie: bool,
     limit: list,
     num_runners: Optional[int] = None,
     runner_index: Optional[int] = None,
@@ -96,6 +97,8 @@ def main(
         ]
         if clean_work_dir:
             solve_args.append("--clean_work_dir")
+        if clean_navie:
+            solve_args.append("--clean_navie")
         if limit:
             solve_args.append("--limit")
             solve_args.extend(limit)

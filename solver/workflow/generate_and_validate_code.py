@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, Iterable, List, Optional
 import docker
 
 from solver.workflow.work_dir import WorkDir
@@ -83,8 +83,6 @@ def empty_patch(file_name: Path) -> Patch:
     return Patch(
         f"""diff --git a/{file_name} b/{file_name}
 index 0000000..0000000
---- a/{file_name}
-+++ b/{file_name}
 """
     )
 
@@ -92,126 +90,209 @@ index 0000000..0000000
 def generate_and_validate_code(
     context: Context,
     plan: str,
-    generate_code: Callable[[WorkDir, str], Optional[Patch]],
+    generate_code: Callable[[WorkDir, str, List[str]], Optional[Patch]],
     run_test: Callable[[WorkDir, Patch, List[Patch]], RunTestResult],
+    summarize_test_errors: Callable[[WorkDir, str], str],
     pass_to_pass_test_file: Optional[Path],
     test_patch: Optional[Patch],
     test_patch_inverted: Optional[Patch],
 ) -> Result:
-    limit = context.limits.code_status_retry_limit
+    def is_optimal_code_patch(result: CodePatchResult) -> bool:
+        """
+        Determine if a code patch is optimal for the available tests.
+        If patch files are not available, then "optimality" can be less than
+        it would strictly be if all tests were available.
+        """
 
-    code_patch = None
-    code_patches = []
-    attempt = 1
-    while attempt <= limit and not code_patch:
+        def patch_is_optimal() -> bool:
+            return result.patch is not None
+
+        def pass_to_pass_test_is_optimal() -> bool:
+            return (
+                not pass_to_pass_test_file
+                or result.pass_to_pass_test_status == TestStatus.PASSED
+            )
+
+        def test_patch_is_optimal() -> bool:
+            return not test_patch or result.test_patch_status == TestStatus.FAILED
+
+        def inverted_patch_is_optimal() -> bool:
+            return (
+                not test_patch_inverted
+                or result.inverted_patch_status == TestStatus.PASSED
+            )
+
+        return (
+            patch_is_optimal()
+            and pass_to_pass_test_is_optimal()
+            and test_patch_is_optimal()
+            and inverted_patch_is_optimal()
+        )
+
+    def retry_generate_code(
+        max_attempts: int,
+        func: Callable[[int], List[CodePatchResult]],
+    ) -> List[CodePatchResult]:
+        """
+        Try up to max_attempts times to generate an optimal code patch.
+        """
+        accumulator = []
+        for attempt in range(1, max_attempts + 1):
+            results = func(attempt)
+            optimal_results = [
+                result for result in results if is_optimal_code_patch(result)
+            ]
+            if optimal_results:
+                return optimal_results
+
+            accumulator.extend(results)
+        return accumulator
+
+    test_errors = set()
+
+    def collect_errors(work_dir: WorkDir, run_test_result: RunTestResult):
+        if run_test_result.test_status == TestStatus.ERROR:
+            if run_test_result.test_output:
+                test_errors.update(
+                    summarize_test_errors(work_dir, run_test_result.test_output)
+                )
+
+    def generate_patch(attempt: int) -> List[CodePatchResult]:
         for listener in context.solve_listeners:
             listener.on_start_patch(PatchType.CODE)
 
-        generate_code_dir = context.work_dir.generate_code(attempt)
-        code_patch = generate_code(generate_code_dir, plan)
-        pass_to_pass_test_status = None
-        test_patch_status = None
-        inverted_patch_status = None
-        if code_patch:
-            if pass_to_pass_test_file:
-                context.log(
-                    "generate-and-validate-code",
-                    f"Running pass-to-pass test for attempt {attempt}",
-                )
-                empty_patch_for_edit_test_file = empty_patch(pass_to_pass_test_file)
-
-                run_test_result = run_test(
-                    generate_code_dir.run_pass_to_pass(),
-                    empty_patch_for_edit_test_file,
-                    [code_patch],
-                )
-                pass_to_pass_test_status = run_test_result.test_status
-                for listener in context.solve_listeners:
-                    listener.on_run_test(
-                        TestType.PASS_TO_PASS,
-                        [code_patch],
-                        empty_patch_for_edit_test_file,
-                        pass_to_pass_test_status,
-                    )
-
-            if test_patch:
-                context.log(
-                    "generate-and-validate-code",
-                    f"Running test patch for attempt {attempt}",
-                )
-                run_test_result = run_test(
-                    generate_code_dir.run_test_patch(), test_patch, [code_patch]
-                )
-                test_patch_status = run_test_result.test_status
-                for listener in context.solve_listeners:
-                    listener.on_run_test(
-                        TestType.PASS_TO_FAIL,
-                        [code_patch],
-                        test_patch,
-                        test_patch_status,
-                    )
-
-            if test_patch_inverted:
-                context.log(
-                    "generate-and-validate-code",
-                    f"Running inverted test patch for attempt {attempt}",
-                )
-
-                run_test_result = run_test(
-                    generate_code_dir.run_test_inverted_patch(),
-                    test_patch_inverted,
-                    [code_patch],
-                )
-                inverted_patch_status = run_test_result.test_status
-
-                for listener in context.solve_listeners:
-                    listener.on_run_test(
-                        TestType.FAIL_TO_PASS,
-                        [code_patch],
-                        test_patch_inverted,
-                        inverted_patch_status,
-                    )
-
-            code_patch_result = CodePatchResult(
-                patch=code_patch,
-                pass_to_pass_test_status=pass_to_pass_test_status,
-                test_patch_status=test_patch_status,
-                inverted_patch_status=inverted_patch_status,
-            )
-
-            code_patches.append(code_patch_result)
-
-            if (
-                pass_to_pass_test_status == TestStatus.PASSED
-                and test_patch_status == TestStatus.FAILED
-                and inverted_patch_status == TestStatus.PASSED
-            ):
-                context.log(
-                    "generate-and-validate-code",
-                    "Code patch succeeded in the pass-to-pass test, failed the test patch, and passed the inverted test patch. Accepting code patch.",
-                )
-            elif (
-                pass_to_pass_test_status == TestStatus.PASSED
-                and not test_patch
-                and not test_patch_inverted
-            ):
-                context.log(
-                    "generate-and-validate-code",
-                    "Code patch succeeded the pass-to-pass test, and there are no test patches to try. Accepting code patch.",
-                )
-            else:
-                context.log(
-                    "generate-and-validate-code",
-                    "Code patch is not optimal. Will look for a better patch.",
-                )
-                code_patch = None
-
+        def notify_and_return(
+            patch: Optional[CodePatchResult],
+        ) -> List[CodePatchResult]:
             for listener in context.solve_listeners:
                 listener.on_end_patch()
 
-        attempt += 1
+            return [code_patch_result] if patch else []
+
+        generate_code_dir = context.work_dir.generate_code(attempt)
+        code_patch = generate_code(generate_code_dir, plan, list(test_errors))
+        if not code_patch:
+            return notify_and_return(None)
+
+        pass_to_pass_test_status = None
+        test_patch_status = None
+        inverted_patch_status = None
+        if pass_to_pass_test_file:
+            context.log(
+                "generate-and-validate-code",
+                f"Running pass-to-pass test for attempt {attempt}",
+            )
+            empty_patch_for_edit_test_file = empty_patch(pass_to_pass_test_file)
+
+            work_dir = generate_code_dir.run_pass_to_pass()
+            run_test_result = run_test(
+                work_dir,
+                empty_patch_for_edit_test_file,
+                [code_patch],
+            )
+            pass_to_pass_test_status = run_test_result.test_status
+            for listener in context.solve_listeners:
+                listener.on_run_test(
+                    TestType.PASS_TO_PASS,
+                    [code_patch],
+                    empty_patch_for_edit_test_file,
+                    pass_to_pass_test_status,
+                )
+
+            collect_errors(work_dir, run_test_result)
+
+        if test_patch:
+            context.log(
+                "generate-and-validate-code",
+                f"Running test patch for attempt {attempt}",
+            )
+            work_dir = generate_code_dir.run_test_patch()
+            run_test_result = run_test(work_dir, test_patch, [code_patch])
+            test_patch_status = run_test_result.test_status
+            for listener in context.solve_listeners:
+                listener.on_run_test(
+                    TestType.PASS_TO_FAIL,
+                    [code_patch],
+                    test_patch,
+                    test_patch_status,
+                )
+
+            collect_errors(work_dir, run_test_result)
+
+        if test_patch_inverted:
+            context.log(
+                "generate-and-validate-code",
+                f"Running inverted test patch for attempt {attempt}",
+            )
+
+            work_dir = generate_code_dir.run_test_inverted_patch()
+            run_test_result = run_test(
+                work_dir,
+                test_patch_inverted,
+                [code_patch],
+            )
+            inverted_patch_status = run_test_result.test_status
+            for listener in context.solve_listeners:
+                listener.on_run_test(
+                    TestType.FAIL_TO_PASS,
+                    [code_patch],
+                    test_patch_inverted,
+                    inverted_patch_status,
+                )
+
+            collect_errors(work_dir, run_test_result)
+
+        code_patch_result = CodePatchResult(
+            patch=code_patch,
+            pass_to_pass_test_status=pass_to_pass_test_status,
+            test_patch_status=test_patch_status,
+            inverted_patch_status=inverted_patch_status,
+        )
+
+        if (
+            pass_to_pass_test_status == TestStatus.PASSED
+            and test_patch_status == TestStatus.FAILED
+            and inverted_patch_status == TestStatus.PASSED
+        ):
+            context.log(
+                "generate-and-validate-code",
+                "Code patch succeeded in the pass-to-pass test, failed the test patch, and passed the inverted test patch.",
+            )
+        elif (
+            pass_to_pass_test_status == TestStatus.PASSED
+            and not test_patch
+            and not test_patch_inverted
+        ):
+            context.log(
+                "generate-and-validate-code",
+                "Code patch succeeded the pass-to-pass test, and there are no other tests to run.",
+            )
+        elif (
+            pass_to_pass_test_status == TestStatus.PASSED
+            or test_patch_status == TestStatus.FAILED
+            or inverted_patch_status == TestStatus.PASSED
+        ):
+            context.log(
+                "generate-and-validate-code",
+                "Code patch passed at least one test, but not all.",
+            )
+        else:
+            context.log(
+                "generate-and-validate-code",
+                "Code patch failed all tests.",
+            )
+
+        return notify_and_return(code_patch_result)
+
+    code_patches = retry_generate_code(
+        context.limits.code_status_retry_limit, generate_patch
+    )
+
+    optimal_patch = next(
+        (patch for patch in code_patches if is_optimal_code_patch(patch)), None
+    )
 
     return Result(
-        code_patch,
+        optimal_patch.patch if optimal_patch else None,
         code_patches,
     )

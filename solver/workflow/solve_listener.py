@@ -68,6 +68,16 @@ class SolveListener:
         pass
 
     @abstractmethod
+    def on_observe_test_patch(
+        self,
+        status: TestStatus,
+        appmap_files: List[Path],
+        context: dict[str, str],
+    ):
+        """Called when execution of the test patch is observed."""
+        pass
+
+    @abstractmethod
     def on_code_patch(
         self,
         patch: Patch,

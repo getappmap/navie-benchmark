@@ -6,13 +6,19 @@ from typing import Callable, List, Optional
 import docker
 import yaml
 
-from solver.workflow.choose_code_files import choose_code_files
-from solver.workflow.work_dir import WorkDir
+from solver.harness.python_version import python_version_for_test_spec
+from solver.workflow.collect_appmap_context import collect_appmap_context_from_directory
+from solver.workflow.generate_plan import GeneratePlan
+from solver.workflow.observe_test import ObserveTest, is_observable
+from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.test_spec import TestSpec
 
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
 
+from .summarize_test_errors import summarize_test_errors
+from .choose_code_files import choose_code_files
+from .work_dir import WorkDir
 from .workflow_limits import WorkflowLimits
 from .solve_listener import SolveListener, TestStatus
 from .generate_and_validate_code import (
@@ -27,7 +33,6 @@ from .generate_and_validate_test import (
     is_optimal_test_patch,
     patch_score,
 )
-from .code_environment import Environment
 from .choose_test_file import choose_test_files
 from .generate_code import GenerateCode
 from .generate_test import GenerateTest
@@ -46,7 +51,6 @@ class Workflow:
         self,
         log: Callable[[str, str], None],
         work_dir: Path,
-        environment: Environment,
         docker_client: docker.DockerClient,
         repo: str,
         version: str,
@@ -56,7 +60,6 @@ class Workflow:
     ):
         self.log = log
         self.work_dir = WorkDir(work_dir)
-        self.environment = environment
         self.docker_client = docker_client
         self.repo = repo
         self.version = version
@@ -74,6 +77,15 @@ class Workflow:
         self.test_patch: Optional[Patch] = None
         self.inverted_patch: Optional[Patch] = None
         self.code_patch: Optional[Patch] = None
+        self.observed_context: Optional[dict[str, str]] = None
+
+    @property
+    def test_command(self) -> str:
+        return MAP_REPO_VERSION_TO_SPECS[self.repo][self.version]["test_cmd"]
+
+    @property
+    def python_version(self) -> str:
+        return python_version_for_test_spec(self.test_spec)
 
     def run(self):
         for listener in self.solve_listeners:
@@ -131,6 +143,8 @@ class Workflow:
             if code_patch_result.inverted_patch_status == TestStatus.PASSED:
                 score += 1
             return score
+        
+        self.observe_test()
 
         generate_code_results: list[CodePatchResult] = []
         code_patch: Optional[Patch] = None
@@ -138,7 +152,6 @@ class Workflow:
             self.log("workflow", f"Evaluating code file: {code_file}")
 
             plan = self.generate_plan(code_file)
-
             generate_code_result = generate_and_validate_code(
                 GenerateCodeContext(
                     self.limits,
@@ -153,6 +166,7 @@ class Workflow:
                 plan,
                 self.generate_code,
                 self.run_test,
+                self.summarize_test_errors,
                 self.edit_test_file,
                 self.test_patch,
                 self.inverted_patch,
@@ -226,25 +240,55 @@ class Workflow:
         with patch_path.open("w") as f:
             f.write(str(patch))
 
+    def observe_test(self):
+        if not self.test_patch:
+            self.log("workflow", "No test patch to observe")
+            return None
+
+        if not is_observable(self.log, self.test_spec):
+            self.log("workflow", f"Instance {self.test_spec.instance_id} is not observable")        
+
+        observe_dir = self.work_dir.observe_test_patch()
+        observe_test = ObserveTest(
+            self.log,
+            observe_dir.path,
+            self.test_spec,
+        )
+        observe_test_result = observe_test.run(self.docker_client, self.test_patch)
+        if (
+            observe_test_result
+            and observe_test_result.test_status == TestStatus.PASSED
+            and observe_test_result.appmap_dir
+        ):
+            self.log(
+                "workflow",
+                f"Collecting appmap context from {observe_test_result.appmap_dir}",
+            )
+            self.observed_context = collect_appmap_context_from_directory(
+                self.log, observe_test_result.appmap_dir
+            )
+            observe_appmap_files = list(
+                observe_test_result.appmap_dir.rglob("*.appmap.json")
+            )
+            for listener in self.solve_listeners:
+                listener.on_observe_test_patch(
+                    observe_test_result.test_status,
+                    observe_appmap_files,
+                    self.observed_context,
+                )
+        else:
+            self.log(
+                "workflow",
+                f"No appmap context collected. Test status: {observe_test_result.test_status if observe_test_result else "None"}",
+            )
+
     def generate_plan(self, edit_code_file: Path) -> str:
-        editor = Editor(
-            self.work_dir.plan().path_name,
-            log_dir=self.work_dir.root.path_name,
-            trajectory_file=self.trajectory_file,
-        )
-        issue_text = f"""Plan a solution to the following issue, by modifying the code in the file {edit_code_file}:
-
-{self.issue_text}
-
-In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
-
-Do not plan specific code changes. Just design the solution.
-"""
-
-        return editor.plan(
-            issue_text,
-            options=r"/noprojectinfo /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
-        )
+        return GeneratePlan(
+            self.log,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_text,
+        ).run(edit_code_file, self.observed_context)
 
     def generate_and_validate_test(
         self, edit_test_files: List[Path]
@@ -314,10 +358,11 @@ Do not plan specific code changes. Just design the solution.
             self.log,
             work_dir,
             self.trajectory_file,
+            self.test_command,
             test_file_path,
             self.issue_text,
             [],
-            self.environment.python_version,
+            self.python_version,
         )
 
         def generate(attempt: int, lint_errors: list[str] = []) -> Optional[Patch]:
@@ -378,9 +423,9 @@ Do not include directory names in the file name. Just choose a base file name.
 
 ## Environment
 
-Python version: {self.environment.python_version}
+Python version: {self.python_version}
 """,
-            options=r"/noprojectinfo /nocontext",
+            options=r"/noprojectinfo /nocontext /noclassify",
             question_name="test_file_name",
         )
         test_file_name = (
@@ -398,10 +443,11 @@ Python version: {self.environment.python_version}
             self.log,
             work_dir,
             self.trajectory_file,
+            self.test_command,
             test_file_path,
             self.issue_text,
             observed_errors,
-            self.environment.python_version,
+            self.python_version,
         )
 
         def generate(attempt, lint_errors: list = []):
@@ -436,7 +482,17 @@ Python version: {self.environment.python_version}
             run_test.code_patches = code_patches
         return run_test.run(self.docker_client, test_patch)
 
-    def generate_code(self, work_dir: WorkDir, plan: str) -> Optional[Patch]:
+    def summarize_test_errors(self, work_dir: WorkDir, test_output: str) -> str:
+        return summarize_test_errors(
+            self.log,
+            work_dir,
+            self.trajectory_file,
+            test_output,
+        )
+
+    def generate_code(
+        self, work_dir: WorkDir, plan: str, test_errors: List[str]
+    ) -> Optional[Patch]:
         self.clean_git_state()
 
         generator = GenerateCode(
@@ -444,12 +500,12 @@ Python version: {self.environment.python_version}
             work_dir,
             self.trajectory_file,
             plan,
-            self.environment.python_version,
+            self.python_version,
             self.limits.file_limit,
         )
 
-        def generate(attempt, lint_errors: list = []):
-            code = generator.generate(attempt, lint_errors)
+        def generate(attempt, lint_errors: List[str]):
+            code = generator.generate(attempt, lint_errors, test_errors)
             return generator.apply(attempt, code)
 
         lint_repair_result = self.lint_repair(

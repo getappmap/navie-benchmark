@@ -23,6 +23,7 @@ class GenerateTest:
         log: Callable[[str, str], None],
         work_dir: WorkDir,
         trajectory_file: str,
+        test_command: str,
         test_file_path: Path,
         issue_text: str,
         observed_errors: list[str],
@@ -31,6 +32,7 @@ class GenerateTest:
         self.log = log
         self.work_dir = work_dir
         self.trajectory_file = trajectory_file
+        self.test_command = test_command
         self.test_file_path = test_file_path
         self.issue_text = issue_text
         self.observed_errors = observed_errors
@@ -101,6 +103,16 @@ of existing test cases.
 Remove all other test classes and functions aside from the one that is being generated.
 
 Never use the @skipIf annotation.
+
+## Test framework
+
+Use the following test command to run the test. 
+
+{self.test_command}
+
+Unless the test command explicitly loads and uses pytest, don't import pytest. 
+You may utilize the unittest module. You may also utilize imports that are already
+present in the test file that you are going to modify.
 
 ## Python environment
 
