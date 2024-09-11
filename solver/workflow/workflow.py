@@ -142,6 +142,8 @@ class Workflow:
             if code_patch_result.inverted_patch_status == TestStatus.PASSED:
                 score += 1
             return score
+        
+        self.observe_test()
 
         generate_code_results: list[CodePatchResult] = []
         code_patch: Optional[Patch] = None
@@ -149,7 +151,6 @@ class Workflow:
             self.log("workflow", f"Evaluating code file: {code_file}")
 
             plan = self.generate_plan(code_file)
-
             generate_code_result = generate_and_validate_code(
                 GenerateCodeContext(
                     self.limits,
@@ -238,38 +239,47 @@ class Workflow:
         with patch_path.open("w") as f:
             f.write(str(patch))
 
-    def generate_plan(self, edit_code_file: Path) -> str:
-        work_dir = self.work_dir.plan()
+    def observe_test(self):
+        if not self.test_patch:
+            self.log("workflow", "No test patch to observe")
+            return None
 
-        context: Optional[dict[str, str]] = None
+        if not is_observable(self.log, self.test_spec):
+            self.log("workflow", f"Instance {self.test_spec.instance_id} is not observable")        
 
-        if self.test_patch and is_observable(self.log, self.test_spec):
-            observe_dir = work_dir.observe()
-            observe_test = ObserveTest(
-                self.log,
-                observe_dir.path,
-                self.test_spec,
+        observe_dir = self.work_dir.observe_test_patch()
+        observe_test = ObserveTest(
+            self.log,
+            observe_dir.path,
+            self.test_spec,
+        )
+        observe_test_result = observe_test.run(self.docker_client, self.test_patch)
+        if (
+            observe_test_result
+            and observe_test_result.test_status == TestStatus.PASSED
+            and observe_test_result.appmap_dir
+        ):
+            self.log(
+                "workflow",
+                f"Collecting appmap context from {observe_test_result.appmap_dir}",
             )
-            observe_test_result = observe_test.run(self.docker_client, self.test_patch)
-
-            if (
-                observe_test_result
-                and observe_test_result.test_status == TestStatus.PASSED
-                and observe_test_result.appmap_dir
-            ):
-                context = collect_appmap_context_from_directory(
-                    self.log, observe_test_result.appmap_dir
+            self.observed_context = collect_appmap_context_from_directory(
+                self.log, observe_test_result.appmap_dir
+            )
+            observe_appmap_files = list(
+                observe_test_result.appmap_dir.rglob("*.appmap.json")
+            )
+            for listener in self.solve_listeners:
+                listener.on_observe_test_patch(
+                    observe_test_result.test_status,
+                    observe_appmap_files,
+                    self.observed_context,
                 )
-                observe_appmap_files = list(
-                    observe_test_result.appmap_dir.rglob("*.appmap.json")
-                )
-                for listener in self.solve_listeners:
-                    listener.on_observe_test_patch(
-                        observe_test_result.test_status,
-                        observe_appmap_files,
-                        context,
-                    )
-
+        else:
+            self.log(
+                "workflow",
+                f"No appmap context collected. Test status: {observe_test_result.test_status if observe_test_result else "None"}",
+            )
         return GeneratePlan(
             self.log,
             work_dir,

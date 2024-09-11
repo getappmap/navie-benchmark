@@ -63,8 +63,8 @@ class WorkDir:
     def plan(self) -> WorkDir:
         return WorkDir(self._dir / "plan", self)
 
-    def observe(self) -> WorkDir:
-        return WorkDir(self._dir / "observe", self)
+    def observe_test_patch(self) -> WorkDir:
+        return WorkDir(self._dir / "observe-test-patch", self)
 
     def generate_test(self, edit_test_file: Path, attempt: int) -> WorkDir:
         return WorkDir(
