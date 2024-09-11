@@ -244,18 +244,15 @@ class Workflow:
 
         context: Optional[dict[str, str]] = None
 
-        if self.edit_test_file and is_observable(self.log, self.test_spec):
+        if self.test_patch and is_observable(self.log, self.test_spec):
             observe_dir = work_dir.observe()
             observe_test = ObserveTest(
                 self.log,
                 observe_dir.path,
                 self.test_spec,
             )
-            appmap_data_dir = observe_test.run(
-                self.docker_client, empty_patch(self.edit_test_file)
-            )
+            observe_test_result = observe_test.run(self.docker_client, self.test_patch)
 
-            if appmap_data_dir:
                 context = collect_appmap_context_from_directory(
                     self.log, appmap_data_dir
                 )
