@@ -13,7 +13,11 @@ from swebench.harness.test_spec import TestSpec
 
 from solver.harness.make_run_commands import make_run_test_command
 from solver.harness.make_test_directives import make_test_directives
-from solver.workflow.execute_container import run_script_in_container
+from solver.workflow.execute_container import (
+    parse_test_status,
+    read_test_output,
+    run_script_in_container,
+)
 from solver.workflow.patch import Patch
 from solver.workflow.run_test import DEFAULT_TIMEOUT, run_script_in_container
 
@@ -46,6 +50,9 @@ class ObserveTestResult:
         self.test_status = test_status
         self.test_output = test_output
         self.appmap_dir = appmap_dir
+
+    def __repr__(self) -> str:
+        return f"ObserveTestResult(succeedeed={self.succeedeed}, test_status={self.test_status}, test_output={self.test_output}, appmap_dir={self.appmap_dir})"
 
 
 class ObserveTest:
@@ -92,9 +99,11 @@ class ObserveTest:
         if appmap_extract_dir.exists():
             self.log(
                 "observe-test",
-                f"AppMap data already exists in {appmap_extract_dir}, using cached data",
+                f"AppMap data already exists in {appmap_extract_dir}, using cached data. Will assume that the test exit code is 0.",
             )
-            return ObserveTestResult(True, TestStatus.PASSED, None, appmap_extract_dir)
+            test_output = read_test_output(self.log, self.work_dir)
+            test_status = parse_test_status(self.log, self.test_spec.repo, test_output)
+            return ObserveTestResult(True, test_status, test_output, appmap_extract_dir)
 
         if not is_observable(self.log, self.test_spec):
             self.log(
@@ -175,13 +184,14 @@ set +e
             self.timeout,
             container_fn=extract_appmap_data,
         )
-        if not succeeded:
-            self.log("observe-test", f"Test failed with status {test_status}")
-            self.log("observe-test", f"Test output: {test_output}")
-            return ObserveTestResult(succeeded, test_status, test_output, None)
+
+        if not test_status:
+            test_status = parse_test_status(self.log, self.test_spec.repo, test_output)
 
         if appmap_tar_file.exists():
             with tarfile.open(appmap_tar_file, "r") as tar:
                 tar.extractall(path=appmap_extract_dir)
 
-        return ObserveTestResult(True, test_status, test_output, examine_appmap_dir())
+        return ObserveTestResult(
+            succeeded, test_status, test_output, examine_appmap_dir()
+        )

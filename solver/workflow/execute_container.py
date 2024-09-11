@@ -8,6 +8,8 @@ import docker
 from solver.harness.build_extended_image import build_extended_image
 from swebench.harness.test_spec import TestSpec
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
+from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
+
 
 from solver.harness.make_run_commands import make_run_test_prep_commands
 
@@ -22,9 +24,7 @@ def run_script_in_container(
     script: str,
     volumes: dict[str, dict[str, str]],
     timeout: int,
-    container_fn: Optional[
-        Callable[[docker.models.containers.Container], None]
-    ] = None,
+    container_fn: Optional[Callable[[docker.models.containers.Container], None]] = None,
 ) -> tuple[bool, TestStatus | None, Optional[str]]:
     run_test_image_name = build_run_test_image(
         log,
@@ -61,6 +61,58 @@ def run_script_in_container(
         work_dir,
         container_fn=container_fn,
     )
+
+
+def read_test_output(log, work_dir: Path) -> Optional[str]:
+    test_output_file = work_dir / "run_test.log"
+    if not test_output_file.exists():
+        log("read-test-output", f"Test output file {test_output_file} does not exist")
+        return None
+
+    with test_output_file.open("r") as f:
+        return f.read()
+
+
+def parse_test_status(log, repo: str, test_output: Optional[str]) -> TestStatus:
+    log_parser = MAP_REPO_TO_PARSER[repo]
+    if not log_parser:
+        raise ValueError(f"No log parser found for repo {repo}")
+
+    test_status_dict: dict[str, str] = {}
+    if test_output:
+        test_status_dict.update(log_parser(test_output))
+
+    # If the test status is not found, assume that the test was not run due to a setup error.
+    if test_status_dict:
+        test_status_str = ", ".join(
+            f"{test_name}: {status}" for test_name, status in test_status_dict.items()
+        )
+        log(
+            "parse-test-status",
+            f"Test status: {test_status_str}",
+        )
+
+        def any_status(status_name: str) -> bool:
+            return any(
+                status for status in test_status_dict.values() if status == status_name
+            )
+
+        if any_status(TestStatus.ERROR.value):
+            test_status = TestStatus.ERROR
+        elif any_status(TestStatus.FAILED.value):
+            test_status = TestStatus.FAILED
+        else:
+            test_status = TestStatus.PASSED
+
+        log("parse-test-status", f"Overall test status: {test_status}")
+    else:
+        log(
+            "run-test",
+            "No test status was detected in the output file",
+        )
+        test_status = TestStatus.ERROR
+
+    return test_status
 
 
 def build_run_test_image(

@@ -30,7 +30,11 @@ def load_and_function_code(source_file: Path, lineno: int):
     function_node = find_function_node(root_node, lineno)
 
     if function_node is not None:
-        return source_code[function_node.start_byte : function_node.end_byte]
+        code = source_code[function_node.start_byte : function_node.end_byte]
+        # IDK why this is happening. Just fix it up.
+        if code.startswith("f "):
+            code = "de" + code
+        return code
     else:
         return None
 

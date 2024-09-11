@@ -29,8 +29,8 @@ class GeneratePlan:
         if context:
             context_str = "\n".join(
                 [
-                    f"""<code-snippet location="{k}">{v}
-</code-snippet>
+                    f"""<code-snippet location="{k}"><![CDATA[{v}
+]]></code-snippet>
 """
                     for k, v in context.items()
                 ]
@@ -43,6 +43,7 @@ class GeneratePlan:
         return editor.plan(
             self.issue(edit_code_file),
             context=context_str,
+            context_format="xml",
             options=r"/noprojectinfo /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
         )
 

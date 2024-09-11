@@ -4,8 +4,11 @@ from typing import Optional
 
 import docker
 
-from solver.workflow.execute_container import run_script_in_container
-from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
+from solver.workflow.execute_container import (
+    parse_test_status,
+    read_test_output,
+    run_script_in_container,
+)
 from swebench.harness.test_spec import TestSpec
 
 from ..harness.make_test_directives import make_test_directives
@@ -57,6 +60,16 @@ class RunTest:
         self, docker_client: docker.DockerClient, test_patch: Patch
     ) -> RunTestResult:
         self.work_dir.mkdir(parents=True, exist_ok=True)
+
+        log_file = self.work_dir / "run_test.log"
+        if log_file.exists():
+            self.log(
+                "run-test",
+                f"Log file {log_file} already exists, using cached data. Will assume that the test exit code is 0.",
+            )
+            test_output = read_test_output(self.log, self.work_dir)
+            test_status = parse_test_status(self.log, self.test_spec.repo, test_output)
+            return RunTestResult(test_status, test_output, True)
 
         test_files = test_patch.list_files()
 
@@ -126,23 +139,7 @@ conda activate {env_name}
         )
 
         if not test_status:
-            log_parser = MAP_REPO_TO_PARSER[self.repo]
-            if not log_parser:
-                raise ValueError(f"No log parser found for repo {self.repo}")
-
-            test_status_dict: dict[str, str] = {}
-            if test_output:
-                test_status_dict.update(log_parser(test_output))
-
-            # If the test status is not found, assume that the test was not run due to a setup error.
-            if test_status_dict:
-                test_status = TestStatus(test_status_dict.popitem()[1])
-            else:
-                self.log(
-                    "run-test",
-                    "No test status was detected in the output file",
-                )
-                test_status = TestStatus.ERROR
+            test_status = parse_test_status(self.log, self.test_spec.repo, test_output)
 
         self.log(
             "run-test",

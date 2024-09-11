@@ -78,7 +78,7 @@ class TestSolveListenerTestCase:
             "code_patch_score": None,
             "appmap_data_test_status": None,
             "appmap_data_file_count": None,
-            "appmap_data_file_size": None,
+            "appmap_data_context_size": None,
         }
 
     @patch.object(SolutionListener, "count_llm_chars", return_value=(1000, 20))
@@ -124,7 +124,7 @@ class TestSolveListenerTestCase:
             "code_patch_score": 2,
             "appmap_data_test_status": "PASSED",
             "appmap_data_file_count": 1,
-            "appmap_data_file_size": sum(
+            "appmap_data_context_size": sum(
                 [len("file-content-1"), len("file-content-2")]
             ),
         }

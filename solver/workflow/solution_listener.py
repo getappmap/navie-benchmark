@@ -1,9 +1,9 @@
-from enum import Enum
 import json
-from typing import TypedDict, Optional, List, cast
+from typing import Optional, List, cast
 from pathlib import Path
 from time import time
 
+from solver.workflow.solution import Solution
 from solver.workflow.solve_listener import (
     PatchType,
     SolveListener,
@@ -11,26 +11,6 @@ from solver.workflow.solve_listener import (
     TestType,
 )
 from solver.workflow.patch import Patch
-
-
-class Solution(TypedDict):
-    instance_id: str
-    code_patch: Optional[Patch]
-    test_patch: Optional[Patch]
-    test_inverted_patch: Optional[Patch]
-    num_sent_chars: int
-    num_received_chars: int
-    elapsed_time: float
-    lint_repair_count: int
-    test_generation_attempts: int
-    code_generation_attempts: int
-    pass_to_pass: bool
-    pass_to_fail: bool
-    fail_to_pass: bool
-    code_patch_score: Optional[int]
-    appmap_data_test_status: Optional[str]
-    appmap_data_file_count: Optional[int]
-    appmap_data_file_size: Optional[int]
 
 
 def solution_to_plain_types(solution: Solution) -> dict:
@@ -84,7 +64,7 @@ class SolutionListener(SolveListener):
         appmap_data_file_count = (
             len(self.observe_appmap_files) if self.observe_appmap_files else None
         )
-        appmap_data_file_size = (
+        appmap_data_context_size = (
             sum(
                 len(context_value)
                 for context_value in self.observe_test_context.values()
@@ -110,8 +90,8 @@ class SolutionListener(SolveListener):
             code_patch_score=self.score,
             appmap_data_test_status=appmap_data_test_status,
             appmap_data_file_count=appmap_data_file_count,
-            appmap_data_file_size=appmap_data_file_size,
-        )  # type: ignore
+            appmap_data_context_size=appmap_data_context_size,
+        )
 
     @staticmethod
     def count_llm_chars(trajectory_file: Path) -> tuple[int, int]:

@@ -77,6 +77,7 @@ class Workflow:
         self.test_patch: Optional[Patch] = None
         self.inverted_patch: Optional[Patch] = None
         self.code_patch: Optional[Patch] = None
+        self.observed_context: Optional[dict[str, str]] = None
 
     @property
     def test_command(self) -> str:
@@ -280,12 +281,14 @@ class Workflow:
                 "workflow",
                 f"No appmap context collected. Test status: {observe_test_result.test_status if observe_test_result else "None"}",
             )
+
+    def generate_plan(self, edit_code_file: Path) -> str:
         return GeneratePlan(
             self.log,
-            work_dir,
+            self.work_dir,
             self.trajectory_file,
             self.issue_text,
-        ).run(edit_code_file, context)
+        ).run(edit_code_file, self.observed_context)
 
     def generate_and_validate_test(
         self, edit_test_files: List[Path]

@@ -20,4 +20,4 @@ class Solution(TypedDict):
     code_patch_score: Optional[int]
     appmap_data_test_status: Optional[str]
     appmap_data_file_count: Optional[int]
-    appmap_data_file_size: Optional[int]
+    appmap_data_context_size: Optional[int]
