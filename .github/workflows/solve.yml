@@ -269,8 +269,6 @@ jobs:
           . ./venv/bin/activate
           pip install -e .
 
-          find artifacts -maxdepth 3
-
           # Artifacts dir contains files like this:
           # artifacts/solve-0
           # artifacts/solve-0/scikit-learn__scikit-learn-13779
@@ -315,11 +313,6 @@ jobs:
           for file in artifacts/predictions-*/*.jsonl; do
             cat $file >> predictions.jsonl
           done
-
-          # TODO: Remove this, just printing now for checking purposes
-          find solve -maxdepth 3
-          ls -al predictions.jsonl
-          find logs -maxdepth 3
 
       - name: Report results
         run: |
