@@ -18,10 +18,13 @@ on:
         type: choice
         required: true
         options:
-          - file=1 test_files=1 test_lint_retry=1 test_status_retry=1 code_files=1 code_lint_retry=1 code_status_retry=1
-          - file=1 test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
-          - file=1 test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
-          - file=1 test_files=4 test_lint_retry=2 test_status_retry=2 code_files=4 code_lint_retry=2 code_status_retry=2
+          - default
+          - test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
+          - context_tokens=16000 test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
+          - context_tokens=32000 test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
+          - test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
+          - context_tokens=16000 test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
+          - context_tokens=32000 test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
       runner:
         description: "Runner type"
         required: true
@@ -190,7 +193,7 @@ jobs:
           fi
 
           instance_set="${INSTANCE_SET:-smoke}"
-          limits="${LIMITS:-file=1 test_files=1 test_lint_retry=2 test_status_retry=2 code_lint_retry=2 code_status_retry=2}"
+          limits="${LIMITS:-default}"
           num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
 
@@ -201,7 +204,7 @@ jobs:
 
           python -m solver.solve \
             --instance_set "${instance_set}" \
-            --limit ${limits} \
+            $( [ "${limits}" != "default" ] && echo "--limit ${limits}" ) \
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
 

@@ -2,7 +2,9 @@ import io
 import tarfile
 
 
-def build_extended_image(log, docker_client, base_image, run_commands, new_image_name):
+def build_extended_image(
+    log, docker_client, base_image, run_commands, new_image_name
+) -> str:
     """
     Build a new Docker image based on the base_image and extended with run_commands.
 

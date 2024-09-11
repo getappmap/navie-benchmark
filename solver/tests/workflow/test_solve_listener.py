@@ -76,6 +76,9 @@ class TestSolveListenerTestCase:
             "pass_to_fail": False,
             "fail_to_pass": False,
             "code_patch_score": None,
+            "appmap_data_test_status": None,
+            "appmap_data_file_count": None,
+            "appmap_data_context_size": None,
         }
 
     @patch.object(SolutionListener, "count_llm_chars", return_value=(1000, 20))
@@ -90,6 +93,14 @@ class TestSolveListenerTestCase:
         self.listener.on_test_patch(Path("edit_test_file.py"), Patch(TEST_PATCH), None)
         self.listener.on_run_test(
             TestType.PASS_TO_PASS, [], Patch(TEST_PATCH), TestStatus.PASSED
+        )
+        self.listener.on_observe_test_patch(
+            TestStatus.PASSED,
+            [Path("appmap_dir")],
+            {
+                "file1.appmap.json": "file-content-1",
+                "file2.appmap.json": "file-content-2",
+            },
         )
         self.listener.on_code_patch(Patch(CODE_PATCH), True, False, True, 2)
         self.listener.on_completed()
@@ -111,4 +122,9 @@ class TestSolveListenerTestCase:
             "pass_to_fail": False,
             "fail_to_pass": True,
             "code_patch_score": 2,
+            "appmap_data_test_status": "PASSED",
+            "appmap_data_file_count": 1,
+            "appmap_data_context_size": sum(
+                [len("file-content-1"), len("file-content-2")]
+            ),
         }

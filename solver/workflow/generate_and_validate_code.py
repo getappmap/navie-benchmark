@@ -83,8 +83,6 @@ def empty_patch(file_name: Path) -> Patch:
     return Patch(
         f"""diff --git a/{file_name} b/{file_name}
 index 0000000..0000000
---- a/{file_name}
-+++ b/{file_name}
 """
     )
 

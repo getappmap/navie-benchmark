@@ -3,15 +3,16 @@ import os
 import csv
 from pathlib import Path
 import sys
-from typing import List, TypedDict
+from typing import TypedDict
+
 
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.workflow.solution import Solution
 from solver.workflow.patch import Patch
-from solver.workflow.solution_listener import Solution
 
 
 class Prediction(TypedDict):
@@ -156,7 +157,15 @@ class Report:
 
         report_file = Path("report.csv")
         with report_file.open("w") as f:
-            writer = csv.DictWriter(f, fieldnames=combined_data[0].keys())
+            unique_field_names = set()
+            combined_field_names = list()
+            for row in combined_data:
+                for field_name in row.keys():
+                    if field_name not in unique_field_names:
+                        unique_field_names.add(field_name)
+                        combined_field_names.append(field_name)
+
+            writer = csv.DictWriter(f, fieldnames=combined_field_names)
             writer.writeheader()
             writer.writerows(combined_data)
 

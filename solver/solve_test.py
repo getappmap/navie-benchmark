@@ -2,8 +2,70 @@ from argparse import ArgumentParser
 from os import chdir
 from pathlib import Path
 import sys
-
 import docker
+from tree_sitter import Language, Parser
+
+from solver.appmap.appmap import AppMap
+
+# Assuming you have built the language parsers into a library
+# Alternatively, download pre-built parsers from https://github.com/tree-sitter/tree-sitter-python
+Language.build_library("build/my-languages.so", ["vendor/tree-sitter-python"])
+
+PY_LANGUAGE = Language("build/my-languages.so", "python")
+
+
+def load_and_print_function_code(source_file: Path, lineno: int):
+    parser = Parser()
+    parser.set_language(PY_LANGUAGE)
+
+    with source_file.open() as f:
+        source_code = f.read()
+
+    tree = parser.parse(bytes(source_code, "utf8"))
+    root_node = tree.root_node
+
+    def find_function_node(node, lineno):
+        if node.type == "function_definition":
+            function_start_line = node.start_point[0] + 1
+            function_end_line = node.end_point[0] + 1
+            if function_start_line <= lineno <= function_end_line:
+                return node
+        for child in node.children:
+            result = find_function_node(child, lineno)
+            if result:
+                return result
+        return None
+
+    function_node = find_function_node(root_node, lineno)
+
+    if function_node is not None:
+        function_code = source_code[function_node.start_byte : function_node.end_byte]
+        print(function_code)
+    else:
+        print("Function containing the specified line number not found.")
+
+
+# Integrate into your existing function
+def print_appmap(appmap: AppMap, source_dir: str):
+    for location in appmap.list_locations():
+        print(location)
+        print(source_dir)
+        if source_dir:
+            path, lineno = location.split(":")
+            if not lineno:
+                print(f"Line number not found in {location}")
+                continue
+
+            lineno = int(lineno)
+            source_file = Path(source_dir) / path
+            if source_file.exists():
+                with source_file.open() as f:
+                    source = f.readlines()
+                    snippet = source[int(lineno) - 1 : int(lineno) + 10]
+                    print("".join(snippet))
+
+                # Load and print the function code with tree-sitter
+                load_and_print_function_code(source_file, lineno)
 
 
 sys.path.append(

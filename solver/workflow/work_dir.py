@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 from pathlib import Path
 from typing import Optional, Union
 
@@ -13,11 +14,13 @@ class WorkDir:
         if isinstance(dir, str):
             dir = Path(dir)
         self._dir = dir
+
         self._parent = parent
         self._write_sequence = write_sequence
 
         if self._parent is None:
             if write_sequence:
+                self._dir.mkdir(parents=True, exist_ok=True)
                 sequence_file = self._dir / "sequence.txt"
                 with sequence_file.open("w") as f:
                     f.write("")
@@ -60,6 +63,9 @@ class WorkDir:
     def plan(self) -> WorkDir:
         return WorkDir(self._dir / "plan", self)
 
+    def observe_test_patch(self) -> WorkDir:
+        return WorkDir(self._dir / "observe-test-patch", self)
+
     def generate_test(self, edit_test_file: Path, attempt: int) -> WorkDir:
         return WorkDir(
             self._dir
@@ -72,7 +78,7 @@ class WorkDir:
         return WorkDir(self._dir / f"test-{str(attempt)}", self)
 
     def invert(self) -> WorkDir:
-        return WorkDir(self._dir / f"invert", self)
+        return WorkDir(self._dir / "invert", self)
 
     def summarize_test_errors(self) -> WorkDir:
         return WorkDir(self._dir / "summarize-test-errors", self)
