@@ -58,6 +58,14 @@ imports if they are needed.
 
         if test_errors:
             test_errors_str = "\n".join(test_errors)
+            test_errors_str = "\n".join(
+                [
+                    err
+                    for err in test_errors_str.split("\n")
+                    if not "whitespace" in err.lower()
+                ]
+            )
+
             plan.append(
                 f"""## Preventing test errors
 

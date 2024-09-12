@@ -68,6 +68,13 @@ the incorrect output is produced.
         ]
         if self.observed_errors:
             observed_errors_str = "\n".join(self.observed_errors)
+            observed_errors_str = "\n".join(
+                [
+                    err
+                    for err in observed_errors_str.split("\n")
+                    if not "whitespace" in err.lower()
+                ]
+            )
             plan.append(
                 f"""## Preventing test execution errors
                 
