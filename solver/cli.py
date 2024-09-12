@@ -7,6 +7,8 @@ from typing import Callable, List, Optional
 import docker
 
 from solver.harness.python_version import python_version_for_test_spec
+from solver.workflow.solve_test import SolveTest
+from solver.workflow.patch import Patch
 from swebench.harness.constants import (
     KEY_INSTANCE_ID,
     SWEbenchInstance,
@@ -18,7 +20,7 @@ from swebench.harness.test_spec import make_test_spec
 from swebench.harness.utils import load_swebench_dataset
 
 from solver.workflow.workflow_limits import WorkflowLimits
-from solver.workflow.workflow import Workflow
+from solver.workflow.solve_code import SolveCode
 
 
 def configure_limits(parser: ArgumentParser) -> None:
@@ -137,32 +139,54 @@ def build_logger(work_dir: Path, instance_id: str) -> Callable[..., None]:
             sys.stdout.flush()
             logger.info(message)
         else:
-            logger.debug(message)
+            logger.info(message)
 
     return logger_fn
 
 
-def build_workflow(
+def build_solve_test(
     log: Callable[[str, str], None],
     navie_work_dir: Path,
     docker_client: docker.DockerClient,
     instance: SWEbenchInstance,
     limits: WorkflowLimits,
 ):
-    repo = instance["repo"]
-    version = instance["version"]
     problem_statement = instance["problem_statement"]
     test_spec = make_test_spec(instance)
 
-    return Workflow(
+    return SolveTest(
         log,
         navie_work_dir,
         docker_client,
-        repo,
-        version,
         test_spec,
         problem_statement,
         limits,
+    )
+
+
+def build_solve_code(
+    log: Callable[[str, str], None],
+    navie_work_dir: Path,
+    docker_client: docker.DockerClient,
+    instance: SWEbenchInstance,
+    limits: WorkflowLimits,
+    edit_test_file: Optional[Path],
+    test_patch: Optional[Patch],
+    inverted_patch: Optional[Patch],
+):
+    problem_statement = instance["problem_statement"]
+    test_spec = make_test_spec(instance)
+
+    return SolveCode(
+        log,
+        navie_work_dir,
+        docker_client,
+        test_spec,
+        problem_statement,
+        limits,
+        edit_test_file,
+        test_patch,
+        inverted_patch,
     )
 
 

@@ -23,7 +23,6 @@ from swebench.harness.test_spec import make_test_spec
 from swebench.harness.constants import SWEbenchInstance
 
 from solver.prediction import Prediction
-from solver.workflow.workflow import Workflow
 from solver.workflow.solution_listener import (
     Solution,
     SolutionListener,
@@ -39,7 +38,8 @@ from solver.cli import (
     build_limits,
     build_logger,
     build_work_dir,
-    build_workflow,
+    build_solve_test,
+    build_solve_code,
     configure_clean_option,
     configure_limits,
     load_dataset,
@@ -53,7 +53,6 @@ def report_solution(
     llm: str,
     predictions_file: str,
     instance: SWEbenchInstance,
-    workflow: Workflow,
     solution: Solution,
 ):
     def solution_str(solution: Solution):
@@ -82,10 +81,10 @@ def report_solution(
         f.write(dumps(solution_attrs, indent=2))
 
     predictions = Prediction.build_predictions(instance, llm)
-    predictions.add_prediction("model_patch", workflow.code_patch)
-    predictions.add_prediction("model_test_patch", workflow.test_patch)
-    predictions.add_prediction("model_inverted_patch", workflow.inverted_patch)
-    predictions.add_prediction("model_edit_test_file", workflow.edit_test_file)
+    predictions.add_prediction("model_patch", solution["code_patch"])
+    predictions.add_prediction("model_test_patch", solution["test_patch"])
+    predictions.add_prediction("model_inverted_patch", solution["test_inverted_patch"])
+    predictions.add_prediction("model_edit_test_file", solution["edit_test_file"])
 
     PredictionsFile.add_prediction(predictions_file, predictions.as_dict())
 
@@ -161,7 +160,6 @@ def main(
     navie_work_dir = work_dir / "navie"
 
     container = None
-    workflow = None
     try:
         # Build + start instance container (instance image should already be built)
         container = build_container(
@@ -179,18 +177,33 @@ def main(
         logger_fn("solve", f"Changing directory to {source_dir}")
 
         solution_listener = SolutionListener(instance_id)
+        solution_listener.on_solve_start(navie_work_dir)
         chdir(source_dir)
         try:
-            workflow = build_workflow(
+            solve_test = build_solve_test(
                 logger_fn,
                 navie_work_dir,
                 docker_client,
                 instance,
                 limits_obj,
             )
-            workflow.solve_listeners.append(solution_listener)
-            workflow.run()
+            solve_test.solve_listeners.append(solution_listener)
+            solve_test.solve()
+
+            solve_code = build_solve_code(
+                logger_fn,
+                navie_work_dir,
+                docker_client,
+                instance,
+                limits_obj,
+                solve_test.edit_test_file,
+                solve_test.test_patch,
+                solve_test.inverted_patch,
+            )
+            solve_code.solve_listeners.append(solution_listener)
+            solve_code.solve()
         finally:
+            solution_listener.on_completed()
             chdir(pwd)
 
         solution = solution_listener.build_solution()
@@ -200,7 +213,6 @@ def main(
             llm,
             predictions_file,
             instance,
-            workflow,
             solution,
         )
     except Exception as e:
