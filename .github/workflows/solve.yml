@@ -21,10 +21,10 @@ on:
           - default
           - test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
           - context_tokens=16000 test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
-          - context_tokens=32000 test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
           - test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
           - context_tokens=16000 test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
-          - context_tokens=32000 test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
+          - test_files=3 test_lint_retry=3 test_status_retry=3 code_files=3 code_lint_retry=3 code_status_retry=3
+          - context_tokens=16000 test_files=3 test_lint_retry=3 test_status_retry=3 code_files=3 code_lint_retry=3 code_status_retry=3
       runner:
         description: "Runner type"
         required: true
@@ -185,7 +185,7 @@ jobs:
 
           llm="${LLM:-gpt-4o}"
           if [[ $llm == "gpt-4o" ]]; then
-            export APPMAP_NAVIE_MODEL="gpt-4o"
+            export APPMAP_NAVIE_MODEL="gpt-4o-2024-08-06"
             export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
           elif [[ $llm == "claude-3.5" ]]; then
             export APPMAP_NAVIE_MODEL="claude-3-5-sonnet-20240620"
@@ -269,8 +269,6 @@ jobs:
           . ./venv/bin/activate
           pip install -e .
 
-          find artifacts -maxdepth 3
-
           # Artifacts dir contains files like this:
           # artifacts/solve-0
           # artifacts/solve-0/scikit-learn__scikit-learn-13779
@@ -315,11 +313,6 @@ jobs:
           for file in artifacts/predictions-*/*.jsonl; do
             cat $file >> predictions.jsonl
           done
-
-          # TODO: Remove this, just printing now for checking purposes
-          find solve -maxdepth 3
-          ls -al predictions.jsonl
-          find logs -maxdepth 3
 
       - name: Report results
         run: |

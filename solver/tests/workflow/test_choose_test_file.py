@@ -1,12 +1,12 @@
 import os
 import unittest
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 from pathlib import Path
-from solver.workflow.choose_test_file import choose_test_files
+from solver.workflow.choose_test_file import ask_for_test_files, choose_test_files
 from solver.workflow.work_dir import WorkDir
 
 
-class TestChooseTestFile(unittest.TestCase):
+class TestAskForTestFiles(unittest.TestCase):
     def setUp(self):
         self.log_mock = MagicMock()
         self.work_dir = WorkDir("./work/directory", write_sequence=False)
@@ -22,17 +22,39 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: work/directory/test_file.py -->"
         )
 
-        results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            set(),
+            1,
         )
         assert results is not None
         result = results[0]
 
         self.assertEqual(result, Path("work/directory/test_file.py"))
-        self.log_mock.assert_called_with(
-            "choose-test-file",
-            "Recommended tests to modify: work/directory/test_file.py",
+
+    @patch("solver.workflow.choose_test_file.Editor")
+    @patch("solver.workflow.choose_test_file.os.path.exists")
+    def test_ignore_previously_listed(self, exists_mock, Editor_mock):
+        exists_mock.return_value = True
+        editor_instance_mock = Editor_mock.return_value
+        editor_instance_mock.search.return_value = (
+            "<!-- file: work/directory/test_file.py -->"
         )
+
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            {Path("work/directory/test_file.py")},
+            1,
+        )
+        self.assertEqual(results, [])
 
     @patch("solver.workflow.choose_test_file.Editor")
     @patch("solver.workflow.choose_test_file.os.path.exists")
@@ -43,8 +65,14 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: test_file1.py -->\n<!-- file: test_file2.py -->"
         )
 
-        results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 2
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            2,
+            set(),
+            1,
         )
         self.assertEqual(results, [Path("test_file1.py"), Path("test_file2.py")])
 
@@ -55,10 +83,16 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock = Editor_mock.return_value
         editor_instance_mock.search.return_value = ""
 
-        result = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
+        result = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            set(),
+            1,
         )
-        self.assertIsNone(result)
+        self.assertEqual(result, [])
         self.log_mock.assert_called_with(
             "choose-test-file", "Found no existing test files in "
         )
@@ -72,8 +106,14 @@ class TestChooseTestFile(unittest.TestCase):
             "<!-- file: /work/directory/test_file.py -->"
         )
 
-        results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            set(),
+            1,
         )
         self.assertEqual(results, [Path("work/directory/test_file.py")])
 
@@ -86,8 +126,14 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock = Editor_mock.return_value
         editor_instance_mock.search.return_value = f"<!-- file: {test} -->"
 
-        results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            set(),
+            1,
         )
         self.assertEqual(results, [Path("test_file.py")])
 
@@ -100,8 +146,14 @@ class TestChooseTestFile(unittest.TestCase):
         editor_instance_mock = Editor_mock.return_value
         editor_instance_mock.search.return_value = "<!-- file: /work/directory/invalid_test_file.py -->\n<!-- file: /work/directory/valid_test_file.py -->"
 
-        results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            set(),
+            1,
         )
         self.assertEqual(results, [Path("../../work/directory/valid_test_file.py")])
 
@@ -114,10 +166,213 @@ class TestChooseTestFile(unittest.TestCase):
             "```python\n<!-- file: test_file.py -->\n```"
         )
 
-        results = choose_test_files(
-            self.log_mock, self.work_dir, self.trajectory_file, self.issue_content, 1
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            set(),
+            1,
         )
         self.assertEqual(results, [Path("test_file.py")])
+
+    @patch("solver.workflow.choose_test_file.Editor")
+    @patch("solver.workflow.choose_test_file.os.path.exists")
+    def test_with_non_empty_not_test_files(self, exists_mock, Editor_mock):
+        exists_mock.return_value = True
+        editor_instance_mock = Editor_mock.return_value
+        editor_instance_mock.search.return_value = (
+            "<!-- file: work/directory/test_file.py -->"
+        )
+
+        not_test_files = {Path("work/directory/known_test_file.py")}
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            1,
+            not_test_files,
+            1,
+        )
+
+        editor_instance_mock.search.assert_called_once_with(
+            """Identify 1 test files that are most related to the issue. Put the most relevant file first,
+followed by less relevant files.
+
+The files must all be different.
+
+<issue>
+Sample issue content
+</issue>
+Do not emit any of the following files, because they are already known:
+
+work/directory/known_test_file.py
+""",
+            prompt="""## Output format
+    
+Output the results as one file path on each line, and nothing else.
+
+Do not include line numbers or any location within the file. Just the file path.
+
+## Examples
+        
+path/to/test_1.py
+    """,
+            options="/noprojectinfo /noformat /noclassify /include=test /tokenlimit=3000",
+            extension="txt",
+        )
+
+        self.assertEqual(results, [Path("work/directory/test_file.py")])
+
+    @patch("solver.workflow.choose_test_file.Editor")
+    @patch("solver.workflow.choose_test_file.os.path.exists")
+    def test_remove_duplicates(self, exists_mock, Editor_mock):
+        exists_mock.return_value = True
+        editor_instance_mock = Editor_mock.return_value
+        editor_instance_mock.search.side_effect = [
+            "<!-- file: test_file1.py -->\n<!-- file: test_file2.py -->",
+            "<!-- file: test_file2.py -->\n<!-- file: test_file3.py -->",
+            "<!-- file: test_file1.py -->\n<!-- file: test_file4.py -->",
+        ]
+
+        not_test_files = set()
+        new_files = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            4,
+            not_test_files,
+            1,
+        )
+        self.assertEqual(new_files, [Path("test_file1.py"), Path("test_file2.py")])
+        self.assertEqual(not_test_files, {Path("test_file1.py"), Path("test_file2.py")})
+
+        new_files = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            4,
+            not_test_files,
+            2,
+        )
+        self.assertEqual(new_files, [Path("test_file3.py")])
+        self.assertEqual(
+            not_test_files,
+            {Path("test_file1.py"), Path("test_file2.py"), Path("test_file3.py")},
+        )
+
+        new_files = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            4,
+            not_test_files,
+            3,
+        )
+        self.assertEqual(new_files, [Path("test_file4.py")])
+        self.assertEqual(
+            not_test_files,
+            {
+                Path("test_file1.py"),
+                Path("test_file2.py"),
+                Path("test_file3.py"),
+                Path("test_file4.py"),
+            },
+        )
+
+
+class TestChooseTestFiles(unittest.TestCase):
+    def setUp(self):
+        self.log_mock = MagicMock()
+        self.work_dir = WorkDir("./work/directory", write_sequence=False)
+        self.trajectory_file = os.path.join(self.work_dir.path_name, "trajectory.jsonl")
+        self.issue_content = "Sample issue content"
+        self.validate_true = lambda x, y: True
+        self.validate_false = lambda x, y: False
+
+    @patch("solver.workflow.choose_test_file.ask_for_test_files")
+    def test_choose_test_files_single_attempt(self, ask_for_test_files_mock):
+        ask_for_test_files_mock.return_value = [
+            Path("test_file1.py"),
+            Path("test_file2.py"),
+        ]
+
+        results = choose_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            2,
+            self.validate_true,
+        )
+        self.assertEqual(results, [Path("test_file1.py"), Path("test_file2.py")])
+        ask_for_test_files_mock.assert_called_once()
+
+    @patch("solver.workflow.choose_test_file.ask_for_test_files")
+    def test_choose_test_files_multiple_attempts(self, ask_for_test_files_mock):
+        ask_for_test_files_mock.side_effect = [
+            [Path("test_file1.py")],
+            [Path("test_file2.py")],
+            [],
+        ]
+
+        results = choose_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            2,
+            self.validate_true,
+        )
+        self.assertEqual(results, [Path("test_file1.py"), Path("test_file2.py")])
+        self.assertEqual(ask_for_test_files_mock.call_count, 2)
+
+    @patch("solver.workflow.choose_test_file.ask_for_test_files")
+    def test_choose_test_files_stop_attempts(self, ask_for_test_files_mock):
+        ask_for_test_files_mock.side_effect = [
+            [Path("test_file1.py")],
+            [Path("test_file2.py")],
+            [Path("test_file3.py")],
+            [Path("test_file4.py")],
+        ]
+
+        results = choose_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            3,
+            self.validate_true,
+        )
+        self.assertEqual(
+            results,
+            [
+                Path("test_file1.py"),
+                Path("test_file2.py"),
+                Path("test_file3.py"),
+            ],
+        )
+        self.assertEqual(ask_for_test_files_mock.call_count, 3)
+
+    @patch("solver.workflow.choose_test_file.ask_for_test_files")
+    def test_invalid_test_files_are_filtered_out(self, ask_for_test_files_mock):
+        ask_for_test_files_mock.return_value = [Path("test_file1.p")]
+
+        results = choose_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            2,
+            self.validate_false,
+        )
+        self.assertEqual(results, [])
+        self.assertEqual(ask_for_test_files_mock.call_count, 3)
 
 
 if __name__ == "__main__":

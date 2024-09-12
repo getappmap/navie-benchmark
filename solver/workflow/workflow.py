@@ -10,6 +10,7 @@ from solver.harness.python_version import python_version_for_test_spec
 from solver.workflow.collect_appmap_context import collect_appmap_context_from_directory
 from solver.workflow.generate_plan import GeneratePlan
 from solver.workflow.observe_test import ObserveTest, is_observable
+from solver.workflow.validate_test import validate_test
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.test_spec import TestSpec
 
@@ -91,12 +92,7 @@ class Workflow:
         for listener in self.solve_listeners:
             listener.on_solve_start(self.work_dir.path)
 
-        edit_test_files = choose_test_files(
-            self.log,
-            self.work_dir,
-            self.trajectory_file,
-            self.issue_text,
-            self.limits.test_files_limit,
+        edit_test_files = self.choose_test_files(
         )
         if edit_test_files:
             generate_test_result = self.generate_and_validate_test(edit_test_files)
@@ -239,6 +235,27 @@ class Workflow:
         self.log("workflow", f"Patch file generated to {patch_path}")
         with patch_path.open("w") as f:
             f.write(str(patch))
+
+    def choose_test_files(self) -> List[Path] | None:
+        def validate(work_dir: WorkDir, test_path: Path) -> bool:
+            return validate_test(
+                self.log,
+                work_dir.path,
+                self.docker_client,
+                self.test_spec,
+                test_path
+            )
+
+        return choose_test_files(
+                self.log,
+                self.work_dir,
+                self.trajectory_file,
+                self.issue_text,
+                self.limits.test_files_limit,
+                validate
+            )
+
+
 
     def observe_test(self):
         if not self.test_patch:
@@ -476,7 +493,7 @@ Python version: {self.python_version}
         code_patches: list[Patch] = [],
     ) -> RunTestResult:
         run_test = RunTest(
-            self.log, work_dir.path, self.repo, self.version, self.test_spec
+            self.log, work_dir.path, self.test_spec
         )
         if code_patches:
             run_test.code_patches = code_patches

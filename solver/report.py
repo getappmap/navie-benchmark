@@ -80,11 +80,11 @@ class Report:
                         solution_data["instance_id"] = instance_id
                     assert "instance_id" in solution_data
                     solution = Solution(**solution_data)
+                    if solution["instance_id"] in solutions.keys():
+                        print(f"WARNING Duplicate solution: {solution['instance_id']} in {root}/{file}")
                     solutions[solution["instance_id"]] = solution
-
         print(f"Loaded {len(solutions)} solutions")
 
-        # Load predictions.jsonl
         predictions: dict[str, Prediction] = {}
         with open(self.predictions_file) as f:
             for line in f:
@@ -100,11 +100,14 @@ class Report:
                 del data["test_patch"]
 
                 prediction = Prediction(**data)
+                if prediction["instance_id"] in predictions.keys():
+                    print(f"WARNING Duplicate prediction: {prediction['instance_id']} in {self.predictions_file}")
                 predictions[prediction["instance_id"]] = prediction
         print(f"Loaded {len(predictions)} predictions")
 
-        # Load EvaluationReport
         evaluation_reports: dict[str, EvaluationReport] = {}
+        submitted_count = 0
+        resolved_count = 0
         for root, dirs, files in os.walk(self.evaluation_logs_dir):
             for file in files:
                 if file == "report.json":
@@ -119,6 +122,13 @@ class Report:
                         data_item["instance_id"] = key
                         assert "instance_id" in data_item
                         report = EvaluationReport(**data_item)
+                        if report["instance_id"] in evaluation_reports.keys():
+                            print(f"WARNING Duplicate evaluation report: {report['instance_id']} in {root}/{file}")
+
+                        submitted_count += 1
+                        if report["resolved"]:
+                            resolved_count += 1
+
                         evaluation_reports[report["instance_id"]] = report
         print(f"Loaded {len(evaluation_reports)} evaluations")
 
@@ -135,7 +145,9 @@ class Report:
         difference_ids = set(instance_ids) - intersection_ids
         if difference_ids:
             print(f"Instance IDs in one file but not the others: {" ".join(difference_ids)}")
-        print(f"Reporting on {len(intersection_ids)} instances")
+            print(f"Solutions do not contain the following instance ids: {set(solutions.keys()) - set(intersection_ids)}")
+            print(f"Predictions do not contain the following instance ids: {set(predictions.keys()) - set(intersection_ids)}")
+            print(f"Evaluations do not contain the following instance ids: {set(evaluation_reports.keys()) - set(intersection_ids)}")
 
         instance_ids.sort()
         combined_data: list[dict] = []
@@ -154,6 +166,11 @@ class Report:
             row.update(prediction)
             row.update(evaluation_report)
             combined_data.append(row)
+
+        # Print abbreviated results
+        print(f"Total instances:     {len(predictions)}")
+        print(f"Instances submitted: {submitted_count}")
+        print(f"Instances resolved:  {resolved_count}")
 
         report_file = Path("report.csv")
         with report_file.open("w") as f:

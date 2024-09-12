@@ -43,18 +43,22 @@ class RunTest:
         self,
         log,
         work_dir: Path,
-        repo: str,
-        version: str,
         test_spec: TestSpec,
         timeout=DEFAULT_TIMEOUT,
     ):
         self.log = log
         self.work_dir = work_dir
         self.timeout = timeout
-        self.repo = repo
-        self.version = version
         self.test_spec = test_spec
         self.code_patches = []
+
+    @property
+    def repo(self):
+        return self.test_spec.repo
+
+    @property
+    def version(self):
+        return self.test_spec.version
 
     def run(
         self, docker_client: docker.DockerClient, test_patch: Patch

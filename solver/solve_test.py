@@ -3,6 +3,7 @@ from os import chdir
 from pathlib import Path
 import sys
 import docker
+from solver.workflow.validate_test import validate_test
 from tree_sitter import Language, Parser
 
 from solver.appmap.appmap import AppMap
@@ -135,12 +136,16 @@ def main(
         logger_fn, navie_work_dir.path, docker_client, instance, limits_obj
     )
 
+    def validate(work_dir: WorkDir, path: Path) -> bool:
+        return validate_test(logger_fn, work_dir.path, docker_client, test_spec, path)
+
     edit_test_files = choose_test_files(
         logger_fn,
         navie_work_dir,
         workflow.trajectory_file,
         workflow.issue_text,
         limits_obj.test_files_limit,
+        validate,
     )
     if not edit_test_files:
         print("[solve_test] No test files to edit.")
@@ -174,12 +179,12 @@ def main(
 
     optimal_patches = [patch for patch in patches if is_optimal_test_patch(patch)]
     if optimal_patches:
-        print(f"[solve_test] Generated optimal test patch:")
+        print("[solve_test] Generated optimal test patch:")
         for patch in optimal_patches:
             print_patch(patch)
         return
 
-    print(f"[solve_test] Generated sub-optimal test patch:")
+    print("[solve_test] Generated sub-optimal test patch:")
 
     patches.sort(key=patch_score, reverse=True)
     patch = patches[0]
