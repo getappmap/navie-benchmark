@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import shutil
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 
 import docker
 
@@ -42,9 +42,9 @@ def apply_limits(args) -> None:
         del args.limit
 
 
-def build_limits(limits: dict) -> WorkflowLimits:
+def build_limits(instance_id: str, limits: dict) -> WorkflowLimits:
     limits_obj = WorkflowLimits.from_dict(limits)
-    print(f"Using limits: {limits_obj}")
+    print(f"[solve] ({instance_id}) Using limits: {limits_obj}")
     return limits_obj
 
 
@@ -111,16 +111,31 @@ def build_work_dir(instance_id) -> Path:
     return work_dir
 
 
-def build_logger(work_dir: Path, instance_id: str) -> Callable[[str, str], None]:
+LEVELS = ["debug", "info"]
+
+
+def build_logger(work_dir: Path, instance_id: str) -> Callable[..., None]:
     log_dir = work_dir / "logs" / "plan" / instance_id
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = work_dir / "logs" / "solve.log"
     logger = setup_logger(instance_id, log_file)
 
-    def logger_fn(facility, msg):
-        message = f"[{facility}] ({instance_id}) {msg}"
-        print(message)
-        logger.info(message)
+    def logger_fn(level_or_facility: str, facility_or_message: str, *args: str):
+        if level_or_facility in LEVELS:
+            level = level_or_facility
+            facility = facility_or_message
+            messages = args
+        else:
+            level = "debug"
+            facility = level_or_facility
+            messages = [facility_or_message] + list(args)
+
+        message = f"[{facility}] ({instance_id}) " + " ".join(messages)
+        if level == "info":
+            print(message)
+            logger.info(message)
+        else:
+            logger.debug(message)
 
     return logger_fn
 

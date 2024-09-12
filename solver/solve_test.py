@@ -111,7 +111,7 @@ def main(
     docker_client = docker.from_env()
     work_dir = build_work_dir(instance_id)
     logger_fn = build_logger(work_dir, instance_id)
-    limits_obj = build_limits(limits)
+    limits_obj = build_limits(instance_id, limits)
     dataset = load_dataset(DATASET_NAME, [instance_id])
 
     instance = dataset[0]

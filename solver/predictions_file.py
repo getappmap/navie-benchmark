@@ -4,6 +4,14 @@ from typing import Callable, Optional
 
 
 class PredictionsFile:
+    """
+    A class to manage predictions files for a given instance set, number of runners, and runner index.
+    Generates a predictions file name based on the instance set, number of runners, and runner index.
+    This is designed to be used in a multi-runner environment where each runner writes predictions to a
+    named file, then all the files are collected together onto a single instance and combined via
+    concatenation.
+    """
+
     def __init__(
         self,
         log: Callable[[str, str], None],
@@ -34,11 +42,19 @@ class PredictionsFile:
                 f"Renamed existing predictions file from {self.predictions_path} to {new_predictions_path}",
             )
 
-    def write_predictions(self, predictions) -> None:
+    def write_predictions(self, predictions: str) -> None:
+        """
+        Write predictions to the predictions file. The predictions are an opaque string that is
+        appended to the file.
+        """
         with self.predictions_path.open("a") as f:
             f.write(predictions)
 
     def read_predictions(self) -> Optional[str]:
+        """
+        Read predictions from the predictions file. The predictions are not interpreted,
+        they are returned as a string.
+        """
         if not self.predictions_path.exists():
             return None
 
@@ -46,6 +62,11 @@ class PredictionsFile:
             return f.read()
 
     def collect_predictions(self, path: Path) -> Optional[str]:
+        """
+        Collect predictions from the predictions file and write them to the given path.
+        Calling this method across multiple runners will concatenate the predictions from each runner
+        into a single target file.
+        """
         predictions = self.read_predictions()
         if predictions:
             with path.open("a") as f:

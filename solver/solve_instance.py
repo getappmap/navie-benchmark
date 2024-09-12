@@ -47,6 +47,7 @@ from solver.checkout_code import checkout_code
 
 
 def report_solution(
+    log,
     navie_work_dir: Path,
     llm: str,
     predictions_file: str,
@@ -54,7 +55,7 @@ def report_solution(
     workflow: Workflow,
     solution: Solution,
 ):
-    print(f"[solve_instance] Solution for {instance['instance_id']}: {solution}")
+    log("info", "solve-instance", f"Solution for {instance['instance_id']}: {solution}")
     solution_attrs = solution_to_plain_types(solution)
     with open(navie_work_dir / "solution.json", "w") as f:
         f.write(dumps(solution_attrs, indent=2))
@@ -69,13 +70,14 @@ def report_solution(
 
 
 def report_error(
+    log,
     navie_work_dir: Path,
     llm: str,
     predictions_file: str,
     instance: SWEbenchInstance,
     e: Exception,
 ):
-    print(f"[solve_instance] Error solving {instance["instance_id"]}: {e}")
+    log("info", "solve-instance", f"Error: {e}")
     import traceback
 
     traceback.print_exc()
@@ -105,7 +107,7 @@ def main(
     docker_log_file = work_dir / "docker.log"
     docker_logger = setup_logger(instance_id, docker_log_file)
     logger_fn = build_logger(work_dir, instance_id)
-    limits_obj = build_limits(limits)
+    limits_obj = build_limits(instance_id, limits)
     dataset = load_dataset(DATASET_NAME, [instance_id])
     instance: SWEbenchInstance = dataset[0]
     assert predictions_file
@@ -121,7 +123,7 @@ def main(
             "Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is set; what LLM are we using?"
         )
     assert llm
-    print(f"Using LLM: {llm}")
+    logger_fn("solve-instance", f"Using LLM: {llm}")
 
     instance_id = instance["instance_id"]
 
@@ -172,6 +174,7 @@ def main(
 
         solution = solution_listener.build_solution()
         report_solution(
+            logger_fn,
             navie_work_dir,
             llm,
             predictions_file,
@@ -181,6 +184,7 @@ def main(
         )
     except Exception as e:
         report_error(
+            logger_fn,
             navie_work_dir,
             llm,
             predictions_file,
@@ -190,7 +194,7 @@ def main(
     finally:
         # Remove instance container + image, close logger
         if container:
-            print(f"[solve_instance] Cleaning up container {container.id}")
+            logger_fn("info", "solve-instance", f"Cleaning up container {container.id}")
             cleanup_container(docker_client, container, docker_logger)
 
     return
