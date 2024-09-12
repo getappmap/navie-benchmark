@@ -63,6 +63,7 @@ class TestSolveListenerTestCase:
         solution_attrs = solution_to_plain_types(solution)
         assert solution_attrs == {
             "instance_id": "django__django-11095",
+            "edit_test_file": None,
             "code_patch": None,
             "test_patch": None,
             "test_inverted_patch": None,
@@ -109,6 +110,7 @@ class TestSolveListenerTestCase:
         solution_attrs = solution_to_plain_types(solution)
         assert solution_attrs == {
             "instance_id": "django__django-11095",
+            "edit_test_file": "edit_test_file.py",
             "code_patch": CODE_PATCH,
             "test_patch": TEST_PATCH,
             "test_inverted_patch": None,

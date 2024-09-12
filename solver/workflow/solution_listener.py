@@ -75,6 +75,7 @@ class SolutionListener(SolveListener):
 
         return Solution(
             instance_id=self.instance_id,
+            edit_test_file=self.edit_test_file,
             code_patch=self.code_patch,
             test_patch=self.test_patch,
             test_inverted_patch=self.test_inverted_patch,
