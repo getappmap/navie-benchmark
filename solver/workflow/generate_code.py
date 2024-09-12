@@ -47,9 +47,10 @@ class GenerateCode:
             plan.append(
                 f"""## Preventing linter errors
                 
-Ensure that the following lint errors do not occur:
+Generate code that avoids the following linter errors. For example, add 
+imports if they are needed.
 
-<lint-errors>                        
+<lint-errors>
 {lint_errors_str}
 </lint-errors>
 """
@@ -60,7 +61,7 @@ Ensure that the following lint errors do not occur:
             plan.append(
                 f"""## Preventing test errors
 
-Ensure that the following test errors do not occur:
+Generate code that avoids the following test errors:
 
 <test-errors>
 {test_errors_str}
@@ -78,6 +79,17 @@ Ensure that the following test errors do not occur:
 Do not use Python features that are not available in this Python version.
 
 {self.python_version}
+"""
+        ]
+
+        plan += [
+            """## Files to modify
+
+Confine your changes to the files that are explictly mentioned in the plan.
+
+## No testing advice
+
+No testing suggestions or code changes are needed. These will be handled in a separate step.
 """
         ]
 
