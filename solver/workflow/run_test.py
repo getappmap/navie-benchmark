@@ -1,6 +1,6 @@
 from os import path
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 import docker
 
@@ -38,6 +38,32 @@ class RunTestResult:
 DEFAULT_TIMEOUT = 120
 
 
+# Pytest test output is full of many statements that don't actually relate to the test itself,
+# because the test is testing the behavior of pytest itself.
+#
+# Read backwards from the end of the test_output file looking for the following line:
+#
+# =========================== short test summary info ============================
+#
+# Pass only the content on that line and after it.
+def pytest_test_output(log, test_output: str) -> str:
+    lines = test_output.split("\n")
+    for i, line in enumerate(reversed(lines)):
+        if "short test summary info" in line:
+            return "".join(lines[-i:])
+
+    log(
+        "run-test",
+        f"Could not find 'short test summary info' in pytest output: {test_output}",
+    )
+    return test_output
+
+
+TEST_OUTPUT_PARSERS: dict[str, Callable] = {
+    "pytest": pytest_test_output,
+}
+
+
 class RunTest:
     def __init__(
         self,
@@ -71,7 +97,13 @@ class RunTest:
                 "run-test",
                 f"Log file {log_file} already exists, using cached data. Will assume that the test exit code is 0.",
             )
+
             test_output = read_test_output(self.log, self.work_dir)
+            if self.test_spec.repo in TEST_OUTPUT_PARSERS:
+                test_output = TEST_OUTPUT_PARSERS[self.test_spec.repo](
+                    self.log, test_output
+                )
+
             test_status = parse_test_status(self.log, self.test_spec.repo, test_output)
             return RunTestResult(test_status, test_output, True)
 
