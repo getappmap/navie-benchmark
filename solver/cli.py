@@ -118,8 +118,6 @@ LEVELS = ["debug", "info"]
 
 
 def build_logger(work_dir: Path, instance_id: str) -> Callable[..., None]:
-    log_dir = work_dir / "logs" / "plan" / instance_id
-    log_dir.mkdir(parents=True, exist_ok=True)
     log_file = work_dir / "logs" / "solve.log"
     logger = setup_logger(instance_id, log_file)
 
