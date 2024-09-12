@@ -80,7 +80,13 @@ def parse_test_status(log, repo: str, test_output: Optional[str]) -> TestStatus:
 
     test_status_dict: dict[str, str] = {}
     if test_output:
-        test_status_dict.update(log_parser(test_output))
+        try:
+            parsed_status = log_parser(test_output)
+            if parsed_status:
+                test_status_dict.update(parsed_status)
+        except Exception as e:
+            log("parse-test-status", f"Failed to parse test status: {e}")
+            log("parse-test-status", f"Test output: {test_output}")
 
     # If the test status is not found, assume that the test was not run due to a setup error.
     if test_status_dict:
