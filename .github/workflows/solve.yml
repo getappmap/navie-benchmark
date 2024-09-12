@@ -205,7 +205,9 @@ jobs:
 
           # If context_tokens is not empty, prepend it to the limits variable
           if [ -n "${context_tokens}" ]; then
-            limits="--context_tokens ${context_tokens} ${limits}"
+            # Clear limits if it's "default"
+            [ "${limits}" == "default" ] && limits=""
+            limits="context_tokens=${context_tokens} ${limits}"
           fi
 
           python -m solver.prepare_images \

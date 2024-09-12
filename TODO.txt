@@ -1,5 +1,9 @@
 * Summarize the root cause of test errors before feeding them back in
 
+* Sonnet - truncated output
+
+    solve/django__django-14034/navie/generate-code/attempt-1/code-1/generate/generate.md
+
 * Investigate low pass-to-pass in
     
     https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=1490242111#gid=1490242111
@@ -158,21 +162,6 @@ HEAD is now at 48212eb Baseline commit
     Failed to parse JSON
     SyntaxError: Unexpected token H in JSON at position 0
 
-* I don't think retry is really happening here 
-
-Stack trace: Error: Failed to complete: Connection error.
-    at AnthropicCompletionService.complete_1 (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:185:23)
-    at complete_1.throw (<anonymous>)
-    at resume (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:24:44)
-    at reject (/home/runner/work/navie-benchmark/navie-benchmark/submodules/appmap-js/packages/navie/dist/services/anthropic-completion-service.js:27:30)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-HEAD is now at af0fd53 Baseline commit
-HEAD is now at af0fd53 Baseline commit
-HEAD is now at af0fd53 Baseline commit
-
-Connection error on attempt 0.
-Retrying in 10 seconds...
-
 * No test status detected
 
 https://github.com/getappmap/navie-benchmark/actions/runs/10761576039/job/29840927112#step:7:5213
@@ -198,8 +187,6 @@ https://github.com/getappmap/navie-benchmark/actions/runs/10761576039/job/298409
 * Score the patch based on passing all the pass_to_pass tests?
 
 * Test - if test fails, feedback patch and test failure back into the generator?
-
-* Test - Utilize bigger context?
 
 * Generates the same bad patch on both run_test
   
