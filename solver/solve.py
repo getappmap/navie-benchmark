@@ -4,6 +4,10 @@ from pathlib import Path
 from subprocess import run
 import sys
 from typing import Optional
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed as futures_as_completed,
+)
 
 import docker
 
@@ -13,6 +17,7 @@ sys.path.append(
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from swebench.harness.test_spec import make_test_spec
+from swebench.harness.constants import SWEbenchInstance
 
 from solver.harness.image_store import ImageStore
 from solver.predictions_file import PredictionsFile
@@ -34,6 +39,7 @@ def main(
     clean_work_dir: bool,
     clean_navie: bool,
     limit: list,
+    concurrency: int,
     num_runners: Optional[int] = None,
     runner_index: Optional[int] = None,
 ):
@@ -73,6 +79,7 @@ def main(
 
     def log_fn(context, msg):
         print(f"[{context}] {msg}")
+        sys.stdout.flush()
 
     predictions_manager = PredictionsFile(
         log_fn,
@@ -84,16 +91,18 @@ def main(
     # TODO: Parallelize this
     # Make inferences
     solver_path = Path(__file__).parent / "solve_instance.py"
+    log_fn("solve", f"Solving with {concurrency} concurrent worker processes")
 
-    for instance in dataset:
-        print(f"[solve] Running instance {instance['instance_id']}...")
+    def run_instance(index: int, instance: SWEbenchInstance):
+        instance_id = instance["instance_id"]
+        temp_prediction_path = f"{predictions_manager.predictions_path}.{index}"
         solve_args = [
             "python",
             str(solver_path),
             "--instance_id",
-            instance["instance_id"],
+            instance_id,
             "--predictions",
-            str(predictions_manager.predictions_path),
+            temp_prediction_path,
         ]
         if clean_work_dir:
             solve_args.append("--clean_work_dir")
@@ -103,13 +112,35 @@ def main(
             solve_args.append("--limit")
             solve_args.extend(limit)
 
-        print(f"[solve] Running: {' '.join(solve_args)}")
+        print(f"[solve] ({instance_id}) {' '.join(solve_args)}")
 
         # Run this as a separate process so that it can change the working directory.
         solve_result = run(solve_args)
 
         if solve_result.returncode != 0:
-            print(f"[solve] Failed to run instance {instance['instance_id']}")
+            print(
+                f"[solve] ({instance_id}) Failed with exit code {solve_result.returncode}"
+            )
+
+        # Concatenate temp_predictions to predictions
+        with open(temp_prediction_path, "r") as temp_predictions_file:
+            predictions_manager.write_predictions(temp_predictions_file.read())
+
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+
+        def instances_with_index():
+            for index, instance in enumerate(dataset):
+                yield index, instance
+
+        futures = [
+            executor.submit(run_instance, index, instance)
+            for index, instance in instances_with_index()
+        ]
+        for future in futures_as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"[solve] Error: {e}")
 
     print("[solve] Writing predictions to predictions.jsonl")
     predictions_manager.collect_predictions(Path("predictions.jsonl"))
@@ -129,6 +160,12 @@ if __name__ == "__main__":
         "--instance_set",
         type=str,
         help="Instance set to run",
+    )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        help="Number of concurrent solver.solve_instance processes to run",
+        default=4,
     )
     configure_runner_index(parser)
     configure_clean_option(parser)

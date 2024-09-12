@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TypedDict, Optional
 
 from solver.workflow.patch import Patch
@@ -5,6 +6,7 @@ from solver.workflow.patch import Patch
 
 class Solution(TypedDict):
     instance_id: str
+    edit_test_file: Optional[Path]
     code_patch: Optional[Patch]
     test_patch: Optional[Patch]
     test_inverted_patch: Optional[Patch]

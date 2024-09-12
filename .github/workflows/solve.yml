@@ -8,8 +8,9 @@ on:
         type: choice
         required: true
         options:
-          - gpt-4o
-          - claude-3.5
+          - gpt-4o-2024-08-06
+          - gpt-4o-2024-05-13
+          - claude-3-5-sonnet-20240620
       instance_set:
         description: "Instance set to solve"
         type: string
@@ -19,12 +20,14 @@ on:
         required: true
         options:
           - default
-          - test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
-          - context_tokens=16000 test_files=2 test_lint_retry=2 test_status_retry=2 code_files=2 code_lint_retry=2 code_status_retry=2
-          - test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
-          - context_tokens=16000 test_files=3 test_lint_retry=2 test_status_retry=2 code_files=3 code_lint_retry=2 code_status_retry=2
           - test_files=3 test_lint_retry=3 test_status_retry=3 code_files=3 code_lint_retry=3 code_status_retry=3
-          - context_tokens=16000 test_files=3 test_lint_retry=3 test_status_retry=3 code_files=3 code_lint_retry=3 code_status_retry=3
+          - test_files=3 test_lint_retry=3 test_status_retry=6 code_files=3 code_lint_retry=3 code_status_retry=6
+          - test_files=3 test_lint_retry=3 test_status_retry=6 code_files=1 code_lint_retry=3 code_status_retry=1
+      context_tokens:
+        description: "LLM token limit to apply to the solver"
+        type: string
+        required: false
+        default: "8000"
       runner:
         description: "Runner type"
         required: true
@@ -62,6 +65,7 @@ jobs:
           echo "llm: ${{ github.event.inputs.llm }}"
           echo "instance_set: ${{ github.event.inputs.instance_set }}"
           echo "limits: ${{ github.event.inputs.limits }}"
+          echo "context_tokens: ${{ github.event.inputs.context_tokens }}"
           echo "runner: ${{ github.event.inputs.runner }}"
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
           echo "name: ${{ github.event.inputs.name }}"
@@ -130,6 +134,7 @@ jobs:
       NUM_RUNNERS: ${{ inputs.num_runners }}
       INSTANCE_SET: ${{ inputs.instance_set }}
       LIMITS: ${{ inputs.limits }}
+      CONTEXT_TOKENS: ${{ inputs.context_tokens }}
       LLM: ${{ inputs.llm }}
     defaults:
       run:
@@ -184,18 +189,24 @@ jobs:
           git config --global user.name "GitHub Workflow"
 
           llm="${LLM:-gpt-4o}"
-          if [[ $llm == "gpt-4o" ]]; then
-            export APPMAP_NAVIE_MODEL="gpt-4o-2024-08-06"
+          if [[ $llm == "gpt-4o"* ]]; then
+            export APPMAP_NAVIE_MODEL="${llm}"
             export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
-          elif [[ $llm == "claude-3.5" ]]; then
-            export APPMAP_NAVIE_MODEL="claude-3-5-sonnet-20240620"
+          elif [[ $llm == "claude"* ]]; then
+            export APPMAP_NAVIE_MODEL="${llm}"
             export ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
           fi
 
           instance_set="${INSTANCE_SET:-smoke}"
+          context_tokens="${CONTEXT_TOKENS:-}"
           limits="${LIMITS:-default}"
           num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
+
+          # If context_tokens is not empty, prepend it to the limits variable
+          if [ -n "${context_tokens}" ]; then
+            limits="--context_tokens ${context_tokens} ${limits}"
+          fi
 
           python -m solver.prepare_images \
             --instance_set "${instance_set}" \

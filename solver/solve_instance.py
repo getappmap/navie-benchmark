@@ -11,6 +11,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.workflow.patch import Patch
 from swebench.harness.docker_build import (
     build_container,
     setup_logger,
@@ -22,7 +23,6 @@ from swebench.harness.test_spec import make_test_spec
 from swebench.harness.constants import SWEbenchInstance
 
 from solver.prediction import Prediction
-from solver.workflow.workflow import Workflow
 from solver.workflow.solution_listener import (
     Solution,
     SolutionListener,
@@ -38,7 +38,8 @@ from solver.cli import (
     build_limits,
     build_logger,
     build_work_dir,
-    build_workflow,
+    build_solve_test,
+    build_solve_code,
     configure_clean_option,
     configure_limits,
     load_dataset,
@@ -47,35 +48,56 @@ from solver.checkout_code import checkout_code
 
 
 def report_solution(
+    log,
     navie_work_dir: Path,
     llm: str,
     predictions_file: str,
     instance: SWEbenchInstance,
-    workflow: Workflow,
     solution: Solution,
 ):
-    print(f"[solve_instance] Solution for {instance['instance_id']}: {solution}")
+    def solution_str(solution: Solution):
+        result = []
+        for k, v in solution.items():
+            value = v
+            if isinstance(v, Patch):
+                value = True if v else False
+
+            if value is None:
+                value = ""
+            result.append(f"  {k}: {value}")
+        return "\n".join(result)
+
+    def print_solution():
+        log(
+            "info",
+            "solve-instance",
+            f"Solution for {instance['instance_id']}:",
+        )
+        print(solution_str(solution))
+
+    print_solution()
     solution_attrs = solution_to_plain_types(solution)
     with open(navie_work_dir / "solution.json", "w") as f:
         f.write(dumps(solution_attrs, indent=2))
 
     predictions = Prediction.build_predictions(instance, llm)
-    predictions.add_prediction("model_patch", workflow.code_patch)
-    predictions.add_prediction("model_test_patch", workflow.test_patch)
-    predictions.add_prediction("model_inverted_patch", workflow.inverted_patch)
-    predictions.add_prediction("model_edit_test_file", workflow.edit_test_file)
+    predictions.add_prediction("model_patch", solution["code_patch"] or "")
+    predictions.add_prediction("model_test_patch", solution["test_patch"])
+    predictions.add_prediction("model_inverted_patch", solution["test_inverted_patch"])
+    predictions.add_prediction("model_edit_test_file", solution["edit_test_file"])
 
     PredictionsFile.add_prediction(predictions_file, predictions.as_dict())
 
 
 def report_error(
+    log,
     navie_work_dir: Path,
     llm: str,
     predictions_file: str,
     instance: SWEbenchInstance,
     e: Exception,
 ):
-    print(f"[solve_instance] Error solving {instance["instance_id"]}: {e}")
+    log("info", "solve-instance", f"Error: {e}")
     import traceback
 
     traceback.print_exc()
@@ -105,7 +127,7 @@ def main(
     docker_log_file = work_dir / "docker.log"
     docker_logger = setup_logger(instance_id, docker_log_file)
     logger_fn = build_logger(work_dir, instance_id)
-    limits_obj = build_limits(limits)
+    limits_obj = build_limits(instance_id, limits)
     dataset = load_dataset(DATASET_NAME, [instance_id])
     instance: SWEbenchInstance = dataset[0]
     assert predictions_file
@@ -121,7 +143,7 @@ def main(
             "Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is set; what LLM are we using?"
         )
     assert llm
-    print(f"Using LLM: {llm}")
+    logger_fn("solve-instance", f"Using LLM: {llm}")
 
     instance_id = instance["instance_id"]
 
@@ -138,7 +160,6 @@ def main(
     navie_work_dir = work_dir / "navie"
 
     container = None
-    workflow = None
     try:
         # Build + start instance container (instance image should already be built)
         container = build_container(
@@ -156,31 +177,47 @@ def main(
         logger_fn("solve", f"Changing directory to {source_dir}")
 
         solution_listener = SolutionListener(instance_id)
+        solution_listener.on_solve_start(navie_work_dir)
         chdir(source_dir)
         try:
-            workflow = build_workflow(
+            solve_test = build_solve_test(
                 logger_fn,
                 navie_work_dir,
                 docker_client,
                 instance,
                 limits_obj,
             )
-            workflow.solve_listeners.append(solution_listener)
-            workflow.run()
+            solve_test.solve_listeners.append(solution_listener)
+            solve_test.solve()
+
+            solve_code = build_solve_code(
+                logger_fn,
+                navie_work_dir,
+                docker_client,
+                instance,
+                limits_obj,
+                solve_test.edit_test_file,
+                solve_test.test_patch,
+                solve_test.inverted_patch,
+            )
+            solve_code.solve_listeners.append(solution_listener)
+            solve_code.solve()
         finally:
+            solution_listener.on_completed()
             chdir(pwd)
 
         solution = solution_listener.build_solution()
         report_solution(
+            logger_fn,
             navie_work_dir,
             llm,
             predictions_file,
             instance,
-            workflow,
             solution,
         )
     except Exception as e:
         report_error(
+            logger_fn,
             navie_work_dir,
             llm,
             predictions_file,
@@ -190,7 +227,7 @@ def main(
     finally:
         # Remove instance container + image, close logger
         if container:
-            print(f"[solve_instance] Cleaning up container {container.id}")
+            logger_fn("info", "solve-instance", f"Cleaning up container {container.id}")
             cleanup_container(docker_client, container, docker_logger)
 
     return

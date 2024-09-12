@@ -1,4 +1,14 @@
-* If there is no AppMap data, try process recording
+* Summarize the root cause of test errors before feeding them back in
+
+* Investigate low pass-to-pass in
+    
+    https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=1490242111#gid=1490242111
+
+* Run parallel workers during solve
+
+* If there is little or no AppMap data, supplement with Context
+
+    The test program may not be written in a pytest or unittest format
 
     /Users/kgilpin/Downloads/solve-0 (2)/pytest-dev__pytest-10051
 
@@ -26,48 +36,11 @@ index 0000000..d384c87
 +        raise AssertionError("Expected inconsistency between caplog.get_records and caplog.records after caplog.clear()")
 \ No newline at end of file
 
-
-* Notable for: Pass to Pass 92%
-
-https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
-
 * astropy__astropy-14365 missing 
 
   https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
 
 - [ ] Limit the size of AppMap derived context 
-
-* https://github.com/getappmap/navie-benchmark/actions/runs/10819249064/job/30016984592#step:7:328
-
-Initialized empty Git repository in /home/runner/work/navie-benchmark/navie-benchmark/solve/astropy__astropy-14365/source/.git/
-Traceback (most recent call last):
-  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/solve_instance.py", line 169, in main
-    workflow.run()
-  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 95, in run
-    edit_test_files = self.choose_test_files(
-                      ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 249, in choose_test_files
-    return choose_test_files(
-           ^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/choose_test_file.py", line 93, in choose_test_files
-    if validate(validation_dir, file):
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 241, in validate
-    return validate_test(
-           ^^^^^^^^^^^^^^
-  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/validate_test.py", line 28, in validate_test
-    run_test_result = run_test.run(docker_client, empty_patch(test_path))
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/run_test.py", line 146, in run
-    test_status = parse_test_status(self.log, self.test_spec.repo, test_output)
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/execute_container.py", line 83, in parse_test_status
-    test_status_dict.update(log_parser(test_output))
-                            ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/navie-benchmark/navie-benchmark/swebench/harness/log_parsers.py", line 158, in parse_log_pytest_v2
-    test_status_map[test_case[0]] = test_case[1]
-                                    ~~~~~~~~~^^^
-IndexError: list index out of range
 
 * Needs to be a limit on the amount of context selected for the edit test file
 
