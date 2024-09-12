@@ -133,14 +133,12 @@ class Report:
         print(f"Loaded {len(evaluation_reports)} evaluations")
 
         instance_ids = list(
-            set(solutions.keys())
-            | set(predictions.keys())
-            | set(evaluation_reports.keys())
+            set(predictions.keys())
+            | set(solutions.keys())
         )
         intersection_ids = (
             set(solutions.keys())
             & set(predictions.keys())
-            & set(evaluation_reports.keys())
         )
         difference_ids = set(instance_ids) - intersection_ids
         if difference_ids:
@@ -158,13 +156,13 @@ class Report:
 
             assert solution
             assert prediction
-            assert evaluation_report
 
             # Collect all data into one record
             row = {}
             row.update(solution)
             row.update(prediction)
-            row.update(evaluation_report)
+            if evaluation_report:
+                row.update(evaluation_report)
             combined_data.append(row)
 
         # Print abbreviated results

@@ -1,6 +1,12 @@
+* Investigate low pass-to-pass in
+    
+    https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=1490242111#gid=1490242111
+
 * Run parallel workers during solve
 
-* If there is no AppMap data, try process recording
+* If there is little or no AppMap data, supplement with Context
+
+    The test program may not be written in a pytest or unittest format
 
     /Users/kgilpin/Downloads/solve-0 (2)/pytest-dev__pytest-10051
 
@@ -27,11 +33,6 @@ index 0000000..d384c87
 +    else:
 +        raise AssertionError("Expected inconsistency between caplog.get_records and caplog.records after caplog.clear()")
 \ No newline at end of file
-
-
-* Notable for: Pass to Pass 92%
-
-https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
 
 * astropy__astropy-14365 missing 
 

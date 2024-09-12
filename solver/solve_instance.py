@@ -81,7 +81,7 @@ def report_solution(
         f.write(dumps(solution_attrs, indent=2))
 
     predictions = Prediction.build_predictions(instance, llm)
-    predictions.add_prediction("model_patch", solution["code_patch"])
+    predictions.add_prediction("model_patch", solution["code_patch"] or "")
     predictions.add_prediction("model_test_patch", solution["test_patch"])
     predictions.add_prediction("model_inverted_patch", solution["test_inverted_patch"])
     predictions.add_prediction("model_edit_test_file", solution["edit_test_file"])
