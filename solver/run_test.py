@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import sys
-from typing import List
+from typing import List, Optional
 import docker
 
 
@@ -10,6 +10,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.workflow.observe_test import ObserveTest
 from swebench.harness.test_spec import make_test_spec
 
 from solver.harness.image_store import ImageStore
@@ -23,7 +24,12 @@ from solver.workflow.patch import Patch
 from solver.workflow.run_test import RunTest
 
 
-def main(instance_id: str, test_patch: str, code_patch: str):
+def main(
+    instance_id: str,
+    test_patch: str,
+    code_patch: Optional[str],
+    observe: Optional[bool],
+):
     """
     Run evaluation harness for the given dataset and predictions.
     """
@@ -44,28 +50,37 @@ def main(instance_id: str, test_patch: str, code_patch: str):
 
     test_patch_path = Path(test_patch)
     if not test_patch_path.exists():
-        print(f"Patch file {test_patch} not found.")
-        sys.exit(1)
+        raise ValueError(f"Patch file {test_patch} not found.")
 
     test_patch_p = Patch.load_file(test_patch_path)
 
-    code_patches: List[Patch] = []
-    if code_patch:
-        code_patch_file = Path(code_patch)
-        if not code_patch_file.exists():
-            print(f"Patch file {code_patch} not found.")
-            sys.exit(1)
+    def observe_test():
+        run_test = ObserveTest(logger_fn, navie_work_dir, test_spec)
+        if code_patch:
+            raise ValueError("Cannot observe with code patch")
 
-        code_patch_p = Patch.load_file(code_patch_file)
-        code_patches.append(code_patch_p)
+        return run_test.run(docker_client, test_patch_p)
 
-    run_test = RunTest(logger_fn, navie_work_dir, test_spec)
-    if code_patches:
-        run_test.code_patches = code_patches
+    def run_test():
+        run_test = RunTest(logger_fn, navie_work_dir, test_spec)
 
-    run_test_result = run_test.run(docker_client, test_patch_p)
+        if code_patch:
+            code_patch_file = Path(code_patch)
+            if not code_patch_file.exists():
+                raise ValueError(f"Patch file {code_patch} not found.")
 
-    print(run_test_result)
+            code_patch_p = Patch.load_file(code_patch_file)
+            run_test.code_patches = [code_patch_p]
+
+        return run_test.run(docker_client, test_patch_p)
+
+    if observe:
+        runner = observe_test
+    else:
+        runner = run_test
+
+    result = runner()
+    print(result)
 
 
 if __name__ == "__main__":
@@ -78,6 +93,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--code_patch", type=str, help="File containing the code patch", required=False
+    )
+    parser.add_argument(
+        "--observe",
+        action="store_true",
+        help="Observe the test execution",
+        required=False,
     )
 
     args = parser.parse_args()
