@@ -560,7 +560,7 @@ Python version: {self.python_version}
                 )
                 return
 
-            subprocess.run(["git", "checkout", "."], check=True)
+            subprocess.run(["git", "checkout", "."], check=True, capture_output=True)
 
         lint_repair_result = lint_repair(
             self.log,
@@ -594,7 +594,7 @@ Python version: {self.python_version}
         )
 
         cmd = f"git reset --hard {first_commit_hash} && git clean -fdxq"
-        subprocess.run(cmd, shell=True, check=True)
+        subprocess.run(cmd, shell=True, check=True, capture_output=True)
 
         self.log("workflow", "Cleaned git state")
 

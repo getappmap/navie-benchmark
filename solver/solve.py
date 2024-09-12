@@ -79,6 +79,7 @@ def main(
 
     def log_fn(context, msg):
         print(f"[{context}] {msg}")
+        sys.stdout.flush()
 
     predictions_manager = PredictionsFile(
         log_fn,
@@ -90,6 +91,7 @@ def main(
     # TODO: Parallelize this
     # Make inferences
     solver_path = Path(__file__).parent / "solve_instance.py"
+    log_fn("solve", f"Solving with {concurrency} concurrent worker processes")
 
     def run_instance(index: int, instance: SWEbenchInstance):
         instance_id = instance["instance_id"]

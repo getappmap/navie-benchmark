@@ -1,3 +1,5 @@
+* Run parallel workers during solve
+
 * If there is no AppMap data, try process recording
 
     /Users/kgilpin/Downloads/solve-0 (2)/pytest-dev__pytest-10051
@@ -36,6 +38,38 @@ https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
   https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
 
 - [ ] Limit the size of AppMap derived context 
+
+Traceback (most recent call last):
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/solve_instance.py", line 171, in main
+    workflow.run()
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 95, in run
+    edit_test_files = self.choose_test_files(
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 249, in choose_test_files
+    return choose_test_files(
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/choose_test_file.py", line 101, in choose_test_files
+    if validate(validation_dir, file):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 241, in validate
+    return validate_test(
+           ^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/validate_test.py", line 28, in validate_test
+    run_test_result = run_test.run(docker_client, empty_patch(test_path))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/run_test.py", line 146, in run
+    test_status = parse_test_status(self.log, self.test_spec.repo, test_output)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/execute_container.py", line 83, in parse_test_status
+    test_status_dict.update(log_parser(test_output))
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/swebench/harness/log_parsers.py", line 158, in parse_log_pytest_v2
+    test_status_map[test_case[0]] = test_case[1]
+                                    ~~~~~~~~~^^^
+IndexError: list index out of range
+HEAD is now at 5d9332a Baseline commit
+[solve] (astropy__astropy-14365) Using limits: file=1, context_tokens=8000, test_files=3, code_files=3, test_lint_retry=3, test_status_retry=3, code_lint_retry=3, code_status_retry=3
+
 
 * https://github.com/getappmap/navie-benchmark/actions/runs/10819249064/job/30016984592#step:7:328
 

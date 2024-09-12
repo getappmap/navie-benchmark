@@ -11,6 +11,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.workflow.patch import Patch
 from swebench.harness.docker_build import (
     build_container,
     setup_logger,
@@ -55,7 +56,27 @@ def report_solution(
     workflow: Workflow,
     solution: Solution,
 ):
-    log("info", "solve-instance", f"Solution for {instance['instance_id']}: {solution}")
+    def solution_str(solution: Solution):
+        result = []
+        for k, v in solution.items():
+            value = v
+            if isinstance(v, Patch):
+                value = True if v else False
+
+            if value is None:
+                value = ""
+            result.append(f"  {k}: {value}")
+        return "\n".join(result)
+
+    def print_solution():
+        log(
+            "info",
+            "solve-instance",
+            f"Solution for {instance['instance_id']}:",
+        )
+        print(solution_str(solution))
+
+    print_solution()
     solution_attrs = solution_to_plain_types(solution)
     with open(navie_work_dir / "solution.json", "w") as f:
         f.write(dumps(solution_attrs, indent=2))

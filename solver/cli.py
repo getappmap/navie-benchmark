@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import shutil
+import sys
 from typing import Callable, List, Optional
 
 import docker
@@ -133,6 +134,7 @@ def build_logger(work_dir: Path, instance_id: str) -> Callable[..., None]:
         message = f"[{facility}] ({instance_id}) " + " ".join(messages)
         if level == "info":
             print(message)
+            sys.stdout.flush()
             logger.info(message)
         else:
             logger.debug(message)
