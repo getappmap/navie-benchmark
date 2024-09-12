@@ -330,6 +330,12 @@ jobs:
           . ./venv/bin/activate
           python -m solver.report
 
+      - name: Report solution.json files
+        uses: actions/upload-artifact@v4
+        with:
+          name: solutions
+          path: solve/**/solution.json
+
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
