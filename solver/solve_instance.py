@@ -1,8 +1,10 @@
 from argparse import ArgumentParser
-from json import dumps
+from json import dumps, load
+import json
 from os import chdir, getenv
 from pathlib import Path
 import sys
+from typing import Optional
 import docker
 
 
@@ -11,6 +13,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.workflow.generate_and_validate_test import TestPatchResult
 from solver.workflow.patch import Patch
 from swebench.harness.docker_build import (
     build_container,
@@ -159,6 +162,9 @@ def main(
     source_dir = work_dir / "source"
     navie_work_dir = work_dir / "navie"
 
+    solution_file = navie_work_dir / "solution.json"
+    solution_exists = solution_file.exists()
+
     container = None
     try:
         # Build + start instance container (instance image should already be built)
@@ -180,15 +186,68 @@ def main(
         solution_listener.on_solve_start(navie_work_dir)
         chdir(source_dir)
         try:
-            solve_test = build_solve_test(
-                logger_fn,
-                navie_work_dir,
-                docker_client,
-                instance,
-                limits_obj,
-            )
-            solve_test.solve_listeners.append(solution_listener)
-            solve_test.solve()
+
+            def load_solution() -> Optional[TestPatchResult]:
+                with open(solution_file) as f:
+                    solution = Solution(json.load(f))
+                    if solution.get("edit_test_file") and solution["edit_test_file"]:
+                        solution_listener.on_test_patch(
+                            solution["edit_test_file"],
+                            solution["test_patch"],
+                            solution["test_inverted_patch"],
+                        )
+                        return TestPatchResult(
+                            edit_test_file=solution["edit_test_file"],
+                            test_patch=solution["test_patch"],
+                            inverted_patch=solution["test_inverted_patch"],
+                        )
+
+            def solution_for_test() -> Optional[TestPatchResult]:
+                if solution_exists:
+                    logger_fn(
+                        "info",
+                        "solve",
+                        f"Loading test case solution from {solution_file}",
+                    )
+                    solution = load_solution()
+                    if solution:
+                        return solution
+                    else:
+                        logger_fn(
+                            "info",
+                            "solve",
+                            f"Solution file {solution_file} exists but is empty. Re-solving.",
+                        )
+
+                solver = build_solve_test(
+                    logger_fn,
+                    navie_work_dir,
+                    docker_client,
+                    instance,
+                    limits_obj,
+                )
+                solver.solve_listeners.append(solution_listener)
+                solver.solve()
+
+                if not solver.edit_test_file:
+                    return None
+
+                return TestPatchResult(
+                    edit_test_file=solver.edit_test_file,
+                    test_patch=solver.test_patch,
+                    inverted_patch=solver.inverted_patch,
+                )
+
+            test = solution_for_test()
+
+            if test:
+                edit_test_file = test["edit_test_file"]
+                test_patch = test["test_patch"]
+                inverted_patch = test["inverted_patch"]
+            else:
+                edit_test_file = None
+                test_patch = None
+                inverted_patch = None
 
             solve_code = build_solve_code(
                 logger_fn,
@@ -196,9 +255,9 @@ def main(
                 docker_client,
                 instance,
                 limits_obj,
-                solve_test.edit_test_file,
-                solve_test.test_patch,
-                solve_test.inverted_patch,
+                edit_test_file,
+                test_patch,
+                inverted_patch,
             )
             solve_code.solve_listeners.append(solution_listener)
             solve_code.solve()
