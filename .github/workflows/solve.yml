@@ -185,7 +185,7 @@ jobs:
 
           llm="${LLM:-gpt-4o}"
           if [[ $llm == "gpt-4o" ]]; then
-            export APPMAP_NAVIE_MODEL="gpt-4o"
+            export APPMAP_NAVIE_MODEL="gpt-4o-2024-08-06"
             export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
           elif [[ $llm == "claude-3.5" ]]; then
             export APPMAP_NAVIE_MODEL="claude-3-5-sonnet-20240620"
