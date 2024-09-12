@@ -226,9 +226,64 @@ path/to/test_1.py
 
         self.assertEqual(results, [Path("work/directory/test_file.py")])
 
+    @patch("solver.workflow.choose_test_file.Editor")
+    @patch("solver.workflow.choose_test_file.os.path.exists")
+    def test_remove_duplicates(self, exists_mock, Editor_mock):
+        exists_mock.return_value = True
+        editor_instance_mock = Editor_mock.return_value
+        editor_instance_mock.search.side_effect = [
+            "<!-- file: test_file1.py -->\n<!-- file: test_file2.py -->",
+            "<!-- file: test_file2.py -->\n<!-- file: test_file3.py -->",
+            "<!-- file: test_file1.py -->\n<!-- file: test_file4.py -->",
+        ]
 
-if __name__ == "__main__":
-    unittest.main()
+        not_test_files = set()
+        new_files = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            4,
+            not_test_files,
+            1,
+        )
+        self.assertEqual(new_files, [Path("test_file1.py"), Path("test_file2.py")])
+        self.assertEqual(not_test_files, {Path("test_file1.py"), Path("test_file2.py")})
+
+        new_files = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            4,
+            not_test_files,
+            2,
+        )
+        self.assertEqual(new_files, [Path("test_file3.py")])
+        self.assertEqual(
+            not_test_files,
+            {Path("test_file1.py"), Path("test_file2.py"), Path("test_file3.py")},
+        )
+
+        new_files = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            4,
+            not_test_files,
+            3,
+        )
+        self.assertEqual(new_files, [Path("test_file4.py")])
+        self.assertEqual(
+            not_test_files,
+            {
+                Path("test_file1.py"),
+                Path("test_file2.py"),
+                Path("test_file3.py"),
+                Path("test_file4.py"),
+            },
+        )
 
 
 class TestChooseTestFiles(unittest.TestCase):

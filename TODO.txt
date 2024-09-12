@@ -1,23 +1,83 @@
+* If there is no AppMap data, try process recording
+
+    /Users/kgilpin/Downloads/solve-0 (2)/pytest-dev__pytest-10051
+
+diff --git a/testing/test_caplog_consistency.py b/testing/test_caplog_consistency.py
+new file mode 100644
+index 0000000..d384c87
+--- /dev/null
++++ b/testing/test_caplog_consistency.py
+@@ -0,0 +1,16 @@
++import logging
++
++def test_caplog_get_records_and_clear_conflict(caplog) -> None:
++    def verify_consistency() -> None:
++        assert caplog.get_records("call") == caplog.records
++
++    verify_consistency()
++    logging.warning("test")
++    verify_consistency()
++    caplog.clear()
++    try:
++        verify_consistency()
++    except AssertionError:
++        pass  # Expected to fail due to the described issue
++    else:
++        raise AssertionError("Expected inconsistency between caplog.get_records and caplog.records after caplog.clear()")
+\ No newline at end of file
+
+
+* Notable for: Pass to Pass 92%
+
+https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
+
+* astropy__astropy-14365 missing 
+
+  https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
+
 - [ ] Limit the size of AppMap derived context 
+
+* https://github.com/getappmap/navie-benchmark/actions/runs/10819249064/job/30016984592#step:7:328
+
+Initialized empty Git repository in /home/runner/work/navie-benchmark/navie-benchmark/solve/astropy__astropy-14365/source/.git/
+Traceback (most recent call last):
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/solve_instance.py", line 169, in main
+    workflow.run()
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 95, in run
+    edit_test_files = self.choose_test_files(
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 249, in choose_test_files
+    return choose_test_files(
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/choose_test_file.py", line 93, in choose_test_files
+    if validate(validation_dir, file):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/workflow.py", line 241, in validate
+    return validate_test(
+           ^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/validate_test.py", line 28, in validate_test
+    run_test_result = run_test.run(docker_client, empty_patch(test_path))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/run_test.py", line 146, in run
+    test_status = parse_test_status(self.log, self.test_spec.repo, test_output)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/solver/workflow/execute_container.py", line 83, in parse_test_status
+    test_status_dict.update(log_parser(test_output))
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/navie-benchmark/navie-benchmark/swebench/harness/log_parsers.py", line 158, in parse_log_pytest_v2
+    test_status_map[test_case[0]] = test_case[1]
+                                    ~~~~~~~~~^^^
+IndexError: list index out of range
 
 * Needs to be a limit on the amount of context selected for the edit test file
 
   Select edit test file with the smallest AppMap data?
-
-* Require selected tests to be different
-
-  tests/template_tests/test_autoreloader.py
-  tests/template_tests/test_autoreloader.py
-  tests/template_tests/test_autoreloader.py
-
-* Ensure that edit_test_file PASSES before using it
 
 * Custom context should be "system" prompt rather than user code selection, at least to match the behavior of the frontend.
 
 * Verify that this test passes if the patch is reverted:
 
     solve/django__django-13658/navie/generate-code/attempt-1/run-test/test-patch/code_0.patch
-
 
 [workflow] (django__django-13658) Adapting test file: tests/admin_scripts/management/commands/base_command.py
 [test/lint-repair] (django__django-13658) Making attempt 1 to generate code that lints cleanly
@@ -54,18 +114,7 @@ HEAD is now at 48212eb Baseline commit
 [workflow] (django__django-13658) Patch file generated to /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/test.patch
 [workflow] (django__django-13658) Patch file generated to /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/test-inverted.patch
 
-* admin_scripts.management.commands.base_command
-
-    Verify that pass-to-pass passes before using it
-
-    A non-test as a baseline test?
-
-    It's in the tests folder, but it's a base class and has no tests.
-
-    /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-13658/navie/generate-code/attempt-1/run-test/pass-to-pass/run_test.sh
-
 * Repeatedly emitting the following:
-
 
     +class ManagementUtilityCommandParserFixTest(SimpleTestCase):
     +    def test_prog_name_from_argv(self):
@@ -79,8 +128,6 @@ HEAD is now at 48212eb Baseline commit
 * Feedback test errors into code generation
 
     TODO: Utilize the same logic with test generation?
-
-* We can get the Python version from the harness constants and remove the Environment detector.
 
 * Patch file matches, but no solution obtained
 

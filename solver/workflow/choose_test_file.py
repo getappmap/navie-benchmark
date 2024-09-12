@@ -60,13 +60,21 @@ Do not include line numbers or any location within the file. Just the file path.
     )
 
     files = extract_file_paths(tests_to_modify_str) or []
-    files = [file for file in files if file not in tests_previously_listed]
+
     if not files:
-        log("choose-test-file", f"Found no existing test files in {tests_to_modify_str}")
+        log(
+            "choose-test-file", f"Found no existing test files in {tests_to_modify_str}"
+        )
         return []
-    
-    log("choose-test-file", f"Found {len(files)} test files to modify on iteration {attempt}")
-    return files
+
+    new_files = []
+    for file in files:
+        if file not in tests_previously_listed:
+            tests_previously_listed.add(file)
+            new_files.append(file)
+
+    log("choose-test-file", f"Found {len(new_files)} new test files to modify on iteration {attempt}")
+    return new_files
 
 
 # Choose test case files that are most related to the issue.
