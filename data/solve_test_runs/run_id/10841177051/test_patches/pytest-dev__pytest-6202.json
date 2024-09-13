@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "testing/test_collection.py",
+  "test_patch": "diff --git a/testing/test_headline_issue.py b/testing/test_headline_issue.py\nnew file mode 100644\nindex 0000000..36481e0\n--- /dev/null\n+++ b/testing/test_headline_issue.py\n@@ -0,0 +1,17 @@\n+import pytest\n+\n+def test_headline_replacement_issue(testdir):\n+    \"\"\"Reproduce the issue where '.[' is replaced with '[' in the headline of the test report.\"\"\"\n+    testdir.makepyfile(\n+        \"\"\"\n+        import pytest\n+\n+        @pytest.mark.parametrize(\"a\",[\"..[\"])\n+        def test_boo(a):\n+            assert 0\n+        \"\"\"\n+    )\n+    result = testdir.runpytest()\n+    result.stdout.fnmatch_lines(\n+        [\"*test_boo[.[]*\"]\n+    )\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

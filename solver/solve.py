@@ -42,6 +42,7 @@ def main(
     concurrency: int,
     num_runners: Optional[int] = None,
     runner_index: Optional[int] = None,
+    test_patch_dir: Optional[str] = None,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -53,6 +54,7 @@ def main(
     if instance_set:
         instance_set_file = (
             Path(__file__).resolve().parents[1]
+            / "data"
             / "instance_sets"
             / f"{instance_set}.txt"
         )
@@ -111,6 +113,9 @@ def main(
         if limit:
             solve_args.append("--limit")
             solve_args.extend(limit)
+        if test_patch_dir:
+            solve_args.append("--test_patch_dir")
+            solve_args.append(test_patch_dir)
 
         print(f"[solve] ({instance_id}) {' '.join(solve_args)}")
 
@@ -167,6 +172,13 @@ if __name__ == "__main__":
         help="Number of concurrent solver.solve_instance processes to run",
         default=4,
     )
+    parser.add_argument(
+        "--test_patch_dir",
+        type=str,
+        help="Directory containing existing test patches. Existing test patches will not be re-solved, and will be used to seed the code solver.",
+        default="data/test_patches",
+    )
+
     configure_runner_index(parser)
     configure_clean_option(parser)
     configure_limits(parser)

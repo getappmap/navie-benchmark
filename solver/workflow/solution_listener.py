@@ -1,5 +1,5 @@
 import json
-from typing import Optional, List, cast
+from typing import Optional, List
 from pathlib import Path
 from time import time
 
@@ -11,15 +11,6 @@ from solver.workflow.solve_listener import (
     TestType,
 )
 from solver.workflow.patch import Patch
-
-
-def solution_to_plain_types(solution: Solution) -> dict:
-    # Convert all Patch and Path objects to strings
-    solution_attrs = solution.copy()
-    for key, value in solution_attrs.items():
-        if isinstance(value, (Patch, Path)):
-            solution_attrs[key] = str(value)
-    return cast(dict, solution_attrs)
 
 
 class SolutionListener(SolveListener):
@@ -97,7 +88,9 @@ class SolutionListener(SolveListener):
     @staticmethod
     def count_llm_chars(trajectory_file: Path) -> tuple[int, int]:
         if not trajectory_file.exists():
-            print(f"WARNING - Trajectory file {trajectory_file} does not exist.")
+            print(
+                f"WARNING - Trajectory file {trajectory_file} does not exist. Returning 0 for LLM stats 'num_sent_chars' and 'num_received_chars'."
+            )
             return (0, 0)
 
         num_sent_chars = 0

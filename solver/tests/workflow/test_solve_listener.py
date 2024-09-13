@@ -2,7 +2,8 @@ from typing import List
 from unittest.mock import patch
 import pytest
 from pathlib import Path
-from solver.workflow.solution_listener import SolutionListener, solution_to_plain_types
+from solver.workflow.solution_listener import SolutionListener
+from solver.workflow.convert_to_plain_types import convert_to_plain_types
 from solver.workflow.solve_listener import (
     PatchType,
     TestType,
@@ -60,7 +61,7 @@ class TestSolveListenerTestCase:
         self.listener.on_completed()
 
         solution = self.listener.build_solution()
-        solution_attrs = solution_to_plain_types(solution)
+        solution_attrs = convert_to_plain_types(solution)
         assert solution_attrs == {
             "instance_id": "django__django-11095",
             "edit_test_file": None,
@@ -107,7 +108,7 @@ class TestSolveListenerTestCase:
         self.listener.on_completed()
 
         solution = self.listener.build_solution()
-        solution_attrs = solution_to_plain_types(solution)
+        solution_attrs = convert_to_plain_types(solution)
         assert solution_attrs == {
             "instance_id": "django__django-11095",
             "edit_test_file": "edit_test_file.py",

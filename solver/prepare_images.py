@@ -36,6 +36,7 @@ def main(
     if instance_set:
         instance_set_file = (
             Path(__file__).resolve().parents[1]
+            / "data"
             / "instance_sets"
             / f"{instance_set}.txt"
         )

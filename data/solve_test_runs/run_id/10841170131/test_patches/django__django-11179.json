@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/one_to_one/tests.py",
+  "test_patch": "diff --git a/tests/one_to_one/test_model_deletion_without_dependencies.py b/tests/one_to_one/test_model_deletion_without_dependencies.py\nnew file mode 100644\nindex 0000000..9e97233\n--- /dev/null\n+++ b/tests/one_to_one/test_model_deletion_without_dependencies.py\n@@ -0,0 +1,13 @@\n+from django.test import TestCase\n+from .models import ManualPrimaryKey\n+\n+class TestModelDeletionWithoutDependencies(TestCase):\n+    def test_delete_clears_pk(self):\n+        # Create an instance of ManualPrimaryKey\n+        obj = ManualPrimaryKey.objects.create(primary_key='123', name='Test Object')\n+        \n+        # Delete the instance\n+        obj.delete()\n+        \n+        # Check if the primary key is set to None after deletion\n+        self.assertIsNone(obj.primary_key, \"Primary key should be None after deletion\")\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

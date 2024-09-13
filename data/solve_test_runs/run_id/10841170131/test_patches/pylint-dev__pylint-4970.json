@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/test_regr.py",
+  "test_patch": "diff --git a/tests/test_pylint_similarity_lines.py b/tests/test_pylint_similarity_lines.py\nnew file mode 100644\nindex 0000000..b8b732d\n--- /dev/null\n+++ b/tests/test_pylint_similarity_lines.py\n@@ -0,0 +1,16 @@\n+import pytest\n+from pylint.lint import PyLinter\n+from pylint.checkers.similar import SimilarChecker\n+from pylint.reporters import CollectingReporter\n+\n+def test_min_similarity_lines_zero():\n+    # Set up the linter with a configuration that sets min-similarity-lines to 0\n+    linter = PyLinter(reporter=CollectingReporter())\n+    linter.register_checker(SimilarChecker(linter))\n+    \n+    # Attempt to set the min-similarity-lines option to 0\n+    with pytest.raises(Exception) as excinfo:\n+        linter.set_option('min-similarity-lines', 0)\n+    \n+    # Assert that the exception is raised due to the issue\n+    assert \"no such option min-similarity-lines\" in str(excinfo.value)\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

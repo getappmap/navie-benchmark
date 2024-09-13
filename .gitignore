@@ -171,6 +171,7 @@ data/repos/copies
 notebooks/
 *logs/
 work/
+appmap.log
 
 # Solve
 solve

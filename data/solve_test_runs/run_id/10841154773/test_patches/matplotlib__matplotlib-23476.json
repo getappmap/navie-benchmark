@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "lib/matplotlib/tests/test_backend_macosx.py",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_dpi_unpickle_bug.py b/lib/matplotlib/tests/test_dpi_unpickle_bug.py\nnew file mode 100644\nindex 0000000..ec81a79\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_dpi_unpickle_bug.py\n@@ -0,0 +1,17 @@\n+import matplotlib.pyplot as plt\n+import pickle\n+import pytest\n+\n+@pytest.mark.skipif(not plt.get_backend().lower().startswith('macosx'), reason=\"Test only applicable for MacOSX backend\")\n+def test_dpi_doubling_on_unpickle():\n+    fig = plt.figure(dpi=200)\n+    initial_dpi = fig.dpi\n+\n+    for _ in range(22):\n+        with open('test_figure.pickle', 'wb') as file:\n+            pickle.dump(fig, file)\n+\n+        with open('test_figure.pickle', 'rb') as file:\n+            fig = pickle.load(file)\n+\n+        assert fig.dpi == initial_dpi, f\"Expected DPI: {initial_dpi}, but got: {fig.dpi}\"\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}
