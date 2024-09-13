@@ -113,9 +113,10 @@ Never use the @skipIf annotation.
 
 ## Test framework
 
-Use the following test command to run the test. 
+The user will use the following command to run the test. Try to design the test to be compatible
+with this command line:
 
-{self.test_command}
+    {self.test_command}
 
 Unless the test command explicitly loads and uses pytest, don't import pytest. 
 You may utilize the unittest module. You may also utilize imports that are already
