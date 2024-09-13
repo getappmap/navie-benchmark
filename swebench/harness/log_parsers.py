@@ -201,7 +201,7 @@ def parse_log_sympy(log: str) -> dict[str, str]:
         test_case = f"{match[1]}.py:{match[2]}"
         test_status_map[test_case] = TestStatus.FAILED.value
     for line in log.split("\n"):
-        line = line.strip()
+        line = re.sub(r"\[[^]]*\]$", "", line, flags=re.MULTILINE).strip()
         if line.startswith("test_"):
             if line.endswith(" E"):
                 test = line.split()[0]
