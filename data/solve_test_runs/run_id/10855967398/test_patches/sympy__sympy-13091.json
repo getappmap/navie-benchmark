@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/polys/tests/test_pythonrational.py",
+  "test_patch": "diff --git a/sympy/polys/tests/test_rich_comparison.py b/sympy/polys/tests/test_rich_comparison.py\nnew file mode 100644\nindex 0000000..ba0e621\n--- /dev/null\n+++ b/sympy/polys/tests/test_rich_comparison.py\n@@ -0,0 +1,19 @@\n+import sympy\n+from sympy import Basic\n+from sympy.utilities.pytest import raises\n+\n+class Foo:\n+    def __eq__(self, other):\n+        if isinstance(other, Basic):\n+            return True\n+        return NotImplemented\n+\n+def test_rich_comparison_with_foo():\n+    f = Foo()\n+    s = Basic()\n+\n+    # Test that f == s is True\n+    assert f == s\n+\n+    # Test that s == f is False due to the issue\n+    assert not (s == f)\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

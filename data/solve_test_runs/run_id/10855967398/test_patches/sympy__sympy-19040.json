@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/core/tests/test_exprtools.py",
+  "test_patch": "diff --git a/sympy/core/tests/test_factor_drop.py b/sympy/core/tests/test_factor_drop.py\nnew file mode 100644\nindex 0000000..7f1e6e6\n--- /dev/null\n+++ b/sympy/core/tests/test_factor_drop.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, expand, I, factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    assert factor(z, extension=[I]) == x - 1\n\\ No newline at end of file\n",
+  "inverted_patch": "diff --git a/sympy/core/tests/test_factor_drop_inverted.py b/sympy/core/tests/test_factor_drop_inverted.py\nnew file mode 100644\nindex 0000000..b366473\n--- /dev/null\n+++ b/sympy/core/tests/test_factor_drop_inverted.py\n@@ -0,0 +1,7 @@\n+from sympy import symbols, expand, I, factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    # The test should now fail if the factor of y-1 is dropped\n+    assert factor(z, extension=[I]) == (x - 1) * (y - 1), \"__BUG__HERE__\"\n\\ No newline at end of file\n"
+}
