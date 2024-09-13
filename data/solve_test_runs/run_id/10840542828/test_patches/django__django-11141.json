@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/decorators/tests.py",
+  "test_patch": "diff --git a/tests/decorators/test_migration_namespace_packages.py b/tests/decorators/test_migration_namespace_packages.py\nnew file mode 100644\nindex 0000000..7298413\n--- /dev/null\n+++ b/tests/decorators/test_migration_namespace_packages.py\n@@ -0,0 +1,15 @@\n+import os\n+import unittest\n+from django.core.management import call_command\n+from django.test import TestCase\n+from django.conf import settings\n+from django.apps import apps\n+\n+class TestMigrationsWithoutInit(TestCase):\n+    def test_migrate_command_with_namespace_package(self):\n+        # Attempt to run migrations on a namespace package\n+        # Expect an AttributeError due to missing __file__ attribute\n+        with self.assertRaises(AttributeError):\n+            test_migrations_dir = os.path.join(settings.BASE_DIR, 'test_migrations')\n+            apps.app_configs['test_app'].path = test_migrations_dir\n+            call_command('migrate', 'test_app')\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

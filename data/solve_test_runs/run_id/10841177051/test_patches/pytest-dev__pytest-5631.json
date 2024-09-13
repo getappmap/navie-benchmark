@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "testing/python/integration.py",
+  "test_patch": "diff --git a/testing/python/patch_array_valueerror_test.py b/testing/python/patch_array_valueerror_test.py\nnew file mode 100644\nindex 0000000..3578c96\n--- /dev/null\n+++ b/testing/python/patch_array_valueerror_test.py\n@@ -0,0 +1,14 @@\n+import unittest\n+from unittest.mock import patch\n+import pytest\n+\n+class TestPatchArrayValueError(unittest.TestCase):\n+    def test_patch_array_valueerror(self):\n+        np = pytest.importorskip(\"numpy\")\n+        \n+        with self.assertRaises(ValueError):\n+            @patch(target='XXXXXX', new=np.array([-5.5, 3.0]))\n+            def dummy_function():\n+                pass\n+\n+            dummy_function()\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

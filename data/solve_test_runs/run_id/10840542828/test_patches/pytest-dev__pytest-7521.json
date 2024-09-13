@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "testing/deprecated_test.py",
+  "test_patch": "diff --git a/testing/test_capfd_carriage_return.py b/testing/test_capfd_carriage_return.py\nnew file mode 100644\nindex 0000000..39703a6\n--- /dev/null\n+++ b/testing/test_capfd_carriage_return.py\n@@ -0,0 +1,6 @@\n+import pytest\n+\n+def test_capfd_includes_carriage_return(capfd):\n+    print('Greetings from DOS', end='\\r')\n+    out, err = capfd.readouterr()\n+    assert out.endswith('\\n')  # This assertion will pass if the issue is present\n\\ No newline at end of file\n",
+  "inverted_patch": "diff --git a/testing/test_capfd_carriage_return_inverted.py b/testing/test_capfd_carriage_return_inverted.py\nnew file mode 100644\nindex 0000000..d18f5d4\n--- /dev/null\n+++ b/testing/test_capfd_carriage_return_inverted.py\n@@ -0,0 +1,6 @@\n+import pytest\n+\n+def test_capfd_includes_carriage_return(capfd):\n+    print('Greetings from DOS', end='\\r')\n+    out, err = capfd.readouterr()\n+    assert out.endswith('\\r'), \"__BUG__HERE__\"\n\\ No newline at end of file\n"
+}

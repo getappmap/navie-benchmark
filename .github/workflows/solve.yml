@@ -20,9 +20,10 @@ on:
         required: true
         options:
           - default
-          - test_files=3 test_lint_retry=3 test_status_retry=3 code_files=3 code_lint_retry=3 code_status_retry=3
-          - test_files=3 test_lint_retry=3 test_status_retry=6 code_files=3 code_lint_retry=3 code_status_retry=6
-          - test_files=3 test_lint_retry=3 test_status_retry=6 code_files=1 code_lint_retry=3 code_status_retry=1
+          - test_files=3 test_lint_retry=3 test_status_retry=3 code_files=0
+          - test_files=3 test_lint_retry=3 test_status_retry=6 code_files=0
+          - test_files=0 code_files=3 code_lint_retry=3 code_status_retry=3
+          - test_files=0 code_files=3 code_lint_retry=3 code_status_retry=6
       context_tokens:
         description: "LLM token limit to apply to the solver"
         type: string
@@ -203,6 +204,13 @@ jobs:
           num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
 
+          # When running the smoke test with "default" limits, remove some of the precomputed test patches to be sure
+          # that the solver is actually solving the instances. This is used for testing the solver itself in CI.
+          if [ "${instance_set}" == "smoke" ] && [ "${limits}" == "default" ]; then
+            rm -f data/test_patches/pytest-dev__pytest-10051.json
+            rm -f data/test_patches/django__django-14559.json
+          fi
+
           # If context_tokens is not empty, prepend it to the limits variable
           if [ -n "${context_tokens}" ]; then
             # Clear limits if it's "default"
@@ -220,6 +228,8 @@ jobs:
             $( [ "${limits}" != "default" ] && echo "--limit ${limits}" ) \
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
+
+          touch predictions.jsonl
 
           python -m swebench.harness.run_evaluation \
             --predictions_path predictions.jsonl \
@@ -293,6 +303,7 @@ jobs:
           # ...
           # Create a solve directory and rsync the contents of each solve-* directory into it
           # solution.json files and other structured data that will be used by the report script is left as-is
+          # If artifacts dir exists
           mkdir -p solve
           for dir in artifacts/solve-*; do
             rsync -a $dir/ solve/
@@ -304,10 +315,14 @@ jobs:
           # artifacts/run_evaluation-0
           # artifacts/run_evaluation-0/...
           # Roughly mimic the run_evaluation directory structure, except don't worry about the model name or run_id
+
           mkdir -p logs/run_evaluation
-          for dir in artifacts/run_evaluation-*; do
-            rsync -a $dir/ logs/run_evaluation/
-          done
+          any_run_evaluation_dir=$(ls -d artifacts/run_evaluation-* | head -n 1)
+          if [ -n "${any_run_evaluation_dir}" ]; then
+            for dir in artifacts/run_evaluation-*; do
+              rsync -a $dir/ logs/run_evaluation/
+            done
+          fi
 
           # Artifacts dir contains files like this:
           # logs/solve/evaluations-1
@@ -315,7 +330,6 @@ jobs:
           # artifacts/evaluations-0
           # artifacts/evaluations-0/navie_082024+gpt-4o.smoke.json
           # These can be left as-is, because being JSON they need to be combined by the report script
-
 
           # Predictions are available:
           # artifacts/predictions-1
@@ -337,6 +351,12 @@ jobs:
         with:
           name: solutions
           path: solve/**/solution.json
+
+      - name: Report test_patch.json files
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-patch
+          path: solve/**/test_patch.json
 
       - name: Upload report
         uses: actions/upload-artifact@v4

@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "testing/test_setupplan.py",
+  "test_patch": "diff --git a/testing/test_fixture_privacy.py b/testing/test_fixture_privacy.py\nnew file mode 100644\nindex 0000000..f7a5e96\n--- /dev/null\n+++ b/testing/test_fixture_privacy.py\n@@ -0,0 +1,23 @@\n+from _pytest.pytester import Pytester\n+\n+def test_unittest_setUpClass_fixture_privacy(pytester: Pytester) -> None:\n+    testpath = pytester.makepyfile(\n+        \"\"\"\n+        import unittest\n+\n+        class Tests(unittest.TestCase):\n+            @classmethod\n+            def setUpClass(cls):\n+                pass\n+\n+            def test_1(self):\n+                pass\n+        \"\"\"\n+    )\n+    result = pytester.runpytest(\"--fixtures\")\n+    result.stdout.fnmatch_lines(\n+        [\n+            \"*unittest_setUpClass_fixture_Tests*\",\n+            \"*no docstring available*\",\n+        ]\n+    )\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}
