@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-20801",
+  "edit_test_file": "sympy/core/tests/test_equal.py",
+  "code_patch": "diff --git a/sympy/sets/handlers/comparison.py b/sympy/sets/handlers/comparison.py\nindex b64d1a2..7b684db 100644\n--- a/sympy/sets/handlers/comparison.py\n+++ b/sympy/sets/handlers/comparison.py\n@@ -45,6 +45,10 @@ def _eval_is_eq(lhs, rhs): # noqa: F811\n \n @dispatch(Set, Basic) # type:ignore\n def _eval_is_eq(lhs, rhs): # noqa: F811\n+    if lhs.is_Number and rhs.is_Boolean:\n+        return False\n+    if rhs.is_Number and lhs.is_Boolean:\n+        return False\n     return False\n \n \n",
+  "test_patch": "diff --git a/sympy/core/tests/test_cmp_float_bool.py b/sympy/core/tests/test_cmp_float_bool.py\nnew file mode 100644\nindex 0000000..b25b4ce\n--- /dev/null\n+++ b/sympy/core/tests/test_cmp_float_bool.py\n@@ -0,0 +1,6 @@\n+from sympy import S\n+\n+def test_cmp_float_bool_issue():\n+    # Reproduce the issue where S(0.0) == S.false returns True\n+    assert (S(0.0) == S.false) is True\n+    assert (S.false == S(0.0)) is False\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_cmp_float_bool_inverted.py b/sympy/core/tests/test_cmp_float_bool_inverted.py\nnew file mode 100644\nindex 0000000..75b37ba\n--- /dev/null\n+++ b/sympy/core/tests/test_cmp_float_bool_inverted.py\n@@ -0,0 +1,7 @@\n+from sympy import S\n+\n+def test_cmp_float_bool_issue():\n+    # Reproduce the issue where S(0.0) == S.false returns True\n+    # Alter the test to fail when the issue is observed\n+    assert (S(0.0) == S.false) is False, \"__BUG__HERE__\"\n+    assert (S.false == S(0.0)) is False\n\\ No newline at end of file\n",
+  "num_sent_chars": 1986768,
+  "num_received_chars": 81596,
+  "elapsed_time": 656.2141478061676,
+  "lint_repair_count": 14,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

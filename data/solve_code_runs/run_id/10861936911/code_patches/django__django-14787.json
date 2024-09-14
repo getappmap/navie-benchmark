@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14787",
+  "edit_test_file": "tests/decorators/tests.py",
+  "code_patch": "diff --git a/django/utils/decorators.py b/django/utils/decorators.py\nindex 5c9a5d0..9e62bd7 100644\n--- a/django/utils/decorators.py\n+++ b/django/utils/decorators.py\n@@ -33,11 +33,10 @@ def _multi_decorate(decorators, method):\n         decorators = [decorators]\n \n     def _wrapper(self, *args, **kwargs):\n-        # bound_method has the signature that 'decorator' expects i.e. no\n-        # 'self' argument, but it's a closure over self so it can call\n-        # 'func'. Also, wrap method.__get__() in a function because new\n-        # attributes can't be set on bound method objects, only on functions.\n-        bound_method = partial(method.__get__(self, type(self)))\n+        # Create a function to wrap the method and preserve its attributes.\n+        def bound_method(*args, **kwargs):\n+            return method.__get__(self, type(self))(*args, **kwargs)\n+        update_wrapper(bound_method, method)\n         for dec in decorators:\n             bound_method = dec(bound_method)\n         return bound_method(*args, **kwargs)\n",
+  "test_patch": "diff --git a/tests/decorators/test_preserve_wrapper_assignments.py b/tests/decorators/test_preserve_wrapper_assignments.py\nnew file mode 100644\nindex 0000000..7576a13\n--- /dev/null\n+++ b/tests/decorators/test_preserve_wrapper_assignments.py\n@@ -0,0 +1,28 @@\n+from functools import wraps\n+from unittest import TestCase\n+from django.utils.decorators import method_decorator\n+\n+def logger(func):\n+    @wraps(func)\n+    def inner(*args, **kwargs):\n+        try:\n+            result = func(*args, **kwargs)\n+        except Exception as e:\n+            result = str(e)\n+        finally:\n+            # Simulate logging\n+            print(f\"{func.__name__} called with args: {args} and kwargs: {kwargs} resulting: {result}\")\n+        return result\n+    return inner\n+\n+class PreserveWrapperAssignmentsTest(TestCase):\n+    def test_preserve_wrapper_assignments(self):\n+        class Test:\n+            @method_decorator(logger)\n+            def hello_world(self):\n+                return \"hello\"\n+\n+        with self.assertRaises(AttributeError) as context:\n+            Test().hello_world()\n+\n+        self.assertIn(\"'functools.partial' object has no attribute '__name__'\", str(context.exception))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/decorators/test_preserve_wrapper_assignments_inverted.py b/tests/decorators/test_preserve_wrapper_assignments_inverted.py\nnew file mode 100644\nindex 0000000..de90566\n--- /dev/null\n+++ b/tests/decorators/test_preserve_wrapper_assignments_inverted.py\n@@ -0,0 +1,28 @@\n+from functools import wraps\n+from unittest import TestCase\n+from django.utils.decorators import method_decorator\n+\n+def logger(func):\n+    @wraps(func)\n+    def inner(*args, **kwargs):\n+        try:\n+            result = func(*args, **kwargs)\n+        except Exception as e:\n+            result = str(e)\n+        finally:\n+            # Simulate logging\n+            print(f\"{func.__name__} called with args: {args} and kwargs: {kwargs} resulting: {result}\")\n+        return result\n+    return inner\n+\n+class PreserveWrapperAssignmentsTest(TestCase):\n+    def test_preserve_wrapper_assignments(self):\n+        class Test:\n+            @method_decorator(logger)\n+            def hello_world(self):\n+                return \"hello\"\n+\n+        try:\n+            Test().hello_world()\n+        except AttributeError as e:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 114264,
+  "num_received_chars": 6276,
+  "elapsed_time": 49.62392544746399,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 3045
+}

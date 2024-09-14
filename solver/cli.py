@@ -2,11 +2,10 @@ from argparse import ArgumentParser
 from pathlib import Path
 import shutil
 import sys
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
 import docker
 
-from solver.harness.python_version import python_version_for_test_spec
 from solver.workflow.solve_test import SolveTest
 from solver.workflow.patch import Patch
 from swebench.harness.constants import (
@@ -105,7 +104,7 @@ def load_dataset(dataset_name: str, instance_ids: list) -> list:
         instance_id_str = ", ".join(not_found_instance_ids)
         raise Exception(f"Instance ids not found in dataset: {instance_id_str}")
 
-    return dataset
+    return sort_dataset(dataset)
 
 
 def build_work_dir(instance_id) -> Path:
@@ -201,8 +200,16 @@ def configure_runner_index(parser: ArgumentParser) -> None:
     )
 
 
+def sort_dataset(dataset: list[SWEbenchInstance]) -> list[SWEbenchInstance]:
+    dataset_sorted = dataset.copy()
+    dataset_sorted.sort(
+        key=lambda instance: instance[KEY_INSTANCE_ID],
+    )
+    return dataset_sorted
+
+
 def select_instances_for_runner(
-    dataset: list,
+    dataset: list[SWEbenchInstance],
     num_runners: Optional[int],
     runner_index: Optional[int],
 ) -> list[SWEbenchInstance]:
@@ -211,6 +218,6 @@ def select_instances_for_runner(
 
     return [
         instance
-        for i, instance in enumerate(dataset)
+        for i, instance in enumerate(sort_dataset(dataset))
         if i % num_runners == runner_index
     ]

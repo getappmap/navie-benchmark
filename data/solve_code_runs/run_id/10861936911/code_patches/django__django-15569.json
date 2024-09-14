@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15569",
+  "edit_test_file": "tests/custom_lookups/tests.py",
+  "code_patch": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165..6917820 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -217,6 +217,7 @@ class RegisterLookupMixin:\n         if lookup_name is None:\n             lookup_name = lookup.lookup_name\n         del cls.class_lookups[lookup_name]\n+        cls._clear_cached_lookups()\n \n \n def select_related_descend(field, restricted, requested, load_fields, reverse=False):\n",
+  "test_patch": "diff --git a/tests/custom_lookups/test_unregister_lookup_cache.py b/tests/custom_lookups/test_unregister_lookup_cache.py\nnew file mode 100644\nindex 0000000..f8e6c58\n--- /dev/null\n+++ b/tests/custom_lookups/test_unregister_lookup_cache.py\n@@ -0,0 +1,19 @@\n+from django.db import models\n+from django.test import SimpleTestCase\n+from django.db.models.lookups import Lookup\n+\n+class Exactly(Lookup):\n+    lookup_name = 'exactly'\n+\n+    def as_sql(self, compiler, connection):\n+        lhs, lhs_params = self.process_lhs(compiler, connection)\n+        rhs, rhs_params = self.process_rhs(compiler, connection)\n+        params = lhs_params + rhs_params\n+        return '%s = %s' % (lhs, rhs), params\n+\n+class UnregisterLookupClearsCacheTests(SimpleTestCase):\n+    def test_unregister_lookup_clears_cache(self):\n+        models.IntegerField.register_lookup(Exactly)\n+        self.assertIn('exactly', models.IntegerField.get_lookups())\n+        models.IntegerField._unregister_lookup(Exactly)\n+        self.assertIn('exactly', models.IntegerField.get_lookups())  # This should fail if cache is not cleared\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/custom_lookups/test_unregister_lookup_cache_inverted.py b/tests/custom_lookups/test_unregister_lookup_cache_inverted.py\nnew file mode 100644\nindex 0000000..71cde08\n--- /dev/null\n+++ b/tests/custom_lookups/test_unregister_lookup_cache_inverted.py\n@@ -0,0 +1,21 @@\n+from django.db import models\n+from django.test import SimpleTestCase\n+from django.db.models.lookups import Lookup\n+\n+class Exactly(Lookup):\n+    lookup_name = 'exactly'\n+\n+    def as_sql(self, compiler, connection):\n+        lhs, lhs_params = self.process_lhs(compiler, connection)\n+        rhs, rhs_params = self.process_rhs(compiler, connection)\n+        params = lhs_params + rhs_params\n+        return '%s = %s' % (lhs, rhs), params\n+\n+class UnregisterLookupClearsCacheTests(SimpleTestCase):\n+    def test_unregister_lookup_clears_cache(self):\n+        models.IntegerField.register_lookup(Exactly)\n+        self.assertIn('exactly', models.IntegerField.get_lookups())\n+        models.IntegerField._unregister_lookup(Exactly)\n+        # This assertion should fail if the cache is not cleared, indicating the bug\n+        if 'exactly' in models.IntegerField.get_lookups():\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 276740,
+  "num_received_chars": 7037,
+  "elapsed_time": 62.81354856491089,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 116
+}

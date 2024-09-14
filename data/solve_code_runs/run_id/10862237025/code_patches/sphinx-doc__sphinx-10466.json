@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10466",
+  "edit_test_file": "tests/test_catalogs.py",
+  "code_patch": "diff --git a/sphinx/builders/gettext.py b/sphinx/builders/gettext.py\nindex e8bc547..b12b02c 100644\n--- a/sphinx/builders/gettext.py\n+++ b/sphinx/builders/gettext.py\n@@ -53,7 +53,9 @@ class Catalog:\n         if msg not in self.metadata:  # faster lookup in hash\n             self.messages.append(msg)\n             self.metadata[msg] = []\n-        self.metadata[msg].append((origin.source, origin.line, origin.uid))  # type: ignore\n+        location = (origin.source, origin.line, origin.uid)\n+        if location not in self.metadata[msg]:\n+            self.metadata[msg].append(location)  # type: ignore\n \n     def __iter__(self) -> Generator[Message, None, None]:\n         for message in self.messages:\n",
+  "test_patch": "diff --git a/tests/test_remove_duplicate_locations.py b/tests/test_remove_duplicate_locations.py\nnew file mode 100644\nindex 0000000..493aa3a\n--- /dev/null\n+++ b/tests/test_remove_duplicate_locations.py\n@@ -0,0 +1,25 @@\n+import unittest\n+from sphinx.builders.gettext import Message\n+\n+class TestDuplicateLocations(unittest.TestCase):\n+    def test_duplicate_locations(self):\n+        # Simulate the issue by creating a Message with duplicate locations\n+        text = \"Type\"\n+        locations = [\n+            (\"../../manual/modeling/hair.rst\", 0),\n+            (\"../../manual/modeling/hair.rst\", 0),\n+            (\"../../manual/modeling/hair.rst\", 0),\n+            (\"../../manual/physics/dynamic_paint/brush.rst\", 0),\n+            (\"../../manual/physics/dynamic_paint/brush.rst\", 0),\n+            (\"../../manual/physics/dynamic_paint/brush.rst\", 0),\n+        ]\n+        uuids = [\"uuid1\", \"uuid2\", \"uuid3\"]\n+\n+        message = Message(text, locations, uuids)\n+\n+        # Check if the locations contain duplicates\n+        self.assertNotEqual(len(message.locations), len(set(message.locations)),\n+                            \"Locations should contain duplicates to reproduce the issue.\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_remove_duplicate_locations_inverted.py b/tests/test_remove_duplicate_locations_inverted.py\nnew file mode 100644\nindex 0000000..eb5c3a4\n--- /dev/null\n+++ b/tests/test_remove_duplicate_locations_inverted.py\n@@ -0,0 +1,25 @@\n+import unittest\n+from sphinx.builders.gettext import Message\n+\n+class TestDuplicateLocations(unittest.TestCase):\n+    def test_duplicate_locations(self):\n+        # Simulate the issue by creating a Message with duplicate locations\n+        text = \"Type\"\n+        locations = [\n+            (\"../../manual/modeling/hair.rst\", 0),\n+            (\"../../manual/modeling/hair.rst\", 0),\n+            (\"../../manual/modeling/hair.rst\", 0),\n+            (\"../../manual/physics/dynamic_paint/brush.rst\", 0),\n+            (\"../../manual/physics/dynamic_paint/brush.rst\", 0),\n+            (\"../../manual/physics/dynamic_paint/brush.rst\", 0),\n+        ]\n+        uuids = [\"uuid1\", \"uuid2\", \"uuid3\"]\n+\n+        message = Message(text, locations, uuids)\n+\n+        # Check if the locations contain duplicates\n+        if len(message.locations) != len(set(message.locations)):\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1430209,
+  "num_received_chars": 69203,
+  "elapsed_time": 544.5900211334229,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": null
+}

@@ -1,13 +1,12 @@
 from argparse import ArgumentParser
-from http.client import HTTPMessage
 from json import load
 import json
 from os import getenv, readlink
 from pathlib import Path
 import shutil
 import sys
-from typing import Tuple
-import urllib.request
+
+from solver.github_artifacts import download_artifacts
 
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
@@ -25,24 +24,6 @@ from solver.workflow.solution import Solution
 
 OWNER = "getappmap"
 REPO = "navie-benchmark"
-
-
-def download_artifacts(target_dir: Path, run: github.WorkflowRun.WorkflowRun):
-    for artifact in run.get_artifacts():
-        print(f"Importing artifact {artifact.id} from run {run.id}")
-        download_url = artifact.archive_download_url
-        target_file = target_dir / f"{artifact.name}.zip"
-        status, headers, _ = run._requester.requestJson("GET", download_url)
-        if status == 302:
-            result: Tuple[str, HTTPMessage] = urllib.request.urlretrieve(
-                headers["location"], target_file
-            )
-        else:
-            result: Tuple[str, HTTPMessage] = urllib.request.urlretrieve(
-                download_url, target_file
-            )
-
-        print(f"  {result[0]} ({result[1].get('Content-Length')} bytes)")
 
 
 def import_workflow_run(run: github.WorkflowRun.WorkflowRun, no_download: bool = False):
@@ -120,10 +101,6 @@ def main(run_id: int, no_download: bool = False):
     run = repo.get_workflow_run(run_id)
     if not run:
         raise ValueError(f"Run {run_id} not found")
-
-    # TODO: Handle multiple run attempts. For now, just import the default one (the first one).
-    # Retries can be handled by manually downloading the artifacts into the data directory,
-    # then running this script with the --no_download flag.
 
     import_workflow_run(run, no_download)
 

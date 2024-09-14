@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14995",
+  "edit_test_file": "astropy/nddata/mixins/tests/test_ndslicing.py",
+  "code_patch": "diff --git a/astropy/nddata/mixins/ndarithmetic.py b/astropy/nddata/mixins/ndarithmetic.py\nindex 4153dfc..9dab2ea 100644\n--- a/astropy/nddata/mixins/ndarithmetic.py\n+++ b/astropy/nddata/mixins/ndarithmetic.py\n@@ -512,15 +512,10 @@ class NDArithmeticMixin:\n             If neither had a mask ``None`` is returned. Otherwise\n             ``handle_mask`` must create (and copy) the returned mask.\n         \"\"\"\n-        # If only one mask is present we need not bother about any type checks\n-        if (\n-            self.mask is None and operand is not None and operand.mask is None\n-        ) or handle_mask is None:\n-            return None\n-        elif self.mask is None and operand is not None:\n-            # Make a copy so there is no reference in the result.\n-            return deepcopy(operand.mask)\n-        elif operand is None:\n+        # If only one mask is present, return the non-None mask\n+        if self.mask is None:\n+            return deepcopy(operand.mask) if operand is not None else None\n+        elif operand is None or operand.mask is None:\n             return deepcopy(self.mask)\n         else:\n             # Now lets calculate the resulting mask (operation enforces copy)\n",
+  "test_patch": "diff --git a/astropy/nddata/mixins/tests/test_nddataref_mask_propagation.py b/astropy/nddata/mixins/tests/test_nddataref_mask_propagation.py\nnew file mode 100644\nindex 0000000..a17a484\n--- /dev/null\n+++ b/astropy/nddata/mixins/tests/test_nddataref_mask_propagation.py\n@@ -0,0 +1,18 @@\n+import numpy as np\n+import pytest\n+from astropy.nddata import NDDataRef\n+\n+def test_nddataref_mask_propagation():\n+    array = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])\n+    mask = np.array([[0, 1, 64], [8, 0, 1], [2, 1, 0]])\n+\n+    nref_nomask = NDDataRef(array)\n+    nref_mask = NDDataRef(array, mask=mask)\n+\n+    # Test multiplication of mask by constant (mask * no mask)\n+    with pytest.raises(TypeError, match=\"unsupported operand type(s) for |: 'int' and 'NoneType'\"):\n+        nref_mask.multiply(1., handle_mask=np.bitwise_or).mask\n+\n+    # Test multiplication of mask by no mask (mask * no mask)\n+    with pytest.raises(TypeError, match=\"unsupported operand type(s) for |: 'int' and 'NoneType'\"):\n+        nref_mask.multiply(nref_nomask, handle_mask=np.bitwise_or).mask\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/nddata/mixins/tests/test_nddataref_mask_propagation_inverted.py b/astropy/nddata/mixins/tests/test_nddataref_mask_propagation_inverted.py\nnew file mode 100644\nindex 0000000..8d415dc\n--- /dev/null\n+++ b/astropy/nddata/mixins/tests/test_nddataref_mask_propagation_inverted.py\n@@ -0,0 +1,18 @@\n+import numpy as np\n+import pytest\n+from astropy.nddata import NDDataRef\n+\n+def test_nddataref_mask_propagation():\n+    array = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])\n+    mask = np.array([[0, 1, 64], [8, 0, 1], [2, 1, 0]])\n+\n+    nref_nomask = NDDataRef(array)\n+    nref_mask = NDDataRef(array, mask=mask)\n+\n+    # Test multiplication of mask by constant (mask * no mask)\n+    with pytest.raises(TypeError, match=\"__BUG__HERE__\"):\n+        nref_mask.multiply(1., handle_mask=np.bitwise_or).mask\n+\n+    # Test multiplication of mask by no mask (mask * no mask)\n+    with pytest.raises(TypeError, match=\"__BUG__HERE__\"):\n+        nref_mask.multiply(nref_nomask, handle_mask=np.bitwise_or).mask\n\\ No newline at end of file\n",
+  "num_sent_chars": 1076980,
+  "num_received_chars": 77629,
+  "elapsed_time": 524.1320986747742,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

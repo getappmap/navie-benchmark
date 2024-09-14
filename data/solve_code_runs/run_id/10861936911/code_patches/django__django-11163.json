@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11163",
+  "edit_test_file": "tests/forms_tests/tests/tests.py",
+  "code_patch": "diff --git a/django/core/exceptions.py b/django/core/exceptions.py\nindex 0e85397..fca080b 100644\n--- a/django/core/exceptions.py\n+++ b/django/core/exceptions.py\n@@ -91,6 +91,21 @@ class FieldError(Exception):\n NON_FIELD_ERRORS = '__all__'\n \n \n+def model_to_dict(instance, fields=None, exclude=None):\n+    \"\"\"\n+    Convert a model instance to a dictionary, including only the specified fields.\n+    \"\"\"\n+    opts = instance._meta\n+    data = {}\n+    for f in opts.concrete_fields + opts.many_to_many:\n+        if fields is not None and f.name not in fields:\n+            continue\n+        if exclude and f.name in exclude:\n+            continue\n+        data[f.name] = f.value_from_object(instance)\n+    return data\n+\n+\n class ValidationError(Exception):\n     \"\"\"An error while validating data.\"\"\"\n     def __init__(self, message, code=None, params=None):\n",
+  "test_patch": "diff --git a/tests/forms_tests/tests/test_model_to_dict.py b/tests/forms_tests/tests/test_model_to_dict.py\nnew file mode 100644\nindex 0000000..7af3997\n--- /dev/null\n+++ b/tests/forms_tests/tests/test_model_to_dict.py\n@@ -0,0 +1,16 @@\n+from django.forms.models import model_to_dict\n+from django.test import TestCase\n+from ..models import ChoiceModel\n+\n+class ModelToDictTestCase(TestCase):\n+    def test_model_to_dict_empty_fields(self):\n+        \"\"\"\n+        Test that model_to_dict returns all fields when an empty list is provided for fields.\n+        This reproduces the issue where model_to_dict should return an empty dict.\n+        \"\"\"\n+        instance = ChoiceModel.objects.create(name='Test Choice', choice='A')\n+        result = model_to_dict(instance, fields=[])\n+        # The issue is that result should be {}, but it returns all fields instead.\n+        self.assertNotEqual(result, {})\n+        self.assertIn('name', result)\n+        self.assertIn('choice', result)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/forms_tests/tests/test_model_to_dict_inverted.py b/tests/forms_tests/tests/test_model_to_dict_inverted.py\nnew file mode 100644\nindex 0000000..91ee7ac\n--- /dev/null\n+++ b/tests/forms_tests/tests/test_model_to_dict_inverted.py\n@@ -0,0 +1,16 @@\n+from django.forms.models import model_to_dict\n+from django.test import TestCase\n+from ..models import ChoiceModel\n+\n+class ModelToDictTestCase(TestCase):\n+    def test_model_to_dict_empty_fields(self):\n+        \"\"\"\n+        Test that model_to_dict returns an empty dict when an empty list is provided for fields.\n+        This reproduces the issue where model_to_dict should return an empty dict.\n+        \"\"\"\n+        instance = ChoiceModel.objects.create(name='Test Choice', choice='A')\n+        result = model_to_dict(instance, fields=[])\n+        # The issue is that result should be {}, but it returns all fields instead.\n+        if result != {}:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(result, {})\n\\ No newline at end of file\n",
+  "num_sent_chars": 3077572,
+  "num_received_chars": 108384,
+  "elapsed_time": 1012.0002310276031,
+  "lint_repair_count": 34,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

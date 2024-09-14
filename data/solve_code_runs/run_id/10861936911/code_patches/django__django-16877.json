@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16877",
+  "edit_test_file": "tests/template_tests/filter_tests/test_safeseq.py",
+  "code_patch": "diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py\nindex 5289ef3..a5e7ad7 100644\n--- a/django/template/defaultfilters.py\n+++ b/django/template/defaultfilters.py\n@@ -17,6 +17,7 @@ from django.utils.encoding import iri_to_uri\n from django.utils.html import avoid_wrapping, conditional_escape, escape, escapejs\n from django.utils.html import json_script as _json_script\n from django.utils.html import linebreaks, strip_tags\n+from django.utils.safestring import mark_safe\n from django.utils.html import urlize as _urlize\n from django.utils.safestring import SafeData, mark_safe\n from django.utils.text import Truncator, normalize_newlines, phone2numeric\n@@ -510,6 +511,14 @@ def striptags(value):\n ###################\n \n \n+@register.filter(is_safe=True)\n+def escapeseq(value):\n+    \"\"\"\n+    Escape each element in a sequence.\n+    \"\"\"\n+    return [escape(str(item)) for item in value]\n+\n+\n def _property_resolver(arg):\n     \"\"\"\n     When arg is convertible to float, behave like operator.itemgetter(arg)\n",
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_escapeseq.py b/tests/template_tests/filter_tests/test_escapeseq.py\nnew file mode 100644\nindex 0000000..d8a2ca7\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_escapeseq.py\n@@ -0,0 +1,12 @@\n+from django.template import TemplateSyntaxError\n+from django.test import SimpleTestCase\n+from ..utils import setup\n+\n+class EscapeseqTests(SimpleTestCase):\n+    @setup({\"escapeseq01\": '{{ a|escapeseq|join:\",\" }}'})\n+    def test_escapeseq01(self):\n+        \"\"\"\n+        Test the escapeseq filter with a list containing special characters.\n+        \"\"\"\n+        with self.assertRaisesMessage(TemplateSyntaxError, \"Invalid filter: 'escapeseq'\"):\n+            self.engine.render_to_string(\"escapeseq01\", {\"a\": [\"&\", \"<\"]})\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_escapeseq_inverted.py b/tests/template_tests/filter_tests/test_escapeseq_inverted.py\nnew file mode 100644\nindex 0000000..e65efce\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_escapeseq_inverted.py\n@@ -0,0 +1,16 @@\n+from django.template import TemplateSyntaxError\n+from django.test import SimpleTestCase\n+from ..utils import setup\n+\n+class EscapeseqTests(SimpleTestCase):\n+    @setup({\"escapeseq01\": '{{ a|escapeseq|join:\",\" }}'})\n+    def test_escapeseq01(self):\n+        \"\"\"\n+        Test the escapeseq filter with a list containing special characters.\n+        \"\"\"\n+        # The test should now fail when the issue is observed.\n+        # We expect the TemplateSyntaxError to not be raised, indicating the bug.\n+        try:\n+            self.engine.render_to_string(\"escapeseq01\", {\"a\": [\"&\", \"<\"]})\n+        except TemplateSyntaxError:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 136815,
+  "num_received_chars": 4866,
+  "elapsed_time": 37.27035450935364,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 29611
+}

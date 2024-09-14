@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13449",
+  "edit_test_file": "tests/expressions_window/tests.py",
+  "code_patch": "diff --git a/django/db/models/functions/window.py b/django/db/models/functions/window.py\nindex 84b2b24..6c2cc23 100644\n--- a/django/db/models/functions/window.py\n+++ b/django/db/models/functions/window.py\n@@ -49,9 +49,18 @@ class LagLeadFunction(Func):\n         return sources[0].output_field\n \n \n+from django.db.models.functions import Cast\n+from django.db.models.fields import DecimalField\n+\n class Lag(LagLeadFunction):\n     function = 'LAG'\n \n+    def as_sql(self, compiler, connection, **extra_context):\n+        if isinstance(self.output_field, DecimalField):\n+            # Wrap the entire window function with a CAST to ensure compatibility with SQLite\n+            extra_context['template'] = 'CAST(%(function)s(%(expressions)s) OVER (%(window)s) AS NUMERIC)'\n+        return super().as_sql(compiler, connection, **extra_context)\n+\n \n class LastValue(Func):\n     arity = 1\n",
+  "test_patch": "diff --git a/tests/expressions_window/test_lag_decimalfield_sqlite_crash.py b/tests/expressions_window/test_lag_decimalfield_sqlite_crash.py\nnew file mode 100644\nindex 0000000..f140eae\n--- /dev/null\n+++ b/tests/expressions_window/test_lag_decimalfield_sqlite_crash.py\n@@ -0,0 +1,21 @@\n+from django.db import models, connection\n+from django.db.models import F, Window\n+from django.db.models.functions import Lag\n+from django.test import TestCase\n+\n+class LagTest(models.Model):\n+    modified = models.DateField()\n+    data = models.FloatField()\n+    amount = models.DecimalField(decimal_places=4, max_digits=7)\n+\n+class LagDecimalFieldSQLiteCrashTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        LagTest.objects.create(modified='2023-01-01', data=1.0, amount=1.2345)\n+        LagTest.objects.create(modified='2023-01-02', data=2.0, amount=2.3456)\n+\n+    def test_lag_decimalfield_crash(self):\n+        if connection.vendor == 'sqlite':\n+            with self.assertRaisesMessage(Exception, 'near \"OVER\": syntax error'):\n+                w = Window(expression=Lag('amount', 7), partition_by=[F('modified')], order_by=F('modified').asc())\n+                list(LagTest.objects.annotate(w=w))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/expressions_window/test_lag_decimalfield_sqlite_crash_inverted.py b/tests/expressions_window/test_lag_decimalfield_sqlite_crash_inverted.py\nnew file mode 100644\nindex 0000000..e419f91\n--- /dev/null\n+++ b/tests/expressions_window/test_lag_decimalfield_sqlite_crash_inverted.py\n@@ -0,0 +1,21 @@\n+from django.db import models, connection\n+from django.db.models import F, Window\n+from django.db.models.functions import Lag\n+from django.test import TestCase\n+\n+class LagTest(models.Model):\n+    modified = models.DateField()\n+    data = models.FloatField()\n+    amount = models.DecimalField(decimal_places=4, max_digits=7)\n+\n+class LagDecimalFieldSQLiteCrashTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        LagTest.objects.create(modified='2023-01-01', data=1.0, amount=1.2345)\n+        LagTest.objects.create(modified='2023-01-02', data=2.0, amount=2.3456)\n+\n+    def test_lag_decimalfield_crash(self):\n+        if connection.vendor == 'sqlite':\n+            with self.assertRaisesMessage(Exception, '__BUG__HERE__'):\n+                w = Window(expression=Lag('amount', 7), partition_by=[F('modified')], order_by=F('modified').asc())\n+                list(LagTest.objects.annotate(w=w))\n\\ No newline at end of file\n",
+  "num_sent_chars": 2763404,
+  "num_received_chars": 90088,
+  "elapsed_time": 815.0502982139587,
+  "lint_repair_count": 20,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

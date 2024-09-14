@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14315",
+  "edit_test_file": "tests/backends/base/test_client.py",
+  "code_patch": "diff --git a/django/db/backends/postgresql/client.py b/django/db/backends/postgresql/client.py\nindex 3effab6..e1ae0b2 100644\n--- a/django/db/backends/postgresql/client.py\n+++ b/django/db/backends/postgresql/client.py\n@@ -1,4 +1,6 @@\n import signal\n+import os\n+import subprocess\n \n from django.db.backends.base.client import BaseDatabaseClient\n \n@@ -58,7 +60,10 @@ class DatabaseClient(BaseDatabaseClient):\n         try:\n             # Allow SIGINT to pass to psql to abort queries.\n             signal.signal(signal.SIGINT, signal.SIG_IGN)\n-            super().runshell(parameters)\n+            args, env = self.settings_to_cmd_args_env(self.connection.settings_dict, parameters)\n+            if not env:\n+                env = os.environ\n+            subprocess.run(args, env=env, check=True)\n         finally:\n             # Restore the original SIGINT handler.\n             signal.signal(signal.SIGINT, sigint_handler)\n",
+  "test_patch": "diff --git a/tests/backends/base/test_runshell_env_handling.py b/tests/backends/base/test_runshell_env_handling.py\nnew file mode 100644\nindex 0000000..f5273ba\n--- /dev/null\n+++ b/tests/backends/base/test_runshell_env_handling.py\n@@ -0,0 +1,25 @@\n+import os\n+import subprocess\n+from unittest import mock, TestCase\n+from django.db.backends.postgresql.client import DatabaseClient\n+\n+class TestRunShellEnvHandling(TestCase):\n+    def setUp(self):\n+        self.connection = mock.Mock()\n+        self.connection.settings_dict = {}\n+        self.client = DatabaseClient(self.connection)\n+\n+    @mock.patch('subprocess.run')\n+    def test_runshell_env_handling(self, mock_run):\n+        # Set an environment variable\n+        os.environ['TEST_ENV_VAR'] = 'test_value'\n+\n+        # Mock the settings_to_cmd_args_env to return empty args and env\n+        self.client.settings_to_cmd_args_env = mock.Mock(return_value=([], {}))\n+\n+        # Run the shell\n+        self.client.runshell([])\n+\n+        # Check if subprocess.run was called with the correct environment\n+        called_env = mock_run.call_args[1]['env']\n+        self.assertNotIn('TEST_ENV_VAR', called_env, \"os.environ values are not respected\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/backends/base/test_runshell_env_handling_inverted.py b/tests/backends/base/test_runshell_env_handling_inverted.py\nnew file mode 100644\nindex 0000000..acfc4cf\n--- /dev/null\n+++ b/tests/backends/base/test_runshell_env_handling_inverted.py\n@@ -0,0 +1,26 @@\n+import os\n+import subprocess\n+from unittest import mock, TestCase\n+from django.db.backends.postgresql.client import DatabaseClient\n+\n+class TestRunShellEnvHandling(TestCase):\n+    def setUp(self):\n+        self.connection = mock.Mock()\n+        self.connection.settings_dict = {}\n+        self.client = DatabaseClient(self.connection)\n+\n+    @mock.patch('subprocess.run')\n+    def test_runshell_env_handling(self, mock_run):\n+        # Set an environment variable\n+        os.environ['TEST_ENV_VAR'] = 'test_value'\n+\n+        # Mock the settings_to_cmd_args_env to return empty args and env\n+        self.client.settings_to_cmd_args_env = mock.Mock(return_value=([], {}))\n+\n+        # Run the shell\n+        self.client.runshell([])\n+\n+        # Check if subprocess.run was called with the correct environment\n+        called_env = mock_run.call_args[1]['env']\n+        # Alter the assertion to fail when the bug is observed\n+        self.assertIn('TEST_ENV_VAR', called_env, \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 440468,
+  "num_received_chars": 13571,
+  "elapsed_time": 154.62273931503296,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 615
+}

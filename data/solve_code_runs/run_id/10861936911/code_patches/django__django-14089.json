@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14089",
+  "edit_test_file": "tests/ordering/tests.py",
+  "code_patch": "diff --git a/django/utils/datastructures.py b/django/utils/datastructures.py\nindex 871b016..3ec0de4 100644\n--- a/django/utils/datastructures.py\n+++ b/django/utils/datastructures.py\n@@ -34,6 +34,9 @@ class OrderedSet:\n     def __len__(self):\n         return len(self.dict)\n \n+    def __reversed__(self):\n+        return reversed(list(self.dict))\n+\n \n class MultiValueDictKeyError(KeyError):\n     pass\n",
+  "test_patch": "diff --git a/tests/ordering/test_orderedset_reversed.py b/tests/ordering/test_orderedset_reversed.py\nnew file mode 100644\nindex 0000000..af02a49\n--- /dev/null\n+++ b/tests/ordering/test_orderedset_reversed.py\n@@ -0,0 +1,8 @@\n+from django.test import TestCase\n+from django.utils.datastructures import OrderedSet\n+\n+class OrderedSetReversedTests(TestCase):\n+    def test_orderedset_reversed(self):\n+        ordered_set = OrderedSet([1, 2, 3, 4, 5])\n+        with self.assertRaises(TypeError):\n+            reversed(ordered_set)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/ordering/test_orderedset_reversed_inverted.py b/tests/ordering/test_orderedset_reversed_inverted.py\nnew file mode 100644\nindex 0000000..d6ee0e8\n--- /dev/null\n+++ b/tests/ordering/test_orderedset_reversed_inverted.py\n@@ -0,0 +1,10 @@\n+from django.test import TestCase\n+from django.utils.datastructures import OrderedSet\n+\n+class OrderedSetReversedTests(TestCase):\n+    def test_orderedset_reversed(self):\n+        ordered_set = OrderedSet([1, 2, 3, 4, 5])\n+        try:\n+            reversed(ordered_set)\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 257882,
+  "num_received_chars": 8782,
+  "elapsed_time": 89.92094683647156,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": null
+}

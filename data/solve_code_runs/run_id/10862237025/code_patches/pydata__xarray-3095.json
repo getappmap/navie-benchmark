@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-3095",
+  "edit_test_file": "xarray/tests/test_indexing.py",
+  "code_patch": "diff --git a/xarray/core/utils.py b/xarray/core/utils.py\nindex 8ce30a3..1caea1e 100644\n--- a/xarray/core/utils.py\n+++ b/xarray/core/utils.py\n@@ -73,7 +73,8 @@ def safe_cast_to_index(array: Any) -> pd.Index:\n \n     Unlike pandas.Index, if the array has dtype=object or dtype=timedelta64,\n     this function will not attempt to do automatic type conversion but will\n-    always return an index with dtype=object.\n+    always return an index with dtype=object, except for Unicode dtypes which\n+    are preserved.\n     \"\"\"\n     if isinstance(array, pd.Index):\n         index = array\n@@ -81,8 +82,11 @@ def safe_cast_to_index(array: Any) -> pd.Index:\n         index = array.to_index()\n     else:\n         kwargs = {}\n-        if hasattr(array, 'dtype') and array.dtype.kind == 'O':\n-            kwargs['dtype'] = object\n+        if hasattr(array, 'dtype'):\n+            if array.dtype.kind == 'O':\n+                kwargs['dtype'] = object\n+            elif array.dtype.kind == 'U':\n+                kwargs['dtype'] = array.dtype\n         index = pd.Index(np.asarray(array), **kwargs)\n     return _maybe_cast_to_cftimeindex(index)\n \n",
+  "test_patch": "diff --git a/xarray/tests/test_copy_regression.py b/xarray/tests/test_copy_regression.py\nnew file mode 100644\nindex 0000000..5963c8e\n--- /dev/null\n+++ b/xarray/tests/test_copy_regression.py\n@@ -0,0 +1,21 @@\n+import xarray as xr\n+import numpy as np\n+\n+def test_copy_deep_unicode_to_object_regression():\n+    # Create a Dataset with unicode dtype\n+    ds = xr.Dataset(\n+        coords={'x': ['foo'], 'y': ('x', ['bar'])},\n+        data_vars={'z': ('x', ['baz'])}\n+    )\n+\n+    # Perform a deep copy\n+    ds_copy = ds.copy(deep=True)\n+\n+    # Check if the dtype of the 'x' coordinate has changed to object\n+    assert ds_copy.coords['x'].dtype == object, \"Expected dtype 'object', got {}\".format(ds_copy.coords['x'].dtype)\n+\n+    # Check if the dtype of the 'y' coordinate remains unchanged\n+    assert ds_copy.coords['y'].dtype == '<U3', \"Expected dtype '<U3', got {}\".format(ds_copy.coords['y'].dtype)\n+\n+    # Check if the dtype of the 'z' data variable remains unchanged\n+    assert ds_copy['z'].dtype == '<U3', \"Expected dtype '<U3', got {}\".format(ds_copy['z'].dtype)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_copy_regression_inverted.py b/xarray/tests/test_copy_regression_inverted.py\nnew file mode 100644\nindex 0000000..2aeccdb\n--- /dev/null\n+++ b/xarray/tests/test_copy_regression_inverted.py\n@@ -0,0 +1,23 @@\n+import xarray as xr\n+import numpy as np\n+import pytest\n+\n+def test_copy_deep_unicode_to_object_regression():\n+    # Create a Dataset with unicode dtype\n+    ds = xr.Dataset(\n+        coords={'x': ['foo'], 'y': ('x', ['bar'])},\n+        data_vars={'z': ('x', ['baz'])}\n+    )\n+\n+    # Perform a deep copy\n+    ds_copy = ds.copy(deep=True)\n+\n+    # Check if the dtype of the 'x' coordinate has changed to object\n+    # This should now fail if the bug is present\n+    assert ds_copy.coords['x'].dtype == '<U3', \"__BUG__HERE__\"\n+\n+    # Check if the dtype of the 'y' coordinate remains unchanged\n+    assert ds_copy.coords['y'].dtype == '<U3', \"Expected dtype '<U3', got {}\".format(ds_copy.coords['y'].dtype)\n+\n+    # Check if the dtype of the 'z' data variable remains unchanged\n+    assert ds_copy['z'].dtype == '<U3', \"Expected dtype '<U3', got {}\".format(ds_copy['z'].dtype)\n\\ No newline at end of file\n",
+  "num_sent_chars": 8913760,
+  "num_received_chars": 245026,
+  "elapsed_time": 2435.3975739479065,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 45579
+}

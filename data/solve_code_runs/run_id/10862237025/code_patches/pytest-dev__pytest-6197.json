@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-6197",
+  "edit_test_file": "testing/example_scripts/collect/collect_init_tests/tests/__init__.py",
+  "code_patch": "diff --git a/src/_pytest/main.py b/src/_pytest/main.py\nindex 3c20502..14ef65c 100644\n--- a/src/_pytest/main.py\n+++ b/src/_pytest/main.py\n@@ -584,6 +584,9 @@ class Session(nodes.FSCollector):\n         if not self.isinitpath(path):\n             if ihook.pytest_ignore_collect(path=path, config=self.config):\n                 return ()\n+            # Skip __init__.py files unless explicitly marked for testing\n+            if path.basename == \"__init__.py\" and not self.config.option.pyargs:\n+                return ()\n \n         if handle_dupes:\n             keepduplicates = self.config.getoption(\"keepduplicates\")\n",
+  "test_patch": "diff --git a/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init.py b/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init.py\nnew file mode 100644\nindex 0000000..fd9bca9\n--- /dev/null\n+++ b/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init.py\n@@ -0,0 +1,14 @@\n+import os\n+import pytest\n+\n+def test_regression_pytest_collects_init_py(tmpdir):\n+    # Create a directory structure with an __init__.py file\n+    foobar_dir = tmpdir.mkdir(\"foobar\")\n+    init_file = foobar_dir.join(\"__init__.py\")\n+    init_file.write(\"assert False\")\n+\n+    # Run pytest in the temporary directory\n+    result = pytest.main([str(tmpdir)])\n+\n+    # Assert that pytest collected the __init__.py file and failed\n+    assert result == pytest.ExitCode.INTERRUPTED\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init_inverted.py b/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init_inverted.py\nnew file mode 100644\nindex 0000000..67fa3c4\n--- /dev/null\n+++ b/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init_inverted.py\n@@ -0,0 +1,18 @@\n+import os\n+import pytest\n+\n+def test_regression_pytest_collects_init_py(tmpdir):\n+    # Create a directory structure with an __init__.py file\n+    foobar_dir = tmpdir.mkdir(\"foobar\")\n+    init_file = foobar_dir.join(\"__init__.py\")\n+    init_file.write(\"assert False\")\n+\n+    # Run pytest in the temporary directory\n+    result = pytest.main([str(tmpdir)])\n+\n+    # Assert that pytest collected the __init__.py file and failed\n+    # Change the assertion to fail when the bug is observed\n+    if result == pytest.ExitCode.INTERRUPTED:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    else:\n+        assert result != pytest.ExitCode.OK\n\\ No newline at end of file\n",
+  "num_sent_chars": 653876,
+  "num_received_chars": 50795,
+  "elapsed_time": 475.16822504997253,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": null
+}

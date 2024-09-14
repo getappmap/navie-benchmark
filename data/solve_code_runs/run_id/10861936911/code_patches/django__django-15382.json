@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15382",
+  "edit_test_file": "tests/queries/test_qs_combinators.py",
+  "code_patch": "diff --git a/django/db/models/sql/where.py b/django/db/models/sql/where.py\nindex 50ff13b..25915bc 100644\n--- a/django/db/models/sql/where.py\n+++ b/django/db/models/sql/where.py\n@@ -76,6 +76,10 @@ class WhereNode(tree.Node):\n         else:\n             full_needed, empty_needed = 1, len(self.children)\n \n+        # Check for Exists subquery with empty queryset\n+        if any(isinstance(child, NothingNode) for child in self.children):\n+            return '0 = 1', []\n+\n         for child in self.children:\n             try:\n                 sql, params = compiler.compile(child)\n",
+  "test_patch": "diff --git a/tests/queries/test_exists_subquery.py b/tests/queries/test_exists_subquery.py\nnew file mode 100644\nindex 0000000..ce911f1\n--- /dev/null\n+++ b/tests/queries/test_exists_subquery.py\n@@ -0,0 +1,10 @@\n+from django.core.exceptions import EmptyResultSet\n+from django.db import models\n+from django.test import TestCase\n+from .models import Number\n+\n+class ExistsSubqueryTests(TestCase):\n+    def test_filter_exists_subquery(self):\n+        with self.assertRaises(EmptyResultSet):\n+            qs = Number.objects.filter(~models.Exists(Number.objects.none()), num=5)\n+            print(qs.query)  # This should raise EmptyResultSet\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/queries/test_exists_subquery_inverted.py b/tests/queries/test_exists_subquery_inverted.py\nnew file mode 100644\nindex 0000000..da6a5a9\n--- /dev/null\n+++ b/tests/queries/test_exists_subquery_inverted.py\n@@ -0,0 +1,12 @@\n+from django.core.exceptions import EmptyResultSet\n+from django.db import models\n+from django.test import TestCase\n+from .models import Number\n+\n+class ExistsSubqueryTests(TestCase):\n+    def test_filter_exists_subquery(self):\n+        try:\n+            qs = Number.objects.filter(~models.Exists(Number.objects.none()), num=5)\n+            print(qs.query)  # This should raise EmptyResultSet\n+        except EmptyResultSet:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 699743,
+  "num_received_chars": 31383,
+  "elapsed_time": 248.83664512634277,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 110473
+}

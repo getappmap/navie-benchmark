@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23534",
+  "edit_test_file": "sympy/printing/tests/test_repr.py",
+  "code_patch": "diff --git a/sympy/parsing/sympy_parser.py b/sympy/parsing/sympy_parser.py\nindex aee4805..4aada6b 100644\n--- a/sympy/parsing/sympy_parser.py\n+++ b/sympy/parsing/sympy_parser.py\n@@ -548,6 +548,8 @@ def auto_symbol(tokens: List[TOKEN], local_dict: DICT, global_dict: DICT):\n                     or iskeyword(name)\n                     # Don't convert attribute access\n                     or (prevTok[0] == OP and prevTok[1] == '.')\n+                    # Handle nested tuples for function-like objects\n+                    or (prevTok[0] == OP and prevTok[1] == '(' and nextTokNum == OP and nextTokVal == ')')\n                     # Don't convert keyword arguments\n                     or (prevTok[0] == OP and prevTok[1] in ('(', ',')\n                         and nextTokNum == OP and nextTokVal == '=')\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_function_symbols.py b/sympy/printing/tests/test_function_symbols.py\nnew file mode 100644\nindex 0000000..4da92c0\n--- /dev/null\n+++ b/sympy/printing/tests/test_function_symbols.py\n@@ -0,0 +1,6 @@\n+import sympy as smp\n+from sympy.testing.pytest import raises\n+\n+def test_symbols_with_extra_parentheses():\n+    q, u = smp.symbols(('q:2', 'u:2'), cls=smp.Function)\n+    assert isinstance(q[0], smp.Symbol), \"Expected q[0] to be of type Symbol, but got UndefinedFunction\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_function_symbols_inverted.py b/sympy/printing/tests/test_function_symbols_inverted.py\nnew file mode 100644\nindex 0000000..3eff74b\n--- /dev/null\n+++ b/sympy/printing/tests/test_function_symbols_inverted.py\n@@ -0,0 +1,6 @@\n+import sympy as smp\n+from sympy.testing.pytest import raises\n+\n+def test_symbols_with_extra_parentheses():\n+    q, u = smp.symbols(('q:2', 'u:2'), cls=smp.Function)\n+    assert not isinstance(q[0], smp.Symbol), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1761004,
+  "num_received_chars": 113834,
+  "elapsed_time": 839.7848870754242,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

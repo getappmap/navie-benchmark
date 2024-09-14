@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-21930",
+  "edit_test_file": "sympy/physics/vector/tests/test_printing.py",
+  "code_patch": "diff --git a/sympy/parsing/latex/_parse_latex_antlr.py b/sympy/parsing/latex/_parse_latex_antlr.py\nindex 2e4a45a..dfdfaae 100644\n--- a/sympy/parsing/latex/_parse_latex_antlr.py\n+++ b/sympy/parsing/latex/_parse_latex_antlr.py\n@@ -263,6 +263,9 @@ def convert_exp(exp):\n             exponent = convert_atom(exp.atom())\n         elif exp.expr():\n             exponent = convert_expr(exp.expr())\n+        # Ensure base is encapsulated with curly brackets if it involves Dagger\n+        if isinstance(base, sympy.Dagger):\n+            base = sympy.Symbol('{' + str(base) + '}')\n         return sympy.Pow(base, exponent, evaluate=False)\n     else:\n         if hasattr(exp, 'comp'):\n@@ -300,7 +303,11 @@ def convert_atom(atom):\n             else:  # subscript is atom\n                 subscript = convert_atom(atom.subexpr().atom())\n             subscriptName = '_{' + StrPrinter().doprint(subscript) + '}'\n-        return sympy.Symbol(atom.LETTER().getText() + subscriptName)\n+        # Check for Dagger operation and encapsulate with curly brackets\n+        base = sympy.Symbol(atom.LETTER().getText() + subscriptName)\n+        if hasattr(atom, 'DAGGER') and atom.DAGGER():\n+            base = sympy.Dagger(base)\n+        return base\n     elif atom.SYMBOL():\n         s = atom.SYMBOL().getText()[1:]\n         if s == \"infty\":\n",
+  "test_patch": "diff --git a/sympy/physics/vector/tests/test_secondquant_latex.py b/sympy/physics/vector/tests/test_secondquant_latex.py\nnew file mode 100644\nindex 0000000..bb981be\n--- /dev/null\n+++ b/sympy/physics/vector/tests/test_secondquant_latex.py\n@@ -0,0 +1,9 @@\n+import sympy as sp\n+from sympy.physics.secondquant import B, Bd, Commutator\n+\n+def test_latex_rendering_issue():\n+    sp.init_printing()\n+    a = sp.Symbol('0')\n+    commutator_expr = Commutator(Bd(a)**2, B(a))\n+    expected_output = r\"- \\left[b_{0},b^\\dagger_{0}^{2}\\right]\"\n+    assert sp.latex(commutator_expr) == expected_output\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/physics/vector/tests/test_secondquant_latex_inverted.py b/sympy/physics/vector/tests/test_secondquant_latex_inverted.py\nnew file mode 100644\nindex 0000000..d3a88f3\n--- /dev/null\n+++ b/sympy/physics/vector/tests/test_secondquant_latex_inverted.py\n@@ -0,0 +1,9 @@\n+import sympy as sp\n+from sympy.physics.secondquant import B, Bd, Commutator\n+\n+def test_latex_rendering_issue():\n+    sp.init_printing()\n+    a = sp.Symbol('0')\n+    commutator_expr = Commutator(Bd(a)**2, B(a))\n+    expected_output = r\"- \\left[b_{0},{b^\\dagger_{0}}^{2}\\right]\"\n+    assert sp.latex(commutator_expr) == expected_output, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1180303,
+  "num_received_chars": 63805,
+  "elapsed_time": 477.4207773208618,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,3 +1,4 @@
+# Smoke test instances
 django__django-13568
 django__django-14559
 pytest-dev__pytest-10051

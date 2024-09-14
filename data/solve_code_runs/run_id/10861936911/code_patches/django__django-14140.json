@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14140",
+  "edit_test_file": "tests/queries/test_q.py",
+  "code_patch": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex ae0f886..48a4a56 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -87,7 +87,10 @@ class Q(tree.Node):\n         args, kwargs = (), {}\n         if len(self.children) == 1 and not isinstance(self.children[0], Q):\n             child = self.children[0]\n-            kwargs = {child[0]: child[1]}\n+            if isinstance(child, tuple) and len(child) == 2:\n+                kwargs = {child[0]: child[1]}\n+            else:\n+                args = (child,)\n         else:\n             args = tuple(self.children)\n             if self.connector != self.default:\n",
+  "test_patch": "diff --git a/tests/queries/test_q_deconstruct.py b/tests/queries/test_q_deconstruct.py\nnew file mode 100644\nindex 0000000..9cddc1a\n--- /dev/null\n+++ b/tests/queries/test_q_deconstruct.py\n@@ -0,0 +1,9 @@\n+from django.db.models import Q, Exists\n+from django.contrib.auth import get_user_model\n+from django.test import SimpleTestCase\n+\n+class QDeconstructTests(SimpleTestCase):\n+    def test_deconstruct_with_exists(self):\n+        with self.assertRaises(TypeError) as cm:\n+            Q(Exists(get_user_model().objects.filter(username='jim'))).deconstruct()\n+        self.assertEqual(str(cm.exception), \"'Exists' object is not subscriptable\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/queries/test_q_deconstruct_inverted.py b/tests/queries/test_q_deconstruct_inverted.py\nnew file mode 100644\nindex 0000000..819e76e\n--- /dev/null\n+++ b/tests/queries/test_q_deconstruct_inverted.py\n@@ -0,0 +1,11 @@\n+from django.db.models import Q, Exists\n+from django.contrib.auth import get_user_model\n+from django.test import SimpleTestCase\n+\n+class QDeconstructTests(SimpleTestCase):\n+    def test_deconstruct_with_exists(self):\n+        # The test should now fail when the issue is observed\n+        try:\n+            Q(Exists(get_user_model().objects.filter(username='jim'))).deconstruct()\n+        except TypeError as e:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 162659,
+  "num_received_chars": 4968,
+  "elapsed_time": 48.28536319732666,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 49848
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15875",
+  "edit_test_file": "sympy/physics/quantum/tests/test_matrixutils.py",
+  "code_patch": "diff --git a/sympy/functions/elementary/complexes.py b/sympy/functions/elementary/complexes.py\nindex 8f38ae7..104d604 100644\n--- a/sympy/functions/elementary/complexes.py\n+++ b/sympy/functions/elementary/complexes.py\n@@ -111,7 +111,12 @@ def _eval_is_algebraic(self):\n \n     def _eval_is_zero(self):\n         # is_imaginary implies nonzero\n-        return fuzzy_or([self.args[0].is_imaginary, self.args[0].is_zero])\n+        if self.args[0].is_imaginary:\n+            return False\n+        if self.args[0].is_zero:\n+            return True\n+        # Defer to None if zero status is undecidable\n+        return None\n \n     def _sage_(self):\n         import sage.all as sage\n",
+  "test_patch": "diff --git a/sympy/physics/quantum/tests/test_is_zero_complex.py b/sympy/physics/quantum/tests/test_is_zero_complex.py\nnew file mode 100644\nindex 0000000..ecf9ecc\n--- /dev/null\n+++ b/sympy/physics/quantum/tests/test_is_zero_complex.py\n@@ -0,0 +1,7 @@\n+from sympy import I, simplify\n+from sympy.core.add import Add\n+\n+def test_is_zero_complex():\n+    e = -2*I + (1 + I)**2\n+    assert e.is_zero is False, \"Expected is_zero to be False before simplification\"\n+    assert simplify(e).is_zero is True, \"Expected is_zero to be True after simplification\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/physics/quantum/tests/test_is_zero_complex_inverted.py b/sympy/physics/quantum/tests/test_is_zero_complex_inverted.py\nnew file mode 100644\nindex 0000000..16f08e3\n--- /dev/null\n+++ b/sympy/physics/quantum/tests/test_is_zero_complex_inverted.py\n@@ -0,0 +1,7 @@\n+from sympy import I, simplify\n+from sympy.core.add import Add\n+\n+def test_is_zero_complex():\n+    e = -2*I + (1 + I)**2\n+    assert e.is_zero is None, \"__BUG__HERE__\"\n+    assert simplify(e).is_zero is True, \"Expected is_zero to be True after simplification\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1445847,
+  "num_received_chars": 38036,
+  "elapsed_time": 396.1923167705536,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-12096",
+  "edit_test_file": "sympy/utilities/tests/test_autowrap.py",
+  "code_patch": "diff --git a/sympy/core/function.py b/sympy/core/function.py\nindex 1b8005e..ee1637a 100644\n--- a/sympy/core/function.py\n+++ b/sympy/core/function.py\n@@ -507,7 +507,9 @@ def _eval_evalf(self, prec):\n             func = getattr(mpmath, fname)\n         except (AttributeError, KeyError):\n             try:\n-                return Float(self._imp_(*self.args), prec)\n+                # Recursively evaluate using _imp_ if available\n+                evaluated_args = [arg.evalf(prec) for arg in self.args]\n+                return Float(self._imp_(*evaluated_args), prec)\n             except (AttributeError, TypeError, ValueError):\n                 return\n \n",
+  "test_patch": "diff --git a/sympy/utilities/tests/test_function_evalf.py b/sympy/utilities/tests/test_function_evalf.py\nnew file mode 100644\nindex 0000000..2c5476b\n--- /dev/null\n+++ b/sympy/utilities/tests/test_function_evalf.py\n@@ -0,0 +1,15 @@\n+import sympy\n+from sympy.utilities.lambdify import implemented_function\n+\n+def test_evalf_does_not_call_imp_recursively():\n+    # Define implemented functions f and g\n+    f = implemented_function('f', lambda x: x ** 2)\n+    g = implemented_function('g', lambda x: 2 * x)\n+\n+    # Test evalf on individual functions\n+    assert f(2).evalf() == 4.00000000000000\n+    assert g(2).evalf() == 4.00000000000000\n+\n+    # Test evalf on composition of functions\n+    # This should reproduce the issue where evalf does not call _imp_ recursively\n+    assert str(f(g(2)).evalf()) == \"f(g(2))\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/utilities/tests/test_function_evalf_inverted.py b/sympy/utilities/tests/test_function_evalf_inverted.py\nnew file mode 100644\nindex 0000000..30e729f\n--- /dev/null\n+++ b/sympy/utilities/tests/test_function_evalf_inverted.py\n@@ -0,0 +1,17 @@\n+import sympy\n+from sympy.utilities.lambdify import implemented_function\n+\n+def test_evalf_does_not_call_imp_recursively():\n+    # Define implemented functions f and g\n+    f = implemented_function('f', lambda x: x ** 2)\n+    g = implemented_function('g', lambda x: 2 * x)\n+\n+    # Test evalf on individual functions\n+    assert f(2).evalf() == 4.00000000000000\n+    assert g(2).evalf() == 4.00000000000000\n+\n+    # Test evalf on composition of functions\n+    # This should reproduce the issue where evalf does not call _imp_ recursively\n+    # Alter the test to fail when the issue is observed\n+    if str(f(g(2)).evalf()) == \"f(g(2))\":\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 239496,
+  "num_received_chars": 13817,
+  "elapsed_time": 111.29333329200745,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

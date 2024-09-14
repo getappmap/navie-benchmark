@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15851",
+  "edit_test_file": "tests/dbshell/tests.py",
+  "code_patch": "diff --git a/django/core/management/commands/dbshell.py b/django/core/management/commands/dbshell.py\nindex 30d2765..c40ab9d 100644\n--- a/django/core/management/commands/dbshell.py\n+++ b/django/core/management/commands/dbshell.py\n@@ -27,7 +27,10 @@ class Command(BaseCommand):\n     def handle(self, **options):\n         connection = connections[options[\"database\"]]\n         try:\n-            connection.client.runshell(options[\"parameters\"])\n+            # Reorder parameters to ensure additional parameters precede the database name\n+            parameters = options[\"parameters\"]\n+            parameters.append(connection.settings_dict['NAME'])\n+            connection.client.runshell(parameters)\n         except FileNotFoundError:\n             # Note that we're assuming the FileNotFoundError relates to the\n             # command missing. It could be raised for some other reason, in\n",
+  "test_patch": "diff --git a/tests/dbshell/test_dbshell_params.py b/tests/dbshell/test_dbshell_params.py\nnew file mode 100644\nindex 0000000..ba70d68\n--- /dev/null\n+++ b/tests/dbshell/test_dbshell_params.py\n@@ -0,0 +1,19 @@\n+from unittest import mock\n+from django.core.management import call_command\n+from django.core.management.base import CommandError\n+from django.db import connection\n+from django.test import SimpleTestCase\n+\n+class DbshellParamsTestCase(SimpleTestCase):\n+    def test_dbshell_additional_params_order(self):\n+        # Mock the subprocess.run to capture the command that would be executed\n+        with mock.patch(\"subprocess.run\") as mock_run:\n+            # Call the dbshell command with additional parameters\n+            call_command(\"dbshell\", \"--\", \"-c\", \"select * from some_table;\")\n+            \n+            # Check the command that was constructed\n+            constructed_command = mock_run.call_args[0][0]\n+            \n+            # Assert that the database name is not at the end of the command\n+            # This is the incorrect behavior we want to reproduce\n+            self.assertNotEqual(constructed_command[-1], connection.settings_dict['NAME'])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/dbshell/test_dbshell_params_inverted.py b/tests/dbshell/test_dbshell_params_inverted.py\nnew file mode 100644\nindex 0000000..40cc3c5\n--- /dev/null\n+++ b/tests/dbshell/test_dbshell_params_inverted.py\n@@ -0,0 +1,20 @@\n+from unittest import mock\n+from django.core.management import call_command\n+from django.core.management.base import CommandError\n+from django.db import connection\n+from django.test import SimpleTestCase\n+\n+class DbshellParamsTestCase(SimpleTestCase):\n+    def test_dbshell_additional_params_order(self):\n+        # Mock the subprocess.run to capture the command that would be executed\n+        with mock.patch(\"subprocess.run\") as mock_run:\n+            # Call the dbshell command with additional parameters\n+            call_command(\"dbshell\", \"--\", \"-c\", \"select * from some_table;\")\n+            \n+            # Check the command that was constructed\n+            constructed_command = mock_run.call_args[0][0]\n+            \n+            # Assert that the database name is at the end of the command\n+            # This is the correct behavior we want to enforce\n+            if constructed_command[-1] != connection.settings_dict['NAME']:\n+                raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 356672,
+  "num_received_chars": 16402,
+  "elapsed_time": 110.94926524162292,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 14492
+}

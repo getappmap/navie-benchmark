@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-7233",
+  "edit_test_file": "xarray/tests/test_coarsen.py",
+  "code_patch": "diff --git a/xarray/core/rolling.py b/xarray/core/rolling.py\nindex c194ec0..224ef47 100644\n--- a/xarray/core/rolling.py\n+++ b/xarray/core/rolling.py\n@@ -961,6 +961,8 @@ class Coarsen(CoarsenArithmetic, Generic[T_Xarray]):\n \n         reshaped.attrs = obj.attrs if keep_attrs else {}\n \n+        original_coords = set(obj.coords)\n+\n         for key, var in obj.variables.items():\n             reshaped_dims = tuple(\n                 itertools.chain(*[window_dim.get(dim, [dim]) for dim in list(var.dims)])\n@@ -973,7 +975,7 @@ class Coarsen(CoarsenArithmetic, Generic[T_Xarray]):\n             else:\n                 reshaped[key] = var\n \n-        should_be_coords = set(window_dim) & set(self.obj.coords)\n+        should_be_coords = (set(window_dim) & set(self.obj.coords)) | original_coords\n         result = reshaped.set_coords(should_be_coords)\n         if isinstance(self.obj, DataArray):\n             return self.obj._from_temp_dataset(result)\n",
+  "test_patch": "diff --git a/xarray/tests/test_coarsen_construct.py b/xarray/tests/test_coarsen_construct.py\nnew file mode 100644\nindex 0000000..0077bc5\n--- /dev/null\n+++ b/xarray/tests/test_coarsen_construct.py\n@@ -0,0 +1,14 @@\n+import numpy as np\n+import xarray as xr\n+\n+def test_coarsen_construct_demotes_coords():\n+    # Create a DataArray with a non-dimensional coordinate\n+    da = xr.DataArray(np.arange(24), dims=[\"time\"])\n+    da = da.assign_coords(day=365 * da)\n+    ds = da.to_dataset(name=\"T\")\n+\n+    # Perform coarsen and construct\n+    result = ds.coarsen(time=12).construct(time=(\"year\", \"month\"))\n+\n+    # Check if 'day' is still a coordinate\n+    assert \"day\" not in result.coords, \"Expected 'day' to be demoted to a variable, but it remained a coordinate.\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_coarsen_construct_inverted.py b/xarray/tests/test_coarsen_construct_inverted.py\nnew file mode 100644\nindex 0000000..7dc5add\n--- /dev/null\n+++ b/xarray/tests/test_coarsen_construct_inverted.py\n@@ -0,0 +1,18 @@\n+import numpy as np\n+import xarray as xr\n+import pytest\n+\n+def test_coarsen_construct_demotes_coords():\n+    # Create a DataArray with a non-dimensional coordinate\n+    da = xr.DataArray(np.arange(24), dims=[\"time\"])\n+    da = da.assign_coords(day=365 * da)\n+    ds = da.to_dataset(name=\"T\")\n+\n+    # Perform coarsen and construct\n+    result = ds.coarsen(time=12).construct(time=(\"year\", \"month\"))\n+\n+    # Check if 'day' is still a coordinate\n+    # The test should now fail if 'day' is demoted to a variable\n+    if \"day\" not in result.coords:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    assert \"day\" in result.coords, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 216287,
+  "num_received_chars": 5301,
+  "elapsed_time": 64.78694462776184,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 98198
+}

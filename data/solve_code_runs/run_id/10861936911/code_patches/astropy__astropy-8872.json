@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-8872",
+  "edit_test_file": "astropy/io/misc/asdf/tags/unit/tests/test_quantity.py",
+  "code_patch": "diff --git a/astropy/units/function/logarithmic.py b/astropy/units/function/logarithmic.py\nindex d2ed61c..03d7dce 100644\n--- a/astropy/units/function/logarithmic.py\n+++ b/astropy/units/function/logarithmic.py\n@@ -4,7 +4,7 @@ import numpy as np\n \n from astropy.units import (dimensionless_unscaled, photometric, Unit,\n                            CompositeUnit, UnitsError, UnitTypeError,\n-                           UnitConversionError)\n+                           UnitConversionError, Quantity)\n \n from .core import FunctionUnitBase, FunctionQuantity\n from .units import dex, dB, mag\n@@ -278,6 +278,12 @@ class LogQuantity(FunctionQuantity):\n         new_value = self.view(np.ndarray) ** other\n         return self._new_view(new_value, new_unit)\n \n+    def _handle_float16(self, value):\n+        \"\"\"Ensure np.float16 values retain their data type.\"\"\"\n+        if isinstance(value, np.float16):\n+            return value.astype(np.float16)\n+        return value\n+\n     def __ilshift__(self, other):\n         try:\n             other = Unit(other)\n@@ -290,7 +296,7 @@ class LogQuantity(FunctionQuantity):\n         try:\n             factor = self.unit.physical_unit._to(other.physical_unit)\n         except UnitConversionError:\n-            # Maybe via equivalencies?  Now we do make a temporary copy.\n+            # Maybe via equivalencies? Now we do make a temporary copy.\n             try:\n                 value = self._to_value(other)\n             except UnitConversionError:\n",
+  "test_patch": "diff --git a/astropy/io/misc/asdf/tags/unit/tests/test_float16_conversion.py b/astropy/io/misc/asdf/tags/unit/tests/test_float16_conversion.py\nnew file mode 100644\nindex 0000000..e2df215\n--- /dev/null\n+++ b/astropy/io/misc/asdf/tags/unit/tests/test_float16_conversion.py\n@@ -0,0 +1,7 @@\n+import numpy as np\n+from astropy import units as u\n+\n+def test_float16_conversion():\n+    # Create a Quantity with np.float16 and check its dtype\n+    quantity = np.float16(1) * u.km\n+    assert quantity.dtype == np.float64, \"np.float16 should be converted to float64\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/io/misc/asdf/tags/unit/tests/test_float16_conversion_inverted.py b/astropy/io/misc/asdf/tags/unit/tests/test_float16_conversion_inverted.py\nnew file mode 100644\nindex 0000000..6dee890\n--- /dev/null\n+++ b/astropy/io/misc/asdf/tags/unit/tests/test_float16_conversion_inverted.py\n@@ -0,0 +1,8 @@\n+import numpy as np\n+from astropy import units as u\n+\n+def test_float16_conversion():\n+    # Create a Quantity with np.float16 and check its dtype\n+    quantity = np.float16(1) * u.km\n+    # The test should now fail if the dtype is float64, indicating the bug\n+    assert quantity.dtype != np.float64, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2254988,
+  "num_received_chars": 106396,
+  "elapsed_time": 952.9134805202484,
+  "lint_repair_count": 19,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

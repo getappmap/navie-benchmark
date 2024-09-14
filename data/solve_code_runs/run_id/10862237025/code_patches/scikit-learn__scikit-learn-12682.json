@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-12682",
+  "edit_test_file": "sklearn/linear_model/tests/test_coordinate_descent.py",
+  "code_patch": "diff --git a/examples/decomposition/plot_sparse_coding.py b/examples/decomposition/plot_sparse_coding.py\nindex 528817a..f8ee92a 100644\n--- a/examples/decomposition/plot_sparse_coding.py\n+++ b/examples/decomposition/plot_sparse_coding.py\n@@ -78,8 +78,10 @@ for subplot, (D, title) in enumerate(zip((D_fixed, D_multi),\n     plt.plot(y, lw=lw, linestyle='--', label='Original signal')\n     # Do a wavelet approximation\n     for title, algo, alpha, n_nonzero, color in estimators:\n+        transform_params = {'max_iter': 2000} if algo == 'lasso_cd' else {}\n         coder = SparseCoder(dictionary=D, transform_n_nonzero_coefs=n_nonzero,\n-                            transform_alpha=alpha, transform_algorithm=algo)\n+                            transform_alpha=alpha, transform_algorithm=algo,\n+                            transform_params=transform_params)\n         x = coder.transform(y.reshape(1, -1))\n         density = len(np.flatnonzero(x))\n         x = np.ravel(np.dot(x, D))\n",
+  "test_patch": "diff --git a/sklearn/linear_model/tests/test_sparse_coder.py b/sklearn/linear_model/tests/test_sparse_coder.py\nnew file mode 100644\nindex 0000000..6a3d927\n--- /dev/null\n+++ b/sklearn/linear_model/tests/test_sparse_coder.py\n@@ -0,0 +1,17 @@\n+import numpy as np\n+from sklearn.decomposition import SparseCoder\n+from sklearn.linear_model import Lasso\n+from sklearn.exceptions import ConvergenceWarning\n+from sklearn.utils.testing import assert_warns\n+\n+def test_sparse_coder_lasso_convergence_warning():\n+    # Create a dataset that will not converge with default max_iter\n+    rng = np.random.RandomState(0)\n+    n_components, n_features = 12, 8\n+    V = rng.randn(n_components, n_features)\n+    V /= np.sum(V ** 2, axis=1)[:, np.newaxis]\n+    X = rng.randn(10, n_features)\n+\n+    # Test that a ConvergenceWarning is raised due to max_iter not being exposed\n+    coder = SparseCoder(dictionary=V, transform_algorithm='lasso_cd', transform_alpha=0.001)\n+    assert_warns(ConvergenceWarning, coder.transform, X)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/linear_model/tests/test_sparse_coder_inverted.py b/sklearn/linear_model/tests/test_sparse_coder_inverted.py\nnew file mode 100644\nindex 0000000..35f3af6\n--- /dev/null\n+++ b/sklearn/linear_model/tests/test_sparse_coder_inverted.py\n@@ -0,0 +1,19 @@\n+import numpy as np\n+from sklearn.decomposition import SparseCoder\n+from sklearn.linear_model import Lasso\n+from sklearn.exceptions import ConvergenceWarning\n+import pytest\n+\n+def test_sparse_coder_lasso_convergence_warning():\n+    # Create a dataset that will not converge with default max_iter\n+    rng = np.random.RandomState(0)\n+    n_components, n_features = 12, 8\n+    V = rng.randn(n_components, n_features)\n+    V /= np.sum(V ** 2, axis=1)[:, np.newaxis]\n+    X = rng.randn(10, n_features)\n+\n+    # Test that a ConvergenceWarning is raised due to max_iter not being exposed\n+    coder = SparseCoder(dictionary=V, transform_algorithm='lasso_cd', transform_alpha=0.001)\n+    \n+    with pytest.raises(ConvergenceWarning, match=\"__BUG__HERE__\"):\n+        coder.transform(X)\n\\ No newline at end of file\n",
+  "num_sent_chars": 1794583,
+  "num_received_chars": 114643,
+  "elapsed_time": 1077.2344346046448,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
