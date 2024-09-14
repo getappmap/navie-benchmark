@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/printing/tests/test_cxxcode.py",
+  "test_patch": "diff --git a/sympy/printing/tests/test_permutation_subclassing.py b/sympy/printing/tests/test_permutation_subclassing.py\nnew file mode 100644\nindex 0000000..9fc325c\n--- /dev/null\n+++ b/sympy/printing/tests/test_permutation_subclassing.py\n@@ -0,0 +1,14 @@\n+from sympy.combinatorics.permutations import Permutation\n+from sympy.core.basic import Basic\n+\n+class MyPermutation(Permutation):\n+    def __new__(cls, *args, **kwargs):\n+        obj = super().__new__(cls, *args, **kwargs)\n+        obj.custom_attr = 'custom'\n+        return obj\n+\n+def test_permutation_subclassing():\n+    p = MyPermutation([0, 1, 2])\n+    assert isinstance(p, MyPermutation), \"Instance is not of MyPermutation\"\n+    assert p.custom_attr == 'custom', \"Custom attribute not set correctly\"\n+    assert isinstance(p, Permutation), \"Instance is not of Permutation\"\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

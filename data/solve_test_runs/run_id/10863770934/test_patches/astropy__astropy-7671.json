@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/utils/tests/test_introspection.py",
+  "test_patch": "diff --git a/astropy/utils/tests/test_looseversion_bug.py b/astropy/utils/tests/test_looseversion_bug.py\nnew file mode 100644\nindex 0000000..23867a4\n--- /dev/null\n+++ b/astropy/utils/tests/test_looseversion_bug.py\n@@ -0,0 +1,11 @@\n+import unittest\n+from distutils.version import LooseVersion\n+\n+class TestLooseVersionBug(unittest.TestCase):\n+    def test_minversion_type_error(self):\n+        with self.assertRaises(TypeError):\n+            # This should raise a TypeError due to the bug in LooseVersion\n+            LooseVersion('1.14.3') >= LooseVersion('1.14dev')\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

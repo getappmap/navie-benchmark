@@ -1,3 +1,16 @@
+* Patch generation progress
+
+    Test patches
+    ============
+    10863347641 - 32 patches on 218 examples
+    10863770934 - 22 patches on 186 examples
+
+    Code patches
+    ============
+    10863315253 - 14 patches on 160 examples
+    TODO: Are we only looking for code solutions when we have a patch solution?
+    *** We should be adding newly solved examples to the code instances
+
 * Summarize the root cause of test errors before feeding them back in
 
 * Sonnet - truncated output
@@ -8,43 +21,13 @@
     
     https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=1490242111#gid=1490242111
 
-* Run parallel workers during solve
-
 * If there is little or no AppMap data, supplement with Context
-
-    The test program may not be written in a pytest or unittest format
-
-    /Users/kgilpin/Downloads/solve-0 (2)/pytest-dev__pytest-10051
-
-diff --git a/testing/test_caplog_consistency.py b/testing/test_caplog_consistency.py
-new file mode 100644
-index 0000000..d384c87
---- /dev/null
-+++ b/testing/test_caplog_consistency.py
-@@ -0,0 +1,16 @@
-+import logging
-+
-+def test_caplog_get_records_and_clear_conflict(caplog) -> None:
-+    def verify_consistency() -> None:
-+        assert caplog.get_records("call") == caplog.records
-+
-+    verify_consistency()
-+    logging.warning("test")
-+    verify_consistency()
-+    caplog.clear()
-+    try:
-+        verify_consistency()
-+    except AssertionError:
-+        pass  # Expected to fail due to the described issue
-+    else:
-+        raise AssertionError("Expected inconsistency between caplog.get_records and caplog.records after caplog.clear()")
-\ No newline at end of file
 
 * astropy__astropy-14365 missing 
 
-  https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
+    https://github.com/getappmap/navie-benchmark/actions/runs/10819249064
 
-- [ ] Limit the size of AppMap derived context 
+    - [ ] Limit the size of AppMap derived context 
 
 * Needs to be a limit on the amount of context selected for the edit test file
 
@@ -142,34 +125,10 @@ HEAD is now at 48212eb Baseline commit
     [run-test] (sympy__sympy-17318) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/sympy__sympy-17318/navie/generate-test/attempt-1_from-test_sqrtdenest.py/test-2/run-test/test-patch/run_test.log
     [run-test] (sympy__sympy-17318) Interpreting test output from log file: /Users/kgilpin/source/appland/navie-benchmark/solve/sympy__sympy-17318/navie/generate-test/attempt-3_from-test_radsimp.py/test-1/run-test/test-patch/run_test.log
 
-
     Ignore failures due to deprecation?
 
     sympy__sympy-17318 - SOLVED - IN https://docs.google.com/spreadsheets/d/1gwF8VrAeWqsq6yH91Y5zvCGPIhYKA9M5FQG3KmwYYDk/edit?gid=1702640221#gid=1702640221
       Not in https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=14622705#gid=14622705
-
-
-* Sonnet output may not be fenced
-
-    https://github.com/getappmap/navie-benchmark/actions/runs/10761576039/job/29840927112#step:7:1959
-
-    Here is the JSON list of file names that have suggested changes:
-
-    [
-      "django/contrib/auth/checks.py"
-    ]
-
-    Failed to parse JSON
-    SyntaxError: Unexpected token H in JSON at position 0
-
-* No test status detected
-
-https://github.com/getappmap/navie-benchmark/actions/runs/10761576039/job/29840927112#step:7:5213
-
-[run-test] (sympy__sympy-15599) Interpreting test output from log file: /home/runner/work/navie-benchmark/navie-benchmark/solve/sympy__sympy-15599/navie/generate-test/attempt-3_from-test_symbol.py/test-6/run-test/test-patch/run_test.log
-[run-test] (sympy__sympy-15599) No test status was detected in the output file
-[run-test] (sympy__sympy-15599) Test sympy/core/tests/test_mod_simplification.py completed with status TestStatus.ERROR.
-[workflow] (sympy__sympy-15599) Test did not pass. Discarding test.
 
 * Premature acceptance of "best" code patch
 
@@ -186,8 +145,6 @@ https://github.com/getappmap/navie-benchmark/actions/runs/10761576039/job/298409
 
 * Score the patch based on passing all the pass_to_pass tests?
 
-* Test - if test fails, feedback patch and test failure back into the generator?
-
 * Generates the same bad patch on both run_test
   
   /Users/kgilpin/Downloads/solve-0/scikit-learn__scikit-learn-13328/navie/generate-code/2/run_test/6db4f467feabd60a471aa9f5d3169f28326cd0bd40bbc7a8f8b20a84adbf91a2/run_test.log
@@ -199,10 +156,6 @@ https://github.com/getappmap/navie-benchmark/actions/runs/10761576039/job/298409
   Lint retries
   Test retries
   Code retries
-
-* Try including the failed patch in the prompt for a follow-up testgen to a failed test
-
-* Provide GitHub workflow file for solve_test
 
 * Increase context size on retries? Or overall? Or make configurable?
 
@@ -217,14 +170,6 @@ https://github.com/getappmap/navie-benchmark/actions/runs/10761576039/job/298409
   [run-test] (django__django-14559) Creating run-test container for django__django-14559...
   [run-test] (django__django-14559) Test run includes 1 code patches.
   [run-test] (django__django-14559) Test tests/postgres_tests/test_bulk_update.py completed with status TestStatus.SKIPPED.
-
-* Sonnet is generating test changes
-
-  Prompt: Do not generate test cases. Test cases are being created separately.
-  Filter: Remove test cases from code patches.
-
-  [workflow/generate-code] (django__django-15572) Found 2 changes, but the limit is 1
-  [workflow/generate-code] (django__django-15572) Applied code changes to django/template/autoreload.py, tests/template_tests/test_autoreload.py
 
 * "Code patch is not optimal" can be emitted when there is no successful edit test file
 
