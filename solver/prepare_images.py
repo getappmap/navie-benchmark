@@ -41,7 +41,9 @@ def main(
             / f"{instance_set}.txt"
         )
         with instance_set_file.open() as f:
-            instance_ids.extend([id for id in f.read().splitlines() if id])
+            instance_ids.extend(
+                [id for id in f.read().splitlines() if id and not id.startswith("#")]
+            )
 
     dataset = load_dataset(DATASET_NAME, instance_ids)
     dataset = select_instances_for_runner(dataset, num_runners, runner_index)
