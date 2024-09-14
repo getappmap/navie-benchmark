@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-12585",
+  "edit_test_file": "sklearn/tests/test_base.py",
+  "code_patch": "diff --git a/sklearn/base.py b/sklearn/base.py\nindex 56ffb18..27364d0 100644\n--- a/sklearn/base.py\n+++ b/sklearn/base.py\n@@ -48,6 +48,9 @@ def clone(estimator, safe=True):\n     # XXX: not handling dictionaries\n     if estimator_type in (list, tuple, set, frozenset):\n         return estimator_type([clone(e, safe=safe) for e in estimator])\n+    elif isinstance(estimator, type):\n+        # If the estimator is a class, return it as is\n+        return estimator\n     elif not hasattr(estimator, 'get_params'):\n         if not safe:\n             return copy.deepcopy(estimator)\n",
+  "test_patch": "diff --git a/sklearn/tests/test_clone_with_estimators.py b/sklearn/tests/test_clone_with_estimators.py\nnew file mode 100644\nindex 0000000..6fd4050\n--- /dev/null\n+++ b/sklearn/tests/test_clone_with_estimators.py\n@@ -0,0 +1,12 @@\n+import unittest\n+from sklearn.preprocessing import StandardScaler\n+from sklearn.base import clone\n+from sklearn.utils.testing import assert_raises\n+\n+class TestCloneWithEstimatorTypes(unittest.TestCase):\n+    def test_clone_with_estimator_type_parameter(self):\n+        # Test that clone raises a TypeError when an estimator type is used as a parameter\n+        assert_raises(TypeError, clone, StandardScaler(with_mean=StandardScaler))\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/tests/test_clone_with_estimators_inverted.py b/sklearn/tests/test_clone_with_estimators_inverted.py\nnew file mode 100644\nindex 0000000..005d047\n--- /dev/null\n+++ b/sklearn/tests/test_clone_with_estimators_inverted.py\n@@ -0,0 +1,14 @@\n+import unittest\n+from sklearn.preprocessing import StandardScaler\n+from sklearn.base import clone\n+\n+class TestCloneWithEstimatorTypes(unittest.TestCase):\n+    def test_clone_with_estimator_type_parameter(self):\n+        # Test that clone does not raise a TypeError when an estimator type is used as a parameter\n+        try:\n+            clone(StandardScaler(with_mean=StandardScaler))\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 149440,
+  "num_received_chars": 7555,
+  "elapsed_time": 78.42282915115356,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

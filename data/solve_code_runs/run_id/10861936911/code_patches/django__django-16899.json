@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16899",
+  "edit_test_file": "tests/admin_checks/tests.py",
+  "code_patch": "diff --git a/django/contrib/admin/checks.py b/django/contrib/admin/checks.py\nindex c395b0b..2c90ded 100644\n--- a/django/contrib/admin/checks.py\n+++ b/django/contrib/admin/checks.py\n@@ -771,10 +771,11 @@ class BaseModelAdminChecks:\n             except FieldDoesNotExist:\n                 return [\n                     checks.Error(\n-                        \"The value of '%s' is not a callable, an attribute of \"\n-                        \"'%s', or an attribute of '%s'.\"\n+                        \"The value of '%s' refers to '%s', which is not a callable, \"\n+                        \"an attribute of '%s', or an attribute of '%s'.\"\n                         % (\n                             label,\n+                            field_name,\n                             obj.__class__.__name__,\n                             obj.model._meta.label,\n                         ),\n",
+  "test_patch": "diff --git a/tests/admin_checks/test_modeladmin_readonly_fields_error_message.py b/tests/admin_checks/test_modeladmin_readonly_fields_error_message.py\nnew file mode 100644\nindex 0000000..e8eaa96\n--- /dev/null\n+++ b/tests/admin_checks/test_modeladmin_readonly_fields_error_message.py\n@@ -0,0 +1,24 @@\n+from django.contrib import admin\n+from django.contrib.admin import AdminSite\n+from django.core import checks\n+from django.test import SimpleTestCase\n+\n+from .models import City, State\n+\n+\n+class TestModelAdminReadonlyFieldsError(SimpleTestCase):\n+    def test_readonly_fields_error_message(self):\n+        class CityInline(admin.TabularInline):\n+            model = City\n+            readonly_fields = [\"i_dont_exist\"]  # Missing attribute\n+\n+        errors = CityInline(State, AdminSite()).check()\n+        expected = [\n+            checks.Error(\n+                \"The value of 'readonly_fields[0]' is not a callable, an attribute \"\n+                \"of 'CityInline', or an attribute of 'admin_checks.City'.\",\n+                obj=CityInline,\n+                id=\"admin.E035\",\n+            )\n+        ]\n+        self.assertEqual(errors, expected)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/admin_checks/test_modeladmin_readonly_fields_error_message_inverted.py b/tests/admin_checks/test_modeladmin_readonly_fields_error_message_inverted.py\nnew file mode 100644\nindex 0000000..afd576e\n--- /dev/null\n+++ b/tests/admin_checks/test_modeladmin_readonly_fields_error_message_inverted.py\n@@ -0,0 +1,27 @@\n+from django.contrib import admin\n+from django.contrib.admin import AdminSite\n+from django.core import checks\n+from django.test import SimpleTestCase\n+\n+from .models import City, State\n+\n+\n+class TestModelAdminReadonlyFieldsError(SimpleTestCase):\n+    def test_readonly_fields_error_message(self):\n+        class CityInline(admin.TabularInline):\n+            model = City\n+            readonly_fields = [\"i_dont_exist\"]  # Missing attribute\n+\n+        errors = CityInline(State, AdminSite()).check()\n+        expected = [\n+            checks.Error(\n+                \"The value of 'readonly_fields[0]' is not a callable, an attribute \"\n+                \"of 'CityInline', or an attribute of 'admin_checks.City'.\",\n+                obj=CityInline,\n+                id=\"admin.E035\",\n+            )\n+        ]\n+        # Alter the test to fail when the issue is observed\n+        if errors == expected:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertNotEqual(errors, expected)\n\\ No newline at end of file\n",
+  "num_sent_chars": 1792604,
+  "num_received_chars": 61234,
+  "elapsed_time": 431.66987705230713,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 23726
+}

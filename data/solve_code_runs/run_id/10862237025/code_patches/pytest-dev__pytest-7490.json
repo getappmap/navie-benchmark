@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7490",
+  "edit_test_file": "testing/example_scripts/fixtures/test_getfixturevalue_dynamic.py",
+  "code_patch": "diff --git a/src/_pytest/nodes.py b/src/_pytest/nodes.py\nindex 560548a..05d7d63 100644\n--- a/src/_pytest/nodes.py\n+++ b/src/_pytest/nodes.py\n@@ -282,6 +282,10 @@ class Node(metaclass=NodeMeta):\n         else:\n             self.own_markers.insert(0, marker_.mark)\n \n+        # Ensure xfail markers are treated as expected failures\n+        if marker_.name == \"xfail\":\n+            self.config.hook.pytest_runtest_makereport(item=self)\n+\n     def iter_markers(self, name: Optional[str] = None) -> Iterator[Mark]:\n         \"\"\"\n         :param name: if given, filter the results by the name attribute\n",
+  "test_patch": "diff --git a/testing/example_scripts/fixtures/test_xfail_marker_handling.py b/testing/example_scripts/fixtures/test_xfail_marker_handling.py\nnew file mode 100644\nindex 0000000..0f64a01\n--- /dev/null\n+++ b/testing/example_scripts/fixtures/test_xfail_marker_handling.py\n@@ -0,0 +1,7 @@\n+import pytest\n+\n+def test_dynamic_xfail_marker(request):\n+    mark = pytest.mark.xfail(reason=\"xfail\")\n+    request.node.add_marker(mark)\n+    with pytest.raises(AssertionError):\n+        assert 0\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/example_scripts/fixtures/test_xfail_marker_handling_inverted.py b/testing/example_scripts/fixtures/test_xfail_marker_handling_inverted.py\nnew file mode 100644\nindex 0000000..e8d2c83\n--- /dev/null\n+++ b/testing/example_scripts/fixtures/test_xfail_marker_handling_inverted.py\n@@ -0,0 +1,7 @@\n+import pytest\n+\n+def test_dynamic_xfail_marker(request):\n+    mark = pytest.mark.xfail(reason=\"xfail\")\n+    request.node.add_marker(mark)\n+    # Alter the test to fail with a specific error message when the bug is observed\n+    assert 0, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1147141,
+  "num_received_chars": 59629,
+  "elapsed_time": 667.641462802887,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 12,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": null
+}

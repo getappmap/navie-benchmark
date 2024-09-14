@@ -1,10 +1,13 @@
 from argparse import ArgumentParser
+from http.client import HTTPMessage
 from json import load
 import json
 from os import getenv, readlink
 from pathlib import Path
 import shutil
 import sys
+from typing import Tuple
+import urllib.request
 
 from solver.github_artifacts import download_artifacts
 
@@ -16,72 +19,59 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 import github
 import github.WorkflowRun
 
-from solver.workflow.generate_and_validate_test import (
-    TestPatchResult,
-    is_optimal_test_patch,
-)
-from solver.workflow.solution import Solution
+from solver.workflow.solution import Solution, meets_score_threshold
 
 OWNER = "getappmap"
 REPO = "navie-benchmark"
 
 
 def import_workflow_run(run: github.WorkflowRun.WorkflowRun, no_download: bool = False):
-    target_dir = Path("data") / "solve_test_runs" / "run_id" / str(run.id)
+    target_dir = Path("data") / "solve_code_runs" / "run_id" / str(run.id)
     target_dir.mkdir(parents=True, exist_ok=True)
 
     if not no_download:
         download_artifacts(target_dir, run)
 
-    # Unpack the "solutions.zip" artifact into the "test_patches" directory
-    # NOTE: In a future revision, the job will output "test-patches.zip" rather than "solutions.zip",
-    # because we actually don't want (and will ignore) the code patches. The purpose of these runs is
-    # solely to generate the test patches.
+    # Unpack the "solutions.zip" artifact into the "code_patches" directory
     solutions_zip = target_dir / "solutions.zip"
 
     def unpack_solutions():
         import zipfile
 
         with zipfile.ZipFile(solutions_zip, "r") as z:
-            z.extractall(target_dir / "test_patches")
+            z.extractall(target_dir / "code_patches")
 
     unpack_solutions()
 
     # Iterate through each solution file and reformulate it as a test patch
-    for solution_file in (target_dir / "test_patches").rglob("solution.json"):
+    for solution_file in (target_dir / "code_patches").rglob("solution.json"):
         with solution_file.open() as f:
             solution: Solution = load(f)
 
         instance_id = solution["instance_id"]
-        if solution["edit_test_file"]:
-            test_patch = TestPatchResult(
-                edit_test_file=solution["edit_test_file"],
-                test_patch=solution["test_patch"],
-                inverted_patch=solution["test_inverted_patch"],
-            )
-            with open(target_dir / "test_patches" / f"{instance_id}.json", "w") as f:
-                f.write(json.dumps(test_patch, indent=2))
+        with open(target_dir / "code_patches" / f"{instance_id}.json", "w") as f:
+            f.write(json.dumps(solution, indent=2))
 
         # Delete solution_file parent directory recursively
         shutil.rmtree(solution_file.parent.parent)
 
-    # Iterate through the test patches and update the data / test_patches directory with a symlink to any
+    # Iterate through the code patches and update the data / code_patches directory with a symlink to any
     # new, complete test patches.
-    for test_patch_file in (target_dir / "test_patches").rglob("*.json"):
-        instance_id = test_patch_file.stem
-        target = Path("data") / "test_patches" / f"{instance_id}.json"
+    for code_patch_file in (target_dir / "code_patches").rglob("*.json"):
+        instance_id = code_patch_file.stem
+        target = Path("data") / "code_patches" / f"{instance_id}.json"
         if target.exists():
             continue
 
-        with test_patch_file.open() as f:
-            test_patch: TestPatchResult = json.load(f)
+        with code_patch_file.open() as f:
+            solution: Solution = load(f)
 
-        if not is_optimal_test_patch(test_patch):
+        if not meets_score_threshold(solution["code_patch_score"]):
             continue
 
-        link_source = Path("..") / ".." / test_patch_file
+        link_source = Path("..") / ".." / code_patch_file
 
-        print(f"Importing new optimal test patch {instance_id}")
+        print(f"Importing new optimal code patch {instance_id}")
         print(f"Link target: {target}")
         print(f"Link source: {link_source}")
 
@@ -109,7 +99,7 @@ def main(run_id: int, no_download: bool = False):
 
 if __name__ == "__main__":
     """
-    Import data from a GitHub Workflow run that has been performed to generate test cases.
+    Import data from a GitHub Workflow run that has been performed to generate code solutions.
     """
     parser = ArgumentParser()
     parser.add_argument(

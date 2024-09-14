@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15345",
+  "edit_test_file": "sympy/printing/tests/test_mathematica.py",
+  "code_patch": "diff --git a/sympy/printing/mathematica.py b/sympy/printing/mathematica.py\nindex ea7e3a2..94b2c64 100644\n--- a/sympy/printing/mathematica.py\n+++ b/sympy/printing/mathematica.py\n@@ -79,6 +79,9 @@ def _print_Mul(self, expr):\n             res += '**'.join(self.parenthesize(a, PREC) for a in nc)\n         return res\n \n+    def _print_Max(self, expr):\n+        return 'Max[%s]' % ', '.join(self.doprint(arg) for arg in expr.args)\n+\n     def _print_Pi(self, expr):\n         return 'Pi'\n \n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_mathematicacode.py b/sympy/printing/tests/test_mathematicacode.py\nnew file mode 100644\nindex 0000000..f7399d7\n--- /dev/null\n+++ b/sympy/printing/tests/test_mathematicacode.py\n@@ -0,0 +1,7 @@\n+from sympy import symbols, Max\n+from sympy import mathematica_code as mcode\n+\n+def test_Max_issue():\n+    x = symbols('x')\n+    # The expected output is 'Max[x,2]', but the issue is that it returns 'Max(2, x)'\n+    assert mcode(Max(x, 2)) == 'Max(2, x)'\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_mathematicacode_inverted.py b/sympy/printing/tests/test_mathematicacode_inverted.py\nnew file mode 100644\nindex 0000000..b72e592\n--- /dev/null\n+++ b/sympy/printing/tests/test_mathematicacode_inverted.py\n@@ -0,0 +1,8 @@\n+from sympy import symbols, Max\n+from sympy import mathematica_code as mcode\n+\n+def test_Max_issue():\n+    x = symbols('x')\n+    # The expected output is 'Max[x,2]', but the issue is that it returns 'Max(2, x)'\n+    # Alter the assertion to fail when the bug is observed\n+    assert mcode(Max(x, 2)) == 'Max[x,2]', \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1291310,
+  "num_received_chars": 47264,
+  "elapsed_time": 493.36248564720154,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-13453",
+  "edit_test_file": "astropy/io/ascii/tests/test_html.py",
+  "code_patch": "diff --git a/astropy/io/ascii/html.py b/astropy/io/ascii/html.py\nindex 266cf22..979b32d 100644\n--- a/astropy/io/ascii/html.py\n+++ b/astropy/io/ascii/html.py\n@@ -355,6 +355,12 @@ class HTML(core.BaseReader):\n \n         self.data._set_fill_values(cols)\n \n+        # Apply formats to columns if specified\n+        formats = self.html.get('formats', {})\n+        for col in cols:\n+            if col.info.name in formats:\n+                col.format = formats[col.info.name]\n+\n         lines = []\n \n         # Set HTML escaping to False for any column in the raw_html_cols input\n\ndiff --git a/astropy/io/ascii/ui.py b/astropy/io/ascii/ui.py\nindex bef8019..275335b 100644\n--- a/astropy/io/ascii/ui.py\n+++ b/astropy/io/ascii/ui.py\n@@ -857,6 +857,10 @@ def write(table, output=None, format=None, Writer=None, fast_writer=True, *,\n         writer.write(table, output)\n         return\n \n+    # Pass formats to the writer if specified\n+    if 'formats' in kwargs:\n+        writer.html['formats'] = kwargs['formats']\n+\n     lines = writer.write(table)\n \n     # Write the lines to output\n",
+  "test_patch": "diff --git a/astropy/io/ascii/tests/test_html_formats.py b/astropy/io/ascii/tests/test_html_formats.py\nnew file mode 100644\nindex 0000000..1ee7cde\n--- /dev/null\n+++ b/astropy/io/ascii/tests/test_html_formats.py\n@@ -0,0 +1,24 @@\n+import unittest\n+from astropy.table import Table\n+from io import StringIO\n+\n+class TestHTMLFormatIssue(unittest.TestCase):\n+    def test_html_format_ignored(self):\n+        \"\"\"\n+        Test that the 'formats' argument is ignored when writing to HTML.\n+        \"\"\"\n+        # Generate table\n+        t = Table([(1.23875234858e-24, 3.2348748432e-15), (2, 4)], names=('a', 'b'))\n+        tc = t.copy()  # Copy table\n+\n+        # Write HTML table with \"a\" column formatted to show 2 decimal places\n+        with StringIO() as sp:\n+            tc.write(sp, format=\"html\", formats={\"a\": lambda x: f\"{x:.2e}\"})\n+            output = sp.getvalue()\n+\n+        # Check that the output is not formatted as expected\n+        self.assertIn('<td>1.23875234858e-24</td>', output)\n+        self.assertIn('<td>3.2348748432e-15</td>', output)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/io/ascii/tests/test_html_formats_inverted.py b/astropy/io/ascii/tests/test_html_formats_inverted.py\nnew file mode 100644\nindex 0000000..e9797f3\n--- /dev/null\n+++ b/astropy/io/ascii/tests/test_html_formats_inverted.py\n@@ -0,0 +1,25 @@\n+import unittest\n+from astropy.table import Table\n+from io import StringIO\n+\n+class TestHTMLFormatIssue(unittest.TestCase):\n+    def test_html_format_ignored(self):\n+        \"\"\"\n+        Test that the 'formats' argument is ignored when writing to HTML.\n+        \"\"\"\n+        # Generate table\n+        t = Table([(1.23875234858e-24, 3.2348748432e-15), (2, 4)], names=('a', 'b'))\n+        tc = t.copy()  # Copy table\n+\n+        # Write HTML table with \"a\" column formatted to show 2 decimal places\n+        with StringIO() as sp:\n+            tc.write(sp, format=\"html\", formats={\"a\": lambda x: f\"{x:.2e}\"})\n+            output = sp.getvalue()\n+\n+        # Check that the output is formatted as expected\n+        # This should fail if the bug is present\n+        if '<td>1.24e-24</td>' not in output or '<td>3.23e-15</td>' not in output:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 495538,
+  "num_received_chars": 26768,
+  "elapsed_time": 224.15136337280273,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

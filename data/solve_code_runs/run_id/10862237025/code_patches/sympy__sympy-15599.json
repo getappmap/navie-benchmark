@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15599",
+  "edit_test_file": "sympy/printing/tests/test_numpy.py",
+  "code_patch": "diff --git a/sympy/core/mod.py b/sympy/core/mod.py\nindex eae2563..4656bad 100644\n--- a/sympy/core/mod.py\n+++ b/sympy/core/mod.py\n@@ -119,6 +119,13 @@ def doit(p, q):\n \n         elif isinstance(p, Mul):\n             # separating into modulus and non modulus\n+            coeff, rest = p.as_coeff_Mul()\n+            if coeff.is_integer and q.is_integer:\n+                coeff = coeff % q\n+                if coeff == 0:\n+                    return cls(rest, q)\n+                p = Mul(coeff, rest)\n+\n             both_l = non_mod_l, mod_l = [], []\n             for arg in p.args:\n                 both_l[isinstance(arg, cls)].append(arg)\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_mod.py b/sympy/printing/tests/test_mod.py\nnew file mode 100644\nindex 0000000..f1da0a8\n--- /dev/null\n+++ b/sympy/printing/tests/test_mod.py\n@@ -0,0 +1,6 @@\n+from sympy import Symbol, Mod\n+\n+def test_mod_issue():\n+    i = Symbol('i', integer=True)\n+    # This test should pass when the issue is observed, i.e., Mod(3*i, 2) is unchanged\n+    assert Mod(3*i, 2) == Mod(3*i, 2)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_mod_inverted.py b/sympy/printing/tests/test_mod_inverted.py\nnew file mode 100644\nindex 0000000..df82222\n--- /dev/null\n+++ b/sympy/printing/tests/test_mod_inverted.py\n@@ -0,0 +1,6 @@\n+from sympy import Symbol, Mod\n+\n+def test_mod_issue():\n+    i = Symbol('i', integer=True)\n+    # This test should fail when the issue is observed, i.e., Mod(3*i, 2) should reduce to Mod(i, 2)\n+    assert Mod(3*i, 2) == Mod(i, 2), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1152417,
+  "num_received_chars": 47616,
+  "elapsed_time": 484.93278074264526,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 12,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

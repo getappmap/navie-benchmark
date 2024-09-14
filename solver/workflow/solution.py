@@ -23,3 +23,10 @@ class Solution(TypedDict):
     appmap_data_test_status: Optional[str]
     appmap_data_file_count: Optional[int]
     appmap_data_context_size: Optional[int]
+
+
+SCORE_THRESHOLD = 2
+
+
+def meets_score_threshold(code_patch_score: Optional[int]) -> bool:
+    return code_patch_score is not None and code_patch_score >= SCORE_THRESHOLD

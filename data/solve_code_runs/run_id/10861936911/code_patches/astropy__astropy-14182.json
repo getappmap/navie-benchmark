@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14182",
+  "edit_test_file": "astropy/io/ascii/tests/test_rst.py",
+  "code_patch": "diff --git a/astropy/io/ascii/rst.py b/astropy/io/ascii/rst.py\nindex abdeba8..b4f7271 100644\n--- a/astropy/io/ascii/rst.py\n+++ b/astropy/io/ascii/rst.py\n@@ -57,10 +57,23 @@ class RST(FixedWidth):\n     data_class = SimpleRSTData\n     header_class = SimpleRSTHeader\n \n-    def __init__(self):\n+    def __init__(self, header_rows=None):\n         super().__init__(delimiter_pad=None, bookend=False)\n+        self.header_rows = header_rows or []\n \n     def write(self, lines):\n+        # Process header rows if provided\n+        if self.header_rows:\n+            header_lines = self._format_header_rows(self.header_rows)\n+            lines = header_lines + lines\n+\n         lines = super().write(lines)\n         lines = [lines[1]] + lines + [lines[1]]\n         return lines\n+\n+    def _format_header_rows(self, header_rows):\n+        \"\"\"Format the header rows for RST output.\"\"\"\n+        formatted_headers = []\n+        for header in header_rows:\n+            formatted_headers.append(\" \".join(header))\n+        return formatted_headers\n",
+  "test_patch": "diff --git a/astropy/io/ascii/tests/test_rst_header_support.py b/astropy/io/ascii/tests/test_rst_header_support.py\nnew file mode 100644\nindex 0000000..7c162cd\n--- /dev/null\n+++ b/astropy/io/ascii/tests/test_rst_header_support.py\n@@ -0,0 +1,9 @@\n+import sys\n+from astropy.table import QTable\n+import astropy.units as u\n+import pytest\n+\n+def test_rst_header_rows_exception():\n+    tbl = QTable({'wave': [350, 950] * u.nm, 'response': [0.7, 1.2] * u.count})\n+    with pytest.raises(TypeError, match=\"__init__\\\\(\\\\) got an unexpected keyword argument 'header_rows'\"):\n+        tbl.write(sys.stdout, format=\"ascii.rst\", header_rows=[\"name\", \"unit\"])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/io/ascii/tests/test_rst_header_support_inverted.py b/astropy/io/ascii/tests/test_rst_header_support_inverted.py\nnew file mode 100644\nindex 0000000..18d8483\n--- /dev/null\n+++ b/astropy/io/ascii/tests/test_rst_header_support_inverted.py\n@@ -0,0 +1,13 @@\n+import sys\n+from astropy.table import QTable\n+import astropy.units as u\n+import pytest\n+\n+def test_rst_header_rows_exception():\n+    tbl = QTable({'wave': [350, 950] * u.nm, 'response': [0.7, 1.2] * u.count})\n+    try:\n+        tbl.write(sys.stdout, format=\"ascii.rst\", header_rows=[\"name\", \"unit\"])\n+    except TypeError as e:\n+        assert str(e) == \"__BUG__HERE__\"\n+    else:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1859309,
+  "num_received_chars": 100454,
+  "elapsed_time": 906.5587511062622,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

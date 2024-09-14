@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24539",
+  "edit_test_file": "sympy/polys/tests/test_fields.py",
+  "code_patch": "diff --git a/sympy/polys/rings.py b/sympy/polys/rings.py\nindex 12bd2fc..da30c39 100644\n--- a/sympy/polys/rings.py\n+++ b/sympy/polys/rings.py\n@@ -616,12 +616,16 @@ def set_ring(self, new_ring):\n             return new_ring.from_dict(self, self.ring.domain)\n \n     def as_expr(self, *symbols):\n-        if symbols and len(symbols) != self.ring.ngens:\n-            raise ValueError(\"not enough symbols, expected %s got %s\" % (self.ring.ngens, len(symbols)))\n+        if symbols:\n+            if len(symbols) != self.ring.ngens:\n+                raise ValueError(\"Incorrect number of symbols, expected %s got %s\" % (self.ring.ngens, len(symbols)))\n         else:\n             symbols = self.ring.symbols\n \n-        return expr_from_dict(self.as_expr_dict(), *symbols)\n+        symbol_map = dict(zip(self.ring.symbols, symbols))\n+        expr_dict = {tuple(symbol_map.get(sym, sym) for sym in monom): coeff for monom, coeff in self.as_expr_dict().items()}\n+\n+        return expr_from_dict(expr_dict, *symbols)\n \n     def as_expr_dict(self):\n         to_sympy = self.ring.domain.to_sympy\n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_as_expr_functionality.py b/sympy/polys/tests/test_as_expr_functionality.py\nnew file mode 100644\nindex 0000000..7eb848b\n--- /dev/null\n+++ b/sympy/polys/tests/test_as_expr_functionality.py\n@@ -0,0 +1,15 @@\n+from sympy import ring, ZZ, symbols\n+\n+def test_PolyElement_as_expr_ignores_symbols():\n+    R, x, y, z = ring(\"x,y,z\", ZZ)\n+    f = 3*x**2*y - x*y*z + 7*z**3 + 1\n+    U, V, W = symbols(\"u,v,w\")\n+    \n+    # Attempt to convert f to an expression using different symbols\n+    result = f.as_expr(U, V, W)\n+    \n+    # The expected result should use the new symbols U, V, W\n+    expected = 3*U**2*V - U*V*W + 7*W**3 + 1\n+    \n+    # Assert that the result is incorrect, reproducing the issue\n+    assert result != expected, f\"Expected {expected}, but got {result}\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_as_expr_functionality_inverted.py b/sympy/polys/tests/test_as_expr_functionality_inverted.py\nnew file mode 100644\nindex 0000000..72e315e\n--- /dev/null\n+++ b/sympy/polys/tests/test_as_expr_functionality_inverted.py\n@@ -0,0 +1,15 @@\n+from sympy import ring, ZZ, symbols\n+\n+def test_PolyElement_as_expr_ignores_symbols():\n+    R, x, y, z = ring(\"x,y,z\", ZZ)\n+    f = 3*x**2*y - x*y*z + 7*z**3 + 1\n+    U, V, W = symbols(\"u,v,w\")\n+    \n+    # Attempt to convert f to an expression using different symbols\n+    result = f.as_expr(U, V, W)\n+    \n+    # The expected result should use the new symbols U, V, W\n+    expected = 3*U**2*V - U*V*W + 7*W**3 + 1\n+    \n+    # Assert that the result is correct, and raise an error if the bug is observed\n+    assert result == expected, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 178645,
+  "num_received_chars": 4553,
+  "elapsed_time": 44.82805585861206,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

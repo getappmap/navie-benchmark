@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14309",
+  "edit_test_file": "astropy/io/registry/tests/test_registries.py",
+  "code_patch": "diff --git a/astropy/io/fits/connect.py b/astropy/io/fits/connect.py\nindex 4b6150f..1f51fe4 100644\n--- a/astropy/io/fits/connect.py\n+++ b/astropy/io/fits/connect.py\n@@ -69,7 +69,7 @@ def is_fits(origin, filepath, fileobj, *args, **kwargs):\n             (\".fits\", \".fits.gz\", \".fit\", \".fit.gz\", \".fts\", \".fts.gz\")\n         ):\n             return True\n-    return isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU))\n+    return len(args) > 0 and isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU))\n \n \n def _decode_mixins(tbl):\n\ndiff --git a/astropy/io/registry/base.py b/astropy/io/registry/base.py\nindex 0ac2a20..cac3518 100644\n--- a/astropy/io/registry/base.py\n+++ b/astropy/io/registry/base.py\n@@ -4,6 +4,7 @@ import abc\n import contextlib\n import re\n import warnings\n+from astropy.utils.exceptions import AstropyUserWarning\n from collections import OrderedDict\n from operator import itemgetter\n \n@@ -310,10 +311,17 @@ class _UnifiedIORegistryBase(metaclass=abc.ABCMeta):\n         valid_formats = []\n         for data_format, data_class in self._identifiers:\n             if self._is_best_match(data_class_required, data_class, self._identifiers):\n-                if self._identifiers[(data_format, data_class)](\n-                    origin, path, fileobj, *args, **kwargs\n-                ):\n-                    valid_formats.append(data_format)\n+                try:\n+                    if self._identifiers[(data_format, data_class)](\n+                        origin, path, fileobj, *args, **kwargs\n+                    ):\n+                        valid_formats.append(data_format)\n+                except IndexError:\n+                    warnings.warn(\n+                        f\"Identifier function for format {data_format!r} and class\"\n+                        f\" {data_class.__name__!r} failed due to missing arguments.\",\n+                        AstropyUserWarning\n+                    )\n \n         return valid_formats\n \n",
+  "test_patch": "diff --git a/astropy/io/registry/tests/test_identify_format_index_error.py b/astropy/io/registry/tests/test_identify_format_index_error.py\nnew file mode 100644\nindex 0000000..28452ff\n--- /dev/null\n+++ b/astropy/io/registry/tests/test_identify_format_index_error.py\n@@ -0,0 +1,12 @@\n+import unittest\n+from astropy.io.registry import identify_format\n+from astropy.table import Table\n+from astropy.io.registry.base import IORegistryError\n+\n+class TestIdentifyFormatIndexError(unittest.TestCase):\n+    def test_identify_format_index_error(self):\n+        with self.assertRaises(IndexError):\n+            identify_format(\"write\", Table, \"bububu.ecsv\", None, [], {})\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/io/registry/tests/test_identify_format_index_error_inverted.py b/astropy/io/registry/tests/test_identify_format_index_error_inverted.py\nnew file mode 100644\nindex 0000000..132c9f6\n--- /dev/null\n+++ b/astropy/io/registry/tests/test_identify_format_index_error_inverted.py\n@@ -0,0 +1,13 @@\n+import unittest\n+from astropy.io.registry import identify_format\n+from astropy.table import Table\n+\n+class TestIdentifyFormatIndexError(unittest.TestCase):\n+    def test_identify_format_index_error(self):\n+        try:\n+            identify_format(\"write\", Table, \"bububu.ecsv\", None, [], {})\n+        except IndexError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 213210,
+  "num_received_chars": 15058,
+  "elapsed_time": 112.39358377456665,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

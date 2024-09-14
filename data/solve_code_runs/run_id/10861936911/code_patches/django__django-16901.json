@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16901",
+  "edit_test_file": "tests/xor_lookups/tests.py",
+  "code_patch": "diff --git a/django/db/backends/oracle/operations.py b/django/db/backends/oracle/operations.py\nindex 64b1f82..7c7eb94 100644\n--- a/django/db/backends/oracle/operations.py\n+++ b/django/db/backends/oracle/operations.py\n@@ -639,7 +639,8 @@ END;\n         elif connector == \">>\":\n             return \"FLOOR(%(lhs)s / POWER(2, %(rhs)s))\" % {\"lhs\": lhs, \"rhs\": rhs}\n         elif connector == \"^\":\n-            return \"POWER(%s)\" % \",\".join(sub_expressions)\n+            # Correct XOR logic for parity-based evaluation\n+            return \"MOD(%s + %s, 2)\" % (lhs, rhs)\n         elif connector == \"#\":\n             raise NotSupportedError(\"Bitwise XOR is not supported in Oracle.\")\n         return super().combine_expression(connector, sub_expressions)\n",
+  "test_patch": "diff --git a/tests/xor_lookups/test_xor_fallback_parity.py b/tests/xor_lookups/test_xor_fallback_parity.py\nnew file mode 100644\nindex 0000000..3526f54\n--- /dev/null\n+++ b/tests/xor_lookups/test_xor_fallback_parity.py\n@@ -0,0 +1,16 @@\n+from django.db.models import Q\n+from django.test import TestCase\n+from .models import Number\n+\n+class XorFallbackParityTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.number = Number.objects.create(num=37)\n+\n+    def test_xor_fallback_parity(self):\n+        # Test with an odd number of XORs\n+        self.assertEqual(Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37)).count(), 0)\n+        # Test with an even number of XORs\n+        self.assertEqual(Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37)).count(), 0)\n+        # Test with an odd number of XORs again\n+        self.assertEqual(Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37)).count(), 0)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/xor_lookups/test_xor_fallback_parity_inverted.py b/tests/xor_lookups/test_xor_fallback_parity_inverted.py\nnew file mode 100644\nindex 0000000..07dc775\n--- /dev/null\n+++ b/tests/xor_lookups/test_xor_fallback_parity_inverted.py\n@@ -0,0 +1,20 @@\n+from django.db.models import Q\n+from django.test import TestCase\n+from .models import Number\n+\n+class XorFallbackParityTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.number = Number.objects.create(num=37)\n+\n+    def test_xor_fallback_parity(self):\n+        # Test with an odd number of XORs\n+        if Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37)).count() == 0:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        \n+        # Test with an even number of XORs\n+        self.assertEqual(Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37)).count(), 0)\n+        \n+        # Test with an odd number of XORs again\n+        if Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37)).count() == 0:\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 2143566,
+  "num_received_chars": 84354,
+  "elapsed_time": 496.968811750412,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 144408
+}

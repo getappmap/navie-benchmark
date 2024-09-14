@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4629",
+  "edit_test_file": "xarray/tests/test_merge.py",
+  "code_patch": "diff --git a/xarray/core/merge.py b/xarray/core/merge.py\nindex ca4e29b..9773b16 100644\n--- a/xarray/core/merge.py\n+++ b/xarray/core/merge.py\n@@ -501,7 +501,7 @@ def merge_attrs(variable_attrs, combine_attrs):\n     if combine_attrs == \"drop\":\n         return {}\n     elif combine_attrs == \"override\":\n-        return variable_attrs[0]\n+        return dict(variable_attrs[0])  # Return a copy of the first object's attrs\n     elif combine_attrs == \"no_conflicts\":\n         result = dict(variable_attrs[0])\n         for attrs in variable_attrs[1:]:\n",
+  "test_patch": "diff --git a/xarray/tests/test_merge_attrs.py b/xarray/tests/test_merge_attrs.py\nnew file mode 100644\nindex 0000000..45e9e66\n--- /dev/null\n+++ b/xarray/tests/test_merge_attrs.py\n@@ -0,0 +1,27 @@\n+import unittest\n+import xarray as xr\n+\n+class TestMergeAttrsOverride(unittest.TestCase):\n+    def test_merge_attrs_override_references(self):\n+        # Create two datasets with different attributes\n+        xds1 = xr.Dataset(attrs={'a': 'b'})\n+        xds2 = xr.Dataset(attrs={'a': 'c'})\n+\n+        # Merge datasets with combine_attrs='override'\n+        xds3 = xr.merge([xds1, xds2], combine_attrs='override')\n+\n+        # Check initial attribute values\n+        self.assertEqual(xds1.attrs['a'], 'b')\n+        self.assertEqual(xds2.attrs['a'], 'c')\n+        self.assertEqual(xds3.attrs['a'], 'b')\n+\n+        # Modify the attribute of the merged dataset\n+        xds3.attrs['a'] = 'd'\n+\n+        # Check if the attribute change in xds3 affects xds1\n+        self.assertEqual(xds1.attrs['a'], 'd')  # This should reproduce the issue\n+        self.assertEqual(xds2.attrs['a'], 'c')\n+        self.assertEqual(xds3.attrs['a'], 'd')\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_merge_attrs_inverted.py b/xarray/tests/test_merge_attrs_inverted.py\nnew file mode 100644\nindex 0000000..d62b5f8\n--- /dev/null\n+++ b/xarray/tests/test_merge_attrs_inverted.py\n@@ -0,0 +1,28 @@\n+import unittest\n+import xarray as xr\n+\n+class TestMergeAttrsOverride(unittest.TestCase):\n+    def test_merge_attrs_override_references(self):\n+        # Create two datasets with different attributes\n+        xds1 = xr.Dataset(attrs={'a': 'b'})\n+        xds2 = xr.Dataset(attrs={'a': 'c'})\n+\n+        # Merge datasets with combine_attrs='override'\n+        xds3 = xr.merge([xds1, xds2], combine_attrs='override')\n+\n+        # Check initial attribute values\n+        self.assertEqual(xds1.attrs['a'], 'b')\n+        self.assertEqual(xds2.attrs['a'], 'c')\n+        self.assertEqual(xds3.attrs['a'], 'b')\n+\n+        # Modify the attribute of the merged dataset\n+        xds3.attrs['a'] = 'd'\n+\n+        # Check if the attribute change in xds3 affects xds1\n+        if xds1.attrs['a'] == 'd':\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(xds2.attrs['a'], 'c')\n+        self.assertEqual(xds3.attrs['a'], 'd')\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 151525,
+  "num_received_chars": 5601,
+  "elapsed_time": 64.1294481754303,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 45199
+}

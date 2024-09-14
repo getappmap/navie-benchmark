@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13807",
+  "edit_test_file": "tests/fixtures_model_package/tests.py",
+  "code_patch": "diff --git a/django/db/backends/sqlite3/base.py b/django/db/backends/sqlite3/base.py\nindex 2eeaf98..38bfc7f 100644\n--- a/django/db/backends/sqlite3/base.py\n+++ b/django/db/backends/sqlite3/base.py\n@@ -327,7 +327,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):\n                     violations = cursor.execute('PRAGMA foreign_key_check').fetchall()\n                 else:\n                     violations = chain.from_iterable(\n-                        cursor.execute('PRAGMA foreign_key_check(%s)' % table_name).fetchall()\n+                        cursor.execute('PRAGMA foreign_key_check(%s)' % self.ops.quote_name(table_name)).fetchall()\n                         for table_name in table_names\n                     )\n                 # See https://www.sqlite.org/pragma.html#pragma_foreign_key_check\n",
+  "test_patch": "diff --git a/tests/fixtures_model_package/test_sqlite_reserved_word_table_names.py b/tests/fixtures_model_package/test_sqlite_reserved_word_table_names.py\nnew file mode 100644\nindex 0000000..0b4ccd1\n--- /dev/null\n+++ b/tests/fixtures_model_package/test_sqlite_reserved_word_table_names.py\n@@ -0,0 +1,24 @@\n+from django.core import management\n+from django.core.management import CommandError\n+from django.test import TestCase\n+from django.db import models\n+\n+class Order(models.Model):\n+    name = models.CharField(max_length=100)\n+\n+    class Meta:\n+        app_label = 'fixtures_model_package'\n+\n+class LoadDataWithReservedKeywordsTestCase(TestCase):\n+    def test_loaddata_with_reserved_keyword(self):\n+        with self.assertRaises(CommandError):\n+            management.call_command('loaddata', 'order_fixture.json', verbosity=0)\n+[\n+    {\n+        \"pk\": \"1\",\n+        \"model\": \"fixtures_model_package.order\",\n+        \"fields\": {\n+            \"name\": \"Sample Order\"\n+        }\n+    }\n+]\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/fixtures_model_package/test_sqlite_reserved_word_table_names_inverted.py b/tests/fixtures_model_package/test_sqlite_reserved_word_table_names_inverted.py\nnew file mode 100644\nindex 0000000..e1b2235\n--- /dev/null\n+++ b/tests/fixtures_model_package/test_sqlite_reserved_word_table_names_inverted.py\n@@ -0,0 +1,17 @@\n+from django.core import management\n+from django.core.management import CommandError\n+from django.test import TestCase\n+from django.db import models\n+\n+class Order(models.Model):\n+    name = models.CharField(max_length=100)\n+\n+    class Meta:\n+        app_label = 'fixtures_model_package'\n+\n+class LoadDataWithReservedKeywordsTestCase(TestCase):\n+    def test_loaddata_with_reserved_keyword(self):\n+        try:\n+            management.call_command('loaddata', 'order_fixture.json', verbosity=0)\n+        except CommandError:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1209327,
+  "num_received_chars": 153529,
+  "elapsed_time": 724.6883101463318,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

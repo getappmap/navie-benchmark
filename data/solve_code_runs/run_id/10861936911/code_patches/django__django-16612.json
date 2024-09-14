@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16612",
+  "edit_test_file": "tests/middleware/tests.py",
+  "code_patch": "diff --git a/django/contrib/admin/sites.py b/django/contrib/admin/sites.py\nindex 61be31d..a043e6a 100644\n--- a/django/contrib/admin/sites.py\n+++ b/django/contrib/admin/sites.py\n@@ -453,7 +453,10 @@ class AdminSite:\n                 pass\n             else:\n                 if getattr(match.func, \"should_append_slash\", True):\n-                    return HttpResponsePermanentRedirect(\"%s/\" % request.path)\n+                    new_url = \"%s/\" % request.path\n+                    if request.META.get('QUERY_STRING'):\n+                        new_url += '?' + request.META['QUERY_STRING']\n+                    return HttpResponsePermanentRedirect(new_url)\n         raise Http404\n \n     def _build_app_dict(self, request, label=None):\n",
+  "test_patch": "diff --git a/tests/middleware/test_catch_all_view_redirect.py b/tests/middleware/test_catch_all_view_redirect.py\nnew file mode 100644\nindex 0000000..c9bc7e1\n--- /dev/null\n+++ b/tests/middleware/test_catch_all_view_redirect.py\n@@ -0,0 +1,17 @@\n+from django.test import TestCase, RequestFactory, override_settings\n+from django.http import Http404\n+from django.contrib.admin.sites import AdminSite\n+\n+class AdminSiteRedirectTest(TestCase):\n+    def setUp(self):\n+        self.factory = RequestFactory()\n+        self.admin_site = AdminSite()\n+\n+    @override_settings(APPEND_SLASH=True)\n+    def test_catch_all_view_drops_query_string(self):\n+        \"\"\"\n+        Test that AdminSite.catch_all_view() drops query string in redirects.\n+        \"\"\"\n+        request = self.factory.get('/admin/auth/foo?id=123')\n+        with self.assertRaises(Http404):\n+            self.admin_site.catch_all_view(request, 'auth/foo?id=123')\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/middleware/test_catch_all_view_redirect_inverted.py b/tests/middleware/test_catch_all_view_redirect_inverted.py\nnew file mode 100644\nindex 0000000..0382bb9\n--- /dev/null\n+++ b/tests/middleware/test_catch_all_view_redirect_inverted.py\n@@ -0,0 +1,19 @@\n+from django.test import TestCase, RequestFactory, override_settings\n+from django.http import Http404\n+from django.contrib.admin.sites import AdminSite\n+\n+class AdminSiteRedirectTest(TestCase):\n+    def setUp(self):\n+        self.factory = RequestFactory()\n+        self.admin_site = AdminSite()\n+\n+    @override_settings(APPEND_SLASH=True)\n+    def test_catch_all_view_drops_query_string(self):\n+        \"\"\"\n+        Test that AdminSite.catch_all_view() drops query string in redirects.\n+        \"\"\"\n+        request = self.factory.get('/admin/auth/foo?id=123')\n+        try:\n+            self.admin_site.catch_all_view(request, 'auth/foo?id=123')\n+        except Http404:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1104909,
+  "num_received_chars": 43111,
+  "elapsed_time": 351.42585492134094,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 21114
+}

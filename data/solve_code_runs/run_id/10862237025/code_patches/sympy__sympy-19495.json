@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19495",
+  "edit_test_file": "sympy/sets/tests/test_conditionset.py",
+  "code_patch": "diff --git a/sympy/sets/conditionset.py b/sympy/sets/conditionset.py\nindex 118eda6..3ea407d 100644\n--- a/sympy/sets/conditionset.py\n+++ b/sympy/sets/conditionset.py\n@@ -15,7 +15,7 @@\n from sympy.utilities.exceptions import SymPyDeprecationWarning\n \n from .contains import Contains\n-from .sets import Set, EmptySet, Union, FiniteSet\n+from .sets import Set, EmptySet, Union, FiniteSet, ImageSet\n \n \n class ConditionSet(Set):\n@@ -229,6 +229,9 @@ def _eval_subs(self, old, new):\n                         # subs will be needed to change the dummy\n                         return self.func(sym, cond, base)\n                     else:\n+                        if isinstance(base, ImageSet):\n+                            # Ensure substitutions do not affect bound variables in ImageSet\n+                            base = ImageSet(base.lamda, *base.base_sets)\n                         return self.func(new, cond.subs(old, new), base)\n                 raise ValueError(filldedent('''\n                     A dummy symbol can only be\n",
+  "test_patch": "diff --git a/sympy/sets/tests/test_imageset_conditions.py b/sympy/sets/tests/test_imageset_conditions.py\nnew file mode 100644\nindex 0000000..49bf636\n--- /dev/null\n+++ b/sympy/sets/tests/test_imageset_conditions.py\n@@ -0,0 +1,18 @@\n+from sympy import Symbol, ConditionSet, ImageSet, Lambda, S, pi, asin, Contains, Rational\n+from sympy.abc import x, y, n\n+\n+def test_imageset_conditionset_subs_issue():\n+    # Create an ImageSet\n+    imageset_expr = ImageSet(Lambda(n, 2*n*pi + asin(y)), S.Integers)\n+    \n+    # Create a ConditionSet using the ImageSet\n+    conditionset_expr = ConditionSet(x, Contains(y, S.Reals), imageset_expr)\n+    \n+    # Substitute y with Rational(1, 3) in the ConditionSet\n+    result = conditionset_expr.subs(y, Rational(1, 3))\n+    \n+    # Expected incorrect output as described in the issue\n+    expected_output = ConditionSet(Rational(1, 3), Contains(Rational(1, 3), imageset_expr.subs(y, Rational(1, 3))), imageset_expr.subs(y, Rational(1, 3)))\n+    \n+    # Assert that the incorrect output is produced\n+    assert result == expected_output, f\"Unexpected output: {result}\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/sets/tests/test_imageset_conditions_inverted.py b/sympy/sets/tests/test_imageset_conditions_inverted.py\nnew file mode 100644\nindex 0000000..5d87522\n--- /dev/null\n+++ b/sympy/sets/tests/test_imageset_conditions_inverted.py\n@@ -0,0 +1,18 @@\n+from sympy import Symbol, ConditionSet, ImageSet, Lambda, S, pi, asin, Contains, Rational\n+from sympy.abc import x, y, n\n+\n+def test_imageset_conditionset_subs_issue():\n+    # Create an ImageSet\n+    imageset_expr = ImageSet(Lambda(n, 2*n*pi + asin(y)), S.Integers)\n+    \n+    # Create a ConditionSet using the ImageSet\n+    conditionset_expr = ConditionSet(x, Contains(y, S.Reals), imageset_expr)\n+    \n+    # Substitute y with Rational(1, 3) in the ConditionSet\n+    result = conditionset_expr.subs(y, Rational(1, 3))\n+    \n+    # Expected correct output\n+    expected_output = ConditionSet(x, Contains(Rational(1, 3), S.Reals), imageset_expr.subs(y, Rational(1, 3)))\n+    \n+    # Assert that the incorrect output is produced\n+    assert result == expected_output, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2948594,
+  "num_received_chars": 194214,
+  "elapsed_time": 981.691262960434,
+  "lint_repair_count": 27,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-25287",
+  "edit_test_file": "lib/matplotlib/tests/test_colorbar.py",
+  "code_patch": "diff --git a/lib/mpl_toolkits/axisartist/axis_artist.py b/lib/mpl_toolkits/axisartist/axis_artist.py\nindex 74df999..049dc5e 100644\n--- a/lib/mpl_toolkits/axisartist/axis_artist.py\n+++ b/lib/mpl_toolkits/axisartist/axis_artist.py\n@@ -963,11 +963,14 @@ class AxisArtist(martist.Artist):\n \n     def _init_offsetText(self, direction):\n         x, y, va, ha = self._offsetText_pos[direction]\n+        labelcolor = mpl.rcParams['xtick.labelcolor']\n+        if labelcolor == 'inherit':\n+            labelcolor = mpl.rcParams['xtick.color']\n         self.offsetText = mtext.Annotation(\n             \"\",\n             xy=(x, y), xycoords=\"axes fraction\",\n             xytext=(0, 0), textcoords=\"offset points\",\n-            color=mpl.rcParams['xtick.color'],\n+            color=labelcolor,\n             horizontalalignment=ha, verticalalignment=va,\n         )\n         self.offsetText.set_transform(IdentityTransform())\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_tick_label_color.py b/lib/matplotlib/tests/test_tick_label_color.py\nnew file mode 100644\nindex 0000000..28a17b3\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_tick_label_color.py\n@@ -0,0 +1,17 @@\n+import matplotlib.pyplot as plt\n+import unittest\n+\n+class TestTickLabelColor(unittest.TestCase):\n+    def test_offset_text_color(self):\n+        plt.rcParams.update({'ytick.labelcolor': 'red', 'ytick.color': 'blue'})\n+        fig, ax = plt.subplots()\n+        ax.plot([1.01e9, 1.02e9, 1.03e9])\n+        fig.canvas.draw()\n+\n+        # Check if the offset text color is incorrectly set to 'blue' instead of 'red'\n+        offset_text_color = ax.yaxis.offsetText.get_color()\n+        self.assertEqual(offset_text_color, 'blue', \n+                         f\"Expected offset text color to be 'blue', but got '{offset_text_color}'\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_tick_label_color_inverted.py b/lib/matplotlib/tests/test_tick_label_color_inverted.py\nnew file mode 100644\nindex 0000000..c6132c7\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_tick_label_color_inverted.py\n@@ -0,0 +1,17 @@\n+import matplotlib.pyplot as plt\n+import unittest\n+\n+class TestTickLabelColor(unittest.TestCase):\n+    def test_offset_text_color(self):\n+        plt.rcParams.update({'ytick.labelcolor': 'red', 'ytick.color': 'blue'})\n+        fig, ax = plt.subplots()\n+        ax.plot([1.01e9, 1.02e9, 1.03e9])\n+        fig.canvas.draw()\n+\n+        # Check if the offset text color is incorrectly set to 'blue' instead of 'red'\n+        offset_text_color = ax.yaxis.offsetText.get_color()\n+        self.assertEqual(offset_text_color, 'red', \n+                         f\"__BUG__HERE__: Expected offset text color to be 'red', but got '{offset_text_color}'\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1502666,
+  "num_received_chars": 56542,
+  "elapsed_time": 896.3941078186035,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

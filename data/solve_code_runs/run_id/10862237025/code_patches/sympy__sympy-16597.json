@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-16597",
+  "edit_test_file": "sympy/assumptions/tests/test_sathandlers.py",
+  "code_patch": "diff --git a/sympy/core/assumptions.py b/sympy/core/assumptions.py\nindex ce4dd30..30b6f9d 100644\n--- a/sympy/core/assumptions.py\n+++ b/sympy/core/assumptions.py\n@@ -173,7 +173,7 @@\n     'complex        ->  commutative',\n \n     'odd            ==  integer & !even',\n-    'even           ==  integer & !odd',\n+    'even           ==  integer & !odd & finite',\n \n     'real           ==  negative | zero | positive',\n     'transcendental ==  complex & !algebraic',\n@@ -198,6 +198,7 @@\n     'infinite       ->  !finite',\n     'noninteger     ==  real & !integer',\n     'nonzero        ==  real & !zero',\n+    'even           ->  finite',\n ])\n \n _assume_defined = _assume_rules.defined_facts.copy()\n",
+  "test_patch": "diff --git a/sympy/assumptions/tests/test_issue_is_even_finite.py b/sympy/assumptions/tests/test_issue_is_even_finite.py\nnew file mode 100644\nindex 0000000..2494746\n--- /dev/null\n+++ b/sympy/assumptions/tests/test_issue_is_even_finite.py\n@@ -0,0 +1,5 @@\n+from sympy import Symbol\n+\n+def test_is_even_implies_finite():\n+    m = Symbol('m', even=True)\n+    assert m.is_finite is None, \"Expected m.is_finite to be None when m is even\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/assumptions/tests/test_issue_is_even_finite_inverted.py b/sympy/assumptions/tests/test_issue_is_even_finite_inverted.py\nnew file mode 100644\nindex 0000000..44a099b\n--- /dev/null\n+++ b/sympy/assumptions/tests/test_issue_is_even_finite_inverted.py\n@@ -0,0 +1,5 @@\n+from sympy import Symbol\n+\n+def test_is_even_implies_finite():\n+    m = Symbol('m', even=True)\n+    assert m.is_finite is not None, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 202734,
+  "num_received_chars": 10513,
+  "elapsed_time": 113.73045492172241,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

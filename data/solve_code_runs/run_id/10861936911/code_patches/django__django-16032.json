@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16032",
+  "edit_test_file": "tests/annotations/tests.py",
+  "code_patch": "diff --git a/django/db/models/sql/subqueries.py b/django/db/models/sql/subqueries.py\nindex d8a246d..909ce36 100644\n--- a/django/db/models/sql/subqueries.py\n+++ b/django/db/models/sql/subqueries.py\n@@ -39,6 +39,8 @@ class DeleteQuery(Query):\n                 f\"{field.attname}__in\",\n                 pk_list[offset : offset + GET_ITERATOR_CHUNK_SIZE],\n             )\n+            # Ensure only necessary fields are selected for subquery\n+            self.clear_select_fields()\n             num_deleted += self.do_query(\n                 self.get_meta().db_table, self.where, using=using\n             )\n@@ -99,6 +101,8 @@ class UpdateQuery(Query):\n                 self.add_related_update(model, field, val)\n                 continue\n             values_seq.append((field, model, val))\n+        # Clear unnecessary select fields for subqueries in __in lookups\n+        self.clear_select_fields()\n         return self.add_update_fields(values_seq)\n \n     def add_update_fields(self, values_seq):\n",
+  "test_patch": "diff --git a/tests/annotations/annotations_alias_bug_test.py b/tests/annotations/annotations_alias_bug_test.py\nnew file mode 100644\nindex 0000000..1c8a88c\n--- /dev/null\n+++ b/tests/annotations/annotations_alias_bug_test.py\n@@ -0,0 +1,21 @@\n+from django.db.models import Value\n+from django.test import TestCase\n+from .models import Book, Publisher\n+\n+class AnnotationAliasBugTest(TestCase):\n+    def test_annotation_and_alias_filter_in_subquery(self):\n+        long_books_qs = (\n+            Book.objects.filter(\n+                pages__gt=400,\n+            )\n+            .annotate(book_annotate=Value(1))\n+            .alias(book_alias=Value(1))\n+        )\n+        publisher_books_qs = (\n+            Publisher.objects.filter(\n+                book__in=long_books_qs\n+            )\n+            .values(\"name\")\n+        )\n+        with self.assertRaisesMessage(Exception, \"sub-select returns 10 columns - expected 1\"):\n+            list(publisher_books_qs)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/annotations/annotations_alias_bug_test_inverted.py b/tests/annotations/annotations_alias_bug_test_inverted.py\nnew file mode 100644\nindex 0000000..baf756c\n--- /dev/null\n+++ b/tests/annotations/annotations_alias_bug_test_inverted.py\n@@ -0,0 +1,23 @@\n+from django.db.models import Value\n+from django.test import TestCase\n+from .models import Book, Publisher\n+\n+class AnnotationAliasBugTest(TestCase):\n+    def test_annotation_and_alias_filter_in_subquery(self):\n+        long_books_qs = (\n+            Book.objects.filter(\n+                pages__gt=400,\n+            )\n+            .annotate(book_annotate=Value(1))\n+            .alias(book_alias=Value(1))\n+        )\n+        publisher_books_qs = (\n+            Publisher.objects.filter(\n+                book__in=long_books_qs\n+            )\n+            .values(\"name\")\n+        )\n+        # This test should now fail when the bug is observed\n+        with self.assertRaisesMessage(Exception, \"__BUG__HERE__\"):\n+            if list(publisher_books_qs):\n+                raise Exception(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 2201885,
+  "num_received_chars": 79633,
+  "elapsed_time": 512.217015504837,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 18,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 148981
+}
