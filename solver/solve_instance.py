@@ -128,6 +128,7 @@ def report_error(
 
     traceback.print_exc()
 
+    navie_work_dir.mkdir(parents=True, exist_ok=True)
     with open(navie_work_dir / "error.txt", "w") as f:
         f.write(str(e))
         f.write("\n")
