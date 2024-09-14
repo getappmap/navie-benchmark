@@ -16,6 +16,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.load_instance_set import load_instance_set
 from swebench.harness.test_spec import make_test_spec
 from swebench.harness.constants import SWEbenchInstance
 
@@ -52,16 +53,7 @@ def main(
         instance_ids = []
 
     if instance_set:
-        instance_set_file = (
-            Path(__file__).resolve().parents[1]
-            / "data"
-            / "instance_sets"
-            / f"{instance_set}.txt"
-        )
-        with instance_set_file.open() as f:
-            instance_ids.extend(
-                [id for id in f.read().splitlines() if id and not id.startswith("#")]
-            )
+        instance_ids.extend(load_instance_set(instance_set))
 
     dataset = load_dataset(DATASET_NAME, instance_ids)
     dataset = select_instances_for_runner(dataset, num_runners, runner_index)
