@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13615",
+  "edit_test_file": "sympy/sets/tests/test_sets.py",
+  "code_patch": "diff --git a/sympy/sets/sets.py b/sympy/sets/sets.py\nindex 917717b..56d9bf5 100644\n--- a/sympy/sets/sets.py\n+++ b/sympy/sets/sets.py\n@@ -1933,23 +1933,24 @@ def _intersect(self, other):\n     def _complement(self, other):\n         if isinstance(other, Interval):\n             nums = sorted(m for m in self.args if m.is_number)\n-            if other == S.Reals and nums != []:\n-                syms = [m for m in self.args if m.is_Symbol]\n+            syms = [m for m in self.args if m.is_Symbol]\n+            if other == S.Reals:\n                 # Reals cannot contain elements other than numbers and symbols.\n \n                 intervals = []  # Build up a list of intervals between the elements\n-                intervals += [Interval(S.NegativeInfinity, nums[0], True, True)]\n-                for a, b in zip(nums[:-1], nums[1:]):\n-                    intervals.append(Interval(a, b, True, True))  # both open\n-                intervals.append(Interval(nums[-1], S.Infinity, True, True))\n+                if nums:\n+                    intervals += [Interval(S.NegativeInfinity, nums[0], True, True)]\n+                    for a, b in zip(nums[:-1], nums[1:]):\n+                        intervals.append(Interval(a, b, True, True))  # both open\n+                    intervals.append(Interval(nums[-1], S.Infinity, True, True))\n \n-                if syms != []:\n+                if syms:\n                     return Complement(Union(intervals, evaluate=False),\n                             FiniteSet(*syms), evaluate=False)\n                 else:\n                     return Union(intervals, evaluate=False)\n-            elif nums == []:\n-                return None\n+            elif not nums:\n+                return FiniteSet(*syms)\n \n         elif isinstance(other, FiniteSet):\n             unk = []\n",
+  "test_patch": "diff --git a/sympy/sets/tests/test_complement_mixed_input.py b/sympy/sets/tests/test_complement_mixed_input.py\nnew file mode 100644\nindex 0000000..4776e4d\n--- /dev/null\n+++ b/sympy/sets/tests/test_complement_mixed_input.py\n@@ -0,0 +1,9 @@\n+from sympy import Symbol, FiniteSet, Interval, Complement\n+\n+def test_complement_mixed_input():\n+    x = Symbol('x')\n+    y = Symbol('y')\n+    a = FiniteSet(x, y, 2)\n+    b = Interval(-10, 10)\n+    result = Complement(a, b)\n+    assert result == FiniteSet(x, y), f\"Expected {FiniteSet(x, y)}, but got {result}\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/sets/tests/test_complement_mixed_input_inverted.py b/sympy/sets/tests/test_complement_mixed_input_inverted.py\nnew file mode 100644\nindex 0000000..8e09175\n--- /dev/null\n+++ b/sympy/sets/tests/test_complement_mixed_input_inverted.py\n@@ -0,0 +1,9 @@\n+from sympy import Symbol, FiniteSet, Interval, Complement\n+\n+def test_complement_mixed_input():\n+    x = Symbol('x')\n+    y = Symbol('y')\n+    a = FiniteSet(x, y, 2)\n+    b = Interval(-10, 10)\n+    result = Complement(a, b)\n+    assert result != FiniteSet(x, y), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1137648,
+  "num_received_chars": 116631,
+  "elapsed_time": 921.9216375350952,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

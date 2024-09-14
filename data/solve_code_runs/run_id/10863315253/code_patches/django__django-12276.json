@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12276",
+  "edit_test_file": "tests/forms_tests/widget_tests/test_fileinput.py",
+  "code_patch": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d..95ebd2f 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -384,6 +384,9 @@ class FileInput(Input):\n         \"File widgets take data from FILES, not POST\"\n         return files.get(name)\n \n+    def use_required_attribute(self, initial):\n+        return super().use_required_attribute(initial) and not initial\n+\n     def value_omitted_from_data(self, data, files, name):\n         return name not in files\n \n",
+  "test_patch": "diff --git a/tests/forms_tests/widget_tests/test_fileinput_required_attribute.py b/tests/forms_tests/widget_tests/test_fileinput_required_attribute.py\nnew file mode 100644\nindex 0000000..dcf2392\n--- /dev/null\n+++ b/tests/forms_tests/widget_tests/test_fileinput_required_attribute.py\n@@ -0,0 +1,15 @@\n+import unittest\n+from django.forms import FileInput\n+\n+class FileInputRequiredAttributeTest(unittest.TestCase):\n+    def test_required_attribute_with_initial_data(self):\n+        \"\"\"\n+        FileInput should not display the 'required' attribute when initial data exists.\n+        \"\"\"\n+        widget = FileInput()\n+        html = widget.render('file', 'initial_file.txt', attrs={'required': True})\n+        # The test should pass if the 'required' attribute is incorrectly present in the HTML.\n+        self.assertIn('required', html)\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/forms_tests/widget_tests/test_fileinput_required_attribute_inverted.py b/tests/forms_tests/widget_tests/test_fileinput_required_attribute_inverted.py\nnew file mode 100644\nindex 0000000..d7fcb00\n--- /dev/null\n+++ b/tests/forms_tests/widget_tests/test_fileinput_required_attribute_inverted.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from django.forms import FileInput\n+\n+class FileInputRequiredAttributeTest(unittest.TestCase):\n+    def test_required_attribute_with_initial_data(self):\n+        \"\"\"\n+        FileInput should not display the 'required' attribute when initial data exists.\n+        \"\"\"\n+        widget = FileInput()\n+        html = widget.render('file', 'initial_file.txt', attrs={'required': True})\n+        # The test should fail if the 'required' attribute is incorrectly present in the HTML.\n+        if 'required' in html:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 675392,
+  "num_received_chars": 38508,
+  "elapsed_time": 223.18236660957336,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

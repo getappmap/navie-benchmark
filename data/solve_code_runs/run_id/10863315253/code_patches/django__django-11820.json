@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11820",
+  "edit_test_file": "tests/invalid_models_tests/test_models.py",
+  "code_patch": "diff --git a/django/contrib/admin/views/main.py b/django/contrib/admin/views/main.py\nindex 89b782f..cf1de46 100644\n--- a/django/contrib/admin/views/main.py\n+++ b/django/contrib/admin/views/main.py\n@@ -270,7 +270,13 @@ class ChangeList:\n         proper model field name can be matched.\n         \"\"\"\n         try:\n-            field = self.lookup_opts.get_field(field_name)\n+            if '__' in field_name:\n+                parts = field_name.split('__')\n+                field = self.lookup_opts.get_field(parts[0])\n+                if len(parts) == 2 and parts[1] == 'pk':\n+                    return field.remote_field.model._meta.pk.name\n+            else:\n+                field = self.lookup_opts.get_field(field_name)\n             return field.name\n         except FieldDoesNotExist:\n             # See whether field_name is a name of a non-field\n",
+  "test_patch": "diff --git a/tests/invalid_models_tests/test_meta_ordering_pk_issue.py b/tests/invalid_models_tests/test_meta_ordering_pk_issue.py\nnew file mode 100644\nindex 0000000..5eb5ff3\n--- /dev/null\n+++ b/tests/invalid_models_tests/test_meta_ordering_pk_issue.py\n@@ -0,0 +1,23 @@\n+from django.db import models\n+from django.core.checks import Error\n+from django.test import TestCase\n+\n+class TestMetaOrderingPKIssue(TestCase):\n+    def test_ordering_with_related_pk(self):\n+        class RelatedModel(models.Model):\n+            pass\n+\n+        class SomeModel(models.Model):\n+            option = models.ForeignKey(RelatedModel, models.CASCADE)\n+\n+            class Meta:\n+                ordering = ('option__pk',)\n+\n+        self.assertEqual(SomeModel.check(), [\n+            Error(\n+                \"'ordering' refers to the nonexistent field, related field, \"\n+                \"or lookup 'option__pk'.\",\n+                obj=SomeModel,\n+                id='models.E015',\n+            )\n+        ])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/invalid_models_tests/test_meta_ordering_pk_issue_inverted.py b/tests/invalid_models_tests/test_meta_ordering_pk_issue_inverted.py\nnew file mode 100644\nindex 0000000..fea71ed\n--- /dev/null\n+++ b/tests/invalid_models_tests/test_meta_ordering_pk_issue_inverted.py\n@@ -0,0 +1,19 @@\n+from django.db import models\n+from django.core.checks import Error\n+from django.test import TestCase\n+\n+class TestMetaOrderingPKIssue(TestCase):\n+    def test_ordering_with_related_pk(self):\n+        class RelatedModel(models.Model):\n+            pass\n+\n+        class SomeModel(models.Model):\n+            option = models.ForeignKey(RelatedModel, models.CASCADE)\n+\n+            class Meta:\n+                ordering = ('option__pk',)\n+\n+        # Alter the test to fail when the issue is observed\n+        errors = SomeModel.check()\n+        if any(error.id == 'models.E015' for error in errors):\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 808423,
+  "num_received_chars": 52847,
+  "elapsed_time": 287.920526266098,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

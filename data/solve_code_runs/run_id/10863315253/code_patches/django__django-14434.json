@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14434",
+  "edit_test_file": "tests/backends/test_ddl_references.py",
+  "code_patch": "diff --git a/django/db/backends/ddl_references.py b/django/db/backends/ddl_references.py\nindex c06386a..85dd6a7 100644\n--- a/django/db/backends/ddl_references.py\n+++ b/django/db/backends/ddl_references.py\n@@ -65,10 +65,12 @@ class TableColumns(Table):\n         self.columns = columns\n \n     def references_column(self, table, column):\n-        return self.table == table and column in self.columns\n+        table_name = table if isinstance(table, str) else table.table\n+        return self.table == table_name and column in self.columns\n \n     def rename_column_references(self, table, old_column, new_column):\n-        if self.table == table:\n+        table_name = table if isinstance(table, str) else table.table\n+        if self.table == table_name:\n             for index, column in enumerate(self.columns):\n                 if column == old_column:\n                     self.columns[index] = new_column\n",
+  "test_patch": "diff --git a/tests/backends/test_unique_sql_reference_issue.py b/tests/backends/test_unique_sql_reference_issue.py\nnew file mode 100644\nindex 0000000..61fb719\n--- /dev/null\n+++ b/tests/backends/test_unique_sql_reference_issue.py\n@@ -0,0 +1,15 @@\n+from django.db.backends.ddl_references import Columns, Table\n+from django.test import SimpleTestCase\n+\n+class UniqueSQLReferenceIssueTest(SimpleTestCase):\n+    def test_references_column_with_table_instance(self):\n+        # Create a Table instance\n+        table_instance = Table('table_name', lambda table: table.upper())\n+        \n+        # Pass the Table instance to Columns instead of a string\n+        columns_reference = Columns(\n+            table_instance, ['column1', 'column2'], lambda column: column.upper()\n+        )\n+        \n+        # Assert that references_column returns False due to the issue\n+        self.assertIs(columns_reference.references_column('table_name', 'column1'), False)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/backends/test_unique_sql_reference_issue_inverted.py b/tests/backends/test_unique_sql_reference_issue_inverted.py\nnew file mode 100644\nindex 0000000..79ef064\n--- /dev/null\n+++ b/tests/backends/test_unique_sql_reference_issue_inverted.py\n@@ -0,0 +1,16 @@\n+from django.db.backends.ddl_references import Columns, Table\n+from django.test import SimpleTestCase\n+\n+class UniqueSQLReferenceIssueTest(SimpleTestCase):\n+    def test_references_column_with_table_instance(self):\n+        # Create a Table instance\n+        table_instance = Table('table_name', lambda table: table.upper())\n+        \n+        # Pass the Table instance to Columns instead of a string\n+        columns_reference = Columns(\n+            table_instance, ['column1', 'column2'], lambda column: column.upper()\n+        )\n+        \n+        # Assert that references_column returns True due to the issue\n+        # This should fail when the bug is observed\n+        self.assertIs(columns_reference.references_column('table_name', 'column1'), True, \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 703950,
+  "num_received_chars": 45568,
+  "elapsed_time": 302.87922286987305,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 105
+}

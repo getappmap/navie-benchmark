@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13569",
+  "edit_test_file": "tests/ordering/tests.py",
+  "code_patch": "diff --git a/django/db/models/sql/where.py b/django/db/models/sql/where.py\nindex 795eff8..99517be 100644\n--- a/django/db/models/sql/where.py\n+++ b/django/db/models/sql/where.py\n@@ -117,7 +117,9 @@ class WhereNode(tree.Node):\n     def get_group_by_cols(self, alias=None):\n         cols = []\n         for child in self.children:\n-            cols.extend(child.get_group_by_cols())\n+            # Exclude expressions that involve randomness or non-deterministic functions\n+            if not hasattr(child, 'is_random') or not child.is_random:\n+                cols.extend(child.get_group_by_cols())\n         return cols\n \n     def get_source_expressions(self):\n",
+  "test_patch": "diff --git a/tests/ordering/test_queryset_aggregation_random_ordering.py b/tests/ordering/test_queryset_aggregation_random_ordering.py\nnew file mode 100644\nindex 0000000..726c20e\n--- /dev/null\n+++ b/tests/ordering/test_queryset_aggregation_random_ordering.py\n@@ -0,0 +1,19 @@\n+from django.db import models\n+from django.db.models import Count\n+from django.test import TestCase\n+\n+class Thing(models.Model):\n+    pass\n+\n+class Related(models.Model):\n+    thing = models.ForeignKey(Thing, on_delete=models.CASCADE)\n+\n+class OrderByAggregationIssueTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.thing = Thing.objects.create()\n+        cls.related_objects = [Related.objects.create(thing=cls.thing) for _ in range(2)]\n+\n+    def test_order_by_random_breaks_aggregation(self):\n+        queryset = Thing.objects.annotate(rc=Count('related')).order_by('?').values('id', 'rc')\n+        self.assertEqual(list(queryset), [{'id': self.thing.id, 'rc': 1}, {'id': self.thing.id, 'rc': 1}])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/ordering/test_queryset_aggregation_random_ordering_inverted.py b/tests/ordering/test_queryset_aggregation_random_ordering_inverted.py\nnew file mode 100644\nindex 0000000..4ba4844\n--- /dev/null\n+++ b/tests/ordering/test_queryset_aggregation_random_ordering_inverted.py\n@@ -0,0 +1,20 @@\n+from django.db import models\n+from django.db.models import Count\n+from django.test import TestCase\n+\n+class Thing(models.Model):\n+    pass\n+\n+class Related(models.Model):\n+    thing = models.ForeignKey(Thing, on_delete=models.CASCADE)\n+\n+class OrderByAggregationIssueTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.thing = Thing.objects.create()\n+        cls.related_objects = [Related.objects.create(thing=cls.thing) for _ in range(2)]\n+\n+    def test_order_by_random_breaks_aggregation(self):\n+        queryset = Thing.objects.annotate(rc=Count('related')).order_by('?').values('id', 'rc')\n+        # Altered the test to fail when the issue is observed\n+        self.assertEqual(list(queryset), [{'id': self.thing.id, 'rc': 2}], \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1186752,
+  "num_received_chars": 57519,
+  "elapsed_time": 341.1770360469818,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

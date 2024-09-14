@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13798",
+  "edit_test_file": "sympy/printing/tests/test_mathematica.py",
+  "code_patch": "diff --git a/sympy/physics/quantum/hilbert.py b/sympy/physics/quantum/hilbert.py\nindex 32fa3ee..a50bf5f 100644\n--- a/sympy/physics/quantum/hilbert.py\n+++ b/sympy/physics/quantum/hilbert.py\n@@ -102,7 +102,9 @@ def _pretty(self, printer, *args):\n         ustr = u'\\N{LATIN CAPITAL LETTER H}'\n         return prettyForm(ustr)\n \n-    def _latex(self, printer, *args):\n+    def _latex(self, printer, *args, mul_symbol='\\\\cdot'):\n+        if not isinstance(mul_symbol, str):\n+            raise ValueError(\"mul_symbol must be a string representing a LaTeX symbol.\")\n         return r'\\mathcal{H}'\n \n \n@@ -422,7 +424,9 @@ def _pretty(self, printer, *args):\n                     pform = prettyForm(*pform.right(' x '))\n         return pform\n \n-    def _latex(self, printer, *args):\n+    def _latex(self, printer, *args, mul_symbol='\\\\otimes'):\n+        if not isinstance(mul_symbol, str):\n+            raise ValueError(\"mul_symbol must be a string representing a LaTeX symbol.\")\n         length = len(self.args)\n         s = ''\n         for i in range(length):\n@@ -432,7 +436,7 @@ def _latex(self, printer, *args):\n                 arg_s = r'\\left(%s\\right)' % arg_s\n             s = s + arg_s\n             if i != length - 1:\n-                s = s + r'\\otimes '\n+                s = s + mul_symbol + ' '\n         return s\n \n \n@@ -533,7 +537,9 @@ def _pretty(self, printer, *args):\n                     pform = prettyForm(*pform.right(' + '))\n         return pform\n \n-    def _latex(self, printer, *args):\n+    def _latex(self, printer, *args, mul_symbol='\\\\oplus'):\n+        if not isinstance(mul_symbol, str):\n+            raise ValueError(\"mul_symbol must be a string representing a LaTeX symbol.\")\n         length = len(self.args)\n         s = ''\n         for i in range(length):\n@@ -543,7 +549,7 @@ def _latex(self, printer, *args):\n                 arg_s = r'\\left(%s\\right)' % arg_s\n             s = s + arg_s\n             if i != length - 1:\n-                s = s + r'\\oplus '\n+                s = s + mul_symbol + ' '\n         return s\n \n \n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_mul_symbol_latex.py b/sympy/printing/tests/test_mul_symbol_latex.py\nnew file mode 100644\nindex 0000000..a242872\n--- /dev/null\n+++ b/sympy/printing/tests/test_mul_symbol_latex.py\n@@ -0,0 +1,8 @@\n+from sympy import Symbol, latex\n+from sympy.utilities.pytest import raises\n+\n+def test_latex_mul_symbol_custom():\n+    x = Symbol('x')\n+    expr = 3 * x**2\n+    # Attempt to use a custom multiplication symbol\n+    raises(KeyError, lambda: latex(expr, mul_symbol='\\\\,'))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_mul_symbol_latex_inverted.py b/sympy/printing/tests/test_mul_symbol_latex_inverted.py\nnew file mode 100644\nindex 0000000..3457798\n--- /dev/null\n+++ b/sympy/printing/tests/test_mul_symbol_latex_inverted.py\n@@ -0,0 +1,10 @@\n+from sympy import Symbol, latex\n+\n+def test_latex_mul_symbol_custom():\n+    x = Symbol('x')\n+    expr = 3 * x**2\n+    # Attempt to use a custom multiplication symbol\n+    try:\n+        latex(expr, mul_symbol='\\\\,')\n+    except KeyError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1299666,
+  "num_received_chars": 75811,
+  "elapsed_time": 385.3211364746094,
+  "lint_repair_count": 11,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

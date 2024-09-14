@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "testing/test_collection.py",
+  "test_patch": "diff --git a/testing/test_headline_bug.py b/testing/test_headline_bug.py\nnew file mode 100644\nindex 0000000..9f6b8e2\n--- /dev/null\n+++ b/testing/test_headline_bug.py\n@@ -0,0 +1,22 @@\n+import pytest\n+\n+def test_headline_replacement_issue(testdir):\n+    # Create a test file with a parameterized test case\n+    test_file = testdir.makepyfile(\n+        \"\"\"\n+        import pytest\n+\n+        @pytest.mark.parametrize(\"a\", [\"..[\"])\n+        def test_boo(a):\n+            assert 0\n+        \"\"\"\n+    )\n+\n+    # Run pytest on the created test file\n+    result = testdir.runpytest(test_file)\n+\n+    # Check the output for the specific headline replacement issue\n+    result.stdout.fnmatch_lines([\n+        \"*FAILURES*\",\n+        \"*test_boo[.[]*\",\n+    ])\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

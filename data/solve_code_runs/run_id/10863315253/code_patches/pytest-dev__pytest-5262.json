@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5262",
+  "edit_test_file": "testing/test_capture.py",
+  "code_patch": "diff --git a/src/_pytest/capture.py b/src/_pytest/capture.py\nindex 25eab7f..2d0e320 100644\n--- a/src/_pytest/capture.py\n+++ b/src/_pytest/capture.py\n@@ -416,8 +416,7 @@ def safe_text_dupfile(f, mode, default_encoding=\"UTF8\"):\n             return f\n     else:\n         newfd = os.dup(fd)\n-        if \"b\" not in mode:\n-            mode += \"b\"\n+        # Remove 'b' from mode to reflect text expectation\n         f = os.fdopen(newfd, mode, 0)  # no buffering\n     return EncodedFile(f, encoding or default_encoding)\n \n@@ -450,6 +449,11 @@ class EncodedFile(object):\n     def __getattr__(self, name):\n         return getattr(object.__getattribute__(self, \"buffer\"), name)\n \n+    @property\n+    def mode(self):\n+        \"\"\"Return the mode of the file, excluding 'b' to indicate text mode.\"\"\"\n+        return self.buffer.mode.replace('b', '')\n+\n \n CaptureResult = collections.namedtuple(\"CaptureResult\", [\"out\", \"err\"])\n \n",
+  "test_patch": "diff --git a/testing/test_encodedfile.py b/testing/test_encodedfile.py\nnew file mode 100644\nindex 0000000..5c3e454\n--- /dev/null\n+++ b/testing/test_encodedfile.py\n@@ -0,0 +1,18 @@\n+import unittest\n+import sys\n+from _pytest.capture import EncodedFile\n+import six\n+\n+class TestEncodedFileMode(unittest.TestCase):\n+    def test_encodedfile_write_bytes(self):\n+        buffer = six.StringIO()\n+        ef = EncodedFile(buffer, \"utf-8\")\n+        with self.assertRaises(TypeError) as context:\n+            ef.write(b\"test bytes\")\n+        self.assertEqual(\n+            str(context.exception),\n+            \"write() argument must be str, not bytes\"\n+        )\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_encodedfile_inverted.py b/testing/test_encodedfile_inverted.py\nnew file mode 100644\nindex 0000000..b243838\n--- /dev/null\n+++ b/testing/test_encodedfile_inverted.py\n@@ -0,0 +1,21 @@\n+import unittest\n+import sys\n+from _pytest.capture import EncodedFile\n+import six\n+\n+class TestEncodedFileMode(unittest.TestCase):\n+    def test_encodedfile_write_bytes(self):\n+        buffer = six.StringIO()\n+        ef = EncodedFile(buffer, \"utf-8\")\n+        try:\n+            ef.write(b\"test bytes\")\n+        except TypeError as e:\n+            self.assertEqual(\n+                str(e),\n+                \"__BUG__HERE__\"\n+            )\n+        else:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 740451,
+  "num_received_chars": 43731,
+  "elapsed_time": 288.7130997180939,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

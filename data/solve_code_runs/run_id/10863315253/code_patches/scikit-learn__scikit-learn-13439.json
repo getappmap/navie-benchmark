@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-13439",
+  "edit_test_file": "sklearn/tests/test_pipeline.py",
+  "code_patch": "diff --git a/sklearn/ensemble/base.py b/sklearn/ensemble/base.py\nindex 7ac1dd4..53f8bbe 100644\n--- a/sklearn/ensemble/base.py\n+++ b/sklearn/ensemble/base.py\n@@ -136,16 +136,16 @@ class BaseEnsemble(BaseEstimator, MetaEstimatorMixin, metaclass=ABCMeta):\n         return estimator\n \n     def __len__(self):\n-        \"\"\"Returns the number of estimators in the ensemble.\"\"\"\n-        return len(self.estimators_)\n+        \"\"\"Returns the number of steps in the pipeline.\"\"\"\n+        return len(self.steps)\n \n     def __getitem__(self, index):\n-        \"\"\"Returns the index'th estimator in the ensemble.\"\"\"\n-        return self.estimators_[index]\n+        \"\"\"Returns the index'th step in the pipeline.\"\"\"\n+        return self.steps[index]\n \n     def __iter__(self):\n-        \"\"\"Returns iterator over estimators in the ensemble.\"\"\"\n-        return iter(self.estimators_)\n+        \"\"\"Returns iterator over steps in the pipeline.\"\"\"\n+        return iter(self.steps)\n \n \n def _partition_estimators(n_estimators, n_jobs):\n",
+  "test_patch": "diff --git a/sklearn/tests/test_pipeline_len.py b/sklearn/tests/test_pipeline_len.py\nnew file mode 100644\nindex 0000000..2f5ab49\n--- /dev/null\n+++ b/sklearn/tests/test_pipeline_len.py\n@@ -0,0 +1,21 @@\n+import unittest\n+from sklearn import svm\n+from sklearn.datasets import make_classification\n+from sklearn.feature_selection import SelectKBest, f_regression\n+from sklearn.pipeline import Pipeline\n+\n+class TestPipelineLen(unittest.TestCase):\n+    def test_pipeline_len(self):\n+        # generate some data to play with\n+        X, y = make_classification(n_informative=5, n_redundant=0, random_state=42)\n+\n+        anova_filter = SelectKBest(f_regression, k=5)\n+        clf = svm.SVC(kernel='linear')\n+        pipe = Pipeline([('anova', anova_filter), ('svc', clf)])\n+\n+        # Check if accessing the length of the pipeline raises an error\n+        with self.assertRaises(TypeError):\n+            len(pipe)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/tests/test_pipeline_len_inverted.py b/sklearn/tests/test_pipeline_len_inverted.py\nnew file mode 100644\nindex 0000000..5f71ee7\n--- /dev/null\n+++ b/sklearn/tests/test_pipeline_len_inverted.py\n@@ -0,0 +1,23 @@\n+import unittest\n+from sklearn import svm\n+from sklearn.datasets import make_classification\n+from sklearn.feature_selection import SelectKBest, f_regression\n+from sklearn.pipeline import Pipeline\n+\n+class TestPipelineLen(unittest.TestCase):\n+    def test_pipeline_len(self):\n+        # generate some data to play with\n+        X, y = make_classification(n_informative=5, n_redundant=0, random_state=42)\n+\n+        anova_filter = SelectKBest(f_regression, k=5)\n+        clf = svm.SVC(kernel='linear')\n+        pipe = Pipeline([('anova', anova_filter), ('svc', clf)])\n+\n+        # Check if accessing the length of the pipeline raises an error\n+        try:\n+            len(pipe)\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 910284,
+  "num_received_chars": 28849,
+  "elapsed_time": 308.45824575424194,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

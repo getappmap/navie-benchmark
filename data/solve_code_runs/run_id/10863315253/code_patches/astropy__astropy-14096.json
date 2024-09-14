@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14096",
+  "edit_test_file": "astropy/io/misc/asdf/tags/coordinates/tests/test_skycoord.py",
+  "code_patch": "diff --git a/astropy/cosmology/core.py b/astropy/cosmology/core.py\nindex 6de2175..8ab1597 100644\n--- a/astropy/cosmology/core.py\n+++ b/astropy/cosmology/core.py\n@@ -609,4 +609,4 @@ def __getattr__(attr):\n \n         return getattr(flrw, attr)\n \n-    raise AttributeError(f\"module {__name__!r} has no attribute {attr!r}.\")\n+    raise AttributeError(f\"Attribute {attr!r} not found in module {__name__!r}.\")\n\ndiff --git a/astropy/cosmology/realizations.py b/astropy/cosmology/realizations.py\nindex 7489ae9..4c2ffd5 100644\n--- a/astropy/cosmology/realizations.py\n+++ b/astropy/cosmology/realizations.py\n@@ -33,7 +33,7 @@ def __getattr__(name):\n         If \"name\" is not in :mod:`astropy.cosmology.realizations`\n     \"\"\"\n     if name not in available:\n-        raise AttributeError(f\"module {__name__!r} has no attribute {name!r}.\")\n+        raise AttributeError(f\"Attribute {name!r} not found in module {__name__!r}.\")\n \n     cosmo = Cosmology.read(\n         str(_COSMOLOGY_DATA_DIR / name) + \".ecsv\", format=\"ascii.ecsv\"\n",
+  "test_patch": "diff --git a/astropy/io/misc/asdf/tags/coordinates/tests/test_customcoord.py b/astropy/io/misc/asdf/tags/coordinates/tests/test_customcoord.py\nnew file mode 100644\nindex 0000000..0ad7d93\n--- /dev/null\n+++ b/astropy/io/misc/asdf/tags/coordinates/tests/test_customcoord.py\n@@ -0,0 +1,12 @@\n+import pytest\n+from astropy.coordinates import SkyCoord\n+\n+class CustomCoord(SkyCoord):\n+    @property\n+    def prop(self):\n+        return self.random_attr\n+\n+def test_custom_coord_attribute_error():\n+    c = CustomCoord('00h42m30s', '+41d12m00s', frame='icrs')\n+    with pytest.raises(AttributeError, match=\"'CustomCoord' object has no attribute 'prop'\"):\n+        c.prop\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/io/misc/asdf/tags/coordinates/tests/test_customcoord_inverted.py b/astropy/io/misc/asdf/tags/coordinates/tests/test_customcoord_inverted.py\nnew file mode 100644\nindex 0000000..4a6f6aa\n--- /dev/null\n+++ b/astropy/io/misc/asdf/tags/coordinates/tests/test_customcoord_inverted.py\n@@ -0,0 +1,12 @@\n+import pytest\n+from astropy.coordinates import SkyCoord\n+\n+class CustomCoord(SkyCoord):\n+    @property\n+    def prop(self):\n+        return self.random_attr\n+\n+def test_custom_coord_attribute_error():\n+    c = CustomCoord('00h42m30s', '+41d12m00s', frame='icrs')\n+    with pytest.raises(AttributeError, match=\"__BUG__HERE__\"):\n+        c.prop\n\\ No newline at end of file\n",
+  "num_sent_chars": 1155264,
+  "num_received_chars": 49484,
+  "elapsed_time": 334.43023467063904,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

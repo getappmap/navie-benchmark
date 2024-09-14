@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11265",
+  "edit_test_file": "tests/filtered_relation/tests.py",
+  "code_patch": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 90289d0..6fb8722 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -264,7 +264,7 @@ def refs_expression(lookup_parts, annotations):\n         level_n_lookup = LOOKUP_SEP.join(lookup_parts[0:n])\n         if level_n_lookup in annotations and annotations[level_n_lookup]:\n             return annotations[level_n_lookup], lookup_parts[n:]\n-    return False, ()\n+    return None, ()\n \n \n def check_rel_lookup_compatibility(model, target_opts, field):\n",
+  "test_patch": "diff --git a/tests/filtered_relation/test_filteredrelation_exclude.py b/tests/filtered_relation/test_filteredrelation_exclude.py\nnew file mode 100644\nindex 0000000..92bf07f\n--- /dev/null\n+++ b/tests/filtered_relation/test_filteredrelation_exclude.py\n@@ -0,0 +1,11 @@\n+from django.core.exceptions import FieldError\n+from django.db.models import FilteredRelation, Q\n+from django.test import TestCase\n+from .models import Author\n+\n+class FilteredRelationExcludeTests(TestCase):\n+    def test_exclude_on_annotated_filtered_relation(self):\n+        with self.assertRaises(FieldError):\n+            list(Author.objects.annotate(\n+                book_alice=FilteredRelation('book', condition=Q(book__title__iexact='poem by alice')),\n+            ).exclude(book_alice__isnull=False))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/filtered_relation/test_filteredrelation_exclude_inverted.py b/tests/filtered_relation/test_filteredrelation_exclude_inverted.py\nnew file mode 100644\nindex 0000000..090ac74\n--- /dev/null\n+++ b/tests/filtered_relation/test_filteredrelation_exclude_inverted.py\n@@ -0,0 +1,13 @@\n+from django.core.exceptions import FieldError\n+from django.db.models import FilteredRelation, Q\n+from django.test import TestCase\n+from .models import Author\n+\n+class FilteredRelationExcludeTests(TestCase):\n+    def test_exclude_on_annotated_filtered_relation(self):\n+        try:\n+            list(Author.objects.annotate(\n+                book_alice=FilteredRelation('book', condition=Q(book__title__iexact='poem by alice')),\n+            ).exclude(book_alice__isnull=False))\n+        except FieldError:\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 2501571,
+  "num_received_chars": 68124,
+  "elapsed_time": 397.74005913734436,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

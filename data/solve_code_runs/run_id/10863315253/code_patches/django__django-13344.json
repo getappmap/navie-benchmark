@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13344",
+  "edit_test_file": "tests/deprecation/test_middleware_mixin.py",
+  "code_patch": "diff --git a/django/middleware/common.py b/django/middleware/common.py\nindex 7e75e81..a2f4543 100644\n--- a/django/middleware/common.py\n+++ b/django/middleware/common.py\n@@ -1,4 +1,5 @@\n import re\n+import inspect\n from urllib.parse import urlparse\n \n from django.conf import settings\n@@ -101,6 +102,10 @@ class CommonMiddleware(MiddlewareMixin):\n         When the status code of the response is 404, it may redirect to a path\n         with an appended slash if should_redirect_with_slash() returns True.\n         \"\"\"\n+        # Ensure the response is awaited if it's a coroutine\n+        if inspect.iscoroutine(response):\n+            response = await response\n+\n         # If the given URL is \"Not Found\", then check if we should redirect to\n         # a path with a slash appended.\n         if response.status_code == 404:\n",
+  "test_patch": "diff --git a/tests/deprecation/test_async_middleware_coroutine_issue.py b/tests/deprecation/test_async_middleware_coroutine_issue.py\nnew file mode 100644\nindex 0000000..accc79c\n--- /dev/null\n+++ b/tests/deprecation/test_async_middleware_coroutine_issue.py\n@@ -0,0 +1,23 @@\n+import asyncio\n+from django.test import SimpleTestCase\n+from django.http import HttpRequest, HttpResponse\n+from django.utils.deprecation import MiddlewareMixin\n+\n+class DummyMiddleware(MiddlewareMixin):\n+    def process_response(self, request, response):\n+        return response\n+\n+class CoroutineMiddlewareTest(SimpleTestCase):\n+    def test_coroutine_passed_to_middleware(self):\n+        async def async_view(request):\n+            return HttpResponse(\"Async response\")\n+\n+        request = HttpRequest()\n+        response_coroutine = async_view(request)\n+\n+        # Simulate the middleware processing\n+        middleware = DummyMiddleware(lambda req: response_coroutine)\n+        response = middleware.process_response(request, response_coroutine)\n+\n+        # Check if the response is a coroutine\n+        self.assertTrue(asyncio.iscoroutine(response))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/deprecation/test_async_middleware_coroutine_issue_inverted.py b/tests/deprecation/test_async_middleware_coroutine_issue_inverted.py\nnew file mode 100644\nindex 0000000..2181008\n--- /dev/null\n+++ b/tests/deprecation/test_async_middleware_coroutine_issue_inverted.py\n@@ -0,0 +1,26 @@\n+import asyncio\n+from django.test import SimpleTestCase\n+from django.http import HttpRequest, HttpResponse\n+from django.utils.deprecation import MiddlewareMixin\n+\n+class DummyMiddleware(MiddlewareMixin):\n+    def process_response(self, request, response):\n+        return response\n+\n+class CoroutineMiddlewareTest(SimpleTestCase):\n+    def test_coroutine_passed_to_middleware(self):\n+        async def async_view(request):\n+            return HttpResponse(\"Async response\")\n+\n+        request = HttpRequest()\n+        response_coroutine = async_view(request)\n+\n+        # Simulate the middleware processing\n+        middleware = DummyMiddleware(lambda req: response_coroutine)\n+        response = middleware.process_response(request, response_coroutine)\n+\n+        # Check if the response is a coroutine and raise an error if it is\n+        if asyncio.iscoroutine(response):\n+            raise AssertionError(\"__BUG__HERE__\")\n+        else:\n+            self.assertIsInstance(response, HttpResponse)\n\\ No newline at end of file\n",
+  "num_sent_chars": 1461634,
+  "num_received_chars": 97611,
+  "elapsed_time": 589.665379524231,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13401",
+  "edit_test_file": "tests/model_fields/test_foreignkey.py",
+  "code_patch": "diff --git a/django/db/models/manager.py b/django/db/models/manager.py\nindex e10c15b..2ac33be 100644\n--- a/django/db/models/manager.py\n+++ b/django/db/models/manager.py\n@@ -158,11 +158,12 @@ class BaseManager:\n     def __eq__(self, other):\n         return (\n             isinstance(other, self.__class__) and\n-            self._constructor_args == other._constructor_args\n+            self._constructor_args == other._constructor_args and\n+            self.model == other.model\n         )\n \n     def __hash__(self):\n-        return id(self)\n+        return hash((self._constructor_args, self.model))\n \n \n class Manager(BaseManager.from_queryset(QuerySet)):\n",
+  "test_patch": "diff --git a/tests/model_fields/test_abstractmodelfield_equality.py b/tests/model_fields/test_abstractmodelfield_equality.py\nnew file mode 100644\nindex 0000000..4575005\n--- /dev/null\n+++ b/tests/model_fields/test_abstractmodelfield_equality.py\n@@ -0,0 +1,21 @@\n+from django.db import models\n+from django.test import SimpleTestCase\n+\n+class AbstractModelFieldEqualityTests(SimpleTestCase):\n+    def test_abstract_model_field_equality(self):\n+        class A(models.Model):\n+            class Meta:\n+                abstract = True\n+            myfield = models.IntegerField()\n+\n+        class B(A):\n+            pass\n+\n+        class C(A):\n+            pass\n+\n+        # Test that fields from different models compare as equal\n+        b_field = B._meta.get_field('myfield')\n+        c_field = C._meta.get_field('myfield')\n+        self.assertEqual(b_field, c_field)\n+        self.assertEqual(len({b_field, c_field}), 1)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/model_fields/test_abstractmodelfield_equality_inverted.py b/tests/model_fields/test_abstractmodelfield_equality_inverted.py\nnew file mode 100644\nindex 0000000..024fa6b\n--- /dev/null\n+++ b/tests/model_fields/test_abstractmodelfield_equality_inverted.py\n@@ -0,0 +1,27 @@\n+from django.db import models\n+from django.test import SimpleTestCase\n+\n+class AbstractModelFieldEqualityTests(SimpleTestCase):\n+    def test_abstract_model_field_equality(self):\n+        class A(models.Model):\n+            class Meta:\n+                abstract = True\n+            myfield = models.IntegerField()\n+\n+        class B(A):\n+            pass\n+\n+        class C(A):\n+            pass\n+\n+        # Test that fields from different models should not compare as equal\n+        b_field = B._meta.get_field('myfield')\n+        c_field = C._meta.get_field('myfield')\n+        \n+        # This assertion should now fail if the bug is present\n+        if b_field == c_field:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        \n+        # This assertion should also fail if the bug is present\n+        if len({b_field, c_field}) == 1:\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1308979,
+  "num_received_chars": 50940,
+  "elapsed_time": 387.1940977573395,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

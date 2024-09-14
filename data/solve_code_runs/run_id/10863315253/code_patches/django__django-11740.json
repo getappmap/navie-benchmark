@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11740",
+  "edit_test_file": "tests/contenttypes_tests/test_checks.py",
+  "code_patch": "diff --git a/django/db/migrations/migration.py b/django/db/migrations/migration.py\nindex fe5e228..c55721f 100644\n--- a/django/db/migrations/migration.py\n+++ b/django/db/migrations/migration.py\n@@ -85,6 +85,12 @@ class Migration:\n \n         for operation in self.operations:\n             operation.state_forwards(self.app_label, new_state)\n+            # Ensure ForeignKey dependencies are created\n+            if hasattr(operation, 'field') and hasattr(operation.field, 'remote_field'):\n+                related_model = operation.field.remote_field.model\n+                if related_model:\n+                    app_label, model_name = related_model.split('.')\n+                    self.dependencies.append((app_label, '__first__'))\n         return new_state\n \n     def apply(self, project_state, schema_editor, collect_sql=False):\n",
+  "test_patch": "diff --git a/tests/contenttypes_tests/test_foreign_key_dependency.py b/tests/contenttypes_tests/test_foreign_key_dependency.py\nnew file mode 100644\nindex 0000000..760cd15\n--- /dev/null\n+++ b/tests/contenttypes_tests/test_foreign_key_dependency.py\n@@ -0,0 +1,21 @@\n+import uuid\n+from django.test import TestCase\n+from django.db import models\n+from django.core.exceptions import ImproperlyConfigured\n+\n+# Define the models as described in the issue\n+class App2(models.Model):\n+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)\n+    text = models.CharField(max_length=100)\n+\n+class App1(models.Model):\n+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)\n+    text = models.CharField(max_length=100)\n+    another_app = models.ForeignKey(App2, null=True, blank=True, on_delete=models.SET_NULL)\n+\n+class ForeignKeyDependencyTest(TestCase):\n+    def test_foreign_key_dependency(self):\n+        # Attempt to create an App1 instance with a UUID for another_app\n+        with self.assertRaises(ValueError) as cm:\n+            App1.objects.create(text='Test', another_app=uuid.uuid4())\n+        self.assertIn(\"must be a \\\"App2\\\" instance\", str(cm.exception))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/contenttypes_tests/test_foreign_key_dependency_inverted.py b/tests/contenttypes_tests/test_foreign_key_dependency_inverted.py\nnew file mode 100644\nindex 0000000..abf8a9d\n--- /dev/null\n+++ b/tests/contenttypes_tests/test_foreign_key_dependency_inverted.py\n@@ -0,0 +1,22 @@\n+import uuid\n+from django.test import TestCase\n+from django.db import models\n+from django.core.exceptions import ImproperlyConfigured\n+\n+# Define the models as described in the issue\n+class App2(models.Model):\n+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)\n+    text = models.CharField(max_length=100)\n+\n+class App1(models.Model):\n+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)\n+    text = models.CharField(max_length=100)\n+    another_app = models.ForeignKey(App2, null=True, blank=True, on_delete=models.SET_NULL)\n+\n+class ForeignKeyDependencyTest(TestCase):\n+    def test_foreign_key_dependency(self):\n+        # Attempt to create an App1 instance with a UUID for another_app\n+        with self.assertRaises(ValueError) as cm:\n+            App1.objects.create(text='Test', another_app=uuid.uuid4())\n+        # Change the assertion to fail when the bug is observed\n+        self.assertIn(\"__BUG__HERE__\", str(cm.exception))\n\\ No newline at end of file\n",
+  "num_sent_chars": 1398251,
+  "num_received_chars": 62952,
+  "elapsed_time": 374.9696583747864,
+  "lint_repair_count": 13,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

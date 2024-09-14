@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/units/tests/py3_test_quantity_annotations.py",
+  "test_patch": "diff --git a/astropy/units/tests/test_constructor_type_hint_issue.py b/astropy/units/tests/test_constructor_type_hint_issue.py\nnew file mode 100644\nindex 0000000..bb6fb5e\n--- /dev/null\n+++ b/astropy/units/tests/test_constructor_type_hint_issue.py\n@@ -0,0 +1,12 @@\n+import astropy.units as u\n+import pytest\n+\n+class PoC(object):\n+\n+    @u.quantity_input\n+    def __init__(self, voltage: u.V) -> None:\n+        pass\n+\n+def test_constructor_type_hint_issue():\n+    with pytest.raises(AttributeError, match=\"'NoneType' object has no attribute 'to'\"):\n+        poc = PoC(1.*u.V)\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

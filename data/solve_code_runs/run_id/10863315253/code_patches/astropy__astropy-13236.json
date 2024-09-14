@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-13236",
+  "edit_test_file": "astropy/io/misc/tests/test_parquet.py",
+  "code_patch": "diff --git a/astropy/table/ndarray_mixin.py b/astropy/table/ndarray_mixin.py\nindex c6f2aa6..b815b2c 100644\n--- a/astropy/table/ndarray_mixin.py\n+++ b/astropy/table/ndarray_mixin.py\n@@ -30,6 +30,15 @@ class NdarrayMixin(np.ndarray):\n     info = NdarrayMixinInfo()\n \n     def __new__(cls, obj, *args, **kwargs):\n+        # Check if the object is a structured array\n+        if isinstance(obj, np.ndarray) and obj.dtype.names:\n+            import warnings\n+            warnings.warn(\n+                \"Automatic transformation of structured arrays into NdarrayMixin \"\n+                \"is deprecated and will be removed in version 5.2. Please wrap \"\n+                \"structured np.array in a Column object explicitly.\",\n+                FutureWarning\n+            )\n         self = np.array(obj, *args, **kwargs).view(cls)\n         if 'info' in getattr(obj, '__dict__', ()):\n             self.info = obj.info\n",
+  "test_patch": "diff --git a/astropy/io/misc/tests/test_ndarray_mixin_removal.py b/astropy/io/misc/tests/test_ndarray_mixin_removal.py\nnew file mode 100644\nindex 0000000..d9d33d0\n--- /dev/null\n+++ b/astropy/io/misc/tests/test_ndarray_mixin_removal.py\n@@ -0,0 +1,19 @@\n+import numpy as np\n+from astropy.table import Table, NdarrayMixin\n+import pytest\n+\n+def test_structured_array_auto_transform():\n+    \"\"\"\n+    Test to reproduce the issue where a structured np.array is automatically\n+    transformed into an NdarrayMixin when added to a Table.\n+    \"\"\"\n+\n+    # Create a structured numpy array\n+    structured_array = np.array([(1, 'a'), (2, 'b')],\n+                                dtype=[('num', 'i4'), ('char', 'U1')])\n+\n+    # Add the structured array to a Table\n+    t = Table([structured_array], names=['structured'])\n+\n+    # Check if the column is automatically transformed into an NdarrayMixin\n+    assert isinstance(t['structured'], NdarrayMixin), \"Structured array was not transformed into NdarrayMixin\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/io/misc/tests/test_ndarray_mixin_removal_inverted.py b/astropy/io/misc/tests/test_ndarray_mixin_removal_inverted.py\nnew file mode 100644\nindex 0000000..1666227\n--- /dev/null\n+++ b/astropy/io/misc/tests/test_ndarray_mixin_removal_inverted.py\n@@ -0,0 +1,20 @@\n+import numpy as np\n+from astropy.table import Table, NdarrayMixin\n+import pytest\n+\n+def test_structured_array_auto_transform():\n+    \"\"\"\n+    Test to reproduce the issue where a structured np.array is automatically\n+    transformed into an NdarrayMixin when added to a Table.\n+    \"\"\"\n+\n+    # Create a structured numpy array\n+    structured_array = np.array([(1, 'a'), (2, 'b')],\n+                                dtype=[('num', 'i4'), ('char', 'U1')])\n+\n+    # Add the structured array to a Table\n+    t = Table([structured_array], names=['structured'])\n+\n+    # Check if the column is automatically transformed into an NdarrayMixin\n+    # This should now fail if the transformation occurs, raising the specified error message\n+    assert not isinstance(t['structured'], NdarrayMixin), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 945789,
+  "num_received_chars": 41825,
+  "elapsed_time": 278.5593738555908,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

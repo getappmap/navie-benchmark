@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19040",
+  "edit_test_file": "sympy/core/tests/test_exprtools.py",
+  "code_patch": "diff --git a/sympy/polys/factortools.py b/sympy/polys/factortools.py\nindex c6a5f9f..f1e03d5 100644\n--- a/sympy/polys/factortools.py\n+++ b/sympy/polys/factortools.py\n@@ -1121,7 +1121,7 @@ def dup_ext_factor(f, K):\n     factors = dup_factor_list_include(r, K.dom)\n \n     if len(factors) == 1:\n-        return lc, [(f, n//dup_degree(f))]\n+        return lc, [(F, n//dup_degree(F))]\n \n     H = s*K.unit\n \n@@ -1152,7 +1152,7 @@ def dmp_ext_factor(f, u, K):\n     factors = dmp_factor_list_include(r, u, K.dom)\n \n     if len(factors) == 1:\n-        factors = [f]\n+        factors = [F]\n     else:\n         H = dmp_raise([K.one, s*K.unit], u, 0, K)\n \n",
+  "test_patch": "diff --git a/sympy/core/tests/test_factor_drop.py b/sympy/core/tests/test_factor_drop.py\nnew file mode 100644\nindex 0000000..7f1e6e6\n--- /dev/null\n+++ b/sympy/core/tests/test_factor_drop.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, expand, I, factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    assert factor(z, extension=[I]) == x - 1\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_factor_drop_inverted.py b/sympy/core/tests/test_factor_drop_inverted.py\nnew file mode 100644\nindex 0000000..b366473\n--- /dev/null\n+++ b/sympy/core/tests/test_factor_drop_inverted.py\n@@ -0,0 +1,7 @@\n+from sympy import symbols, expand, I, factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    # The test should now fail if the factor of y-1 is dropped\n+    assert factor(z, extension=[I]) == (x - 1) * (y - 1), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 677089,
+  "num_received_chars": 37204,
+  "elapsed_time": 241.98446679115295,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

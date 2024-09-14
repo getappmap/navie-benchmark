@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16901",
+  "edit_test_file": "tests/xor_lookups/tests.py",
+  "code_patch": "diff --git a/django/contrib/admin/utils.py b/django/contrib/admin/utils.py\nindex 5e6a400..066bfcd 100644\n--- a/django/contrib/admin/utils.py\n+++ b/django/contrib/admin/utils.py\n@@ -79,7 +79,15 @@ def prepare_lookup_value(key, value, separator=\",\"):\n def build_q_object_from_lookup_parameters(parameters):\n     q_object = models.Q()\n     for param, param_item_list in parameters.items():\n-        q_object &= reduce(or_, (models.Q((param, item)) for item in param_item_list))\n+        if param.endswith(\"__xor\"):\n+            # Implement parity logic for XOR\n+            xor_conditions = [models.Q((param[:-5], item)) for item in param_item_list]\n+            xor_result = xor_conditions[0]\n+            for condition in xor_conditions[1:]:\n+                xor_result = (xor_result & ~condition) | (~xor_result & condition)\n+            q_object &= xor_result\n+        else:\n+            q_object &= reduce(or_, (models.Q((param, item)) for item in param_item_list))\n     return q_object\n \n \n",
+  "test_patch": "diff --git a/tests/xor_lookups/test_xor_fallback_parity.py b/tests/xor_lookups/test_xor_fallback_parity.py\nnew file mode 100644\nindex 0000000..3526f54\n--- /dev/null\n+++ b/tests/xor_lookups/test_xor_fallback_parity.py\n@@ -0,0 +1,16 @@\n+from django.db.models import Q\n+from django.test import TestCase\n+from .models import Number\n+\n+class XorFallbackParityTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.number = Number.objects.create(num=37)\n+\n+    def test_xor_fallback_parity(self):\n+        # Test with an odd number of XORs\n+        self.assertEqual(Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37)).count(), 0)\n+        # Test with an even number of XORs\n+        self.assertEqual(Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37)).count(), 0)\n+        # Test with an odd number of XORs again\n+        self.assertEqual(Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37)).count(), 0)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/xor_lookups/test_xor_fallback_parity_inverted.py b/tests/xor_lookups/test_xor_fallback_parity_inverted.py\nnew file mode 100644\nindex 0000000..07dc775\n--- /dev/null\n+++ b/tests/xor_lookups/test_xor_fallback_parity_inverted.py\n@@ -0,0 +1,20 @@\n+from django.db.models import Q\n+from django.test import TestCase\n+from .models import Number\n+\n+class XorFallbackParityTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.number = Number.objects.create(num=37)\n+\n+    def test_xor_fallback_parity(self):\n+        # Test with an odd number of XORs\n+        if Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37)).count() == 0:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        \n+        # Test with an even number of XORs\n+        self.assertEqual(Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37)).count(), 0)\n+        \n+        # Test with an odd number of XORs again\n+        if Number.objects.filter(Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37) ^ Q(num=37)).count() == 0:\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1354027,
+  "num_received_chars": 33386,
+  "elapsed_time": 243.12827134132385,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 144408
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11211",
+  "edit_test_file": "tests/prefetch_related/test_prefetch_related_objects.py",
+  "code_patch": "diff --git a/django/contrib/contenttypes/fields.py b/django/contrib/contenttypes/fields.py\nindex ed98ecb..2a0f6e0 100644\n--- a/django/contrib/contenttypes/fields.py\n+++ b/django/contrib/contenttypes/fields.py\n@@ -567,7 +567,7 @@ def create_generic_related_manager(superclass, rel):\n \n             query = {\n                 '%s__pk' % self.content_type_field_name: self.content_type.id,\n-                '%s__in' % self.object_id_field_name: {obj.pk for obj in instances}\n+                '%s__in' % self.object_id_field_name: {str(obj.pk) for obj in instances}\n             }\n \n             # We (possibly) need to convert object IDs to the type of the\n",
+  "test_patch": "diff --git a/tests/prefetch_related/test_gfk_with_uuid_prefetch.py b/tests/prefetch_related/test_gfk_with_uuid_prefetch.py\nnew file mode 100644\nindex 0000000..7f5244b\n--- /dev/null\n+++ b/tests/prefetch_related/test_gfk_with_uuid_prefetch.py\n@@ -0,0 +1,28 @@\n+import uuid\n+from django.contrib.contenttypes.fields import GenericForeignKey\n+from django.contrib.contenttypes.models import ContentType\n+from django.db import models\n+from django.test import TestCase\n+\n+class Foo(models.Model):\n+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n+\n+class Bar(models.Model):\n+    foo_content_type = models.ForeignKey(\n+        ContentType, related_name='actor',\n+        on_delete=models.CASCADE, db_index=True\n+    )\n+    foo_object_id = models.CharField(max_length=255, db_index=True)\n+    foo = GenericForeignKey('foo_content_type', 'foo_object_id')\n+\n+class TestGFKWithUUIDPrefetch(TestCase):\n+    def test_prefetch_related_with_gfk_uuid(self):\n+        foo_instance = Foo.objects.create()\n+        bar_instance = Bar.objects.create(\n+            foo_content_type=ContentType.objects.get_for_model(Foo),\n+            foo_object_id=str(foo_instance.id)\n+        )\n+        \n+        with self.assertNumQueries(2):\n+            bars = Bar.objects.all().prefetch_related('foo')\n+            self.assertIsNone(bars[0].foo)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/prefetch_related/test_gfk_with_uuid_prefetch_inverted.py b/tests/prefetch_related/test_gfk_with_uuid_prefetch_inverted.py\nnew file mode 100644\nindex 0000000..5d8e96e\n--- /dev/null\n+++ b/tests/prefetch_related/test_gfk_with_uuid_prefetch_inverted.py\n@@ -0,0 +1,29 @@\n+import uuid\n+from django.contrib.contenttypes.fields import GenericForeignKey\n+from django.contrib.contenttypes.models import ContentType\n+from django.db import models\n+from django.test import TestCase\n+\n+class Foo(models.Model):\n+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n+\n+class Bar(models.Model):\n+    foo_content_type = models.ForeignKey(\n+        ContentType, related_name='actor',\n+        on_delete=models.CASCADE, db_index=True\n+    )\n+    foo_object_id = models.CharField(max_length=255, db_index=True)\n+    foo = GenericForeignKey('foo_content_type', 'foo_object_id')\n+\n+class TestGFKWithUUIDPrefetch(TestCase):\n+    def test_prefetch_related_with_gfk_uuid(self):\n+        foo_instance = Foo.objects.create()\n+        bar_instance = Bar.objects.create(\n+            foo_content_type=ContentType.objects.get_for_model(Foo),\n+            foo_object_id=str(foo_instance.id)\n+        )\n+        \n+        with self.assertNumQueries(2):\n+            bars = Bar.objects.all().prefetch_related('foo')\n+            if bars[0].foo is None:\n+                raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 807191,
+  "num_received_chars": 39161,
+  "elapsed_time": 230.60582399368286,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

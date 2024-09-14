@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-12907",
+  "edit_test_file": "astropy/modeling/tests/test_separable.py",
+  "code_patch": "diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py\nindex a308e27..5a24b85 100644\n--- a/astropy/modeling/separable.py\n+++ b/astropy/modeling/separable.py\n@@ -184,7 +184,6 @@ def _coord_matrix(model, pos, noutp):\n     noutp : int\n         Number of outputs of the compound model of which the input model\n         is a left or right child.\n-\n     \"\"\"\n     if isinstance(model, Mapping):\n         axes = []\n",
+  "test_patch": "diff --git a/astropy/modeling/tests/test_nested_compound_models.py b/astropy/modeling/tests/test_nested_compound_models.py\nnew file mode 100644\nindex 0000000..3a780ce\n--- /dev/null\n+++ b/astropy/modeling/tests/test_nested_compound_models.py\n@@ -0,0 +1,22 @@\n+import numpy as np\n+from astropy.modeling import models as m\n+from astropy.modeling.separable import separability_matrix\n+\n+def test_nested_compound_model_separability():\n+    # Create a simple compound model\n+    cm = m.Linear1D(10) & m.Linear1D(5)\n+    \n+    # Create a nested compound model\n+    nested_cm = m.Pix2Sky_TAN() & cm\n+    \n+    # Compute the separability matrix for the nested compound model\n+    result = separability_matrix(nested_cm)\n+    \n+    # Expected incorrect result based on the issue description\n+    expected_result = np.array([[True, True, False, False],\n+                                [True, True, False, False],\n+                                [False, False, True, True],\n+                                [False, False, True, True]])\n+    \n+    # Assert that the incorrect result is produced\n+    assert np.array_equal(result, expected_result), f\"Unexpected separability matrix: {result}\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/modeling/tests/test_nested_compound_models_inverted.py b/astropy/modeling/tests/test_nested_compound_models_inverted.py\nnew file mode 100644\nindex 0000000..72830c7\n--- /dev/null\n+++ b/astropy/modeling/tests/test_nested_compound_models_inverted.py\n@@ -0,0 +1,22 @@\n+import numpy as np\n+from astropy.modeling import models as m\n+from astropy.modeling.separable import separability_matrix\n+\n+def test_nested_compound_model_separability():\n+    # Create a simple compound model\n+    cm = m.Linear1D(10) & m.Linear1D(5)\n+    \n+    # Create a nested compound model\n+    nested_cm = m.Pix2Sky_TAN() & cm\n+    \n+    # Compute the separability matrix for the nested compound model\n+    result = separability_matrix(nested_cm)\n+    \n+    # Expected correct result based on the issue description\n+    expected_result = np.array([[True, True, False, False],\n+                                [True, True, False, False],\n+                                [False, False, True, False],\n+                                [False, False, False, True]])\n+    \n+    # Assert that the correct result is produced\n+    assert np.array_equal(result, expected_result), f\"__BUG__HERE__: Unexpected separability matrix: {result}\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 751503,
+  "num_received_chars": 68057,
+  "elapsed_time": 356.9618365764618,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

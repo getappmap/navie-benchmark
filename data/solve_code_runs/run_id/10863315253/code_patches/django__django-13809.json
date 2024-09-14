@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13809",
+  "edit_test_file": "tests/user_commands/tests.py",
+  "code_patch": "diff --git a/django/core/management/commands/runserver.py b/django/core/management/commands/runserver.py\nindex d9fb088..2bf6cff 100644\n--- a/django/core/management/commands/runserver.py\n+++ b/django/core/management/commands/runserver.py\n@@ -47,6 +47,10 @@ class Command(BaseCommand):\n             '--nothreading', action='store_false', dest='use_threading',\n             help='Tells Django to NOT use threading.',\n         )\n+        parser.add_argument(\n+            '--skip-checks', action='store_true', dest='skip_checks',\n+            help='Skip system checks.',\n+        )\n         parser.add_argument(\n             '--noreload', action='store_false', dest='use_reloader',\n             help='Tells Django to NOT use the auto-reloader.',\n@@ -114,11 +118,12 @@ class Command(BaseCommand):\n         shutdown_message = options.get('shutdown_message', '')\n         quit_command = 'CTRL-BREAK' if sys.platform == 'win32' else 'CONTROL-C'\n \n-        self.stdout.write(\"Performing system checks...\\n\\n\")\n-        self.check(display_num_errors=True)\n-        # Need to check migrations here, so can't use the\n-        # requires_migrations_check attribute.\n-        self.check_migrations()\n+        if not options['skip_checks']:\n+            self.stdout.write(\"Performing system checks...\\n\\n\")\n+            self.check(display_num_errors=True)\n+            # Need to check migrations here, so can't use the\n+            # requires_migrations_check attribute.\n+            self.check_migrations()\n         now = datetime.now().strftime('%B %d, %Y - %X')\n         self.stdout.write(now)\n         self.stdout.write((\n",
+  "test_patch": "diff --git a/tests/user_commands/test_runserver_skip_checks.py b/tests/user_commands/test_runserver_skip_checks.py\nnew file mode 100644\nindex 0000000..4a12314\n--- /dev/null\n+++ b/tests/user_commands/test_runserver_skip_checks.py\n@@ -0,0 +1,9 @@\n+import unittest\n+from django.core.management import call_command\n+from django.core.management.base import CommandError\n+\n+class RunserverSkipChecksTest(unittest.TestCase):\n+    def test_runserver_skip_checks_option(self):\n+        with self.assertRaises(CommandError) as cm:\n+            call_command('runserver', '--skip-checks')\n+        self.assertIn(\"unrecognized arguments: --skip-checks\", str(cm.exception))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/user_commands/test_runserver_skip_checks_inverted.py b/tests/user_commands/test_runserver_skip_checks_inverted.py\nnew file mode 100644\nindex 0000000..1132621\n--- /dev/null\n+++ b/tests/user_commands/test_runserver_skip_checks_inverted.py\n@@ -0,0 +1,11 @@\n+import unittest\n+from django.core.management import call_command\n+from django.core.management.base import CommandError\n+\n+class RunserverSkipChecksTest(unittest.TestCase):\n+    def test_runserver_skip_checks_option(self):\n+        try:\n+            call_command('runserver', '--skip-checks')\n+        except CommandError as e:\n+            if \"unrecognized arguments: --skip-checks\" in str(e):\n+                raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 582279,
+  "num_received_chars": 45812,
+  "elapsed_time": 1122.3048617839813,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": "PASSED",
+  "appmap_data_file_count": 1,
+  "appmap_data_context_size": 11711
+}
