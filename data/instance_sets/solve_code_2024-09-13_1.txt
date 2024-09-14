@@ -1,3 +1,5 @@
+# Batch 1 of the verified set with an optimal test patch
+# Created on: 2024-09-13
 astropy__astropy-12907
 astropy__astropy-13033
 astropy__astropy-13236
