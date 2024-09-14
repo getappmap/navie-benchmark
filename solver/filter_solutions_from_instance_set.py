@@ -4,23 +4,30 @@ from pathlib import Path
 from subprocess import run
 from typing import List
 
+from solver.load_instance_set import load_instance_set
+
 
 def main(
     instance_set: List[str],
+    filter_by: str,
     output_instance_set: str,
+
 ):
   instances = set()
   for instance_set_name in instance_set:
-    instance_set_file = Path("data") / "instance_sets" / f"{instance_set_name}.txt"
-    with instance_set_file.open("r") as f:
-      instance_ids = f.read().splitlines()
-      instances.update(instance_ids)
+    instances.update(load_instance_set(instance_set_name))
 
+  if filter_by == "test":
+    filter_dir = "test_patches"
+  elif filter_by == "code":
+    filter_dir = "code_patches"
+  else:
+    raise ValueError(f"Invalid filter_by: {filter_by}")
   
-  code_patches_dir = Path("data") / "code_patches"
-  code_patch_files = list(code_patches_dir.rglob("*.json"))
-  for code_patch_file in code_patch_files:
-    instance_id = code_patch_file.stem
+  filter_dir = Path("data") /filter_dir
+  filter_files = list(filter_dir.rglob("*.json"))
+  for filter_file in filter_files:
+    instance_id = filter_file.stem
     instances.discard(instance_id)
   
   sorted_instances = sorted(instances)
@@ -57,6 +64,13 @@ if __name__ == '__main__':
        "--output_instance_set",
         type=str,
         help="Output instance set"
+    )
+    parser.add_argument(
+      "--filter_by",
+      type=str,
+      choices=["code", "test"],
+      required=True,
+      help="Filter by code or test patches"
     )
 
     args = parser.parse_args()
