@@ -26,6 +26,8 @@ on:
           # Code solvers with fill-in for unsolved tests
           - test_files=1 test_status_retry=1 code_files=3 code_lint_retry=3 code_status_retry=3
           - test_files=1 test_status_retry=1 code_files=3 code_lint_retry=3 code_status_retry=6
+          - test_files=3 test_status_retry=1 code_files=3 code_lint_retry=3 code_status_retry=3
+          - test_files=3 test_status_retry=1 code_files=3 code_lint_retry=3 code_status_retry=6
           # Code solvers
           - test_files=0 code_files=3 code_lint_retry=3 code_status_retry=3
           - test_files=0 code_files=3 code_lint_retry=3 code_status_retry=6
