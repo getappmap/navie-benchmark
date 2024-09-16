@@ -1,3 +1,47 @@
+* Each plan should be in its own subdirectory
+
+* Parameter comparison tests
+
+    Running the 30% instance set
+    ============================
+
+    * 10884295754 #198
+
+    1/1 in test, 3/3 in code, 8k context tokens
+
+    25% solve rate overall
+
+    Edit test file % of only 74%. Needs more edit test file attempts to find a pass-to-pass.
+    60% of issues end with score=1, only 13% of which pass. Increase the code limits to try and find a solution.
+    Increase the token limit to improve the solver chances.
+
+    * 10885877926 #201
+
+    3/1 in test, 3/3 in code, 32k context tokens
+
+
+
+
+
+    Sonnet
+    ======
+
+
+
+    8k token limit
+    https://github.com/getappmap/navie-benchmark/issues/33
+    https://github.com/getappmap/navie-benchmark/issues/32 
+
+
+    Token limit #139 vs #136
+    ============
+
+    16k token limit vs 8k
+    Solve rate of 25.3% vs 21.6%
+
+    NOTE: verified_10_pct 1,1,3,3 sonnet #199 not actually sonnet, was gpt-4o. Re-run as https://github.com/getappmap/navie-benchmark/actions/runs/10885877926
+
+
 * Patch generation progress
 
     Test patches
@@ -17,6 +61,15 @@
 
     solve/django__django-14034/navie/generate-code/attempt-1/code-1/generate/generate.md
 
+    /Users/kgilpin/Downloads/solve-1 (3)/django__django-11211/navie/generate-code/attempt-1/code-1/generate/generate.md
+    
+<change>
+<file change-number-for-this-file="1">django/db/models/fields/related_lookups.py</file>
+<original line-count="14" no-ellipsis="true"><![CDATA[
+class RelatedLookupMixin:
+    def get_prep_lookup(self):
+        if not isinstance(self.lhs, MultiColSource) and self.rhs_is_direct_value():
+            
 * Investigate low pass-to-pass in
     
     https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=1490242111#gid=1490242111
