@@ -7,6 +7,7 @@ import traceback
 from navie.editor import Editor
 from navie.format_instructions import xml_format_instructions
 from navie.extract_changes import extract_changes
+from solver.workflow.is_test_file import is_non_test_file
 from solver.workflow.work_dir import WorkDir
 
 from .patch import (
@@ -114,14 +115,26 @@ No testing suggestions or code changes are needed. These will be handled in a se
 
     # Apply code changes to the files in the current directory and return a patch.
     def apply(self, attempt: int, code: str) -> Optional[Patch]:
-        changes = extract_changes(code)
+        all_changes = extract_changes(code)
+        code_changes = [
+            change for change in all_changes if is_non_test_file(change.file)
+        ]
+        all_change_files = {change.file for change in all_changes}
+        code_change_files = {change.file for change in code_changes}
+        if all_change_files != code_change_files:
+            test_change_files = sorted(all_change_files - code_change_files)
+            self.log(
+                "workflow/generate-code",
+                f"WARNING - Some changes were ignored because they were in test files: {test_change_files}",
+            )
+
         distinct_files = set(
-            [path.relpath(change.file, getcwd()) for change in changes]
+            [path.relpath(change.file, getcwd()) for change in code_changes]
         )
         if len(distinct_files) > self.file_limit:
             self.log(
                 "workflow/generate-code",
-                f"Found {len(changes)} changes, but the limit is {self.file_limit}",
+                f"Found {len(code_changes)} changes, but the limit is {self.file_limit}",
             )
 
         editor = Editor(
@@ -129,7 +142,7 @@ No testing suggestions or code changes are needed. These will be handled in a se
             log_dir=self.work_dir.root.path_name,
             trajectory_file=self.trajectory_file,
         )
-        for change in changes:
+        for change in code_changes:
             change.file = relpath(change.file, getcwd())
             if not change.original:
                 self.log(
@@ -146,7 +159,7 @@ No testing suggestions or code changes are needed. These will be handled in a se
                     f"Failed to apply change to {change.file}: {traceback.format_exc()}",
                 )
 
-        file_paths = [change.file for change in changes]
+        file_paths = [change.file for change in code_changes]
         file_paths_str = ", ".join(file_paths)
         self.log("workflow/generate-code", f"Applied code changes to {file_paths_str}")
 
