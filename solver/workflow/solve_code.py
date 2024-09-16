@@ -71,15 +71,17 @@ class SolveCode(SolveBase):
 
         generate_code_results: list[CodePatchResult] = []
         code_patch: Optional[Patch] = None
-        for code_file in code_files:
+        for (index, code_file) in enumerate(code_files):
+            attempt = index + 1
             self.log("workflow", f"Evaluating code file: {code_file}")
 
-            plan = self.generate_plan(code_file)
+            work_dir = self.work_dir.solve_code(attempt)
+            plan = self.generate_plan(work_dir, code_file)
             generate_code_result = generate_and_validate_code(
                 GenerateCodeContext(
                     self.limits,
                     self.log,
-                    self.work_dir,
+                    work_dir,
                     self.docker_client,
                     self.repo,
                     self.version,
@@ -196,10 +198,10 @@ class SolveCode(SolveBase):
                 f"No appmap context collected. Test status: {observe_test_result.test_status if observe_test_result else "None"}",
             )
 
-    def generate_plan(self, edit_code_file: Path) -> str:
+    def generate_plan(self, work_dir: WorkDir, edit_code_file: Path) -> str:
         return GeneratePlan(
             self.log,
-            self.work_dir,
+            work_dir,
             self.trajectory_file,
             self.issue_text,
         ).run(edit_code_file, self.observed_context)

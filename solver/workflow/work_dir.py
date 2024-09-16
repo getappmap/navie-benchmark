@@ -60,6 +60,9 @@ class WorkDir:
     def choose_code_files(self) -> WorkDir:
         return WorkDir(self._dir / "choose-code-files", self)
 
+    def solve_code(self, attempt) -> WorkDir:
+        return WorkDir(self._dir / f"solve-code-{str(attempt)}", self)
+
     def plan(self) -> WorkDir:
         return WorkDir(self._dir / "plan", self)
 
