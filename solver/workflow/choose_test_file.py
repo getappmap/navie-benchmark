@@ -20,17 +20,15 @@ def ask_for_test_files(
     examples = "\n".join([f"path/to/test_{i}.py" for i in range(1, num_files + 1)])
     token_limit = 3000 * num_files
 
-    question = f"""Identify {num_files} test files that are most related to the issue. Put the most relevant file first,
+    prompt = [f"""## Task
+    
+Identify {num_files} test files that are most related to the issue. Put the most relevant file first,
 followed by less relevant files.
 
 The files must all be different.
+"""]
 
-<issue>
-{issue_content}
-</issue>
-"""
-
-    prompt = f"""## Output format
+    prompt.append(f"""## Output format
     
 Output the results as one file path on each line, and nothing else.
 
@@ -40,22 +38,23 @@ Do not include line numbers or any location within the file. Just the file path.
         
 {examples}
     """
+    )
 
     if tests_previously_listed:
         known_files = "\n".join([str(file) for file in tests_previously_listed])
-        question += f"""Do not emit any of the following files, because they are already known:
+        prompt.append(f"""Do not emit any of the following files, because they are already known:
 
 {known_files}
-"""
+""")
 
     tests_to_modify_str = Editor(
         (work_dir.path / f"attempt-{attempt}"),
         log_dir=work_dir.root.path_name,
         trajectory_file=trajectory_file,
     ).search(
-        question,
-        prompt=prompt,
-        options=f"/noprojectinfo /noformat /noclassify /include=test /tokenlimit={token_limit}",
+        issue_content,
+        prompt="\n\n".join(prompt),
+        options=f"/noprojectinfo /noformat /noclassify /include=test /noterms /tokenlimit={token_limit}",
         extension="txt",
     )
 
