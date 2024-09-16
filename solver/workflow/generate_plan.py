@@ -50,9 +50,13 @@ class GeneratePlan:
     def issue(self, edit_code_file: Path) -> str:
         return f"""Plan a solution to the following issue, by modifying the code in the file {edit_code_file}:
 
+<issue>
 {self.issue_text}
+</issue>
 
 In the Problem section, restate the issue in your own words. Retain as much detail as you can, but clean up the language and formatting.
 
 Do not plan specific code changes. Just design the solution.
+
+Do not modify files other than {edit_code_file}.
 """
