@@ -4,7 +4,6 @@ import shutil
 import pandas as pd
 import zipfile
 
-# Adjust the path to your actual SWE-Bench_verified parquet file and the specific instance_id
 PARQUET_FILE = "SWE-bench_verified.parquet"
 
 
