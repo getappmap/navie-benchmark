@@ -44,6 +44,7 @@ def main(
     num_runners: Optional[int] = None,
     runner_index: Optional[int] = None,
     test_patch_dir: Optional[str] = None,
+    observe_tests: bool = False,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -100,6 +101,8 @@ def main(
             "--predictions",
             temp_prediction_path,
         ]
+        if observe_tests:
+            solve_args.append("--observe_tests")
         if clean_work_dir:
             solve_args.append("--clean_work_dir")
         if clean_navie:
@@ -171,6 +174,11 @@ if __name__ == "__main__":
         type=str,
         help="Directory containing existing test patches. Existing test patches will not be re-solved, and will be used to seed the code solver.",
         default="data/test_patches",
+    )
+    parser.add_argument(
+        "--observe_tests",
+        action="store_true",
+        help="Observe synthetic tests to collect AppMap data",
     )
 
     configure_runner_index(parser)

@@ -1,4 +1,9 @@
-* Each plan should be in its own subdirectory
+* Use /noterms, remove 50k file limit
+    https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=1462583265#gid=1462583265
+
+* AppMap data doesn't seem effective in identifying the code patch file
+
+    https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=1462583265#gid=1462583265
 
 * Parameter comparison tests
 
