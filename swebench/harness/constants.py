@@ -542,9 +542,11 @@ SPECS_SPHINX["7.2"]["pre_install"] += [
 SPECS_ASTROPY = {
     k: {
         "python": "3.9",
-        "install": "python -m pip install -e .[test] --verbose",
+        "install": "python -m pip install -e .[all] --verbose",
         "pip_packages": [
+            "asdf==2.10.0",
             "attrs==23.1.0",
+            "bleach==5.0.1",
             "exceptiongroup==1.1.3",
             "execnet==2.0.2",
             "hypothesis==6.82.6",
