@@ -5,37 +5,51 @@ from pathlib import Path
 import sys
 from typing import Optional
 import zipfile
+import docker
 
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from swebench.harness.test_spec import make_test_spec
+
+from solver.cli import load_dataset
+from solver.solve import DATASET_NAME
+from solver.harness.image_store import ImageStore
 from solver.load_instance_set import load_instance_set
 
+
 def find_prediction_in_zip_archive(zip_file: Path, instance_id: str) -> Optional[dict]:
+    if zip_file.is_symlink():
+        zip_file = Path(readlink(zip_file))
     with zipfile.ZipFile(zip_file, "r") as z:
         for name in z.namelist():
             with z.open(name) as zf:
                 data = zf.readlines()
-                prediction_lines = [
-                    json.loads(line) for line in data if line.strip()
-                ]
+                prediction_lines = [json.loads(line) for line in data if line.strip()]
                 prediction = [
-                    p
-                    for p in prediction_lines
-                    if p["instance_id"] == instance_id
+                    p for p in prediction_lines if p["instance_id"] == instance_id
                 ]
                 if prediction:
                     return prediction[0]
-                
+
     return None
 
 
-def main(instance_set: str, prediction_path: str):
-    print(f"Collecting predictions for {instance_set}")
+def main(instance_set: str, predictions_path: str):
+    print(f"Preparing predictions for instance set '{instance_set}'")
 
+    print("Loading Docker images...")
+    docker_client = docker.from_env()
     instance_ids = load_instance_set(instance_set)
+    dataset = load_dataset(DATASET_NAME, list(instance_ids))
+    test_specs = [make_test_spec(instance) for instance in dataset]
+    image_store = ImageStore(
+        docker_client,
+    )
+    image_store.set_image_types(["base", "env"])
+    image_store.ensure(test_specs)
 
     # Collect every instance in data/code_patches/*.json
     code_patches_dir = Path("data") / "code_patches"
@@ -50,22 +64,23 @@ def main(instance_set: str, prediction_path: str):
         )
         with solution_file_link_source.open() as f:
             solution = json.load(f)
-        print(f"Locating prediction for {solution["instance_id"]}")
         run_dir = solution_file_link_source.parent.parent
         predictions_files = run_dir.glob("predictions-*.zip")
         for predictions_file in predictions_files:
-            prediction = find_prediction_in_zip_archive(predictions_file, solution["instance_id"])
+            prediction = find_prediction_in_zip_archive(
+                predictions_file, solution["instance_id"]
+            )
             if prediction:
                 predictions.append(prediction)
                 break
 
-    print(f"Collected {len(predictions)} predictions")
+    print(f"Collected {len(predictions)} predictions (out of {len(instance_ids)}).")
     for instance_id in instance_ids:
         if not any(p["instance_id"] == instance_id for p in predictions):
-            print(f"No optimal prediction for {instance_id}. Search available solution files...")
+            print(f"No optimal prediction found for: {instance_id}")
 
     predictions = sorted(predictions, key=lambda p: p["instance_id"])
-    with open(prediction_path, "w") as f:
+    with open(predictions_path, "w") as f:
         for prediction in predictions:
             f.write(json.dumps(prediction) + "\n")
 
@@ -86,7 +101,7 @@ if __name__ == "__main__":
         help="Instance set to run",
     )
     parser.add_argument(
-        "--prediction_path",
+        "--predictions_path",
         type=str,
         help="File to write predictions to",
         default="predictions.jsonl",
