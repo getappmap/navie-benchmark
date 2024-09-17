@@ -1,13 +1,11 @@
 from argparse import ArgumentParser
-from http.client import HTTPMessage
 from json import load
 import json
 from os import getenv, readlink
 from pathlib import Path
 import shutil
 import sys
-from typing import Tuple
-import urllib.request
+from typing import Optional
 
 from solver.github_artifacts import download_artifacts
 
@@ -19,10 +17,16 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 import github
 import github.WorkflowRun
 
-from solver.workflow.solution import Solution, meets_score_threshold
+from solver.workflow.solution import Solution
 
 OWNER = "getappmap"
 REPO = "navie-benchmark"
+
+SCORE_THRESHOLD = 3
+
+
+def meets_score_threshold(code_patch_score: Optional[int]) -> bool:
+    return code_patch_score is not None and code_patch_score >= SCORE_THRESHOLD
 
 
 def import_workflow_run(run: github.WorkflowRun.WorkflowRun, no_download: bool = False):
