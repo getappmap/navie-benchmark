@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-18199",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/ntheory/residue_ntheory.py b/sympy/ntheory/residue_ntheory.py\nindex 9a3052d..af95e5d 100644\n--- a/sympy/ntheory/residue_ntheory.py\n+++ b/sympy/ntheory/residue_ntheory.py\n@@ -761,6 +761,8 @@ def nthroot_mod(a, n, p, all_roots=False):\n     >>> from sympy.ntheory.residue_ntheory import nthroot_mod\n     >>> nthroot_mod(11, 4, 19)\n     8\n+    >>> nthroot_mod(17*17, 5, 17)\n+    0\n     >>> nthroot_mod(11, 4, 19, True)\n     [8, 11]\n     >>> nthroot_mod(68, 3, 109)\n@@ -776,6 +778,10 @@ def nthroot_mod(a, n, p, all_roots=False):\n     if not isprime(p):\n         raise NotImplementedError(\"Not implemented for composite p\")\n \n+    # Check if a % p == 0, then x = 0 is a root\n+    if a % p == 0:\n+        return 0 if not all_roots else [0]\n+\n     if (p - 1) % n == 0:\n         return _nthroot_mod1(a, n, p, all_roots)\n     # The roots of ``x**n - a = 0 (mod p)`` are roots of\n@@ -783,8 +789,6 @@ def nthroot_mod(a, n, p, all_roots=False):\n     pa = n\n     pb = p - 1\n     b = 1\n-    if pa < pb:\n-        a, pa, b, pb = b, pb, a, pa\n     while pb:\n         # x**pa - a = 0; x**pb - b = 0\n         # x**pa - a = x**(q*pb + r) - a = (x**pb)**q * x**r - a =\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1086046,
+  "num_received_chars": 16648,
+  "elapsed_time": 239.30995965003967,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

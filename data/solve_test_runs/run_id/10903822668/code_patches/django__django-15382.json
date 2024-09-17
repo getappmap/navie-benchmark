@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15382",
+  "edit_test_file": "tests/queries/test_qs_combinators.py",
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex e3fdea6..77b624f 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1262,6 +1262,9 @@ class Query(BaseExpression):\n         The difference between current_negated and branch_negated is that\n         branch_negated is set on first negation, but current_negated is\n         flipped for each negation.\n+        \n+        If an Exists subquery is empty, it should not negate the entire WHERE\n+        clause. Instead, it should be treated as a non-interfering condition.\n \n         Note that add_filter will not do any negating itself, that is done\n         upper in the code by add_q().\n@@ -1288,6 +1291,9 @@ class Query(BaseExpression):\n             if not getattr(filter_expr, 'conditional', False):\n                 raise TypeError('Cannot filter against a non-conditional expression.')\n             condition = filter_expr.resolve_expression(self, allow_joins=allow_joins)\n+            if isinstance(condition, Exists) and condition.query.is_empty():\n+                # Treat empty Exists subquery as a non-interfering condition\n+                return WhereNode([], connector=AND), []\n             if not isinstance(condition, Lookup):\n                 condition = self.build_lookup(['exact'], condition, True)\n             return WhereNode([condition], connector=AND), []\n",
+  "test_patch": "diff --git a/tests/queries/test_exists_subquery.py b/tests/queries/test_exists_subquery.py\nnew file mode 100644\nindex 0000000..59ade6b\n--- /dev/null\n+++ b/tests/queries/test_exists_subquery.py\n@@ -0,0 +1,10 @@\n+from django.core.exceptions import EmptyResultSet\n+from django.db import models\n+from django.test import TestCase\n+from .models import Number\n+\n+class FilterOnExistsSubqueryTests(TestCase):\n+    def test_filter_on_exists_subquery_with_empty_queryset(self):\n+        qs = Number.objects.filter(~models.Exists(Number.objects.none()), num=1)\n+        with self.assertRaises(EmptyResultSet):\n+            print(qs.query)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1669228,
+  "num_received_chars": 22195,
+  "elapsed_time": 216.8542890548706,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

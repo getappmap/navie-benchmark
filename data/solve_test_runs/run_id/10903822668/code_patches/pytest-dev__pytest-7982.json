@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7982",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/doc/en/example/pythoncollection.rst b/doc/en/example/pythoncollection.rst\nindex c2f0348..72e8ad1 100644\n--- a/doc/en/example/pythoncollection.rst\n+++ b/doc/en/example/pythoncollection.rst\n@@ -98,7 +98,7 @@ Example:\n Changing directory recursion\n -----------------------------------------------------\n \n-You can set the :confval:`norecursedirs` option in an ini-file, for example your ``pytest.ini`` in the project root directory:\n+By default, pytest will follow symlinked directories during test collection. You can set the :confval:`norecursedirs` option in an ini-file, for example your ``pytest.ini`` in the project root directory:\n \n .. code-block:: ini\n \n\ndiff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb14..64c7fec 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -558,7 +558,7 @@ def visit(\n     entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n     yield from entries\n     for entry in entries:\n-        if entry.is_dir(follow_symlinks=False) and recurse(entry):\n+        if entry.is_dir(follow_symlinks=True) and recurse(entry):\n             yield from visit(entry.path, recurse)\n \n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 336943,
+  "num_received_chars": 6586,
+  "elapsed_time": 74.61919045448303,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

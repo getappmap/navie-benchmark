@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12262",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/template/library.py b/django/template/library.py\nindex 20bc86d..2f74556 100644\n--- a/django/template/library.py\n+++ b/django/template/library.py\n@@ -261,7 +261,7 @@ def parse_bits(parser, bits, params, varargs, varkw, defaults,\n         if kwarg:\n             # The kwarg was successfully extracted\n             param, value = kwarg.popitem()\n-            if param not in params and param not in unhandled_kwargs and varkw is None:\n+            if param not in params and param not in kwonly and varkw is None:\n                 # An unexpected keyword argument was supplied\n                 raise TemplateSyntaxError(\n                     \"'%s' received unexpected keyword argument '%s'\" %\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1161659,
+  "num_received_chars": 35429,
+  "elapsed_time": 217.11447596549988,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

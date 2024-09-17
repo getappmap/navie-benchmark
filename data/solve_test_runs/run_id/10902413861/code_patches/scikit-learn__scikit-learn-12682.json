@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-12682",
+  "edit_test_file": "sklearn/linear_model/tests/test_coordinate_descent.py",
+  "code_patch": "diff --git a/sklearn/decomposition/dict_learning.py b/sklearn/decomposition/dict_learning.py\nindex a318c95..f370cbb 100644\n--- a/sklearn/decomposition/dict_learning.py\n+++ b/sklearn/decomposition/dict_learning.py\n@@ -900,7 +900,7 @@ class SparseCodingMixin(TransformerMixin):\n             X, self.components_, algorithm=self.transform_algorithm,\n             n_nonzero_coefs=self.transform_n_nonzero_coefs,\n             alpha=self.transform_alpha, n_jobs=self.n_jobs,\n-            positive=self.positive_code)\n+            positive=self.positive_code, max_iter=self.max_iter)\n \n         if self.split_sign:\n             # feature vector is split into a positive and negative side\n@@ -958,6 +958,11 @@ class SparseCoder(BaseEstimator, SparseCodingMixin):\n         the reconstruction error targeted. In this case, it overrides\n         `n_nonzero_coefs`.\n \n+    max_iter : int, optional (default=1000)\n+        Maximum number of iterations for the `Lasso` estimator when\n+        `algorithm='lasso_cd'`. This parameter allows control over the\n+        convergence behavior of the `Lasso` algorithm.\n+\n     split_sign : bool, False by default\n         Whether to split the sparse feature vector into the concatenation of\n         its negative part and its positive part. This can improve the\n@@ -991,7 +996,7 @@ class SparseCoder(BaseEstimator, SparseCodingMixin):\n \n     def __init__(self, dictionary, transform_algorithm='omp',\n                  transform_n_nonzero_coefs=None, transform_alpha=None,\n-                 split_sign=False, n_jobs=None, positive_code=False):\n+                 max_iter=1000, split_sign=False, n_jobs=None, positive_code=False):\n         self._set_sparse_coding_params(dictionary.shape[0],\n                                        transform_algorithm,\n                                        transform_n_nonzero_coefs,\n",
+  "test_patch": "diff --git a/sklearn/linear_model/tests/test_sparse_coder_lasso.py b/sklearn/linear_model/tests/test_sparse_coder_lasso.py\nnew file mode 100644\nindex 0000000..f03a687\n--- /dev/null\n+++ b/sklearn/linear_model/tests/test_sparse_coder_lasso.py\n@@ -0,0 +1,19 @@\n+import numpy as np\n+import pytest\n+from sklearn.decomposition import SparseCoder\n+from sklearn.exceptions import ConvergenceWarning\n+from sklearn.utils.testing import assert_warns\n+\n+def test_sparse_coder_lasso_max_iter_warning():\n+    # Test to reproduce the issue where SparseCoder does not expose max_iter for Lasso\n+    rng = np.random.RandomState(0)\n+    n_components, n_features = 12, 8\n+    V = rng.randn(n_components, n_features)\n+    V /= np.sum(V ** 2, axis=1)[:, np.newaxis]\n+    X = rng.randn(10, n_features)\n+\n+    # SparseCoder with lasso_cd algorithm, which uses Lasso internally\n+    coder = SparseCoder(dictionary=V, transform_algorithm='lasso_cd', transform_alpha=0.001)\n+\n+    # Expect a ConvergenceWarning due to max_iter not being exposed and set to a low value\n+    assert_warns(ConvergenceWarning, coder.transform, X)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1222540,
+  "num_received_chars": 40669,
+  "elapsed_time": 483.1166229248047,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

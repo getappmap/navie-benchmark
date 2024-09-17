@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-25960",
+  "edit_test_file": "lib/matplotlib/tests/test_backends_interactive.py",
+  "code_patch": "diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py\nindex dab2bc4..9696212 100644\n--- a/lib/matplotlib/figure.py\n+++ b/lib/matplotlib/figure.py\n@@ -1586,6 +1586,10 @@ default: %(va)s\n                       width_ratios=width_ratios,\n                       height_ratios=height_ratios)\n \n+        # Adjust the layout to account for wspace and hspace\n+        if wspace is not None or hspace is not None:\n+            self.subplots_adjust(wspace=wspace, hspace=hspace)\n+\n         sfarr = np.empty((nrows, ncols), dtype=object)\n         for i in range(ncols):\n             for j in range(nrows):\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_subfigures.py b/lib/matplotlib/tests/test_subfigures.py\nnew file mode 100644\nindex 0000000..ba6f9d6\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_subfigures.py\n@@ -0,0 +1,16 @@\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_subfigures_wspace_hspace():\n+    # Create subfigures with wspace and hspace set to 0\n+    figs = plt.figure().subfigures(2, 2, wspace=0, hspace=0)\n+    for fig in figs.flat:\n+        fig.subplots().plot([1, 2])\n+\n+    # Check if the layout is the same regardless of wspace and hspace values\n+    # This is the expected incorrect behavior as described in the issue\n+    for fig in figs.flat:\n+        assert fig.subplotpars.wspace != 0 or fig.subplotpars.hspace != 0\n+\n+if __name__ == \"__main__\":\n+    pytest.main([__file__])\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2553887,
+  "num_received_chars": 18834,
+  "elapsed_time": 290.33461141586304,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

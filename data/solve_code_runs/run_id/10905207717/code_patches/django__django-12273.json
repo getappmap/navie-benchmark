@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12273",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/base.py b/django/db/models/base.py\nindex 844c01e..df61adb 100644\n--- a/django/db/models/base.py\n+++ b/django/db/models/base.py\n@@ -841,6 +841,7 @@ class Model(metaclass=ModelBase):\n \n         pk_val = self._get_pk_val(meta)\n         if pk_val is None:\n+            self._state.adding = True  # Mark the instance as new\n             pk_val = meta.pk.get_pk_value_on_save(self)\n             setattr(self, meta.pk.attname, pk_val)\n         pk_set = pk_val is not None\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 704644,
+  "num_received_chars": 4917,
+  "elapsed_time": 90.5113914012909,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-20826",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/examples/subplots_axes_and_figures/shared_axis_demo.py b/examples/subplots_axes_and_figures/shared_axis_demo.py\nindex e475a33..8a59913 100644\n--- a/examples/subplots_axes_and_figures/shared_axis_demo.py\n+++ b/examples/subplots_axes_and_figures/shared_axis_demo.py\n@@ -54,4 +54,10 @@ plt.tick_params('x', labelbottom=False)\n ax3 = plt.subplot(313, sharex=ax1, sharey=ax1)\n plt.plot(t, s3)\n plt.xlim(0.01, 5.0)\n+\n+# Clear and restore visibility settings\n+for ax in [ax1, ax2, ax3]:\n+    ax.clear()\n+    ax.tick_params('x', labelbottom=ax is not ax2)\n+\n plt.show()\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1055932,
+  "num_received_chars": 23447,
+  "elapsed_time": 310.3565466403961,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16631",
+  "edit_test_file": "tests/auth_tests/test_tokens.py",
+  "code_patch": "diff --git a/django/contrib/auth/tokens.py b/django/contrib/auth/tokens.py\nindex 09cc2b5..e15d31a 100644\n--- a/django/contrib/auth/tokens.py\n+++ b/django/contrib/auth/tokens.py\n@@ -42,11 +42,15 @@ class PasswordResetTokenGenerator:\n         Return a token that can be used once to do a password reset\n         for the given user.\n         \"\"\"\n-        return self._make_token_with_timestamp(\n-            user,\n-            self._num_seconds(self._now()),\n-            self.secret,\n-        )\n+        for secret in [self.secret, *self.secret_fallbacks]:\n+            token = self._make_token_with_timestamp(\n+                user,\n+                self._num_seconds(self._now()),\n+                secret,\n+            )\n+            if token:\n+                return token\n+        return None\n \n     def check_token(self, user, token):\n         \"\"\"\n@@ -71,15 +75,11 @@ class PasswordResetTokenGenerator:\n                 self._make_token_with_timestamp(user, ts, secret),\n                 token,\n             ):\n-                break\n-        else:\n-            return False\n-\n-        # Check the timestamp is within limit.\n-        if (self._num_seconds(self._now()) - ts) > settings.PASSWORD_RESET_TIMEOUT:\n-            return False\n+                # Check the timestamp is within limit.\n+                if (self._num_seconds(self._now()) - ts) <= settings.PASSWORD_RESET_TIMEOUT:\n+                    return True\n \n-        return True\n+        return False\n \n     def _make_token_with_timestamp(self, user, timestamp, secret):\n         # timestamp is number of seconds since 2001-1-1. Converted to base 36,\n",
+  "test_patch": "diff --git a/tests/auth_tests/test_secret_key_fallbacks.py b/tests/auth_tests/test_secret_key_fallbacks.py\nnew file mode 100644\nindex 0000000..9732e2b\n--- /dev/null\n+++ b/tests/auth_tests/test_secret_key_fallbacks.py\n@@ -0,0 +1,32 @@\n+from django.conf import settings\n+from django.contrib.auth.models import User\n+from django.contrib.auth import get_user\n+from django.test import TestCase, RequestFactory, override_settings\n+from django.utils.crypto import constant_time_compare\n+\n+class SecretKeyFallbacksSessionTest(TestCase):\n+    @override_settings(\n+        SECRET_KEY=\"newsecret\",\n+        SECRET_KEY_FALLBACKS=[\"oldsecret\"],\n+    )\n+    def test_secret_key_fallbacks_not_used_for_sessions(self):\n+        # Create a user and simulate a login\n+        user = User.objects.create_user(\"sessiontestuser\", \"test@example.com\", \"testpw\")\n+        request = RequestFactory().get('/')\n+        request.session = self.client.session\n+        request.user = user\n+\n+        # Simulate login to set session\n+        request.session['_auth_user_id'] = user.pk\n+        request.session['_auth_user_hash'] = user.get_session_auth_hash()\n+\n+        # Simulate secret key rotation\n+        with self.settings(SECRET_KEY=\"newsecret\", SECRET_KEY_FALLBACKS=[\"oldsecret\"]):\n+            # Reload the session and check if the user is still authenticated\n+            request.session.save()\n+            request.session = self.client.session\n+            request.user = get_user(request)\n+\n+            # The user should be logged out because the session hash does not match\n+            self.assertNotEqual(request.user, user)\n+            self.assertFalse(request.user.is_authenticated)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2749447,
+  "num_received_chars": 95002,
+  "elapsed_time": 922.8564841747284,
+  "lint_repair_count": 15,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

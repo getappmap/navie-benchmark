@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16136",
+  "edit_test_file": "tests/httpwrappers/tests.py",
+  "code_patch": "diff --git a/django/http/response.py b/django/http/response.py\nindex 7c0db55..f03976e 100644\n--- a/django/http/response.py\n+++ b/django/http/response.py\n@@ -654,6 +654,11 @@ class HttpResponseNotAllowed(HttpResponse):\n         super().__init__(*args, **kwargs)\n         self[\"Allow\"] = \", \".join(permitted_methods)\n \n+    def __await__(self):\n+        async def _async_response():\n+            return self\n+        return _async_response().__await__()\n+\n     def __repr__(self):\n         return \"<%(cls)s [%(methods)s] status_code=%(status_code)d%(content_type)s>\" % {\n             \"cls\": self.__class__.__name__,\n",
+  "test_patch": "diff --git a/tests/httpwrappers/test_httpresponse_not_allowed_fix.py b/tests/httpwrappers/test_httpresponse_not_allowed_fix.py\nnew file mode 100644\nindex 0000000..a9b9cd3\n--- /dev/null\n+++ b/tests/httpwrappers/test_httpresponse_not_allowed_fix.py\n@@ -0,0 +1,20 @@\n+import unittest\n+from django.http import HttpResponseNotAllowed\n+from django.test import RequestFactory, SimpleTestCase\n+\n+class HttpResponseNotAllowedAsyncTestCase(SimpleTestCase):\n+    def setUp(self):\n+        self.factory = RequestFactory()\n+\n+    async def test_http_response_not_allowed_await(self):\n+        request = self.factory.get('/demo')\n+        response = HttpResponseNotAllowed(['POST'])\n+        with self.assertRaises(TypeError) as context:\n+            await response\n+        self.assertEqual(\n+            str(context.exception),\n+            \"object HttpResponseNotAllowed can't be used in 'await' expression\"\n+        )\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/httpwrappers/test_httpresponse_not_allowed_fix_inverted.py b/tests/httpwrappers/test_httpresponse_not_allowed_fix_inverted.py\nnew file mode 100644\nindex 0000000..7a09607\n--- /dev/null\n+++ b/tests/httpwrappers/test_httpresponse_not_allowed_fix_inverted.py\n@@ -0,0 +1,23 @@\n+import unittest\n+from django.http import HttpResponseNotAllowed\n+from django.test import RequestFactory, SimpleTestCase\n+\n+class HttpResponseNotAllowedAsyncTestCase(SimpleTestCase):\n+    def setUp(self):\n+        self.factory = RequestFactory()\n+\n+    async def test_http_response_not_allowed_await(self):\n+        request = self.factory.get('/demo')\n+        response = HttpResponseNotAllowed(['POST'])\n+        try:\n+            await response\n+        except TypeError as e:\n+            self.assertEqual(\n+                str(e),\n+                \"__BUG__HERE__\"\n+            )\n+        else:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 4064029,
+  "num_received_chars": 43665,
+  "elapsed_time": 1032.5777192115784,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

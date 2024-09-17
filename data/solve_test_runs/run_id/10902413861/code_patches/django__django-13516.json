@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13516",
+  "edit_test_file": "tests/migrations/test_executor.py",
+  "code_patch": "diff --git a/django/core/management/commands/migrate.py b/django/core/management/commands/migrate.py\nindex a65500d..1b9e868 100644\n--- a/django/core/management/commands/migrate.py\n+++ b/django/core/management/commands/migrate.py\n@@ -283,6 +283,7 @@ class Command(BaseCommand):\n                     self.stdout.write(self.style.SUCCESS(\" FAKED\" + elapsed))\n                 else:\n                     self.stdout.write(self.style.SUCCESS(\" OK\" + elapsed))\n+                self.stdout.flush()\n             elif action == \"unapply_start\":\n                 if compute_time:\n                     self.start = time.monotonic()\n@@ -294,6 +295,7 @@ class Command(BaseCommand):\n                     self.stdout.write(self.style.SUCCESS(\" FAKED\" + elapsed))\n                 else:\n                     self.stdout.write(self.style.SUCCESS(\" OK\" + elapsed))\n+                self.stdout.flush()\n             elif action == \"render_start\":\n                 if compute_time:\n                     self.start = time.monotonic()\n",
+  "test_patch": "diff --git a/tests/migrations/test_migrations_flush_stdout_stderr.py b/tests/migrations/test_migrations_flush_stdout_stderr.py\nnew file mode 100644\nindex 0000000..2c5eb88\n--- /dev/null\n+++ b/tests/migrations/test_migrations_flush_stdout_stderr.py\n@@ -0,0 +1,16 @@\n+from unittest import mock\n+from django.core.management import call_command\n+from django.test import TestCase\n+from io import StringIO\n+\n+class FlushStdoutStderrTestCase(TestCase):\n+    def test_flush_stdout_stderr(self):\n+        out = StringIO()\n+        err = StringIO()\n+        with mock.patch('sys.stdout', out), mock.patch('sys.stderr', err):\n+            call_command('migrate', verbosity=2)\n+            # Check that the output is not flushed until the end\n+            self.assertIn(\"Operations to perform:\", out.getvalue())\n+            self.assertIn(\"Running migrations:\", out.getvalue())\n+            self.assertNotIn(\"Applying\", out.getvalue())\n+            self.assertNotIn(\"OK\", out.getvalue())\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/migrations/test_migrations_flush_stdout_stderr_inverted.py b/tests/migrations/test_migrations_flush_stdout_stderr_inverted.py\nnew file mode 100644\nindex 0000000..2fcb01f\n--- /dev/null\n+++ b/tests/migrations/test_migrations_flush_stdout_stderr_inverted.py\n@@ -0,0 +1,17 @@\n+from unittest import mock\n+from django.core.management import call_command\n+from django.test import TestCase\n+from io import StringIO\n+\n+class FlushStdoutStderrTestCase(TestCase):\n+    def test_flush_stdout_stderr(self):\n+        out = StringIO()\n+        err = StringIO()\n+        with mock.patch('sys.stdout', out), mock.patch('sys.stderr', err):\n+            call_command('migrate', verbosity=2)\n+            # Check that the output is not flushed until the end\n+            self.assertIn(\"Operations to perform:\", out.getvalue())\n+            self.assertIn(\"Running migrations:\", out.getvalue())\n+            # Altered assertions to fail when the bug is observed\n+            if \"Applying\" not in out.getvalue() or \"OK\" not in out.getvalue():\n+                raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1352338,
+  "num_received_chars": 75224,
+  "elapsed_time": 625.2337913513184,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

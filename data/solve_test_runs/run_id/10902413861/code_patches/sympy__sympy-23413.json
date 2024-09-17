@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23413",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/polys/matrices/normalforms.py b/sympy/polys/matrices/normalforms.py\nindex 30f5534..d934c5f 100644\n--- a/sympy/polys/matrices/normalforms.py\n+++ b/sympy/polys/matrices/normalforms.py\n@@ -7,6 +7,8 @@\n from sympy.ntheory.modular import symmetric_residue\n from sympy.polys.domains import QQ, ZZ\n \n+# Import DMRankError to handle rank-related exceptions\n+from sympy.polys.matrices.exceptions import DMRankError\n \n # TODO (future work):\n #  There are faster algorithms for Smith and Hermite normal forms, which\n@@ -194,6 +196,8 @@ def _hermite_normal_form(A):\n \n     DMDomainError\n         If the domain of the matrix is not :ref:`ZZ`.\n+    DMRankError\n+        If the matrix is incorrectly identified as rank-deficient.\n \n     References\n     ==========\n@@ -282,6 +286,8 @@ def _hermite_normal_form_modulo_D(A, D):\n     DMDomainError\n         If the domain of the matrix is not :ref:`ZZ`, or\n         if *D* is given but is not in :ref:`ZZ`.\n+    DMRankError\n+        If the matrix is incorrectly identified as rank-deficient.\n \n     DMShapeError\n         If the matrix has more rows than columns.\n@@ -387,6 +393,8 @@ def hermite_normal_form(A, *, D=None, check_rank=False):\n     DMShapeError\n         If the mod *D* algorithm is used but the matrix has more rows than\n         columns.\n+    DMRankError\n+        If the matrix is incorrectly identified as rank-deficient.\n \n     References\n     ==========\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 953660,
+  "num_received_chars": 28247,
+  "elapsed_time": 358.98890590667725,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

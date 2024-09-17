@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14351",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex 6629a1f..352f78b 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1232,6 +1232,10 @@ class Query(BaseExpression):\n         The difference between current_negated and branch_negated is that\n         branch_negated is set on first negation, but current_negated is\n         flipped for each negation.\n+        \n+        # Ensure subqueries only select necessary columns\n+        if isinstance(filter_expr, tuple) and '__in' in filter_expr[0]:\n+            filter_expr = (filter_expr[0] + '__id', filter_expr[1])\n \n         Note that add_filter will not do any negating itself, that is done\n         upper in the code by add_q().\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2021497,
+  "num_received_chars": 31968,
+  "elapsed_time": 196.8200957775116,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

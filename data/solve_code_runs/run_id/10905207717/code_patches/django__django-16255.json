@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16255",
+  "edit_test_file": "tests/sitemaps_tests/test_http.py",
+  "code_patch": "diff --git a/django/contrib/sitemaps/__init__.py b/django/contrib/sitemaps/__init__.py\nindex 27756d9..bdd8761 100644\n--- a/django/contrib/sitemaps/__init__.py\n+++ b/django/contrib/sitemaps/__init__.py\n@@ -167,8 +167,9 @@ class Sitemap:\n             return None\n         if callable(self.lastmod):\n             try:\n-                return max([self.lastmod(item) for item in self.items()])\n-            except TypeError:\n+                lastmod_dates = [self.lastmod(item) for item in self.items()]\n+                return max(lastmod_dates) if lastmod_dates else None\n+            except (TypeError, ValueError):\n                 return None\n         else:\n             return self.lastmod\n",
+  "test_patch": "diff --git a/tests/sitemaps_tests/test_sitemap_lastmod.py b/tests/sitemaps_tests/test_sitemap_lastmod.py\nnew file mode 100644\nindex 0000000..f762598\n--- /dev/null\n+++ b/tests/sitemaps_tests/test_sitemap_lastmod.py\n@@ -0,0 +1,20 @@\n+from django.test import TestCase\n+from django.urls import reverse\n+from django.contrib.sitemaps import Sitemap\n+from django.urls.exceptions import NoReverseMatch\n+\n+class EmptySitemap(Sitemap):\n+    def items(self):\n+        return []\n+\n+    def lastmod(self, obj):\n+        return obj.modified\n+\n+class SitemapLastmodTests(TestCase):\n+    def test_callable_lastmod_with_no_items_raises_value_error(self):\n+        \"\"\"\n+        Test that a sitemap with no items and a callable lastmod raises ValueError.\n+        \"\"\"\n+        sitemap = EmptySitemap()\n+        with self.assertRaises(ValueError):\n+            sitemap.get_latest_lastmod()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/sitemaps_tests/test_sitemap_lastmod_inverted.py b/tests/sitemaps_tests/test_sitemap_lastmod_inverted.py\nnew file mode 100644\nindex 0000000..30f6e64\n--- /dev/null\n+++ b/tests/sitemaps_tests/test_sitemap_lastmod_inverted.py\n@@ -0,0 +1,20 @@\n+from django.test import TestCase\n+from django.contrib.sitemaps import Sitemap\n+\n+class EmptySitemap(Sitemap):\n+    def items(self):\n+        return []\n+\n+    def lastmod(self, obj):\n+        return obj.modified\n+\n+class SitemapLastmodTests(TestCase):\n+    def test_callable_lastmod_with_no_items_raises_bug_error(self):\n+        \"\"\"\n+        Test that a sitemap with no items and a callable lastmod raises a specific error.\n+        \"\"\"\n+        sitemap = EmptySitemap()\n+        try:\n+            sitemap.get_latest_lastmod()\n+        except ValueError:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 440840,
+  "num_received_chars": 4901,
+  "elapsed_time": 52.69053649902344,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

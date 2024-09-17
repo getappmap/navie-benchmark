@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-24149",
+  "edit_test_file": "lib/matplotlib/tests/test_axes.py",
+  "code_patch": "diff --git a/lib/matplotlib/axes/_axes.py b/lib/matplotlib/axes/_axes.py\nindex fdac0f3..44917ae 100644\n--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@ -2163,9 +2163,9 @@ class Axes(_AxesBase):\n         # x should be an array...\n         assert type(xconv) is np.ndarray\n \n-        if xconv.size == 0:\n-            # xconv has already been converted, but maybe empty...\n-            return convert(dx)\n+        if xconv.size == 0 or np.isnan(xconv).all():\n+            # xconv has already been converted, but maybe empty or all NaN...\n+            return np.full_like(xconv, np.nan)\n \n         try:\n             # attempt to add the width to x0; this works for\n@@ -2370,13 +2370,19 @@ class Axes(_AxesBase):\n         if self.xaxis is not None:\n             x0 = x\n             x = np.asarray(self.convert_xunits(x))\n-            width = self._convert_dx(width, x0, x, self.convert_xunits)\n+            if np.isnan(x).all():\n+                width = np.full_like(x, np.nan)\n+            else:\n+                width = self._convert_dx(width, x0, x, self.convert_xunits)\n             if xerr is not None:\n                 xerr = self._convert_dx(xerr, x0, x, self.convert_xunits)\n         if self.yaxis is not None:\n             y0 = y\n             y = np.asarray(self.convert_yunits(y))\n-            height = self._convert_dx(height, y0, y, self.convert_yunits)\n+            if np.isnan(y).all():\n+                height = np.full_like(y, np.nan)\n+            else:\n+                height = self._convert_dx(height, y0, y, self.convert_yunits)\n             if yerr is not None:\n                 yerr = self._convert_dx(yerr, y0, y, self.convert_yunits)\n \n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_bar_nan_data.py b/lib/matplotlib/tests/test_bar_nan_data.py\nnew file mode 100644\nindex 0000000..6bdfebb\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_bar_nan_data.py\n@@ -0,0 +1,10 @@\n+# File: lib/matplotlib/tests/test_bar_nan_data.py\n+\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_bar_all_nan_data():\n+    fig, ax = plt.subplots()\n+    with pytest.raises(StopIteration):\n+        ax.bar([np.nan], [np.nan])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_bar_nan_data_inverted.py b/lib/matplotlib/tests/test_bar_nan_data_inverted.py\nnew file mode 100644\nindex 0000000..f803c6b\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_bar_nan_data_inverted.py\n@@ -0,0 +1,12 @@\n+# File: lib/matplotlib/tests/test_bar_nan_data.py\n+\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_bar_all_nan_data():\n+    fig, ax = plt.subplots()\n+    try:\n+        ax.bar([np.nan], [np.nan])\n+    except StopIteration:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1055452,
+  "num_received_chars": 14538,
+  "elapsed_time": 346.3330638408661,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

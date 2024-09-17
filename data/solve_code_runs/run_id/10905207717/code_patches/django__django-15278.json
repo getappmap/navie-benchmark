@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15278",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/sqlite3/base.py b/django/db/backends/sqlite3/base.py\nindex 4343ea1..57b6c0e 100644\n--- a/django/db/backends/sqlite3/base.py\n+++ b/django/db/backends/sqlite3/base.py\n@@ -213,6 +213,23 @@ class DatabaseWrapper(BaseDatabaseWrapper):\n         with self.wrap_database_errors:\n             self.connection.isolation_level = level\n \n+    def add_column_with_unique_constraint(self, model, field):\n+        \"\"\"\n+        Add a column with a unique constraint to a table in SQLite.\n+        This involves creating the column first without the constraint,\n+        then applying the constraint separately.\n+        \"\"\"\n+        with self.schema_editor() as editor:\n+            editor.add_field(model, field)\n+            # Apply unique constraint separately\n+            editor.execute(\n+                'CREATE UNIQUE INDEX %s ON %s(%s)' % (\n+                    self.quote_name('%s_%s_uniq' % (model._meta.db_table, field.column)),\n+                    self.quote_name(model._meta.db_table),\n+                    self.quote_name(field.column),\n+                )\n+            )\n+\n     def disable_constraint_checking(self):\n         with self.cursor() as cursor:\n             cursor.execute('PRAGMA foreign_keys = OFF')\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 717226,
+  "num_received_chars": 7377,
+  "elapsed_time": 114.17157292366028,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

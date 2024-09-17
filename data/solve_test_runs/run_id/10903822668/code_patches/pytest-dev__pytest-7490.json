@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7490",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/doc/en/example/xfail_demo.py b/doc/en/example/xfail_demo.py\nindex 01e6da1..8ad2d50 100644\n--- a/doc/en/example/xfail_demo.py\n+++ b/doc/en/example/xfail_demo.py\n@@ -36,3 +36,10 @@ def test_hello6():\n def test_hello7():\n     x = []\n     x[1] = 1\n+\n+\n+def test_dynamic_xfail(request):\n+    # Demonstrating dynamic xfail marker addition\n+    request.node.add_marker(pytest.mark.xfail(reason=\"dynamic xfail example\"))\n+    assert 0, \"This should be an expected failure (XFAIL) in Pytest 5.x\"\n+    # Note: In Pytest 6.x, this will be a FAIL unless handled differently\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 484100,
+  "num_received_chars": 6203,
+  "elapsed_time": 84.69077563285828,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

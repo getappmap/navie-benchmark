@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-22080",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/utilities/lambdify.py b/sympy/utilities/lambdify.py\nindex 0ed6ce2..1d85c83 100644\n--- a/sympy/utilities/lambdify.py\n+++ b/sympy/utilities/lambdify.py\n@@ -812,7 +812,7 @@ def _lambdifygenerated(x):\n         elif _module_present('sympy', namespaces):\n             from sympy.printing.pycode import SymPyPrinter as Printer # type: ignore\n         else:\n-            from sympy.printing.pycode import PythonCodePrinter as Printer # type: ignore\n+            from sympy.printing.lambdarepr import LambdaPrinter as Printer # type: ignore\n         user_functions = {}\n         for m in namespaces[::-1]:\n             if isinstance(m, dict):\n@@ -1081,13 +1081,17 @@ def doprint(self, funcname, args, expr, *, cses=()):\n         \"\"\"\n         Returns the function definition code as a string.\n         \"\"\"\n-        from sympy import Dummy\n+        from sympy import Dummy, Mod\n \n         funcbody = []\n \n         if not iterable(args):\n             args = [args]\n \n+        # Ensure Mod is preserved correctly in expressions\n+        if isinstance(expr, Mod):\n+            expr = Mod(expr.args[0], expr.args[1])\n+\n         argstrs, expr = self._preprocess(args, expr)\n \n         # Generate argument unpacking and final argument list\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 909030,
+  "num_received_chars": 17279,
+  "elapsed_time": 214.9215705394745,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

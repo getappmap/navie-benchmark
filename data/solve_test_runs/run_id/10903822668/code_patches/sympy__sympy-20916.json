@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-20916",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/pretty/pretty_symbology.py b/sympy/printing/pretty/pretty_symbology.py\nindex 3f7c4a2..f6cc1f3 100644\n--- a/sympy/printing/pretty/pretty_symbology.py\n+++ b/sympy/printing/pretty/pretty_symbology.py\n@@ -528,8 +528,8 @@ def translate(s, bold_name) :\n             if s.lower().endswith(key) and len(s)>len(key):\n                 return modifier_dict[key](translate(s[:-len(key)], bold_name))\n         if bold_name:\n-            return ''.join([bold_unicode[c] for c in s])\n-        return s\n+            return ''.join([bold_unicode.get(c, c) for c in s])\n+        return ''.join([greek_unicode.get(c, c) for c in s])\n \n     name = translate(name, bold_name)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 934252,
+  "num_received_chars": 18138,
+  "elapsed_time": 183.0972912311554,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

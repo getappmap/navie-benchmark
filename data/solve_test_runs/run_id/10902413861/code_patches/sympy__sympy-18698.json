@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-18698",
+  "edit_test_file": "sympy/polys/tests/test_polytools.py",
+  "code_patch": "diff --git a/sympy/polys/polytools.py b/sympy/polys/polytools.py\nindex c9e77a9..776252b 100644\n--- a/sympy/polys/polytools.py\n+++ b/sympy/polys/polytools.py\n@@ -5875,7 +5875,14 @@ def sqf_part(f, *gens, **args):\n \n \n def _sorted_factors(factors, method):\n-    \"\"\"Sort a list of ``(expr, exp)`` pairs. \"\"\"\n+    \"\"\"Sort and combine a list of ``(expr, exp)`` pairs. \"\"\"\n+    combined_factors = {}\n+    for poly, exp in factors:\n+        if poly in combined_factors:\n+            combined_factors[poly] += exp\n+        else:\n+            combined_factors[poly] = exp\n+\n     if method == 'sqf':\n         def key(obj):\n             poly, exp = obj\n@@ -5887,7 +5894,7 @@ def key(obj):\n             rep = poly.rep.rep\n             return (len(rep), len(poly.gens), exp, rep)\n \n-    return sorted(factors, key=key)\n+    return sorted(combined_factors.items(), key=key)\n \n \n def _factors_product(factors):\n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_sqfoutputconsistency.py b/sympy/polys/tests/test_sqfoutputconsistency.py\nnew file mode 100644\nindex 0000000..548cdad\n--- /dev/null\n+++ b/sympy/polys/tests/test_sqfoutputconsistency.py\n@@ -0,0 +1,13 @@\n+# File: sympy/polys/tests/test_sqfoutputconsistency.py\n+\n+from sympy import symbols\n+from sympy.polys.polytools import sqf_list\n+\n+x = symbols('x')\n+\n+def test_sqf_output_consistency():\n+    # This test reproduces the issue where sqf_list output is inconsistent\n+    # The expected output should have (x - 2, 3) instead of two factors of multiplicity 3\n+    expr = (x**2 + 1) * (x - 1)**2 * (x - 2)**3 * (x - 3)**3\n+    result = sqf_list(expr)\n+    assert result == (1, [(x**2 + 1, 1), (x - 1, 2), (x - 3, 3), (x - 2, 3)]), f\"Unexpected sqf_list output: {result}\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_sqfoutputconsistency_inverted.py b/sympy/polys/tests/test_sqfoutputconsistency_inverted.py\nnew file mode 100644\nindex 0000000..b9f0e2f\n--- /dev/null\n+++ b/sympy/polys/tests/test_sqfoutputconsistency_inverted.py\n@@ -0,0 +1,14 @@\n+# File: sympy/polys/tests/test_sqfoutputconsistency.py\n+\n+from sympy import symbols\n+from sympy.polys.polytools import sqf_list\n+\n+x = symbols('x')\n+\n+def test_sqf_output_consistency():\n+    # This test reproduces the issue where sqf_list output is inconsistent\n+    # The expected output should have (x - 2, 3) instead of two factors of multiplicity 3\n+    expr = (x**2 + 1) * (x - 1)**2 * (x - 2)**3 * (x - 3)**3\n+    result = sqf_list(expr)\n+    # Altered the assertion to fail when the bug is observed\n+    assert result != (1, [(x**2 + 1, 1), (x - 1, 2), (x - 3, 3), (x - 2, 3)]), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1645978,
+  "num_received_chars": 57927,
+  "elapsed_time": 841.6456377506256,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

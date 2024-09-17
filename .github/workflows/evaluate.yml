@@ -27,6 +27,7 @@ run-name: ${{ inputs.name }}
 permissions:
   contents: read
   pull-requests: read
+  packages: read
 
 jobs:
   show-inputs:
@@ -41,7 +42,6 @@ jobs:
   evaluate:
     runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
     continue-on-error: true
-    env:
     defaults:
       run:
         shell: bash -leo pipefail {0}
@@ -50,6 +50,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+          lfs: true
 
       - name: Setup Python
         uses: actions/setup-python@v2
@@ -72,15 +73,9 @@ jobs:
 
           export PYTHONPATH=$PYTHONPATH:$(pwd)
 
-          git config --global init.defaultBranch main
-          git config --global user.email "actions@example.com"
-          git config --global user.name "GitHub Workflow"
+          instance_set="${{ github.event.inputs.instance_set }}"
 
-          python -m solver.prepare_images \
-            --instance_set "${instance_set}" \
-            --no_push
-
-          python -m solver.collect_predictions \
+          python -m solver.prepare_predictions \
             --instance_set "${instance_set}" \
             --predictions_path predictions.jsonl
 

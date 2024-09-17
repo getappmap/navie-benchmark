@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-10914",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/files/storage.py b/django/core/files/storage.py\nindex cbdab1d..49ff320 100644\n--- a/django/core/files/storage.py\n+++ b/django/core/files/storage.py\n@@ -175,7 +175,7 @@ class FileSystemStorage(Storage):\n     # the file already exists before it's opened.\n     OS_OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_BINARY', 0)\n \n-    def __init__(self, location=None, base_url=None, file_permissions_mode=None,\n+    def __init__(self, location=None, base_url=None, file_permissions_mode=0o644,\n                  directory_permissions_mode=None):\n         self._location = location\n         self._base_url = base_url\n@@ -280,8 +280,8 @@ class FileSystemStorage(Storage):\n                 # OK, the file save worked. Break out of the loop.\n                 break\n \n-        if self.file_permissions_mode is not None:\n-            os.chmod(full_path, self.file_permissions_mode)\n+        # Apply default file permissions if not explicitly set\n+        os.chmod(full_path, self.file_permissions_mode or 0o644)\n \n         # Store filenames with forward slashes, even on Windows.\n         return name.replace('\\\\', '/')\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1160618,
+  "num_received_chars": 29578,
+  "elapsed_time": 217.93752717971802,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

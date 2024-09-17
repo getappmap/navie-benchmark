@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16454",
+  "edit_test_file": "tests/user_commands/tests.py",
+  "code_patch": "diff --git a/django/core/management/base.py b/django/core/management/base.py\nindex abc6f79..6c16c09 100644\n--- a/django/core/management/base.py\n+++ b/django/core/management/base.py\n@@ -65,6 +65,16 @@ class CommandParser(ArgumentParser):\n             self.error(self.missing_args_message)\n         return super().parse_args(args, namespace)\n \n+    def add_subparsers(self, **kwargs):\n+        subparsers = super().add_subparsers(**kwargs)\n+        subparsers._parser_class = self.__class__\n+        return subparsers\n+\n+    def add_parser(self, *args, **kwargs):\n+        kwargs.setdefault('missing_args_message', self.missing_args_message)\n+        kwargs.setdefault('called_from_command_line', self.called_from_command_line)\n+        return super().add_parser(*args, **kwargs)\n+\n     def error(self, message):\n         if self.called_from_command_line:\n             super().error(message)\n",
+  "test_patch": "diff --git a/tests/user_commands/test_command_subparsers_error_formatting.py b/tests/user_commands/test_command_subparsers_error_formatting.py\nnew file mode 100644\nindex 0000000..4c2a381\n--- /dev/null\n+++ b/tests/user_commands/test_command_subparsers_error_formatting.py\n@@ -0,0 +1,16 @@\n+import os\n+from io import StringIO\n+from unittest import TestCase\n+from django.core.management import call_command\n+from django.core.management.base import CommandError\n+\n+class SubparserErrorFormattingTest(TestCase):\n+    def test_missing_subparser_argument(self):\n+        \"\"\"\n+        Test that missing a required argument for a subparser raises a CommandError\n+        with the expected error message.\n+        \"\"\"\n+        with self.assertRaises(CommandError) as cm:\n+            call_command(\"subparser\", \"foo\")\n+        \n+        self.assertIn(\"Error: the following arguments are required: bar\", str(cm.exception))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/user_commands/test_command_subparsers_error_formatting_inverted.py b/tests/user_commands/test_command_subparsers_error_formatting_inverted.py\nnew file mode 100644\nindex 0000000..7102737\n--- /dev/null\n+++ b/tests/user_commands/test_command_subparsers_error_formatting_inverted.py\n@@ -0,0 +1,17 @@\n+import os\n+from io import StringIO\n+from unittest import TestCase\n+from django.core.management import call_command\n+from django.core.management.base import CommandError\n+\n+class SubparserErrorFormattingTest(TestCase):\n+    def test_missing_subparser_argument(self):\n+        \"\"\"\n+        Test that missing a required argument for a subparser raises a CommandError\n+        with the expected error message.\n+        \"\"\"\n+        with self.assertRaises(CommandError) as cm:\n+            call_command(\"subparser\", \"foo\")\n+        \n+        # Alter the test to fail when the issue is observed\n+        self.assertNotIn(\"Error: the following arguments are required: bar\", str(cm.exception), \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1117082,
+  "num_received_chars": 39637,
+  "elapsed_time": 387.6892921924591,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

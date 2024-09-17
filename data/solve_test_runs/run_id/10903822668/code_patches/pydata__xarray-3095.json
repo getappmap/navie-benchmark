@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-3095",
+  "edit_test_file": "xarray/tests/test_variable.py",
+  "code_patch": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b00dad9..8ef6630 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -933,8 +933,13 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n         pandas.DataFrame.copy\n         \"\"\"  # noqa\n         if data is None:\n-            variables = OrderedDict((k, v.copy(deep=deep))\n-                                    for k, v in self._variables.items())\n+            variables = OrderedDict()\n+            for k, v in self._variables.items():\n+                if deep and isinstance(v, IndexVariable) and v.dtype.kind == 'U':\n+                    # Ensure Unicode dtype is preserved during deep copy\n+                    variables[k] = IndexVariable(v.dims, v.values.copy(), v.attrs)\n+                else:\n+                    variables[k] = v.copy(deep=deep)\n         elif not utils.is_dict_like(data):\n             raise ValueError('Data must be dict-like')\n         else:\n",
+  "test_patch": "diff --git a/xarray/tests/test_copy_regression.py b/xarray/tests/test_copy_regression.py\nnew file mode 100644\nindex 0000000..2879cba\n--- /dev/null\n+++ b/xarray/tests/test_copy_regression.py\n@@ -0,0 +1,26 @@\n+import unittest\n+import numpy as np\n+import xarray as xr\n+\n+class TestCopyRegression(unittest.TestCase):\n+    def test_copy_deep_unicode_to_object(self):\n+        # Create a dataset with unicode index variables\n+        ds = xr.Dataset(\n+            coords={'x': ['foo'], 'y': ('x', ['bar'])},\n+            data_vars={'z': ('x', ['baz'])}\n+        )\n+\n+        # Perform a deep copy\n+        ds_copy = ds.copy(deep=True)\n+\n+        # Check if the dtype of the 'x' coordinate has changed to object\n+        self.assertEqual(ds_copy.coords['x'].dtype, object)\n+\n+        # Check if the dtype of the 'y' coordinate remains unchanged\n+        self.assertEqual(ds_copy.coords['y'].dtype, '<U3')\n+\n+        # Check if the dtype of the 'z' data variable remains unchanged\n+        self.assertEqual(ds_copy['z'].dtype, '<U3')\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_copy_regression_inverted.py b/xarray/tests/test_copy_regression_inverted.py\nnew file mode 100644\nindex 0000000..3876b51\n--- /dev/null\n+++ b/xarray/tests/test_copy_regression_inverted.py\n@@ -0,0 +1,28 @@\n+import unittest\n+import numpy as np\n+import xarray as xr\n+\n+class TestCopyRegression(unittest.TestCase):\n+    def test_copy_deep_unicode_to_object(self):\n+        # Create a dataset with unicode index variables\n+        ds = xr.Dataset(\n+            coords={'x': ['foo'], 'y': ('x', ['bar'])},\n+            data_vars={'z': ('x', ['baz'])}\n+        )\n+\n+        # Perform a deep copy\n+        ds_copy = ds.copy(deep=True)\n+\n+        # Check if the dtype of the 'x' coordinate has changed to object\n+        # This should now fail if the bug is present\n+        if ds_copy.coords['x'].dtype == object:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+        # Check if the dtype of the 'y' coordinate remains unchanged\n+        self.assertEqual(ds_copy.coords['y'].dtype, '<U3')\n+\n+        # Check if the dtype of the 'z' data variable remains unchanged\n+        self.assertEqual(ds_copy['z'].dtype, '<U3')\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 830018,
+  "num_received_chars": 14052,
+  "elapsed_time": 271.1469829082489,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

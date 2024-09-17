@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-6197",
+  "edit_test_file": "testing/example_scripts/collect/collect_init_tests/tests/__init__.py",
+  "code_patch": "diff --git a/doc/en/example/pythoncollection.rst b/doc/en/example/pythoncollection.rst\nindex d8261a9..3c54399 100644\n--- a/doc/en/example/pythoncollection.rst\n+++ b/doc/en/example/pythoncollection.rst\n@@ -230,19 +230,24 @@ Customizing test collection\n \n .. regendoc:wipe\n \n-You can easily instruct ``pytest`` to discover tests from every Python file:\n+You can easily instruct ``pytest`` to discover tests from every Python file,\n+but by default, it should not collect `__init__.py` files as test modules:\n \n .. code-block:: ini\n \n     # content of pytest.ini\n     [pytest]\n     python_files = *.py\n+    norecursedirs = __init__.py\n \n However, many projects will have a ``setup.py`` which they don't want to be\n imported. Moreover, there may files only importable by a specific python\n version. For such cases you can dynamically define files to be ignored by\n listing them in a ``conftest.py`` file:\n \n+Additionally, ensure that `__init__.py` files are not collected by default\n+to prevent unintended import errors, especially when they contain platform-specific code.\n+\n .. code-block:: python\n \n     # content of conftest.py\n",
+  "test_patch": "diff --git a/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init.py b/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init.py\nnew file mode 100644\nindex 0000000..fd9bca9\n--- /dev/null\n+++ b/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init.py\n@@ -0,0 +1,14 @@\n+import os\n+import pytest\n+\n+def test_regression_pytest_collects_init_py(tmpdir):\n+    # Create a directory structure with an __init__.py file\n+    foobar_dir = tmpdir.mkdir(\"foobar\")\n+    init_file = foobar_dir.join(\"__init__.py\")\n+    init_file.write(\"assert False\")\n+\n+    # Run pytest in the temporary directory\n+    result = pytest.main([str(tmpdir)])\n+\n+    # Assert that pytest collected the __init__.py file and failed\n+    assert result == pytest.ExitCode.INTERRUPTED\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init_inverted.py b/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init_inverted.py\nnew file mode 100644\nindex 0000000..67fa3c4\n--- /dev/null\n+++ b/testing/example_scripts/collect/collect_init_tests/tests/test_regression_pytest_init_inverted.py\n@@ -0,0 +1,18 @@\n+import os\n+import pytest\n+\n+def test_regression_pytest_collects_init_py(tmpdir):\n+    # Create a directory structure with an __init__.py file\n+    foobar_dir = tmpdir.mkdir(\"foobar\")\n+    init_file = foobar_dir.join(\"__init__.py\")\n+    init_file.write(\"assert False\")\n+\n+    # Run pytest in the temporary directory\n+    result = pytest.main([str(tmpdir)])\n+\n+    # Assert that pytest collected the __init__.py file and failed\n+    # Change the assertion to fail when the bug is observed\n+    if result == pytest.ExitCode.INTERRUPTED:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    else:\n+        assert result != pytest.ExitCode.OK\n\\ No newline at end of file\n",
+  "num_sent_chars": 1099215,
+  "num_received_chars": 18777,
+  "elapsed_time": 385.38320565223694,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

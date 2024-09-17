@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12193",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 6fe220b..c6623a7 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -521,9 +521,8 @@ class CheckboxInput(Input):\n         return str(value)\n \n     def get_context(self, name, value, attrs):\n+        attrs = attrs.copy() if attrs else {}\n         if self.check_test(value):\n-            if attrs is None:\n-                attrs = {}\n             attrs['checked'] = True\n         return super().get_context(name, value, attrs)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 821423,
+  "num_received_chars": 20468,
+  "elapsed_time": 171.66416668891907,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

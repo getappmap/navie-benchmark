@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-7393",
+  "edit_test_file": "xarray/tests/test_dataarray.py",
+  "code_patch": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex 3d4bf0a..82ee332 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -4508,6 +4508,9 @@ class Dataset(\n         stacked_var_names: list[Hashable] = []\n         drop_indexes: list[Hashable] = []\n \n+        # Preserve original data types of the dimensions\n+        original_dtypes = {dim: self.variables[dim].dtype for dim in dims if dim in self.variables}\n+\n         for name, var in self.variables.items():\n             if any(d in var.dims for d in dims):\n                 add_dims = [d for d in dims if d not in var.dims]\n@@ -4535,6 +4538,10 @@ class Dataset(\n \n             if len(product_vars) == len(dims):\n                 idx = index_cls.stack(product_vars, new_dim)\n+                # Ensure the new index respects the original data types\n+                for var_name, var in product_vars.items():\n+                    if var_name in original_dtypes:\n+                        var.data = var.data.astype(original_dtypes[var_name])\n                 new_indexes[new_dim] = idx\n                 new_indexes.update({k: idx for k in product_vars})\n                 idx_vars = idx.create_variables(product_vars)\n",
+  "test_patch": "diff --git a/xarray/tests/test_multindex_dtype.py b/xarray/tests/test_multindex_dtype.py\nnew file mode 100644\nindex 0000000..5dc535a\n--- /dev/null\n+++ b/xarray/tests/test_multindex_dtype.py\n@@ -0,0 +1,12 @@\n+import xarray as xr\n+import numpy as np\n+import unittest\n+\n+class TestMultiIndexDtype(unittest.TestCase):\n+    def test_stack_casts_int32_to_int64(self):\n+        ds = xr.Dataset(coords={'a': np.array([0], dtype='i4')})\n+        result = ds['a'].values.dtype == ds.stack(b=('a',))['a'].values.dtype\n+        self.assertFalse(result, \"Expected dtype to change from 'i4' to 'i8' after stacking.\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_multindex_dtype_inverted.py b/xarray/tests/test_multindex_dtype_inverted.py\nnew file mode 100644\nindex 0000000..685f7d5\n--- /dev/null\n+++ b/xarray/tests/test_multindex_dtype_inverted.py\n@@ -0,0 +1,12 @@\n+import xarray as xr\n+import numpy as np\n+import unittest\n+\n+class TestMultiIndexDtype(unittest.TestCase):\n+    def test_stack_casts_int32_to_int64(self):\n+        ds = xr.Dataset(coords={'a': np.array([0], dtype='i4')})\n+        result = ds['a'].values.dtype == ds.stack(b=('a',))['a'].values.dtype\n+        self.assertTrue(result, \"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 4703708,
+  "num_received_chars": 76067,
+  "elapsed_time": 1163.7438988685608,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

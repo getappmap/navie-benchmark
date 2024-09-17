@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12125",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py\nindex 7d22695..8e7657b 100644\n--- a/django/db/migrations/serializer.py\n+++ b/django/db/migrations/serializer.py\n@@ -25,6 +25,11 @@ class BaseSerializer:\n     def serialize(self):\n         raise NotImplementedError('Subclasses of BaseSerializer must implement the serialize() method.')\n \n+    def _get_full_class_path(self, cls):\n+        module = cls.__module__\n+        if module == \"builtins\":\n+            return cls.__qualname__\n+        return module + \".\" + cls.__qualname__\n \n class BaseSequenceSerializer(BaseSerializer):\n     def _format(self):\n@@ -90,7 +95,9 @@ class DeconstructableSerializer(BaseSerializer):\n \n     @staticmethod\n     def _serialize_path(path):\n-        module, name = path.rsplit(\".\", 1)\n+        parts = path.split(\".\")\n+        module = parts[0]\n+        name = \".\".join(parts[1:])\n         if module == \"django.db.models\":\n             imports = {\"from django.db import models\"}\n             name = \"models.%s\" % name\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 735922,
+  "num_received_chars": 6922,
+  "elapsed_time": 94.72435474395752,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

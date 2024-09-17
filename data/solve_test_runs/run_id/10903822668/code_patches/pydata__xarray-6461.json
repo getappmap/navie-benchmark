@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-6461",
+  "edit_test_file": "xarray/tests/test_computation.py",
+  "code_patch": "diff --git a/xarray/core/variable.py b/xarray/core/variable.py\nindex a21cf8c..aac764e 100644\n--- a/xarray/core/variable.py\n+++ b/xarray/core/variable.py\n@@ -2455,7 +2455,11 @@ class Variable(AbstractArray, NdimSizeLenMixin, VariableArithmetic):\n         else:\n             self_data, other_data, dims = _broadcast_compat_data(self, other)\n         keep_attrs = _get_keep_attrs(default=False)\n-        attrs = self._attrs if keep_attrs else None\n+        # Check if the second argument is an xarray object to determine attribute handling\n+        if keep_attrs and isinstance(other, (xr.DataArray, xr.Dataset, Variable)):\n+            attrs = self._attrs\n+        else:\n+            attrs = None\n         with np.errstate(all=\"ignore\"):\n             new_data = (\n                 f(self_data, other_data) if not reflexive else f(other_data, self_data)\n",
+  "test_patch": "diff --git a/xarray/tests/test_where_keep_attrs.py b/xarray/tests/test_where_keep_attrs.py\nnew file mode 100644\nindex 0000000..86f9e9f\n--- /dev/null\n+++ b/xarray/tests/test_where_keep_attrs.py\n@@ -0,0 +1,12 @@\n+import unittest\n+import xarray as xr\n+\n+class TestWhereKeepAttrs(unittest.TestCase):\n+    def test_where_with_scalar_and_keep_attrs(self):\n+        with self.assertRaises(IndexError) as context:\n+            xr.where(xr.DataArray([1, 2, 3]) > 0, 1, 0, keep_attrs=True)\n+        \n+        self.assertIn(\"list index out of range\", str(context.exception))\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_where_keep_attrs_inverted.py b/xarray/tests/test_where_keep_attrs_inverted.py\nnew file mode 100644\nindex 0000000..5349351\n--- /dev/null\n+++ b/xarray/tests/test_where_keep_attrs_inverted.py\n@@ -0,0 +1,18 @@\n+import unittest\n+import xarray as xr\n+\n+class TestWhereKeepAttrs(unittest.TestCase):\n+    def test_where_with_scalar_and_keep_attrs(self):\n+        # The test should now fail when the bug is observed\n+        try:\n+            xr.where(xr.DataArray([1, 2, 3]) > 0, 1, 0, keep_attrs=True)\n+        except IndexError as e:\n+            # Check if the exception message matches the expected bug message\n+            if \"list index out of range\" in str(e):\n+                raise AssertionError(\"__BUG__HERE__\") from e\n+        else:\n+            # If no exception is raised, the test should fail\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1350369,
+  "num_received_chars": 35774,
+  "elapsed_time": 569.8081748485565,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

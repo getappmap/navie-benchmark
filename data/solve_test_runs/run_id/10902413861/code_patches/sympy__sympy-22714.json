@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-22714",
+  "edit_test_file": "sympy/geometry/tests/test_point.py",
+  "code_patch": "diff --git a/sympy/geometry/point.py b/sympy/geometry/point.py\nindex 73c2033..d7cf7f6 100644\n--- a/sympy/geometry/point.py\n+++ b/sympy/geometry/point.py\n@@ -152,7 +152,7 @@ def __new__(cls, *args, **kwargs):\n                         'warn' or 'ignore'.'''))\n         if any(coords[dim:]):\n             raise ValueError('Nonzero coordinates cannot be removed.')\n-        if any(a.is_number and im(a) for a in coords):\n+        if any(a.is_number and im(a).simplify() != 0 for a in coords):\n             raise ValueError('Imaginary coordinates are not permitted.')\n         if not all(isinstance(a, Expr) for a in coords):\n             raise TypeError('Coordinates must be valid SymPy expressions.')\n",
+  "test_patch": "diff --git a/sympy/geometry/tests/test_point2d_evaluate.py b/sympy/geometry/tests/test_point2d_evaluate.py\nnew file mode 100644\nindex 0000000..7608bcd\n--- /dev/null\n+++ b/sympy/geometry/tests/test_point2d_evaluate.py\n@@ -0,0 +1,7 @@\n+from sympy import S, evaluate\n+from sympy.testing.pytest import raises\n+\n+def test_point2d_evaluate_false():\n+    with raises(ValueError):\n+        with evaluate(False):\n+            S('Point2D(Integer(1),Integer(2))')\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2011055,
+  "num_received_chars": 65791,
+  "elapsed_time": 832.6535747051239,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

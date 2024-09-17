@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-7166",
+  "edit_test_file": "astropy/utils/tests/test_misc.py",
+  "code_patch": "diff --git a/astropy/utils/misc.py b/astropy/utils/misc.py\nindex de3fb01..1c0f784 100644\n--- a/astropy/utils/misc.py\n+++ b/astropy/utils/misc.py\n@@ -496,15 +496,15 @@ def did_you_mean(s, candidates, n=3, cutoff=0.8, fix=None):\n \n class InheritDocstrings(type):\n     \"\"\"\n-    This metaclass makes methods of a class automatically have their\n-    docstrings filled in from the methods they override in the base\n+    This metaclass makes methods and properties of a class automatically have their\n+    docstrings filled in from the methods or properties they override in the base\n     class.\n \n     If the class uses multiple inheritance, the docstring will be\n     chosen from the first class in the bases list, in the same way as\n     methods are normally resolved in Python.  If this results in\n     selecting the wrong docstring, the docstring will need to be\n-    explicitly included on the method.\n+    explicitly included on the method or property.\n \n     For example::\n \n@@ -528,13 +528,16 @@ class InheritDocstrings(type):\n                 not key.startswith('_'))\n \n         for key, val in dct.items():\n-            if (inspect.isfunction(val) and\n+            if ((inspect.isfunction(val) or isinstance(val, property)) and\n                 is_public_member(key) and\n                 val.__doc__ is None):\n                 for base in cls.__mro__[1:]:\n-                    super_method = getattr(base, key, None)\n-                    if super_method is not None:\n-                        val.__doc__ = super_method.__doc__\n+                    super_attr = getattr(base, key, None)\n+                    if super_attr is not None:\n+                        if isinstance(val, property) and isinstance(super_attr, property):\n+                            val.__doc__ = super_attr.fget.__doc__\n+                        else:\n+                            val.__doc__ = super_attr.__doc__\n                         break\n \n         super().__init__(name, bases, dct)\n",
+  "test_patch": "diff --git a/astropy/utils/tests/test_inheritdocstrings_properties.py b/astropy/utils/tests/test_inheritdocstrings_properties.py\nnew file mode 100644\nindex 0000000..b585125\n--- /dev/null\n+++ b/astropy/utils/tests/test_inheritdocstrings_properties.py\n@@ -0,0 +1,23 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import unittest\n+from astropy.utils import misc\n+\n+class TestInheritDocstringsProperties(unittest.TestCase):\n+    def test_inherit_docstrings_with_property(self):\n+        class Base(metaclass=misc.InheritDocstrings):\n+            @property\n+            def foo(self):\n+                \"\"\"FOO\"\"\"\n+                return \"foo\"\n+\n+        class Subclass(Base):\n+            @property\n+            def foo(self):\n+                return \"bar\"\n+\n+        # The issue is that the docstring is not inherited for properties\n+        self.assertIsNone(Subclass.foo.__doc__)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1116379,
+  "num_received_chars": 31107,
+  "elapsed_time": 278.0693151950836,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

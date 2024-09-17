@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-7530",
+  "edit_test_file": "tests/check_framework/test_multi_db.py",
+  "code_patch": "diff --git a/django/core/management/commands/makemigrations.py b/django/core/management/commands/makemigrations.py\nindex 0b39536..c1ed6bb 100644\n--- a/django/core/management/commands/makemigrations.py\n+++ b/django/core/management/commands/makemigrations.py\n@@ -102,10 +102,10 @@ class Command(BaseCommand):\n         for alias in sorted(aliases_to_check):\n             connection = connections[alias]\n             if (connection.settings_dict['ENGINE'] != 'django.db.backends.dummy' and any(\n-                    # At least one model must be migrated to the database.\n-                    router.allow_migrate(connection.alias, app_label, model_name=model._meta.object_name)\n+                    # Only check models that belong to the app_label.\n+                    router.allow_migrate(connection.alias, model._meta.app_label, model_name=model._meta.object_name)\n                     for app_label in consistency_check_labels\n-                    for model in apps.get_models(app_label)\n+                    for model in apps.get_app_config(app_label).get_models()\n             )):\n                 loader.check_consistent_history(connection)\n \n",
+  "test_patch": "diff --git a/tests/check_framework/test_makemigrations_consistency.py b/tests/check_framework/test_makemigrations_consistency.py\nnew file mode 100644\nindex 0000000..98e0b92\n--- /dev/null\n+++ b/tests/check_framework/test_makemigrations_consistency.py\n@@ -0,0 +1,18 @@\n+from django.core.management import call_command\n+from django.test import TestCase, override_settings\n+from django.db import models\n+\n+class InvalidModel(models.Model):\n+    field = models.CharField(max_length=100)\n+\n+    class Meta:\n+        app_label = 'invalid_app'\n+\n+class TestMigrationsRouter(TestCase):\n+    @override_settings(DATABASE_ROUTERS=['check_framework.test_multi_db.TestRouter'])\n+    def test_makemigrations_invalid_model_app_label_pair(self):\n+        \"\"\"\n+        Test that makemigrations calls allow_migrate() with incorrect (app_label, model) pairs.\n+        \"\"\"\n+        with self.assertRaises(SystemExit):\n+            call_command('makemigrations', 'invalid_app', verbosity=0)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/check_framework/test_makemigrations_consistency_inverted.py b/tests/check_framework/test_makemigrations_consistency_inverted.py\nnew file mode 100644\nindex 0000000..98beeb9\n--- /dev/null\n+++ b/tests/check_framework/test_makemigrations_consistency_inverted.py\n@@ -0,0 +1,20 @@\n+from django.core.management import call_command\n+from django.test import TestCase, override_settings\n+from django.db import models\n+\n+class InvalidModel(models.Model):\n+    field = models.CharField(max_length=100)\n+\n+    class Meta:\n+        app_label = 'invalid_app'\n+\n+class TestMigrationsRouter(TestCase):\n+    @override_settings(DATABASE_ROUTERS=['check_framework.test_multi_db.TestRouter'])\n+    def test_makemigrations_invalid_model_app_label_pair(self):\n+        \"\"\"\n+        Test that makemigrations calls allow_migrate() with incorrect (app_label, model) pairs.\n+        \"\"\"\n+        try:\n+            call_command('makemigrations', 'invalid_app', verbosity=0)\n+        except SystemExit:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1903918,
+  "num_received_chars": 107910,
+  "elapsed_time": 648.2354521751404,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 8,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

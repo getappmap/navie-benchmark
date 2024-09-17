@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11138",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/mysql/operations.py b/django/db/backends/mysql/operations.py\nindex 50f85e0..da15e79 100644\n--- a/django/db/backends/mysql/operations.py\n+++ b/django/db/backends/mysql/operations.py\n@@ -69,8 +69,8 @@ class DatabaseOperations(BaseDatabaseOperations):\n             return \"DATE(%s)\" % (field_name)\n \n     def _convert_field_to_tz(self, field_name, tzname):\n-        if settings.USE_TZ:\n-            field_name = \"CONVERT_TZ(%s, 'UTC', '%s')\" % (field_name, tzname)\n+        if settings.USE_TZ and self.connection.timezone_name != tzname:\n+            field_name = \"CONVERT_TZ(%s, '%s', '%s')\" % (field_name, self.connection.timezone_name, tzname)\n         return field_name\n \n     def datetime_cast_date_sql(self, field_name, tzname):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1296577,
+  "num_received_chars": 34092,
+  "elapsed_time": 238.88348937034607,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15809",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py\nindex 5f9fe73..68e0127 100644\n--- a/sympy/functions/elementary/miscellaneous.py\n+++ b/sympy/functions/elementary/miscellaneous.py\n@@ -340,7 +340,10 @@ def real_root(arg, n=None, evaluate=None):\n class MinMaxBase(Expr, LatticeOp):\n     def __new__(cls, *args, **assumptions):\n         if not args:\n-            raise ValueError(\"The Max/Min functions must have arguments.\")\n+            if cls == Min:\n+                return S.Infinity\n+            elif cls == Max:\n+                return S.NegativeInfinity\n \n         args = (sympify(arg) for arg in args)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1326305,
+  "num_received_chars": 30287,
+  "elapsed_time": 461.93231105804443,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 5,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

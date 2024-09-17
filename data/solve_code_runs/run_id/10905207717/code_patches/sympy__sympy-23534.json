@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23534",
+  "edit_test_file": "sympy/printing/tests/test_repr.py",
+  "code_patch": "diff --git a/sympy/core/function.py b/sympy/core/function.py\nindex 710c5cf..fba6a24 100644\n--- a/sympy/core/function.py\n+++ b/sympy/core/function.py\n@@ -1972,7 +1972,10 @@ class Lambda(Expr):\n     is_Function = True\n \n     def __new__(cls, signature, expr):\n-        if iterable(signature) and not isinstance(signature, (tuple, Tuple)):\n+        if isinstance(signature, (tuple, Tuple)):\n+            # Flatten nested tuples to handle extra parentheses\n+            signature = Tuple(*signature)\n+        elif iterable(signature) and not isinstance(signature, (tuple, Tuple)):\n             sympy_deprecation_warning(\n                 \"\"\"\n                 Using a non-tuple iterable as the first argument to Lambda\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_function_symbols.py b/sympy/printing/tests/test_function_symbols.py\nnew file mode 100644\nindex 0000000..4da92c0\n--- /dev/null\n+++ b/sympy/printing/tests/test_function_symbols.py\n@@ -0,0 +1,6 @@\n+import sympy as smp\n+from sympy.testing.pytest import raises\n+\n+def test_symbols_with_extra_parentheses():\n+    q, u = smp.symbols(('q:2', 'u:2'), cls=smp.Function)\n+    assert isinstance(q[0], smp.Symbol), \"Expected q[0] to be of type Symbol, but got UndefinedFunction\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_function_symbols_inverted.py b/sympy/printing/tests/test_function_symbols_inverted.py\nnew file mode 100644\nindex 0000000..3eff74b\n--- /dev/null\n+++ b/sympy/printing/tests/test_function_symbols_inverted.py\n@@ -0,0 +1,6 @@\n+import sympy as smp\n+from sympy.testing.pytest import raises\n+\n+def test_symbols_with_extra_parentheses():\n+    q, u = smp.symbols(('q:2', 'u:2'), cls=smp.Function)\n+    assert not isinstance(q[0], smp.Symbol), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2524511,
+  "num_received_chars": 45305,
+  "elapsed_time": 795.3070311546326,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

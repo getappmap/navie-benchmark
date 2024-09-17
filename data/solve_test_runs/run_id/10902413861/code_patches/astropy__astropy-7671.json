@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-7671",
+  "edit_test_file": "astropy/constants/tests/test_prior_version.py",
+  "code_patch": "diff --git a/astropy/utils/introspection.py b/astropy/utils/introspection.py\nindex 3e784f9..6e4edb8 100644\n--- a/astropy/utils/introspection.py\n+++ b/astropy/utils/introspection.py\n@@ -6,7 +6,7 @@\n import inspect\n import types\n import importlib\n-from distutils.version import LooseVersion\n+from packaging.version import Version\n \n \n __all__ = ['resolve_name', 'minversion', 'find_current_module',\n@@ -139,10 +139,16 @@ def minversion(module, version, inclusive=True, version_path='__version__'):\n     else:\n         have_version = resolve_name(module.__name__, version_path)\n \n+    try:\n+        have_version_parsed = Version(have_version)\n+        version_parsed = Version(version)\n+    except Exception as e:\n+        raise ValueError(f\"Error parsing version strings: {e}\")\n+\n     if inclusive:\n-        return LooseVersion(have_version) >= LooseVersion(version)\n+        return have_version_parsed >= version_parsed\n     else:\n-        return LooseVersion(have_version) > LooseVersion(version)\n+        return have_version_parsed > version_parsed\n \n \n def find_current_module(depth=1, finddiff=False):\n",
+  "test_patch": "diff --git a/astropy/constants/tests/test_minversion_failure.py b/astropy/constants/tests/test_minversion_failure.py\nnew file mode 100644\nindex 0000000..a06e733\n--- /dev/null\n+++ b/astropy/constants/tests/test_minversion_failure.py\n@@ -0,0 +1,13 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+from distutils.version import LooseVersion\n+import unittest\n+\n+class TestMinversionFailure(unittest.TestCase):\n+    def test_minversion_failure(self):\n+        with self.assertRaises(TypeError):\n+            # This should raise a TypeError due to the issue with LooseVersion\n+            LooseVersion('1.14.3') >= LooseVersion('1.14dev')\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1979328,
+  "num_received_chars": 47478,
+  "elapsed_time": 491.67036294937134,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

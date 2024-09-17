@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12774",
+  "edit_test_file": "tests/constraints/tests.py",
+  "code_patch": "diff --git a/django/db/models/options.py b/django/db/models/options.py\nindex 0e28b68..5a7dadd 100644\n--- a/django/db/models/options.py\n+++ b/django/db/models/options.py\n@@ -840,6 +840,19 @@ class Options:\n             if isinstance(constraint, UniqueConstraint) and constraint.condition is None\n         ]\n \n+    def is_field_unique(self, field_name):\n+        \"\"\"\n+        Check if a field is unique either by having unique=True or being part\n+        of a UniqueConstraint.\n+        \"\"\"\n+        field = self.get_field(field_name)\n+        if field.unique:\n+            return True\n+        for constraint in self.total_unique_constraints:\n+            if field_name in constraint.fields:\n+                return True\n+        return False\n+\n     @cached_property\n     def _property_names(self):\n         \"\"\"Return a set of the names of the properties defined on the model.\"\"\"\n",
+  "test_patch": "diff --git a/tests/constraints/test_query_set_in_bulk_unique_constraint.py b/tests/constraints/test_query_set_in_bulk_unique_constraint.py\nnew file mode 100644\nindex 0000000..d1c4023\n--- /dev/null\n+++ b/tests/constraints/test_query_set_in_bulk_unique_constraint.py\n@@ -0,0 +1,14 @@\n+from django.db import models, IntegrityError\n+from django.test import TestCase\n+from .models import UniqueConstraintProduct\n+\n+class QuerySetInBulkUniqueConstraintTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.product1 = UniqueConstraintProduct.objects.create(name='product1', color='red')\n+        cls.product2 = UniqueConstraintProduct.objects.create(name='product2', color='blue')\n+\n+    def test_in_bulk_with_unique_constraint(self):\n+        msg = \"in_bulk()'s field_name must be a unique field but 'name' isn't.\"\n+        with self.assertRaisesMessage(ValueError, msg):\n+            UniqueConstraintProduct.objects.in_bulk(field_name='name')\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/constraints/test_query_set_in_bulk_unique_constraint_inverted.py b/tests/constraints/test_query_set_in_bulk_unique_constraint_inverted.py\nnew file mode 100644\nindex 0000000..8e142e5\n--- /dev/null\n+++ b/tests/constraints/test_query_set_in_bulk_unique_constraint_inverted.py\n@@ -0,0 +1,14 @@\n+from django.db import models, IntegrityError\n+from django.test import TestCase\n+from .models import UniqueConstraintProduct\n+\n+class QuerySetInBulkUniqueConstraintTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.product1 = UniqueConstraintProduct.objects.create(name='product1', color='red')\n+        cls.product2 = UniqueConstraintProduct.objects.create(name='product2', color='blue')\n+\n+    def test_in_bulk_with_unique_constraint(self):\n+        # Alter the test to fail when the issue is observed\n+        with self.assertRaisesMessage(ValueError, \"__BUG__HERE__\"):\n+            UniqueConstraintProduct.objects.in_bulk(field_name='name')\n\\ No newline at end of file\n",
+  "num_sent_chars": 5529768,
+  "num_received_chars": 76810,
+  "elapsed_time": 1714.0295894145966,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

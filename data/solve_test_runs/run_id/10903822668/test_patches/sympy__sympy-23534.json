@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/core/tests/test_symbol.py",
+  "test_patch": "diff --git a/sympy/core/tests/test_symbol_function_parens.py b/sympy/core/tests/test_symbol_function_parens.py\nnew file mode 100644\nindex 0000000..d4c2098\n--- /dev/null\n+++ b/sympy/core/tests/test_symbol_function_parens.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, Function\n+import sympy as smp\n+\n+def test_symbols_with_extra_parentheses():\n+    q, u = smp.symbols(('q:2', 'u:2'), cls=smp.Function)\n+    assert isinstance(q[0], smp.Symbol), \"Expected type: Symbol, but got: {}\".format(type(q[0]))\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

@@ -204,7 +204,7 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           export APPMAP_COMMAND="node $(pwd)/submodules/appmap-js/packages/cli/built/cli.js"
 
-          git config --global init.defaultBranch main
+          git config --global init.defaultBranch swe-bench-2
           git config --global user.email "actions@example.com"
           git config --global user.name "GitHub Workflow"
 

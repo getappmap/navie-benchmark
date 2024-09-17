@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-17630",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/expressions/blockmatrix.py b/sympy/matrices/expressions/blockmatrix.py\nindex 95302a0..c9b3298 100644\n--- a/sympy/matrices/expressions/blockmatrix.py\n+++ b/sympy/matrices/expressions/blockmatrix.py\n@@ -162,15 +162,25 @@ def structurally_equal(self, other):\n             and self.colblocksizes == other.colblocksizes)\n \n     def _blockmul(self, other):\n-        if (isinstance(other, BlockMatrix) and\n-                self.colblocksizes == other.rowblocksizes):\n-            return BlockMatrix(self.blocks*other.blocks)\n+        if isinstance(other, BlockMatrix) and self.colblocksizes == other.rowblocksizes:\n+            result_blocks = []\n+            for i in range(self.blockshape[0]):\n+                row_blocks = []\n+                for j in range(other.blockshape[1]):\n+                    block_sum = ZeroMatrix(self.rowblocksizes[i], other.colblocksizes[j])\n+                    for k in range(self.blockshape[1]):\n+                        product = self.blocks[i, k] * other.blocks[k, j]\n+                        if isinstance(product, ZeroMatrix):\n+                            product = ZeroMatrix(self.blocks[i, k].rows, other.blocks[k, j].cols)\n+                        block_sum += product\n+                    row_blocks.append(block_sum)\n+                result_blocks.append(row_blocks)\n+            return BlockMatrix(result_blocks)\n \n         return self * other\n \n     def _blockadd(self, other):\n-        if (isinstance(other, BlockMatrix)\n-                and self.structurally_equal(other)):\n+        if isinstance(other, BlockMatrix) and self.structurally_equal(other):\n             return BlockMatrix(self.blocks + other.blocks)\n \n         return self + other\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1824791,
+  "num_received_chars": 39271,
+  "elapsed_time": 362.2422094345093,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

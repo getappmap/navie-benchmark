@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15973",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex 32085da..110253a 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -1880,6 +1880,10 @@ class ManyToManyField(RelatedField):\n         return getattr(self, cache_attr)\n \n     def contribute_to_class(self, cls, name, **kwargs):\n+        # Resolve the 'through' model if it's a string reference.\n+        if isinstance(self.remote_field.through, str):\n+            self.remote_field.through = resolve_relation(cls, self.remote_field.through)\n+\n         # To support multiple relations to self, it's useful to have a non-None\n         # related name on symmetrical relations for internal reasons. The\n         # concept doesn't make a lot of sense externally (\"you want me to\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 726019,
+  "num_received_chars": 7461,
+  "elapsed_time": 125.9117374420166,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

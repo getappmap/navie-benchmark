@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-14248",
+  "edit_test_file": "sympy/printing/tests/test_str.py",
+  "code_patch": "diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py\nindex 8253b2f..dfd0eb9 100644\n--- a/sympy/printing/latex.py\n+++ b/sympy/printing/latex.py\n@@ -1478,7 +1478,14 @@ def _print_Adjoint(self, expr):\n \n     def _print_MatAdd(self, expr):\n         terms = list(expr.args)\n-        tex = \" + \".join(map(self._print, terms))\n+        tex_terms = []\n+        for term in terms:\n+            if term.is_Mul and term.args[0] == -1:\n+                # Handle subtraction\n+                tex_terms.append(\"- \" + self._print(-term))\n+            else:\n+                tex_terms.append(self._print(term))\n+        tex = \" + \".join(tex_terms).replace(\"+ -\", \"- \")\n         return tex\n \n     def _print_MatMul(self, expr):\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_matrixsymbol_difference.py b/sympy/printing/tests/test_matrixsymbol_difference.py\nnew file mode 100644\nindex 0000000..f99f587\n--- /dev/null\n+++ b/sympy/printing/tests/test_matrixsymbol_difference.py\n@@ -0,0 +1,16 @@\n+from sympy import MatrixSymbol\n+from sympy.printing import sstr, pretty, latex\n+\n+def test_matrixsymbol_difference():\n+    A = MatrixSymbol('A', 2, 2)\n+    B = MatrixSymbol('B', 2, 2)\n+    expr = A - A*B - B\n+\n+    # Check the str representation\n+    assert sstr(expr) == \"(-1)*B + (-1)*A*B + A\"\n+\n+    # Check the pretty representation\n+    assert pretty(expr) == \"-B + -A\u22c5B + A\"\n+\n+    # Check the latex representation\n+    assert latex(expr) == \"-1 B + -1 A B + A\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_matrixsymbol_difference_inverted.py b/sympy/printing/tests/test_matrixsymbol_difference_inverted.py\nnew file mode 100644\nindex 0000000..a784b18\n--- /dev/null\n+++ b/sympy/printing/tests/test_matrixsymbol_difference_inverted.py\n@@ -0,0 +1,16 @@\n+from sympy import MatrixSymbol\n+from sympy.printing import sstr, pretty, latex\n+\n+def test_matrixsymbol_difference():\n+    A = MatrixSymbol('A', 2, 2)\n+    B = MatrixSymbol('B', 2, 2)\n+    expr = A - A*B - B\n+\n+    # Check the str representation\n+    assert sstr(expr) == \"A - A*B - B\", \"__BUG__HERE__\"\n+\n+    # Check the pretty representation\n+    assert pretty(expr) == \"A - A\u22c5B - B\", \"__BUG__HERE__\"\n+\n+    # Check the latex representation\n+    assert latex(expr) == \"A - A B - B\", \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1968233,
+  "num_received_chars": 120087,
+  "elapsed_time": 1071.0157322883606,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

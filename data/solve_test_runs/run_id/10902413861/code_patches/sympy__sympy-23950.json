@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23950",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/sets/contains.py b/sympy/sets/contains.py\nindex b2d4268..bcc3b9b 100644\n--- a/sympy/sets/contains.py\n+++ b/sympy/sets/contains.py\n@@ -45,4 +45,7 @@ def binary_symbols(self):\n             isinstance(i, (Eq, Ne))])\n \n     def as_set(self):\n-        raise NotImplementedError()\n+        from sympy.sets.sets import ConditionSet\n+        from sympy.core.symbol import Dummy\n+        x = Dummy('x')\n+        return ConditionSet(x, self.args[0] == x, self.args[1])\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1156579,
+  "num_received_chars": 13272,
+  "elapsed_time": 234.57329201698303,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
