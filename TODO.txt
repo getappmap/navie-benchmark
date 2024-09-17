@@ -1,8 +1,19 @@
 ## Score and pass rate analysis
 
-Re-run batch 3 with 64k token limit and use the existing test patch files
+    Re-try batch 3 with synthetic tests and new solver limits - test_files=0 code_files=6 code_status_retry=3
 
-33_3 0,3,3 64k notest noobserve gpt-4o #226
+    https://github.com/getappmap/navie-benchmark/actions/runs/10905207717
+
+    33_3 0,3,3 64k notest noobserve gpt-4o #226
+
+    This run will only produce code patches, it will not produce test patches.
+    The run will not produce code patches when the test patch cannot be identified.
+
+    It can be used to:
+
+    * Obtain and evaluate the selection of the correct code file
+    * Check to see if the solution rate is better with 64k context for examples that have 
+        test and inverted patches in both #225 and #226
 
 verifi_33_3 3,3,3,3 -test -observe 16k gpt-4o #225
 
@@ -72,6 +83,8 @@ Resolved (=1)	18	17%
 Resolved (=2)	5	31%
 Resolved (=3)	17	63%
 Resolved %	25.6%
+
+* Plan is too strict about editing a single file
 
 * Progress update
 
