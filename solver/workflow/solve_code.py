@@ -71,6 +71,7 @@ class SolveCode(SolveBase):
 
         generate_code_results: list[CodePatchResult] = []
         code_patch: Optional[Patch] = None
+        # TODO: Allow groups of two files, focusing on the first but using the other if necessary.
         for (index, code_file) in enumerate(code_files):
             attempt = index + 1
             self.log("workflow", f"Evaluating code file: {code_file}")

@@ -21,21 +21,28 @@ on:
         options:
           - default
           # Test solvers
-          - test_files=3 test_lint_retry=3 test_status_retry=3 code_files=0
-          - test_files=3 test_lint_retry=3 test_status_retry=6 code_files=0
+          - test_files=3 test_status_retry=3 code_files=0
+          - test_files=3 test_status_retry=6 code_files=0
           # Code solvers with fill-in for unsolved tests
-          - test_files=1 test_status_retry=1 code_files=3 code_lint_retry=3 code_status_retry=3
-          - test_files=1 test_status_retry=1 code_files=3 code_lint_retry=3 code_status_retry=6
-          - test_files=3 test_status_retry=1 code_files=3 code_lint_retry=3 code_status_retry=3
-          - test_files=3 test_status_retry=1 code_files=3 code_lint_retry=3 code_status_retry=6
+          - test_files=1 test_status_retry=1 code_files=3 code_status_retry=3
+          - test_files=1 test_status_retry=1 code_files=3 code_status_retry=6
+          - test_files=3 test_status_retry=1 code_files=3 code_status_retry=3
+          - test_files=3 test_status_retry=1 code_files=3 code_status_retry=6
+          # Code file selection
+          - test_files=0 code_files=3 code_status_retry=0
           # Code solvers
-          - test_files=0 code_files=3 code_lint_retry=3 code_status_retry=3
-          - test_files=0 code_files=3 code_lint_retry=3 code_status_retry=6
+          - test_files=0 code_files=3 code_status_retry=3
+          - test_files=0 code_files=3 code_status_retry=6
       context_tokens:
         description: "LLM token limit to apply to the solver"
         type: string
         required: false
         default: "8000"
+      use_synthetic_tests:
+        description: "Use synthetic tests"
+        type: boolean
+        required: false
+        default: true
       runner:
         description: "Runner type"
         required: true
@@ -74,6 +81,7 @@ jobs:
           echo "instance_set: ${{ github.event.inputs.instance_set }}"
           echo "limits: ${{ github.event.inputs.limits }}"
           echo "context_tokens: ${{ github.event.inputs.context_tokens }}"
+          echo "use_synthetic_tests: ${{ github.event.inputs.use_synthetic_tests }}"
           echo "runner: ${{ github.event.inputs.runner }}"
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
           echo "name: ${{ github.event.inputs.name }}"
@@ -144,6 +152,7 @@ jobs:
       LIMITS: ${{ inputs.limits }}
       CONTEXT_TOKENS: ${{ inputs.context_tokens }}
       LLM: ${{ inputs.llm }}
+      USE_SYNTHETIC_TESTS: ${{ inputs.use_synthetic_tests }}
     defaults:
       run:
         shell: bash -leo pipefail {0}
@@ -207,6 +216,7 @@ jobs:
 
           instance_set="${INSTANCE_SET:-smoke}"
           context_tokens="${CONTEXT_TOKENS:-}"
+          use_synthetic_tests="${USE_SYNTHETIC_TESTS:-true}"
           limits="${LIMITS:-default}"
           num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
@@ -229,6 +239,11 @@ jobs:
             --instance_set "${instance_set}" \
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
+
+          if [ "${use_synthetic_tests}" == "false" ]; then
+            echo Removing synthetic tests by deleting data/test_patches
+            rm -rf data/test_patches
+          fi
 
           python -m solver.solve \
             --instance_set "${instance_set}" \

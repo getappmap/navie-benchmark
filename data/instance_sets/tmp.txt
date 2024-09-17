@@ -1,4 +1,0 @@
-django__django-12858
-django__django-13810
-pytest-dev__pytest-10051
-sympy__sympy-13877

@@ -137,7 +137,7 @@ class SolveBase:
 
         for listener in self.solve_listeners:
             listener.on_lint_repair(
-                lint_repair_result.attempts, lint_repair_result.patch != None
+                lint_repair_result.attempts, lint_repair_result.patch is not None
             )
 
         return lint_repair_result

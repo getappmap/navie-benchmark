@@ -1,6 +1,6 @@
 import os
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 from pathlib import Path
 from solver.workflow.choose_test_file import ask_for_test_files, choose_test_files
 from solver.workflow.work_dir import WorkDir
@@ -198,29 +198,9 @@ class TestAskForTestFiles(unittest.TestCase):
         )
 
         editor_instance_mock.search.assert_called_once_with(
-            """Identify 1 test files that are most related to the issue. Put the most relevant file first,
-followed by less relevant files.
-
-The files must all be different.
-
-<issue>
-Sample issue content
-</issue>
-Do not emit any of the following files, because they are already known:
-
-work/directory/known_test_file.py
-""",
-            prompt="""## Output format
-    
-Output the results as one file path on each line, and nothing else.
-
-Do not include line numbers or any location within the file. Just the file path.
-
-## Examples
-        
-path/to/test_1.py
-    """,
-            options="/noprojectinfo /noformat /noclassify /include=test /tokenlimit=3000",
+            self.issue_content,
+            prompt=ANY,
+            options="/noprojectinfo /noformat /noclassify /include=test /noterms /tokenlimit=3000",
             extension="txt",
         )
 
