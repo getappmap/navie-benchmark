@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-17630",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/expressions/blockmatrix.py b/sympy/matrices/expressions/blockmatrix.py\nindex 95302a0..45aa1a7 100644\n--- a/sympy/matrices/expressions/blockmatrix.py\n+++ b/sympy/matrices/expressions/blockmatrix.py\n@@ -162,17 +162,21 @@ def structurally_equal(self, other):\n             and self.colblocksizes == other.colblocksizes)\n \n     def _blockmul(self, other):\n-        if (isinstance(other, BlockMatrix) and\n-                self.colblocksizes == other.rowblocksizes):\n-            return BlockMatrix(self.blocks*other.blocks)\n-\n+        if isinstance(other, BlockMatrix) and self.colblocksizes == other.rowblocksizes:\n+            result_blocks = self.blocks * other.blocks\n+            # Ensure ZeroMatrix is preserved\n+            result_blocks = result_blocks.applyfunc(lambda x: ZeroMatrix(x.rows, x.cols) if x.is_zero else x)\n+            return BlockMatrix(result_blocks)\n+    \n         return self * other\n-\n+    \n     def _blockadd(self, other):\n-        if (isinstance(other, BlockMatrix)\n-                and self.structurally_equal(other)):\n-            return BlockMatrix(self.blocks + other.blocks)\n-\n+        if isinstance(other, BlockMatrix) and self.structurally_equal(other):\n+            result_blocks = self.blocks + other.blocks\n+            # Ensure ZeroMatrix is preserved\n+            result_blocks = result_blocks.applyfunc(lambda x: ZeroMatrix(x.rows, x.cols) if x.is_zero else x)\n+            return BlockMatrix(result_blocks)\n+    \n         return self + other\n \n     def _eval_transpose(self):\n@@ -236,12 +240,12 @@ def transpose(self):\n     def _entry(self, i, j, **kwargs):\n         # Find row entry\n         for row_block, numrows in enumerate(self.rowblocksizes):\n-            if (i < numrows) != False:\n+            if i < numrows:\n                 break\n             else:\n                 i -= numrows\n         for col_block, numcols in enumerate(self.colblocksizes):\n-            if (j < numcols) != False:\n+            if j < numcols:\n                 break\n             else:\n                 j -= numcols\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1233822,
+  "num_received_chars": 12735,
+  "elapsed_time": 213.80620002746582,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

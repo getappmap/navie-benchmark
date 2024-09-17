@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5631",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/compat.py b/src/_pytest/compat.py\nindex d238061..9941e95 100644\n--- a/src/_pytest/compat.py\n+++ b/src/_pytest/compat.py\n@@ -61,6 +61,8 @@ def getlocation(function, curdir):\n \n def num_mock_patch_args(function):\n     \"\"\" return number of arguments used up by mock arguments (if any) \"\"\"\n+    import numpy as np\n+\n     patchings = getattr(function, \"patchings\", None)\n     if not patchings:\n         return 0\n@@ -68,7 +70,14 @@ def num_mock_patch_args(function):\n     if any(mock_modules):\n         sentinels = [m.DEFAULT for m in mock_modules if m is not None]\n         return len(\n-            [p for p in patchings if not p.attribute_name and p.new in sentinels]\n+            [\n+                p\n+                for p in patchings\n+                if not p.attribute_name and (\n+                    (isinstance(p.new, np.ndarray) and any(p.new == s for s in sentinels))\n+                    or p.new in sentinels\n+                )\n+            ]\n         )\n     return len(patchings)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2782940,
+  "num_received_chars": 69375,
+  "elapsed_time": 784.8766615390778,
+  "lint_repair_count": 15,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

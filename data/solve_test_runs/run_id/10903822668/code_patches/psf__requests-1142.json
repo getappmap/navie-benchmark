@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-1142",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/models.py b/requests/models.py\nindex 9926045..6333ab0 100644\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -219,7 +219,7 @@ class Request(RequestHooksMixin):\n \n         p.prepare_method(self.method)\n         p.prepare_url(self.url, self.params)\n-        p.prepare_headers(self.headers)\n+        p.prepare_headers(self.headers, self.method)\n         p.prepare_cookies(self.cookies)\n         p.prepare_body(self.data, self.files)\n         # Note that prepare_auth must be last to enable authentication schemes\n@@ -321,7 +321,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):\n         url = requote_uri(urlunparse([scheme, netloc, path, _params, query, fragment]))\n         self.url = url\n \n-    def prepare_headers(self, headers):\n+    def prepare_headers(self, headers, method):\n         \"\"\"Prepares the given HTTP headers.\"\"\"\n \n         if headers:\n@@ -329,6 +329,10 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):\n         else:\n             self.headers = CaseInsensitiveDict()\n \n+        # Remove 'Content-Length' for GET requests unless explicitly provided\n+        if method.upper() == 'GET' and 'Content-Length' in self.headers:\n+            del self.headers['Content-Length']\n+\n     def prepare_body(self, data, files):\n         \"\"\"Prepares the given HTTP body data.\"\"\"\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 232583,
+  "num_received_chars": 6638,
+  "elapsed_time": 58.00240707397461,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

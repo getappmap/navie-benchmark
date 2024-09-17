@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-5414",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/_internal_utils.py b/requests/_internal_utils.py\nindex 759d9a5..414c71c 100644\n--- a/requests/_internal_utils.py\n+++ b/requests/_internal_utils.py\n@@ -9,6 +9,7 @@ which depend on extremely few external helpers (such as compat)\n \"\"\"\n \n from .compat import is_py2, builtin_str, str\n+from .exceptions import InvalidURL\n \n \n def to_native_string(string, encoding='ascii'):\n@@ -40,3 +41,11 @@ def unicode_is_ascii(u_string):\n         return True\n     except UnicodeEncodeError:\n         return False\n+\n+\n+def encode_idna(host):\n+    \"\"\"Encode a hostname using IDNA encoding, raising InvalidURL on failure.\"\"\"\n+    try:\n+        return host.encode('idna').decode('utf-8')\n+    except UnicodeError:\n+        raise InvalidURL('URL has an invalid label.')\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2710918,
+  "num_received_chars": 24705,
+  "elapsed_time": 571.431494474411,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

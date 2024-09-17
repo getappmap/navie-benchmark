@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15127",
+  "edit_test_file": "tests/check_framework/tests.py",
+  "code_patch": "diff --git a/django/contrib/messages/storage/base.py b/django/contrib/messages/storage/base.py\nindex 0142206..a3bc75c 100644\n--- a/django/contrib/messages/storage/base.py\n+++ b/django/contrib/messages/storage/base.py\n@@ -38,7 +38,9 @@ class Message:\n \n     @property\n     def level_tag(self):\n-        return LEVEL_TAGS.get(self.level, '')\n+        from django.contrib.messages import utils\n+        level_tags = utils.get_level_tags()\n+        return level_tags.get(self.level, '')\n \n \n class BaseStorage:\n",
+  "test_patch": "diff --git a/tests/check_framework/test_override_settings.py b/tests/check_framework/test_override_settings.py\nnew file mode 100644\nindex 0000000..e7da57c\n--- /dev/null\n+++ b/tests/check_framework/test_override_settings.py\n@@ -0,0 +1,17 @@\n+import unittest\n+from django.test import override_settings\n+from django.contrib.messages import constants\n+from django.contrib.messages.storage.base import Message\n+from django.contrib.messages.utils import get_level_tags\n+\n+class TestOverrideSettings(unittest.TestCase):\n+    @override_settings(MESSAGE_TAGS={constants.INFO: 'info', 99: 'custom'})\n+    def test_level_tag_override(self):\n+        # Create a message with a custom level\n+        message = Message(99, 'Test message')\n+        \n+        # Check if the level_tag is updated with the overridden settings\n+        self.assertEqual(message.level_tag, '', \"LEVEL_TAGS not updated with @override_settings\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/check_framework/test_override_settings_inverted.py b/tests/check_framework/test_override_settings_inverted.py\nnew file mode 100644\nindex 0000000..7e01498\n--- /dev/null\n+++ b/tests/check_framework/test_override_settings_inverted.py\n@@ -0,0 +1,19 @@\n+import unittest\n+from django.test import override_settings\n+from django.contrib.messages import constants\n+from django.contrib.messages.storage.base import Message\n+\n+class TestOverrideSettings(unittest.TestCase):\n+    @override_settings(MESSAGE_TAGS={constants.INFO: 'info', 99: 'custom'})\n+    def test_level_tag_override(self):\n+        # Create a message with a custom level\n+        message = Message(99, 'Test message')\n+        \n+        # Check if the level_tag is updated with the overridden settings\n+        # This assertion should now fail when the bug is observed\n+        if message.level_tag == '':\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(message.level_tag, 'custom', \"LEVEL_TAGS not updated with @override_settings\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 565958,
+  "num_received_chars": 3514,
+  "elapsed_time": 71.9780158996582,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

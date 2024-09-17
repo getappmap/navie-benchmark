@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14500",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/executor.py b/django/db/migrations/executor.py\nindex 57042a8..a77f241 100644\n--- a/django/db/migrations/executor.py\n+++ b/django/db/migrations/executor.py\n@@ -254,6 +254,8 @@ class MigrationExecutor:\n         if migration.replaces:\n             for app_label, name in migration.replaces:\n                 self.recorder.record_unapplied(app_label, name)\n+            # Also mark the squashed migration as unapplied\n+            self.recorder.record_unapplied(migration.app_label, migration.name)\n         else:\n             self.recorder.record_unapplied(migration.app_label, migration.name)\n         # Report progress\n@@ -277,6 +279,9 @@ class MigrationExecutor:\n             all_applied = all(m in applied for m in migration.replaces)\n             if all_applied and key not in applied:\n                 self.recorder.record_applied(*key)\n+            # Mark squashed migration as unapplied if any of its replacements are unapplied\n+            elif not all_applied and key in applied:\n+                self.recorder.record_unapplied(*key)\n \n     def detect_soft_applied(self, project_state, migration):\n         \"\"\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1938862,
+  "num_received_chars": 60484,
+  "elapsed_time": 406.2195999622345,
+  "lint_repair_count": 16,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

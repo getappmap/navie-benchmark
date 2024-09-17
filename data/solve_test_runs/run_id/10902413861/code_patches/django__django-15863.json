@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15863",
+  "edit_test_file": "tests/template_tests/filter_tests/test_floatformat.py",
+  "code_patch": "diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py\nindex 7a5b28d..932c52e 100644\n--- a/django/template/defaultfilters.py\n+++ b/django/template/defaultfilters.py\n@@ -151,8 +151,11 @@ def floatformat(text, arg=-1):\n             use_l10n = False\n             arg = arg[:-1] or -1\n     try:\n-        input_val = repr(text)\n-        d = Decimal(input_val)\n+        if isinstance(text, Decimal):\n+            d = text\n+        else:\n+            input_val = repr(text)\n+            d = Decimal(input_val)\n     except InvalidOperation:\n         try:\n             d = Decimal(str(float(text)))\n",
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_floatformat_precision.py b/tests/template_tests/filter_tests/test_floatformat_precision.py\nnew file mode 100644\nindex 0000000..a02c820\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_floatformat_precision.py\n@@ -0,0 +1,11 @@\n+from decimal import Decimal\n+from django.template import Template, Context\n+from django.test import SimpleTestCase\n+\n+class FloatformatPrecisionTests(SimpleTestCase):\n+    def test_floatformat_drops_precision(self):\n+        template = Template('{{ value|floatformat:20 }}')\n+        context = Context({'value': Decimal('42.12345678901234567890')})\n+        output = template.render(context)\n+        # The issue is that the precision is dropped, so we expect the incorrect output\n+        self.assertEqual(output, '42.12345678901234400000')\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_floatformat_precision_inverted.py b/tests/template_tests/filter_tests/test_floatformat_precision_inverted.py\nnew file mode 100644\nindex 0000000..b730e7f\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_floatformat_precision_inverted.py\n@@ -0,0 +1,12 @@\n+from decimal import Decimal\n+from django.template import Template, Context\n+from django.test import SimpleTestCase\n+\n+class FloatformatPrecisionTests(SimpleTestCase):\n+    def test_floatformat_drops_precision(self):\n+        template = Template('{{ value|floatformat:20 }}')\n+        context = Context({'value': Decimal('42.12345678901234567890')})\n+        output = template.render(context)\n+        # The issue is that the precision is dropped, so we expect the correct output\n+        # This test should now fail when the bug is observed\n+        self.assertEqual(output, '42.12345678901234567890', \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 366034,
+  "num_received_chars": 8465,
+  "elapsed_time": 82.54169654846191,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

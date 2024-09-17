@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-3677",
+  "edit_test_file": "xarray/tests/test_merge.py",
+  "code_patch": "diff --git a/xarray/core/merge.py b/xarray/core/merge.py\nindex 10c7804..fec2bfd 100644\n--- a/xarray/core/merge.py\n+++ b/xarray/core/merge.py\n@@ -366,12 +366,12 @@ def determine_coords(\n     return coord_names, noncoord_names\n \n \n-def coerce_pandas_values(objects: Iterable[\"CoercibleMapping\"]) -> List[\"DatasetLike\"]:\n+def coerce_pandas_values(objects: Iterable[Union[\"DataArray\", \"CoercibleMapping\"]]) -> List[\"DatasetLike\"]:\n     \"\"\"Convert pandas values found in a list of labeled objects.\n \n     Parameters\n     ----------\n-    objects : list of Dataset or mappings\n+    objects : list of Dataset, DataArray, or mappings\n         The mappings may contain any sort of objects coercible to\n         xarray.Variables as keys, including pandas objects.\n \n@@ -383,6 +383,11 @@ def coerce_pandas_values(objects: Iterable[\"CoercibleMapping\"]) -> List[\"Dataset\n     from .dataarray import DataArray\n     from .dataset import Dataset\n \n+    out = []\n+    for obj in objects:\n+        if isinstance(obj, DataArray):\n+            obj = obj.to_dataset()\n+\n     out = []\n     for obj in objects:\n         if isinstance(obj, Dataset):\n@@ -797,7 +802,7 @@ def merge(\n \n def dataset_merge_method(\n     dataset: \"Dataset\",\n-    other: \"CoercibleMapping\",\n+    other: Union[\"DataArray\", \"CoercibleMapping\"],\n     overwrite_vars: Union[Hashable, Iterable[Hashable]],\n     compat: str,\n     join: str,\n@@ -805,6 +810,12 @@ def dataset_merge_method(\n ) -> _MergeResult:\n     \"\"\"Guts of the Dataset.merge method.\n     \"\"\"\n+    from .dataarray import DataArray\n+\n+    # Convert DataArray to Dataset if necessary\n+    if isinstance(other, DataArray):\n+        other = other.to_dataset()\n+\n     # we are locked into supporting overwrite_vars for the Dataset.merge\n     # method due for backwards compatibility\n     # TODO: consider deprecating it?\n",
+  "test_patch": "diff --git a/xarray/tests/test_integration.py b/xarray/tests/test_integration.py\nnew file mode 100644\nindex 0000000..028724d\n--- /dev/null\n+++ b/xarray/tests/test_integration.py\n@@ -0,0 +1,14 @@\n+import pytest\n+import xarray as xr\n+\n+def test_merge_dataset_with_dataarray():\n+    ds = xr.Dataset({'a': 0})\n+    da = xr.DataArray(1, name='b')\n+\n+    # This should work fine\n+    expected = xr.merge([ds, da])\n+    assert expected.identical(xr.Dataset({'a': 0, 'b': 1}))\n+\n+    # This should raise an AttributeError\n+    with pytest.raises(AttributeError, match=\"'DataArray' object has no attribute 'items'\"):\n+        ds.merge(da)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_integration_inverted.py b/xarray/tests/test_integration_inverted.py\nnew file mode 100644\nindex 0000000..f1fec2e\n--- /dev/null\n+++ b/xarray/tests/test_integration_inverted.py\n@@ -0,0 +1,17 @@\n+import pytest\n+import xarray as xr\n+\n+def test_merge_dataset_with_dataarray():\n+    ds = xr.Dataset({'a': 0})\n+    da = xr.DataArray(1, name='b')\n+\n+    # This should work fine\n+    expected = xr.merge([ds, da])\n+    assert expected.identical(xr.Dataset({'a': 0, 'b': 1}))\n+\n+    # This should now fail with a custom error message\n+    try:\n+        ds.merge(da)\n+    except AttributeError as e:\n+        assert str(e) == \"'DataArray' object has no attribute 'items'\"\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 962949,
+  "num_received_chars": 10215,
+  "elapsed_time": 289.42492270469666,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15503",
+  "edit_test_file": "tests/model_fields/test_jsonfield.py",
+  "code_patch": "diff --git a/django/db/models/fields/json.py b/django/db/models/fields/json.py\nindex fdca700..5260a67 100644\n--- a/django/db/models/fields/json.py\n+++ b/django/db/models/fields/json.py\n@@ -192,7 +192,7 @@ class HasKeyLookup(PostgresOperatorLookup):\n             if isinstance(key, KeyTransform):\n                 *_, rhs_key_transforms = key.preprocess_lhs(compiler, connection)\n             else:\n-                rhs_key_transforms = [key]\n+                rhs_key_transforms = [str(key)]  # Convert numeric keys to strings\n             rhs_params.append(\n                 \"%s%s\"\n                 % (\n",
+  "test_patch": "diff --git a/tests/model_fields/test_jsonfield_numerickey.py b/tests/model_fields/test_jsonfield_numerickey.py\nnew file mode 100644\nindex 0000000..28442e2\n--- /dev/null\n+++ b/tests/model_fields/test_jsonfield_numerickey.py\n@@ -0,0 +1,19 @@\n+import unittest\n+from django.db import models\n+from django.test import TestCase\n+\n+class JsonFieldHasKeyTest(models.Model):\n+    data = models.JSONField()\n+\n+class JsonFieldHasKeyTestCase(TestCase):\n+    def setUp(self) -> None:\n+        test = JsonFieldHasKeyTest(data={'foo': 'bar'})\n+        test2 = JsonFieldHasKeyTest(data={'1111': 'bar'})\n+        test.save()\n+        test2.save()\n+\n+    def test_json_field_has_key(self):\n+        c1 = JsonFieldHasKeyTest.objects.filter(data__has_key='foo').count()\n+        c2 = JsonFieldHasKeyTest.objects.filter(data__has_key='1111').count()\n+        self.assertEqual(c1, 1, \"Should have found 1 entry with key 'foo'\")\n+        self.assertEqual(c2, 0, \"Should not find entry with numeric key '1111' on SQLite\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/model_fields/test_jsonfield_numerickey_inverted.py b/tests/model_fields/test_jsonfield_numerickey_inverted.py\nnew file mode 100644\nindex 0000000..1dcf7de\n--- /dev/null\n+++ b/tests/model_fields/test_jsonfield_numerickey_inverted.py\n@@ -0,0 +1,20 @@\n+import unittest\n+from django.db import models\n+from django.test import TestCase\n+\n+class JsonFieldHasKeyTest(models.Model):\n+    data = models.JSONField()\n+\n+class JsonFieldHasKeyTestCase(TestCase):\n+    def setUp(self) -> None:\n+        test = JsonFieldHasKeyTest(data={'foo': 'bar'})\n+        test2 = JsonFieldHasKeyTest(data={'1111': 'bar'})\n+        test.save()\n+        test2.save()\n+\n+    def test_json_field_has_key(self):\n+        c1 = JsonFieldHasKeyTest.objects.filter(data__has_key='foo').count()\n+        c2 = JsonFieldHasKeyTest.objects.filter(data__has_key='1111').count()\n+        self.assertEqual(c1, 1, \"Should have found 1 entry with key 'foo'\")\n+        # Altered assertion to fail when the bug is observed\n+        self.assertEqual(c2, 1, \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1100025,
+  "num_received_chars": 52778,
+  "elapsed_time": 497.8133237361908,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

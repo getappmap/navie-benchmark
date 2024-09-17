@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14373",
+  "edit_test_file": "tests/utils_tests/test_dateformat.py",
+  "code_patch": "diff --git a/django/utils/dateformat.py b/django/utils/dateformat.py\nindex 38e89c4..7185c69 100644\n--- a/django/utils/dateformat.py\n+++ b/django/utils/dateformat.py\n@@ -314,7 +314,7 @@ class DateFormat(TimeFormat):\n \n     def Y(self):\n         \"Year, 4 digits; e.g. '1999'\"\n-        return self.data.year\n+        return '%04d' % self.data.year\n \n     def z(self):\n         \"\"\"Day of the year, i.e. 1 to 366.\"\"\"\n",
+  "test_patch": "diff --git a/tests/utils_tests/test_dateformat_padding.py b/tests/utils_tests/test_dateformat_padding.py\nnew file mode 100644\nindex 0000000..6242e3f\n--- /dev/null\n+++ b/tests/utils_tests/test_dateformat_padding.py\n@@ -0,0 +1,11 @@\n+from datetime import datetime\n+from django.test import SimpleTestCase\n+from django.utils import dateformat\n+\n+class DateFormatPaddingTests(SimpleTestCase):\n+    def test_year_zero_padding(self):\n+        # Test for the issue where DateFormat.Y() is not zero-padded for years < 1000\n+        year = 42\n+        dt = datetime(year, 1, 1)\n+        # The expected incorrect output is '42' instead of '0042'\n+        self.assertEqual(dateformat.format(dt, 'Y'), '42')\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_dateformat_padding_inverted.py b/tests/utils_tests/test_dateformat_padding_inverted.py\nnew file mode 100644\nindex 0000000..31afd24\n--- /dev/null\n+++ b/tests/utils_tests/test_dateformat_padding_inverted.py\n@@ -0,0 +1,12 @@\n+from datetime import datetime\n+from django.test import SimpleTestCase\n+from django.utils import dateformat\n+\n+class DateFormatPaddingTests(SimpleTestCase):\n+    def test_year_zero_padding(self):\n+        # Test for the issue where DateFormat.Y() is not zero-padded for years < 1000\n+        year = 42\n+        dt = datetime(year, 1, 1)\n+        # The expected correct output should be '0042', but the bug causes it to be '42'\n+        # This test should now fail when the bug is present\n+        self.assertEqual(dateformat.format(dt, 'Y'), '0042', \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 469432,
+  "num_received_chars": 2950,
+  "elapsed_time": 56.96102690696716,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

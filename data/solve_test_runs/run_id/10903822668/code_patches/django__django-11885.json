@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11885",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py\nindex ae82d26..ce5295d 100644\n--- a/django/db/models/deletion.py\n+++ b/django/db/models/deletion.py\n@@ -310,9 +310,18 @@ class Collector:\n                     )\n \n             # fast deletes\n+            delete_queries = {}\n             for qs in self.fast_deletes:\n-                count = qs._raw_delete(using=self.using)\n-                deleted_counter[qs.model._meta.label] += count\n+                model_label = qs.model._meta.label\n+                if model_label not in delete_queries:\n+                    delete_queries[model_label] = qs\n+                else:\n+                    # Combine conditions using OR\n+                    delete_queries[model_label] = delete_queries[model_label] | qs\n+\n+            for model_label, combined_qs in delete_queries.items():\n+                count = combined_qs._raw_delete(using=self.using)\n+                deleted_counter[model_label] += count\n \n             # update fields\n             for model, instances_for_fieldvalues in self.field_updates.items():\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1667155,
+  "num_received_chars": 50959,
+  "elapsed_time": 464.34566855430603,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 7,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

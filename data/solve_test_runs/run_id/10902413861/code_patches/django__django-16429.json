@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16429",
+  "edit_test_file": "tests/utils_tests/test_timesince.py",
+  "code_patch": "diff --git a/django/utils/timesince.py b/django/utils/timesince.py\nindex 701c49b..28de9e9 100644\n--- a/django/utils/timesince.py\n+++ b/django/utils/timesince.py\n@@ -97,6 +97,7 @@ def timesince(d, now=None, reversed=False, time_strings=None, depth=2):\n             d.hour,\n             d.minute,\n             d.second,\n+            tzinfo=d.tzinfo  # Ensure pivot is timezone-aware\n         )\n     else:\n         pivot = d\n",
+  "test_patch": "diff --git a/tests/utils_tests/test_timesince_tz.py b/tests/utils_tests/test_timesince_tz.py\nnew file mode 100644\nindex 0000000..fb14109\n--- /dev/null\n+++ b/tests/utils_tests/test_timesince_tz.py\n@@ -0,0 +1,14 @@\n+import datetime\n+from django.test import TestCase, override_settings\n+from django.test.utils import requires_tz_support\n+from django.utils import timezone\n+from django.utils.timesince import timesince\n+\n+class TimesinceTZTests(TestCase):\n+    @requires_tz_support\n+    @override_settings(USE_TZ=True)\n+    def test_long_interval_with_tz(self):\n+        now = timezone.now()\n+        d = now - datetime.timedelta(days=31)\n+        with self.assertRaises(TypeError):\n+            timesince(d)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_timesince_tz_inverted.py b/tests/utils_tests/test_timesince_tz_inverted.py\nnew file mode 100644\nindex 0000000..692dd4c\n--- /dev/null\n+++ b/tests/utils_tests/test_timesince_tz_inverted.py\n@@ -0,0 +1,16 @@\n+import datetime\n+from django.test import TestCase, override_settings\n+from django.test.utils import requires_tz_support\n+from django.utils import timezone\n+from django.utils.timesince import timesince\n+\n+class TimesinceTZTests(TestCase):\n+    @requires_tz_support\n+    @override_settings(USE_TZ=True)\n+    def test_long_interval_with_tz(self):\n+        now = timezone.now()\n+        d = now - datetime.timedelta(days=31)\n+        try:\n+            timesince(d)\n+        except TypeError:\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 331836,
+  "num_received_chars": 7583,
+  "elapsed_time": 85.83052110671997,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

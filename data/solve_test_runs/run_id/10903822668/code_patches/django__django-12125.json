@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12125",
+  "edit_test_file": "tests/migrations/test_writer.py",
+  "code_patch": "diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py\nindex 7d22695..6185dc8 100644\n--- a/django/db/migrations/serializer.py\n+++ b/django/db/migrations/serializer.py\n@@ -90,7 +90,9 @@ class DeconstructableSerializer(BaseSerializer):\n \n     @staticmethod\n     def _serialize_path(path):\n-        module, name = path.rsplit(\".\", 1)\n+        parts = path.split(\".\")\n+        module = \".\".join(parts[:-1])\n+        name = parts[-1]\n         if module == \"django.db.models\":\n             imports = {\"from django.db import models\"}\n             name = \"models.%s\" % name\n",
+  "test_patch": "diff --git a/tests/migrations/test_migrations_inner_class_path.py b/tests/migrations/test_migrations_inner_class_path.py\nnew file mode 100644\nindex 0000000..c5376b0\n--- /dev/null\n+++ b/tests/migrations/test_migrations_inner_class_path.py\n@@ -0,0 +1,28 @@\n+from django.db import models, migrations\n+from django.test import SimpleTestCase\n+from django.db.migrations.writer import MigrationWriter\n+\n+class Outer:\n+    class Inner(models.CharField):\n+        pass\n+\n+class A(models.Model):\n+    field = Outer.Inner(max_length=20)\n+\n+class TestMigrationsInnerClassPath(SimpleTestCase):\n+    def test_inner_class_path(self):\n+        migration = type(\"Migration\", (migrations.Migration,), {\n+            \"operations\": [\n+                migrations.CreateModel(\n+                    name='A',\n+                    fields=[\n+                        ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),\n+                        ('field', Outer.Inner(max_length=20)),\n+                    ],\n+                ),\n+            ],\n+        })\n+        writer = MigrationWriter(migration)\n+        output = writer.as_string()\n+        self.assertIn(\"test_migrations_inner_class_path.Outer.Inner\", output)\n+        self.assertNotIn(\"test_migrations_inner_class_path.Inner\", output)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2148343,
+  "num_received_chars": 70783,
+  "elapsed_time": 657.3458452224731,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13031",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/common.py b/sympy/matrices/common.py\nindex 7ef51bc..759fb67 100644\n--- a/sympy/matrices/common.py\n+++ b/sympy/matrices/common.py\n@@ -378,6 +378,10 @@ def hstack(cls, *args):\n             return cls._new()\n \n         kls = type(args[0])\n+        # Handle zero-row matrices by ensuring the resulting matrix has the correct number of columns\n+        total_cols = sum(arg.cols for arg in args)\n+        if all(arg.rows == 0 for arg in args):\n+            return cls._new(0, total_cols, [])\n         return reduce(kls.row_join, args)\n \n     def reshape(self, rows, cols):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1025584,
+  "num_received_chars": 18998,
+  "elapsed_time": 223.73669028282166,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

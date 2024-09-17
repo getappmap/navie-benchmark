@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/forms_tests/tests/test_forms.py",
+  "test_patch": "diff --git a/tests/forms_tests/tests/test_boundfield_access.py b/tests/forms_tests/tests/test_boundfield_access.py\nnew file mode 100644\nindex 0000000..1b97e81\n--- /dev/null\n+++ b/tests/forms_tests/tests/test_boundfield_access.py\n@@ -0,0 +1,14 @@\n+import datetime\n+from django.forms import DateTimeField, Form\n+from django.test import SimpleTestCase\n+\n+class TestBoundFieldAccess(SimpleTestCase):\n+    def test_clean_fields_and_changed_data_consistency(self):\n+        class DateTimeForm(Form):\n+            dt = DateTimeField(initial=lambda: datetime.datetime(2006, 10, 25, 14, 30, 45), disabled=True)\n+\n+        form = DateTimeForm({})\n+        form.is_valid()  # Trigger form validation to populate cleaned_data\n+\n+        # This test reproduces the issue where form.cleaned_data['dt'] can differ from form['dt'].initial\n+        self.assertEqual(form.cleaned_data['dt'], form['dt'].initial)\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

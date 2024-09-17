@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10673",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/environment/adapters/toctree.py b/sphinx/environment/adapters/toctree.py\nindex 9678e3c..ccda920 100644\n--- a/sphinx/environment/adapters/toctree.py\n+++ b/sphinx/environment/adapters/toctree.py\n@@ -165,7 +165,11 @@ class TocTree:\n                                        ref, location=toctreenode)\n                 except KeyError:\n                     # this is raised if the included file does not exist\n-                    if excluded(self.env.doc2path(ref, False)):\n+                    if ref in ('genindex', 'modindex', 'search'):\n+                        # Special case for Sphinx-generated index pages\n+                        refdoc = ref\n+                        toc = nodes.bullet_list()  # Create an empty bullet list for these special indices\n+                    elif excluded(self.env.doc2path(ref, False)):\n                         message = __('toctree contains reference to excluded document %r')\n                     elif not included(self.env.doc2path(ref, False)):\n                         message = __('toctree contains reference to non-included document %r')\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1023008,
+  "num_received_chars": 23546,
+  "elapsed_time": 191.7555811405182,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

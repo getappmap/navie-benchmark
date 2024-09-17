@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14580",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py\nindex 2848adc..7476126 100644\n--- a/django/db/migrations/autodetector.py\n+++ b/django/db/migrations/autodetector.py\n@@ -523,6 +523,7 @@ class MigrationAutodetector:\n         Defer any model options that refer to collections of fields that might\n         be deferred (e.g. unique_together, index_together).\n         \"\"\"\n+        self.ensure_models_import()\n         old_keys = self.old_model_keys | self.old_unmanaged_keys\n         added_models = self.new_model_keys - old_keys\n         added_unmanaged_models = self.new_unmanaged_keys - old_keys\n@@ -726,6 +727,7 @@ class MigrationAutodetector:\n         Also bring forward removal of any model options that refer to\n         collections of fields - the inverse of generate_created_models().\n         \"\"\"\n+        self.ensure_models_import()\n         new_keys = self.new_model_keys | self.new_unmanaged_keys\n         deleted_models = self.old_model_keys - new_keys\n         deleted_unmanaged_models = self.old_unmanaged_keys - new_keys\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 699018,
+  "num_received_chars": 9966,
+  "elapsed_time": 114.01980686187744,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

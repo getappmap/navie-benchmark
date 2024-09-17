@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19783",
+  "edit_test_file": "sympy/physics/quantum/tests/test_operator.py",
+  "code_patch": "diff --git a/sympy/physics/quantum/dagger.py b/sympy/physics/quantum/dagger.py\nindex 17da3cf..64900c3 100644\n--- a/sympy/physics/quantum/dagger.py\n+++ b/sympy/physics/quantum/dagger.py\n@@ -22,6 +22,12 @@ class Dagger(adjoint):\n     arg : Expr\n         The sympy expression that we want to take the dagger of.\n \n+    def __mul__(self, other):\n+        from sympy.physics.quantum.operator import IdentityOperator\n+        if isinstance(other, IdentityOperator):\n+            return self\n+        return Mul(self, other)\n+\n     Examples\n     ========\n \n",
+  "test_patch": "diff --git a/sympy/physics/quantum/tests/test_quantum_operator_simplification.py b/sympy/physics/quantum/tests/test_quantum_operator_simplification.py\nnew file mode 100644\nindex 0000000..8bd9e8e\n--- /dev/null\n+++ b/sympy/physics/quantum/tests/test_quantum_operator_simplification.py\n@@ -0,0 +1,11 @@\n+from sympy.physics.quantum.dagger import Dagger\n+from sympy.physics.quantum.operator import Operator\n+from sympy.physics.quantum import IdentityOperator\n+from sympy import symbols\n+\n+def test_dagger_identity_operator_simplification():\n+    A = Operator('A')\n+    Identity = IdentityOperator()\n+    B = Dagger(A)\n+    result = B * Identity\n+    assert result == B * Identity, \"Dagger(A) * IdentityOperator() should not be simplified\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/physics/quantum/tests/test_quantum_operator_simplification_inverted.py b/sympy/physics/quantum/tests/test_quantum_operator_simplification_inverted.py\nnew file mode 100644\nindex 0000000..03b9a01\n--- /dev/null\n+++ b/sympy/physics/quantum/tests/test_quantum_operator_simplification_inverted.py\n@@ -0,0 +1,11 @@\n+from sympy.physics.quantum.dagger import Dagger\n+from sympy.physics.quantum.operator import Operator\n+from sympy.physics.quantum import IdentityOperator\n+from sympy import symbols\n+\n+def test_dagger_identity_operator_simplification():\n+    A = Operator('A')\n+    Identity = IdentityOperator()\n+    B = Dagger(A)\n+    result = B * Identity\n+    assert result != B * Identity, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1201245,
+  "num_received_chars": 29623,
+  "elapsed_time": 414.24066710472107,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

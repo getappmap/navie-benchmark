@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13837",
+  "edit_test_file": "tests/utils_tests/test_autoreload.py",
+  "code_patch": "diff --git a/django/__main__.py b/django/__main__.py\nindex 8b96e91..b42dc7b 100644\n--- a/django/__main__.py\n+++ b/django/__main__.py\n@@ -3,7 +3,10 @@ Invokes django-admin when the django module is run as a script.\n \n Example: python -m django check\n \"\"\"\n+import sys\n from django.core import management\n \n if __name__ == \"__main__\":\n+    if getattr(sys.modules['__main__'], '__spec__', None) is not None:\n+        sys.argv[0] = sys.modules['__main__'].__spec__.parent\n     management.execute_from_command_line()\n",
+  "test_patch": "diff --git a/tests/utils_tests/test_autoreload_runserver.py b/tests/utils_tests/test_autoreload_runserver.py\nnew file mode 100644\nindex 0000000..38c8b80\n--- /dev/null\n+++ b/tests/utils_tests/test_autoreload_runserver.py\n@@ -0,0 +1,12 @@\n+import sys\n+from unittest import mock\n+from django.test import SimpleTestCase\n+from django.utils import autoreload\n+\n+class TestRunserverAutoreload(SimpleTestCase):\n+    @mock.patch('sys.argv', ['-m', 'pkg_other_than_django', 'runserver'])\n+    @mock.patch('sys.warnoptions', [])\n+    def test_runserver_with_pkg_other_than_django(self):\n+        with self.assertRaises(RuntimeError) as cm:\n+            autoreload.get_child_arguments()\n+        self.assertEqual(str(cm.exception), 'Script -m does not exist.')\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_autoreload_runserver_inverted.py b/tests/utils_tests/test_autoreload_runserver_inverted.py\nnew file mode 100644\nindex 0000000..edc0adb\n--- /dev/null\n+++ b/tests/utils_tests/test_autoreload_runserver_inverted.py\n@@ -0,0 +1,12 @@\n+import sys\n+from unittest import mock\n+from django.test import SimpleTestCase\n+from django.utils import autoreload\n+\n+class TestRunserverAutoreload(SimpleTestCase):\n+    @mock.patch('sys.argv', ['-m', 'pkg_other_than_django', 'runserver'])\n+    @mock.patch('sys.warnoptions', [])\n+    def test_runserver_with_pkg_other_than_django(self):\n+        with self.assertRaises(RuntimeError) as cm:\n+            autoreload.get_child_arguments()\n+        self.assertEqual(str(cm.exception), '__BUG__HERE__')\n\\ No newline at end of file\n",
+  "num_sent_chars": 1412129,
+  "num_received_chars": 60334,
+  "elapsed_time": 541.7983047962189,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

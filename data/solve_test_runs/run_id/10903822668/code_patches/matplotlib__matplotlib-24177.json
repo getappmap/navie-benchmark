@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-24177",
+  "edit_test_file": "lib/matplotlib/tests/test_image.py",
+  "code_patch": "diff --git a/lib/matplotlib/axes/_axes.py b/lib/matplotlib/axes/_axes.py\nindex 2412f81..9c90bd6 100644\n--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@ -6840,6 +6840,10 @@ such objects\n                 else:  # orientation == 'vertical'\n                     self.set_yscale('log', nonpositive='clip')\n \n+            # Ensure y-axis autoscaling for step histograms with density=True\n+            if density:\n+                self._request_autoscale_view(scalex=False, scaley=True)\n+\n             if align == 'left':\n                 x -= 0.5*(bins[1]-bins[0])\n             elif align == 'right':\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_hist_density_scaling.py b/lib/matplotlib/tests/test_hist_density_scaling.py\nnew file mode 100644\nindex 0000000..5e75a70\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_hist_density_scaling.py\n@@ -0,0 +1,22 @@\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import unittest\n+\n+class TestHistDensityScaling(unittest.TestCase):\n+    def test_hist_density_scaling_step(self):\n+        scale = 1.2\n+        test_random = np.random.randn(100000) * scale\n+\n+        fig, ax = plt.subplots(1, 2, figsize=(20, 10))\n+        hist_bar = ax[0].hist(test_random, bins=100, density=True, histtype=\"bar\")\n+        hist_step = ax[1].hist(test_random, bins=100, density=True, histtype=\"step\")\n+\n+        # Check if the y-limits are different, which indicates the issue\n+        ylims_bar = ax[0].get_ylim()\n+        ylims_step = ax[1].get_ylim()\n+\n+        # Assert that the y-limits are not the same, which reproduces the issue\n+        self.assertNotEqual(ylims_bar, ylims_step, \"Y-limits should differ due to the bug\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_hist_density_scaling_inverted.py b/lib/matplotlib/tests/test_hist_density_scaling_inverted.py\nnew file mode 100644\nindex 0000000..6b264cc\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_hist_density_scaling_inverted.py\n@@ -0,0 +1,22 @@\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import unittest\n+\n+class TestHistDensityScaling(unittest.TestCase):\n+    def test_hist_density_scaling_step(self):\n+        scale = 1.2\n+        test_random = np.random.randn(100000) * scale\n+\n+        fig, ax = plt.subplots(1, 2, figsize=(20, 10))\n+        hist_bar = ax[0].hist(test_random, bins=100, density=True, histtype=\"bar\")\n+        hist_step = ax[1].hist(test_random, bins=100, density=True, histtype=\"step\")\n+\n+        # Check if the y-limits are different, which indicates the issue\n+        ylims_bar = ax[0].get_ylim()\n+        ylims_step = ax[1].get_ylim()\n+\n+        # Assert that the y-limits are the same, which should not happen due to the bug\n+        self.assertEqual(ylims_bar, ylims_step, \"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 3116352,
+  "num_received_chars": 44727,
+  "elapsed_time": 783.543826341629,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

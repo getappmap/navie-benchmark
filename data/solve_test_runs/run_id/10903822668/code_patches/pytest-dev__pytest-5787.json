@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5787",
+  "edit_test_file": "testing/python/raises.py",
+  "code_patch": "diff --git a/src/_pytest/_code/code.py b/src/_pytest/_code/code.py\nindex a0f4d15..793ab6a 100644\n--- a/src/_pytest/_code/code.py\n+++ b/src/_pytest/_code/code.py\n@@ -8,6 +8,7 @@ from traceback import format_exception_only\n from types import TracebackType\n from typing import Generic\n from typing import Optional\n+from typing import Any  # Added to prevent linter error for ReprCrash\n from typing import Pattern\n from typing import Tuple\n from typing import TypeVar\n",
+  "test_patch": "diff --git a/testing/python/chained_exception_serialization.py b/testing/python/chained_exception_serialization.py\nnew file mode 100644\nindex 0000000..b065691\n--- /dev/null\n+++ b/testing/python/chained_exception_serialization.py\n@@ -0,0 +1,23 @@\n+import pytest\n+\n+def test_chained_exception_with_from():\n+    with pytest.raises(ValueError) as excinfo:\n+        try:\n+            try:\n+                raise ValueError(11)\n+            except Exception as e1:\n+                raise ValueError(12) from e1\n+        except Exception as e2:\n+            raise ValueError(13) from e2\n+    assert excinfo.value.args[0] == 13\n+\n+def test_chained_exception_without_from():\n+    with pytest.raises(ValueError) as excinfo:\n+        try:\n+            try:\n+                raise ValueError(21)\n+            except Exception:\n+                raise ValueError(22)\n+        except Exception:\n+            raise ValueError(23)\n+    assert excinfo.value.args[0] == 23\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/python/chained_exception_serialization_inverted.py b/testing/python/chained_exception_serialization_inverted.py\nnew file mode 100644\nindex 0000000..1915843\n--- /dev/null\n+++ b/testing/python/chained_exception_serialization_inverted.py\n@@ -0,0 +1,23 @@\n+import pytest\n+\n+def test_chained_exception_with_from():\n+    with pytest.raises(ValueError) as excinfo:\n+        try:\n+            try:\n+                raise ValueError(11)\n+            except Exception as e1:\n+                raise ValueError(12) from e1\n+        except Exception as e2:\n+            raise ValueError(13) from e2\n+    assert excinfo.value.args[0] == 12, \"__BUG__HERE__\"\n+\n+def test_chained_exception_without_from():\n+    with pytest.raises(ValueError) as excinfo:\n+        try:\n+            try:\n+                raise ValueError(21)\n+            except Exception:\n+                raise ValueError(22)\n+        except Exception:\n+            raise ValueError(23)\n+    assert excinfo.value.args[0] == 22, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1614594,
+  "num_received_chars": 87693,
+  "elapsed_time": 806.8178725242615,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

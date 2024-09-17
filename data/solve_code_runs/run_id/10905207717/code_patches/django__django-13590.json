@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13590",
+  "edit_test_file": "tests/model_indexes/tests.py",
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex 4648daf..645fdbd 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1077,10 +1077,12 @@ class Query(BaseExpression):\n         elif isinstance(value, (list, tuple)):\n             # The items of the iterable may be expressions and therefore need\n             # to be resolved independently.\n-            return type(value)(\n+            resolved_values = [\n                 self.resolve_lookup_value(sub_value, can_reuse, allow_joins)\n                 for sub_value in value\n-            )\n+            ]\n+            # Unpack resolved values for named tuples\n+            return type(value)(*resolved_values) if hasattr(value, '_fields') else type(value)(resolved_values)\n         return value\n \n     def solve_lookup_type(self, lookup):\n",
+  "test_patch": "diff --git a/tests/model_indexes/test_named_tuple_range.py b/tests/model_indexes/test_named_tuple_range.py\nnew file mode 100644\nindex 0000000..07c98eb\n--- /dev/null\n+++ b/tests/model_indexes/test_named_tuple_range.py\n@@ -0,0 +1,21 @@\n+from unittest import TestCase\n+from collections import namedtuple\n+from django.db import models\n+from django.core.exceptions import FieldError\n+\n+# Assuming a model named 'SampleModel' with a field 'value' exists\n+class SampleModel(models.Model):\n+    value = models.IntegerField()\n+\n+class NamedTupleRangeTest(TestCase):\n+    def test_named_tuple_range_error(self):\n+        # Define a named tuple with two elements\n+        RangeTuple = namedtuple('RangeTuple', ['near', 'far'])\n+        range_value = RangeTuple(1, 10)\n+\n+        # Attempt to use the named tuple in a range filter\n+        with self.assertRaises(TypeError) as context:\n+            SampleModel.objects.filter(value__range=range_value)\n+\n+        # Check if the error message matches the expected issue\n+        self.assertIn(\"__new__() missing 1 required positional argument: 'far'\", str(context.exception))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/model_indexes/test_named_tuple_range_inverted.py b/tests/model_indexes/test_named_tuple_range_inverted.py\nnew file mode 100644\nindex 0000000..05979d2\n--- /dev/null\n+++ b/tests/model_indexes/test_named_tuple_range_inverted.py\n@@ -0,0 +1,20 @@\n+from unittest import TestCase\n+from collections import namedtuple\n+from django.db import models\n+\n+# Assuming a model named 'SampleModel' with a field 'value' exists\n+class SampleModel(models.Model):\n+    value = models.IntegerField()\n+\n+class NamedTupleRangeTest(TestCase):\n+    def test_named_tuple_range_error(self):\n+        # Define a named tuple with two elements\n+        RangeTuple = namedtuple('RangeTuple', ['near', 'far'])\n+        range_value = RangeTuple(1, 10)\n+\n+        # Attempt to use the named tuple in a range filter\n+        with self.assertRaises(TypeError) as context:\n+            SampleModel.objects.filter(value__range=range_value)\n+\n+        # Check if the error message matches the expected issue\n+        self.assertIn(\"__BUG__HERE__\", str(context.exception))\n\\ No newline at end of file\n",
+  "num_sent_chars": 3408884,
+  "num_received_chars": 32761,
+  "elapsed_time": 783.4861080646515,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16502",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/servers/basehttp.py b/django/core/servers/basehttp.py\nindex fef5532..761503c 100644\n--- a/django/core/servers/basehttp.py\n+++ b/django/core/servers/basehttp.py\n@@ -226,6 +226,10 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler):\n         handler.request_handler = self  # backpointer for logging & connection closing\n         handler.run(self.server.get_app())\n \n+        # Suppress response body for HEAD requests\n+        if self.command == \"HEAD\":\n+            self.wfile.truncate(0)\n+\n \n def run(addr, port, wsgi_handler, ipv6=False, threading=False, server_cls=WSGIServer):\n     server_address = (addr, port)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 539692,
+  "num_received_chars": 6411,
+  "elapsed_time": 94.14135026931763,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

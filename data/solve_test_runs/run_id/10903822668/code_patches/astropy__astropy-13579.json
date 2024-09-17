@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-13579",
+  "edit_test_file": "astropy/visualization/wcsaxes/tests/test_misc.py",
+  "code_patch": "diff --git a/astropy/wcs/wcsapi/wrappers/sliced_wcs.py b/astropy/wcs/wcsapi/wrappers/sliced_wcs.py\nindex d7605b0..6ef45e3 100644\n--- a/astropy/wcs/wcsapi/wrappers/sliced_wcs.py\n+++ b/astropy/wcs/wcsapi/wrappers/sliced_wcs.py\n@@ -251,7 +251,8 @@ class SlicedLowLevelWCS(BaseWCSWrapper):\n                 iworld_curr += 1\n                 world_arrays_new.append(world_arrays[iworld_curr])\n             else:\n-                world_arrays_new.append(1.)\n+                # Use a default value that makes sense in the context of the WCS\n+                world_arrays_new.append(np.nan)\n \n         world_arrays_new = np.broadcast_arrays(*world_arrays_new)\n         pixel_arrays = list(self._wcs.world_to_pixel_values(*world_arrays_new))\n@@ -259,6 +260,8 @@ class SlicedLowLevelWCS(BaseWCSWrapper):\n         for ipixel in range(self._wcs.pixel_n_dim):\n             if isinstance(self._slices_pixel[ipixel], slice) and self._slices_pixel[ipixel].start is not None:\n                 pixel_arrays[ipixel] -= self._slices_pixel[ipixel].start\n+            # Ensure pixel values are within valid range\n+            pixel_arrays[ipixel] = np.clip(pixel_arrays[ipixel], 0, self._wcs.pixel_shape[ipixel] - 1)\n \n         # Detect the case of a length 0 array\n         if isinstance(pixel_arrays, np.ndarray) and not pixel_arrays.shape:\n",
+  "test_patch": "diff --git a/astropy/visualization/wcsaxes/tests/test_sliced_low_level_wcs_behavior.py b/astropy/visualization/wcsaxes/tests/test_sliced_low_level_wcs_behavior.py\nnew file mode 100644\nindex 0000000..7a39550\n--- /dev/null\n+++ b/astropy/visualization/wcsaxes/tests/test_sliced_low_level_wcs_behavior.py\n@@ -0,0 +1,55 @@\n+import numpy as np\n+import astropy.wcs\n+from astropy.coordinates import SkyCoord\n+import astropy.units as u\n+from astropy.wcs.wcsapi import SlicedLowLevelWCS, HighLevelWCSWrapper\n+from numpy.testing import assert_allclose\n+\n+def test_inconsistent_world_to_pixel_behavior():\n+    # Define WCS header\n+    nx = 100\n+    ny = 25\n+    wcs_header = {\n+        'WCSAXES': 3,\n+        'CRPIX1': (nx + 1)/2,\n+        'CRPIX2': (ny + 1)/2,\n+        'CRPIX3': 1.0,\n+        'PC1_1': 0.0,\n+        'PC1_2': -1.0,\n+        'PC1_3': 0.0,\n+        'PC2_1': 1.0,\n+        'PC2_2': 0.0,\n+        'PC2_3': -1.0,\n+        'CDELT1': 5,\n+        'CDELT2': 5,\n+        'CDELT3': 0.055,\n+        'CUNIT1': 'arcsec',\n+        'CUNIT2': 'arcsec',\n+        'CUNIT3': 'Angstrom',\n+        'CTYPE1': 'HPLN-TAN',\n+        'CTYPE2': 'HPLT-TAN',\n+        'CTYPE3': 'WAVE',\n+        'CRVAL1': 0.0,\n+        'CRVAL2': 0.0,\n+        'CRVAL3': 1.05,\n+    }\n+    \n+    # Create WCS object\n+    fits_wcs = astropy.wcs.WCS(header=wcs_header)\n+    \n+    # Define the SkyCoord point\n+    pt = SkyCoord(Tx=0*u.arcsec, Ty=0*u.arcsec, frame=astropy.wcs.utils.wcs_to_celestial_frame(fits_wcs))\n+    \n+    # Perform world_to_pixel on the unsliced WCS\n+    px, py, pz = fits_wcs.world_to_pixel(pt, 1.05*u.angstrom)\n+    \n+    # Slice the WCS and wrap it\n+    ll_sliced_wcs = SlicedLowLevelWCS(fits_wcs, 0)\n+    hl_sliced_wcs = HighLevelWCSWrapper(ll_sliced_wcs)\n+    \n+    # Perform world_to_pixel on the sliced WCS\n+    sliced_px, sliced_py = hl_sliced_wcs.world_to_pixel(pt)\n+    \n+    # Assert that the sliced WCS returns an incorrect result\n+    assert sliced_px > 1e10, \"The first pixel entry should be essentially infinite\"\n+    assert_allclose(sliced_py, py, atol=1e-5)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2133927,
+  "num_received_chars": 70170,
+  "elapsed_time": 679.4944489002228,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

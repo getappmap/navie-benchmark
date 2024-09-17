@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/printing/tests/test_pycode.py",
+  "test_patch": "diff --git a/sympy/printing/tests/test_subs_parenthesizing.py b/sympy/printing/tests/test_subs_parenthesizing.py\nnew file mode 100644\nindex 0000000..66bacc2\n--- /dev/null\n+++ b/sympy/printing/tests/test_subs_parenthesizing.py\n@@ -0,0 +1,8 @@\n+from sympy import Subs, latex\n+from sympy.abc import x, y\n+\n+def test_subs_parenthesizing():\n+    expr = 3 * Subs(-x + y, (x,), (1,))\n+    latex_output = latex(expr)\n+    expected_output = r\"3 \\left. \\left(- x + y\\right) \\right|_{\\substack{ x=1 }}\"\n+    assert latex_output != expected_output, f\"Expected incorrect output, got: {latex_output}\"\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15957",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex be0deb9..543434f 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -1438,7 +1438,7 @@ class QuerySet:\n         return self._filter_or_exclude(True, args, kwargs)\n \n     def _filter_or_exclude(self, negate, args, kwargs):\n-        if (args or kwargs) and self.query.is_sliced:\n+        if (args or kwargs) and self.query.is_sliced and not self._allow_sliced_prefetch:\n             raise TypeError(\"Cannot filter a query once a slice has been taken.\")\n         clone = self._chain()\n         if self._defer_next_filter:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 947868,
+  "num_received_chars": 22963,
+  "elapsed_time": 180.80858516693115,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

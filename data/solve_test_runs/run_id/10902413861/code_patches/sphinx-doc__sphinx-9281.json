@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9281",
+  "edit_test_file": "tests/test_util_inspect.py",
+  "code_patch": "diff --git a/doc/development/tutorials/examples/autodoc_intenum.py b/doc/development/tutorials/examples/autodoc_intenum.py\nindex 7fb85d0..020f4fa 100644\n--- a/doc/development/tutorials/examples/autodoc_intenum.py\n+++ b/doc/development/tutorials/examples/autodoc_intenum.py\n@@ -38,9 +38,10 @@ class IntEnumDocumenter(ClassDocumenter):\n \n         for enum_value in enum_object:\n             the_value_name = enum_value.name\n-            the_value_value = enum_value.value\n+            # Use only the enum name for representation\n+            the_value_value = the_value_name\n             if use_hex:\n-                the_value_value = hex(the_value_value)\n+                the_value_value = hex(enum_value.value)\n \n             self.add_line(\n                 f\"**{the_value_name}**: {the_value_value}\", source_name)\n",
+  "test_patch": "diff --git a/tests/test_ext_autodoc_enum_rendering.py b/tests/test_ext_autodoc_enum_rendering.py\nnew file mode 100644\nindex 0000000..fe1036a\n--- /dev/null\n+++ b/tests/test_ext_autodoc_enum_rendering.py\n@@ -0,0 +1,22 @@\n+import unittest\n+from sphinx.util import inspect\n+from enum import Enum\n+\n+class MyEnum(Enum):\n+    ValueA = 10\n+    ValueB = 20\n+\n+def ugly_enum_func(e: MyEnum = MyEnum.ValueA) -> None:\n+    pass\n+\n+class TestEnumRendering(unittest.TestCase):\n+    def test_ugly_enum_rendering(self):\n+        # Get the signature of the function\n+        sig = inspect.signature(ugly_enum_func)\n+        # Convert the signature to a string\n+        rendered_signature = inspect.stringify_signature(sig)\n+        # Check if the signature is rendered with the Enum value in an \"ugly\" way\n+        self.assertIn(\"<MyEnum.ValueA: 10>\", rendered_signature)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_ext_autodoc_enum_rendering_inverted.py b/tests/test_ext_autodoc_enum_rendering_inverted.py\nnew file mode 100644\nindex 0000000..03fc292\n--- /dev/null\n+++ b/tests/test_ext_autodoc_enum_rendering_inverted.py\n@@ -0,0 +1,24 @@\n+import unittest\n+from sphinx.util import inspect\n+from enum import Enum\n+\n+class MyEnum(Enum):\n+    ValueA = 10\n+    ValueB = 20\n+\n+def ugly_enum_func(e: MyEnum = MyEnum.ValueA) -> None:\n+    pass\n+\n+class TestEnumRendering(unittest.TestCase):\n+    def test_ugly_enum_rendering(self):\n+        # Get the signature of the function\n+        sig = inspect.signature(ugly_enum_func)\n+        # Convert the signature to a string\n+        rendered_signature = inspect.stringify_signature(sig)\n+        # Check if the signature is rendered with the Enum value in an \"ugly\" way\n+        # The test should now fail if the bug is observed\n+        if \"<MyEnum.ValueA: 10>\" in rendered_signature:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 5178295,
+  "num_received_chars": 67429,
+  "elapsed_time": 839.9818251132965,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

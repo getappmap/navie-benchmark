@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7889",
+  "edit_test_file": "tests/test_config.py",
+  "code_patch": "diff --git a/sphinx/ext/autodoc/mock.py b/sphinx/ext/autodoc/mock.py\nindex 98a3a3a..ca65bb2 100644\n--- a/sphinx/ext/autodoc/mock.py\n+++ b/sphinx/ext/autodoc/mock.py\n@@ -70,6 +70,12 @@ class _MockObject:\n \n def _make_subclass(name: str, module: str, superclass: Any = _MockObject,\n                    attributes: Any = None) -> Any:\n+    # Ensure name and module are strings, handle TypeVar if present\n+    if hasattr(name, 'name'):\n+        name = name.name\n+    if hasattr(module, 'name'):\n+        module = module.name\n+\n     attrs = {'__module__': module, '__display_name__': module + '.' + name}\n     attrs.update(attributes or {})\n \n",
+  "test_patch": "diff --git a/tests/test_ext_autodoc_generic_typing_error.py b/tests/test_ext_autodoc_generic_typing_error.py\nnew file mode 100644\nindex 0000000..28a8a77\n--- /dev/null\n+++ b/tests/test_ext_autodoc_generic_typing_error.py\n@@ -0,0 +1,17 @@\n+import unittest\n+from sphinx.ext.autodoc.mock import _make_subclass\n+from typing import TypeVar, Generic\n+\n+T = TypeVar('T')\n+\n+class GenericClass(Generic[T]):\n+    pass\n+\n+class TestAutodocGenericTypingError(unittest.TestCase):\n+    def test_generic_typing_error(self):\n+        # Attempt to create a subclass using _make_subclass with a generic type\n+        with self.assertRaises(TypeError):\n+            _make_subclass('GenericSubclass', 'module', superclass=GenericClass[T])\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_ext_autodoc_generic_typing_error_inverted.py b/tests/test_ext_autodoc_generic_typing_error_inverted.py\nnew file mode 100644\nindex 0000000..d1c21f9\n--- /dev/null\n+++ b/tests/test_ext_autodoc_generic_typing_error_inverted.py\n@@ -0,0 +1,20 @@\n+import unittest\n+from sphinx.ext.autodoc.mock import _make_subclass\n+from typing import TypeVar, Generic\n+\n+T = TypeVar('T')\n+\n+class GenericClass(Generic[T]):\n+    pass\n+\n+class TestAutodocGenericTypingError(unittest.TestCase):\n+    def test_generic_typing_error(self):\n+        # Attempt to create a subclass using _make_subclass with a generic type\n+        # The test should now fail when the bug is observed, raising a specific error message\n+        try:\n+            _make_subclass('GenericSubclass', 'module', superclass=GenericClass[T])\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 478304,
+  "num_received_chars": 8808,
+  "elapsed_time": 124.86883854866028,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13480",
+  "edit_test_file": "sympy/functions/elementary/tests/test_hyperbolic.py",
+  "code_patch": "diff --git a/sympy/functions/elementary/hyperbolic.py b/sympy/functions/elementary/hyperbolic.py\nindex 2a4555d..7a4d313 100644\n--- a/sympy/functions/elementary/hyperbolic.py\n+++ b/sympy/functions/elementary/hyperbolic.py\n@@ -587,6 +587,7 @@ def eval(cls, arg):\n                 x, m = _peeloff_ipi(arg)\n                 if m:\n                     cothm = coth(m)\n+                    cotm = cot(m)  # Ensure cotm is defined\n                     if cotm is S.ComplexInfinity:\n                         return coth(x)\n                     else: # cothm == 0\n",
+  "test_patch": "diff --git a/sympy/functions/elementary/tests/test_logarithmic_substitution.py b/sympy/functions/elementary/tests/test_logarithmic_substitution.py\nnew file mode 100644\nindex 0000000..43c6ec9\n--- /dev/null\n+++ b/sympy/functions/elementary/tests/test_logarithmic_substitution.py\n@@ -0,0 +1,8 @@\n+from sympy import Symbol, coth, log, tan\n+from sympy.utilities.pytest import raises\n+\n+def test_coth_log_tan_subs_error():\n+    x = Symbol('x')\n+    e = coth(log(tan(x)))\n+    with raises(NameError):\n+        e.subs(x, 2)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 893384,
+  "num_received_chars": 17713,
+  "elapsed_time": 240.27236771583557,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

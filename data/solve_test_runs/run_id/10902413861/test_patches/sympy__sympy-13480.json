@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/functions/elementary/tests/test_hyperbolic.py",
+  "test_patch": "diff --git a/sympy/functions/elementary/tests/test_logarithmic_substitution.py b/sympy/functions/elementary/tests/test_logarithmic_substitution.py\nnew file mode 100644\nindex 0000000..43c6ec9\n--- /dev/null\n+++ b/sympy/functions/elementary/tests/test_logarithmic_substitution.py\n@@ -0,0 +1,8 @@\n+from sympy import Symbol, coth, log, tan\n+from sympy.utilities.pytest import raises\n+\n+def test_coth_log_tan_subs_error():\n+    x = Symbol('x')\n+    e = coth(log(tan(x)))\n+    with raises(NameError):\n+        e.subs(x, 2)\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

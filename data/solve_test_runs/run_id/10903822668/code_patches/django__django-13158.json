@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13158",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 07d6ffd..eafd197 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -344,6 +344,8 @@ class QuerySet:\n             return other\n         if isinstance(other, EmptyQuerySet):\n             return self\n+        if isinstance(self, EmptyQuerySet) or isinstance(other, EmptyQuerySet):\n+            return self.none()\n         query = self if self.query.can_filter() else self.model._base_manager.filter(pk__in=self.values('pk'))\n         combined = query._chain()\n         combined._merge_known_related_objects(other)\n@@ -991,6 +993,10 @@ class QuerySet:\n         # Clear limits and ordering so they can be reapplied\n         clone.query.clear_ordering(True)\n         clone.query.clear_limits()\n+        # Check if any of the queries is an EmptyQuerySet\n+        if isinstance(self, EmptyQuerySet) or any(isinstance(qs, EmptyQuerySet) for qs in other_qs):\n+            clone.query.set_empty()\n+            return clone\n         clone.query.combined_queries = (self.query,) + tuple(qs.query for qs in other_qs)\n         clone.query.combinator = combinator\n         clone.query.combinator_all = all\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1211539,
+  "num_received_chars": 26008,
+  "elapsed_time": 213.00832724571228,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

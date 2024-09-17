@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-1921",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/sessions.py b/requests/sessions.py\nindex a023e4e..b6a3f25 100644\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -59,6 +59,11 @@ def merge_setting(request_setting, session_setting, dict_class=OrderedDict):\n         if v is None:\n             del merged_setting[k]\n \n+    # Remove session headers that are set to None in request_setting\n+    for (k, v) in session_setting.items():\n+        if k in request_setting and request_setting[k] is None:\n+            del merged_setting[k]\n+\n     return merged_setting\n \n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 360179,
+  "num_received_chars": 6508,
+  "elapsed_time": 75.6609435081482,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

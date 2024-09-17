@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12774",
+  "edit_test_file": "tests/custom_pk/tests.py",
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex d9c9b0d..6f23c3e 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -689,8 +689,16 @@ class QuerySet:\n         \"\"\"\n         assert not self.query.is_sliced, \\\n             \"Cannot use 'limit' or 'offset' with in_bulk\"\n-        if field_name != 'pk' and not self.model._meta.get_field(field_name).unique:\n-            raise ValueError(\"in_bulk()'s field_name must be a unique field but %r isn't.\" % field_name)\n+        if field_name != 'pk':\n+            field = self.model._meta.get_field(field_name)\n+            if not field.unique:\n+                # Check if the field is part of a UniqueConstraint\n+                is_unique_constraint = any(\n+                    field_name in constraint.fields\n+                    for constraint in self.model._meta.total_unique_constraints\n+                )\n+                if not is_unique_constraint:\n+                    raise ValueError(\"in_bulk()'s field_name must be a unique field but %r isn't.\" % field_name)\n         if id_list is not None:\n             if not id_list:\n                 return {}\n",
+  "test_patch": "diff --git a/tests/custom_pk/test_queryset_in_bulk_unique_constraints.py b/tests/custom_pk/test_queryset_in_bulk_unique_constraints.py\nnew file mode 100644\nindex 0000000..54fa898\n--- /dev/null\n+++ b/tests/custom_pk/test_queryset_in_bulk_unique_constraints.py\n@@ -0,0 +1,19 @@\n+from django.db import models, IntegrityError\n+from django.test import TestCase\n+\n+class Article(models.Model):\n+    slug = models.CharField(max_length=255)\n+\n+    class Meta:\n+        constraints = [\n+            models.UniqueConstraint(fields=[\"slug\"], name=\"app_article_slug_unq\")\n+        ]\n+\n+class QuerySetInBulkUniqueConstraintsTest(TestCase):\n+    def test_in_bulk_with_unique_constraint(self):\n+        \"\"\"\n+        Test that in_bulk() raises a ValueError when using a field with a UniqueConstraint.\n+        \"\"\"\n+        Article.objects.create(slug='unique-slug')\n+        with self.assertRaisesMessage(ValueError, \"in_bulk()'s field_name must be a unique field but 'slug' isn't.\"):\n+            Article.objects.in_bulk(field_name='slug')\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/custom_pk/test_queryset_in_bulk_unique_constraints_inverted.py b/tests/custom_pk/test_queryset_in_bulk_unique_constraints_inverted.py\nnew file mode 100644\nindex 0000000..991c543\n--- /dev/null\n+++ b/tests/custom_pk/test_queryset_in_bulk_unique_constraints_inverted.py\n@@ -0,0 +1,22 @@\n+from django.db import models, IntegrityError\n+from django.test import TestCase\n+\n+class Article(models.Model):\n+    slug = models.CharField(max_length=255)\n+\n+    class Meta:\n+        constraints = [\n+            models.UniqueConstraint(fields=[\"slug\"], name=\"app_article_slug_unq\")\n+        ]\n+\n+class QuerySetInBulkUniqueConstraintsTest(TestCase):\n+    def test_in_bulk_with_unique_constraint(self):\n+        \"\"\"\n+        Test that in_bulk() raises a ValueError when using a field with a UniqueConstraint.\n+        \"\"\"\n+        Article.objects.create(slug='unique-slug')\n+        try:\n+            Article.objects.in_bulk(field_name='slug')\n+        except ValueError as e:\n+            self.assertEqual(str(e), \"in_bulk()'s field_name must be a unique field but 'slug' isn't.\")\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1347936,
+  "num_received_chars": 33549,
+  "elapsed_time": 341.860976934433,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

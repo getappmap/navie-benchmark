@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15345",
+  "edit_test_file": "sympy/printing/tests/test_mathematica.py",
+  "code_patch": "diff --git a/sympy/printing/mathematica.py b/sympy/printing/mathematica.py\nindex ea7e3a2..450c733 100644\n--- a/sympy/printing/mathematica.py\n+++ b/sympy/printing/mathematica.py\n@@ -88,6 +88,9 @@ def _print_Infinity(self, expr):\n     def _print_NegativeInfinity(self, expr):\n         return '-Infinity'\n \n+    def _print_Max(self, expr):\n+        return 'Max[' + ', '.join(self.doprint(a) for a in expr.args) + ']'\n+\n     def _print_list(self, expr):\n         return '{' + ', '.join(self.doprint(a) for a in expr) + '}'\n     _print_tuple = _print_list\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_sympy.py b/sympy/printing/tests/test_sympy.py\nnew file mode 100644\nindex 0000000..4eaff91\n--- /dev/null\n+++ b/sympy/printing/tests/test_sympy.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, Max\n+from sympy.printing.mathematica import mathematica_code as mcode\n+\n+def test_mathematica_code_with_Max():\n+    x = symbols('x')\n+    assert mcode(Max(x, 2)) == \"Max(2, x)\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_sympy_inverted.py b/sympy/printing/tests/test_sympy_inverted.py\nnew file mode 100644\nindex 0000000..11d1c87\n--- /dev/null\n+++ b/sympy/printing/tests/test_sympy_inverted.py\n@@ -0,0 +1,9 @@\n+from sympy import symbols, Max\n+from sympy.printing.mathematica import mathematica_code as mcode\n+\n+def test_mathematica_code_with_Max():\n+    x = symbols('x')\n+    result = mcode(Max(x, 2))\n+    expected = \"Max[x, 2]\"\n+    if result != expected:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 821296,
+  "num_received_chars": 23025,
+  "elapsed_time": 325.4916293621063,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11532",
+  "edit_test_file": "tests/logging_tests/tests.py",
+  "code_patch": "diff --git a/django/core/mail/message.py b/django/core/mail/message.py\nindex e393b4c..f9e4f49 100644\n--- a/django/core/mail/message.py\n+++ b/django/core/mail/message.py\n@@ -257,7 +257,8 @@ class EmailMessage:\n             msg['Date'] = formatdate(localtime=settings.EMAIL_USE_LOCALTIME)\n         if 'message-id' not in header_names:\n             # Use cached DNS_NAME for performance\n-            msg['Message-ID'] = make_msgid(domain=DNS_NAME)\n+            punycode_domain = DNS_NAME.encode('idna').decode('ascii')\n+            msg['Message-ID'] = make_msgid(domain=punycode_domain)\n         for name, value in self.extra_headers.items():\n             if name.lower() != 'from':  # From is already handled\n                 msg[name] = value\n",
+  "test_patch": "diff --git a/tests/logging_tests/test_email_non_ascii_domain.py b/tests/logging_tests/test_email_non_ascii_domain.py\nnew file mode 100644\nindex 0000000..fb389dc\n--- /dev/null\n+++ b/tests/logging_tests/test_email_non_ascii_domain.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from unittest.mock import patch\n+from django.core.mail import EmailMessage\n+from django.core.mail.message import DNS_NAME\n+from django.core.mail.message import BadHeaderError\n+\n+class TestEmailNonAsciiDomain(unittest.TestCase):\n+    def test_email_non_ascii_domain(self):\n+        with patch(\"django.core.mail.message.DNS_NAME\", \"\u6f22\u5b57\"):\n+            email = EmailMessage('subject', '', 'from@example.com', ['to@example.com'])\n+            email.encoding = 'iso-8859-1'\n+            with self.assertRaises(UnicodeEncodeError):\n+                email.message()\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/logging_tests/test_email_non_ascii_domain_inverted.py b/tests/logging_tests/test_email_non_ascii_domain_inverted.py\nnew file mode 100644\nindex 0000000..db81258\n--- /dev/null\n+++ b/tests/logging_tests/test_email_non_ascii_domain_inverted.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from unittest.mock import patch\n+from django.core.mail import EmailMessage\n+\n+class TestEmailNonAsciiDomain(unittest.TestCase):\n+    def test_email_non_ascii_domain(self):\n+        with patch(\"django.core.mail.message.DNS_NAME\", \"\u6f22\u5b57\"):\n+            email = EmailMessage('subject', '', 'from@example.com', ['to@example.com'])\n+            email.encoding = 'iso-8859-1'\n+            try:\n+                email.message()\n+            except UnicodeEncodeError:\n+                self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 2301145,
+  "num_received_chars": 79079,
+  "elapsed_time": 764.0807101726532,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 5,
+  "code_generation_attempts": 6,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

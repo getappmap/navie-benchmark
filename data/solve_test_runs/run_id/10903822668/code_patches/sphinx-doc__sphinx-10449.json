@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10449",
+  "edit_test_file": "tests/test_util_docutils.py",
+  "code_patch": "diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py\nindex e16ab8c..e7f2e8b 100644\n--- a/sphinx/ext/autodoc/__init__.py\n+++ b/sphinx/ext/autodoc/__init__.py\n@@ -484,7 +484,7 @@ class Documenter:\n             try:\n                 retann = None\n                 args = self._call_format_args(**kwargs)\n-                if args:\n+                if args and not isinstance(self, ClassDocumenter):\n                     matched = re.match(r'^(\\(.*\\))\\s+->\\s+(.*)$', args)\n                     if matched:\n                         args = matched.group(1)\n",
+  "test_patch": "diff --git a/tests/test_autodoc_typehints_description.py b/tests/test_autodoc_typehints_description.py\nnew file mode 100644\nindex 0000000..5dd98d0\n--- /dev/null\n+++ b/tests/test_autodoc_typehints_description.py\n@@ -0,0 +1,28 @@\n+import os\n+import unittest\n+from sphinx.application import Sphinx\n+from sphinx.errors import ConfigError\n+\n+class TestAutodocTypehintsDescription(unittest.TestCase):\n+    def setUp(self):\n+        # Set up the Sphinx application\n+        self.srcdir = os.path.abspath(os.path.dirname(__file__))\n+        self.outdir = os.path.join(self.srcdir, '_build')\n+        self.confdir = os.path.join(self.srcdir, 'docs')\n+        self.doctreedir = os.path.join(self.srcdir, '_doctrees')\n+\n+    def test_autodoc_typehints_description_issue(self):\n+        # Initialize Sphinx application\n+        with self.assertRaises(ConfigError):\n+            app = Sphinx(\n+                self.srcdir,\n+                self.confdir,\n+                self.outdir,\n+                self.doctreedir,\n+                buildername='html',\n+                confoverrides={'autodoc_typehints': 'description'}\n+            )\n+            app.build()\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 3101054,
+  "num_received_chars": 82578,
+  "elapsed_time": 714.0331742763519,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

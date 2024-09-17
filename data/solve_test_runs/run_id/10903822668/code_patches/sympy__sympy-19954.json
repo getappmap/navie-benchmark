@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19954",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/combinatorics/perm_groups.py b/sympy/combinatorics/perm_groups.py\nindex de94dda..c9290ef 100644\n--- a/sympy/combinatorics/perm_groups.py\n+++ b/sympy/combinatorics/perm_groups.py\n@@ -2198,7 +2198,8 @@ def _number_blocks(blocks):\n                 for i, r in enumerate(rep_blocks):\n                     if len(r) > len(rep) and rep.issubset(r):\n                         # i-th block system is not minimal\n-                        del num_blocks[i], blocks[i]\n+                        if i < len(num_blocks) and i < len(blocks):\n+                            del num_blocks[i], blocks[i]\n                         to_remove.append(rep_blocks[i])\n                     elif len(r) < len(rep) and r.issubset(rep):\n                         # the system being checked is not minimal\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1456656,
+  "num_received_chars": 16761,
+  "elapsed_time": 179.31512689590454,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

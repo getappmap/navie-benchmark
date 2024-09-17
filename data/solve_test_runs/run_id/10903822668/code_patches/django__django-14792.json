@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14792",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/functions/datetime.py b/django/db/models/functions/datetime.py\nindex 20161be..abb1a03 100644\n--- a/django/db/models/functions/datetime.py\n+++ b/django/db/models/functions/datetime.py\n@@ -25,6 +25,10 @@ class TimezoneMixin:\n                 tzname = timezone.get_current_timezone_name()\n             else:\n                 tzname = timezone._get_timezone_name(self.tzinfo)\n+            # Normalize \"Etc/GMT-X\" to \"+X\" format\n+            if tzname.startswith(\"Etc/GMT\"):\n+                offset = int(tzname.split(\"GMT\")[-1])\n+                tzname = f\"{'+' if offset < 0 else '-'}{abs(offset)}\"\n         return tzname\n \n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1030384,
+  "num_received_chars": 22268,
+  "elapsed_time": 164.10125422477722,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

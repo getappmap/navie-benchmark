@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13091",
+  "edit_test_file": "sympy/core/tests/test_basic.py",
+  "code_patch": "diff --git a/sympy/core/basic.py b/sympy/core/basic.py\nindex db4e971..228674d 100644\n--- a/sympy/core/basic.py\n+++ b/sympy/core/basic.py\n@@ -313,10 +313,10 @@ def __eq__(self, other):\n             try:\n                 other = _sympify(other)\n             except SympifyError:\n-                return False    # sympy != other\n+                return NotImplemented  # sympy != other\n \n             if type(self) != type(other):\n-                return False\n+                return NotImplemented\n \n         return self._hashable_content() == other._hashable_content()\n \n@@ -329,7 +329,10 @@ def __ne__(self, other):\n \n            but faster\n         \"\"\"\n-        return not self.__eq__(other)\n+        result = self.__eq__(other)\n+        if result is NotImplemented:\n+            return NotImplemented\n+        return not result\n \n     def dummy_eq(self, other, symbol=None):\n         \"\"\"\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_comparison.py b/sympy/core/tests/test_comparison.py\nnew file mode 100644\nindex 0000000..784a42b\n--- /dev/null\n+++ b/sympy/core/tests/test_comparison.py\n@@ -0,0 +1,16 @@\n+import sympy\n+from sympy import Basic\n+\n+class Foo:\n+    def __eq__(self, other):\n+        if isinstance(other, Basic):\n+            return True\n+        return NotImplemented\n+\n+def test_comparison_with_unknown_type():\n+    f = Foo()\n+    s = Basic()\n+\n+    # Test that the comparison is unsymmetric due to the issue\n+    assert (f == s) is True\n+    assert (s == f) is False\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_comparison_inverted.py b/sympy/core/tests/test_comparison_inverted.py\nnew file mode 100644\nindex 0000000..4ad9a8b\n--- /dev/null\n+++ b/sympy/core/tests/test_comparison_inverted.py\n@@ -0,0 +1,16 @@\n+import sympy\n+from sympy import Basic\n+\n+class Foo:\n+    def __eq__(self, other):\n+        if isinstance(other, Basic):\n+            return True\n+        return NotImplemented\n+\n+def test_comparison_with_unknown_type():\n+    f = Foo()\n+    s = Basic()\n+\n+    # Test that the comparison is unsymmetric due to the issue\n+    assert (f == s) is True\n+    assert (s == f) is True, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 873076,
+  "num_received_chars": 15772,
+  "elapsed_time": 289.35625076293945,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

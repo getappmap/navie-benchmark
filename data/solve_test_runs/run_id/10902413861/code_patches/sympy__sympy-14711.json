@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-14711",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/physics/vector/vector.py b/sympy/physics/vector/vector.py\nindex a048ee5..db9f943 100644\n--- a/sympy/physics/vector/vector.py\n+++ b/sympy/physics/vector/vector.py\n@@ -3,6 +3,7 @@\n from sympy import trigsimp\n from sympy.core.compatibility import unicode\n from sympy.utilities.misc import filldedent\n+from sympy.vector.vector import VectorMul, VectorZero\n \n __all__ = ['Vector']\n \n@@ -57,8 +58,13 @@ def __hash__(self):\n \n     def __add__(self, other):\n         \"\"\"The add operator for Vector. \"\"\"\n+        if isinstance(other, VectorMul) and other.measure_number == S.Zero:\n+            return self\n         other = _check_vector(other)\n-        return Vector(self.args + other.args)\n+        new_args = self.args + other.args\n+        # Filter out zero-scaled vectors\n+        new_args = [(v, k) for v, k in new_args if v != Matrix([0, 0, 0])]\n+        return Vector(new_args)\n \n     def __and__(self, other):\n         \"\"\"Dot product of two vectors.\n@@ -721,6 +727,8 @@ def __init__(self, other, want):\n \n \n def _check_vector(other):\n+    if isinstance(other, VectorMul) and other.measure_number == S.Zero:\n+        return VectorZero()\n     if not isinstance(other, Vector):\n         raise TypeError('A Vector must be supplied')\n     return other\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1040360,
+  "num_received_chars": 17326,
+  "elapsed_time": 214.5805025100708,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

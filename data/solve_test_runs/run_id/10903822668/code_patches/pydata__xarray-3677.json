@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-3677",
+  "edit_test_file": "xarray/tests/test_merge.py",
+  "code_patch": "diff --git a/xarray/core/merge.py b/xarray/core/merge.py\nindex 10c7804..0d7cc2b 100644\n--- a/xarray/core/merge.py\n+++ b/xarray/core/merge.py\n@@ -797,7 +797,7 @@ def merge(\n \n def dataset_merge_method(\n     dataset: \"Dataset\",\n-    other: \"CoercibleMapping\",\n+    other: Union[\"CoercibleMapping\", \"DataArray\"],\n     overwrite_vars: Union[Hashable, Iterable[Hashable]],\n     compat: str,\n     join: str,\n@@ -805,6 +805,12 @@ def dataset_merge_method(\n ) -> _MergeResult:\n     \"\"\"Guts of the Dataset.merge method.\n     \"\"\"\n+    from .dataarray import DataArray\n+\n+    # Convert DataArray to Dataset if necessary\n+    if isinstance(other, DataArray):\n+        other = other.to_dataset()\n+\n     # we are locked into supporting overwrite_vars for the Dataset.merge\n     # method due for backwards compatibility\n     # TODO: consider deprecating it?\n",
+  "test_patch": "diff --git a/xarray/tests/test_merge_method_issue.py b/xarray/tests/test_merge_method_issue.py\nnew file mode 100644\nindex 0000000..0c9802a\n--- /dev/null\n+++ b/xarray/tests/test_merge_method_issue.py\n@@ -0,0 +1,10 @@\n+import pytest\n+import xarray as xr\n+\n+def test_merge_dataarray_into_dataset_method():\n+    ds = xr.Dataset({'a': 0})\n+    da = xr.DataArray(1, name='b')\n+\n+    # This should raise an AttributeError because DataArray does not have 'items' attribute\n+    with pytest.raises(AttributeError, match=\"'DataArray' object has no attribute 'items'\"):\n+        ds.merge(da)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_merge_method_issue_inverted.py b/xarray/tests/test_merge_method_issue_inverted.py\nnew file mode 100644\nindex 0000000..62f834d\n--- /dev/null\n+++ b/xarray/tests/test_merge_method_issue_inverted.py\n@@ -0,0 +1,12 @@\n+import pytest\n+import xarray as xr\n+\n+def test_merge_dataarray_into_dataset_method():\n+    ds = xr.Dataset({'a': 0})\n+    da = xr.DataArray(1, name='b')\n+\n+    # This should now raise a RuntimeError with the message \"__BUG__HERE__\"\n+    try:\n+        ds.merge(da)\n+    except AttributeError as e:\n+        raise RuntimeError(\"__BUG__HERE__\") from e\n\\ No newline at end of file\n",
+  "num_sent_chars": 444335,
+  "num_received_chars": 5926,
+  "elapsed_time": 127.78845643997192,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

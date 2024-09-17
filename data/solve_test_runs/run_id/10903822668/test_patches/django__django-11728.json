@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/db_functions/text/test_replace.py",
+  "test_patch": "diff --git a/tests/db_functions/text/test_simplify_regexp.py b/tests/db_functions/text/test_simplify_regexp.py\nnew file mode 100644\nindex 0000000..a0158e3\n--- /dev/null\n+++ b/tests/db_functions/text/test_simplify_regexp.py\n@@ -0,0 +1,10 @@\n+from django.test import TestCase\n+from django.contrib.admindocs.utils import replace_named_groups\n+\n+class SimplifyRegexpTests(TestCase):\n+\n+    def test_trailing_named_group_not_replaced(self):\n+        pattern = r'entries/(?P<pk>[^/.]+)/relationships/(?P<related_field>\\w+)'\n+        expected = r'entries/<pk>/relationships/(?P<related_field>\\w+)'\n+        result = replace_named_groups(pattern)\n+        self.assertEqual(result, expected)\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}
