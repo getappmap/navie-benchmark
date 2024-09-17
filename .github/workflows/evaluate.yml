@@ -1,0 +1,109 @@
+name: Evaluate predictions
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: "Runner type"
+        required: true
+        default: SWE-Bench_Larger
+        type: choice
+        options:
+          - ubuntu-latest
+          - swe-bench-ubuntu-latest
+          - SWE-Bench_Larger
+      instance_set:
+        description: "Instance set to evaluate"
+        required: true
+        type: string
+        default: verified
+      name:
+        description: "Assign a name to the workflow run"
+        type: string
+        required: false
+
+run-name: ${{ inputs.name }}
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  show-inputs:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Display Input Values
+        run: |
+          echo "runner: ${{ github.event.inputs.runner }}"
+          echo "instance_set: ${{ github.event.inputs.instance_set }}"
+          echo "name: ${{ github.event.inputs.name }}"
+
+  evaluate:
+    runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
+    continue-on-error: true
+    env:
+    defaults:
+      run:
+        shell: bash -leo pipefail {0}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Evaluate instances
+        run: |
+          pip install virtualenv
+          virtualenv venv
+          . ./venv/bin/activate
+          pip install -e .
+
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+
+          git config --global init.defaultBranch main
+          git config --global user.email "actions@example.com"
+          git config --global user.name "GitHub Workflow"
+
+          python -m solver.prepare_images \
+            --instance_set "${instance_set}" \
+            --no_push
+
+          python -m solver.collect_predictions \
+            --instance_set "${instance_set}" \
+            --predictions_path predictions.jsonl
+
+          python -m swebench.harness.run_evaluation \
+            --predictions_path predictions.jsonl \
+            --run_id "${instance_set}"
+
+          echo "Saving evaluation results"
+          mkdir -p evaluations
+          cp -r navie_*.${instance_set}.json evaluations/
+
+          find evaluations
+
+      - name: Report predictions
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: predictions
+          path: predictions.jsonl
+
+      - name: Report harness logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run_evaluation
+          path: logs/run_evaluation
