@@ -15,8 +15,6 @@
     * Check to see if the solution rate is better with 64k context for examples that have 
         test and inverted patches in both #225 and #226
 
-* Re-run batch 3 with 64k token limit and use the existing test patch files
-
 verifi_33_3 3,3,3,3 -test -observe 16k gpt-4o #225
 
 Disappointing with a 25.9% resolved rate
@@ -86,13 +84,6 @@ Resolved (=2)	5	31%
 Resolved (=3)	17	63%
 Resolved %	25.6%
 
-* Plan is too generic?
-
-    Can we iterate on the plan?
-
-        Given the original issue and the plan to implement, are the instructions specific enough that you could come up 
-        with a patch?
-
 * Plan is too strict about editing a single file
 
 * Progress update
@@ -145,14 +136,8 @@ Resolved %	25.6%
 
     3/1 in test, 3/3 in code, 32k context tokens
 
-
-
-
-
     Sonnet
     ======
-
-
 
     8k token limit
     https://github.com/getappmap/navie-benchmark/issues/33
@@ -166,7 +151,6 @@ Resolved %	25.6%
     Solve rate of 25.3% vs 21.6%
 
     NOTE: verified_10_pct 1,1,3,3 sonnet #199 not actually sonnet, was gpt-4o. Re-run as https://github.com/getappmap/navie-benchmark/actions/runs/10885877926
-
 
 * Patch generation progress
 
@@ -196,10 +180,6 @@ class RelatedLookupMixin:
     def get_prep_lookup(self):
         if not isinstance(self.lhs, MultiColSource) and self.rhs_is_direct_value():
             
-* Investigate low pass-to-pass in
-    
-    https://docs.google.com/spreadsheets/d/1lCT67I8WK64dQjzcIo5KQ3gf9Z_Q6vj5LS8Wga7tjk4/edit?gid=1490242111#gid=1490242111
-
 * If there is little or no AppMap data, supplement with Context
 
 * astropy__astropy-14365 missing 

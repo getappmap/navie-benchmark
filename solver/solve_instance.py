@@ -140,7 +140,13 @@ def report_error(
     PredictionsFile.add_prediction(predictions_file, predictions.as_dict())
 
 
-def main(instance_id: str, limits: dict, predictions_file: str, test_patch_dir: str):
+def main(
+    instance_id: str,
+    limits: dict,
+    predictions_file: str,
+    test_patch_dir: str,
+    observe_tests: bool,
+):
     """
     Run evaluation harness for the given dataset and predictions.
     """
@@ -305,6 +311,7 @@ def main(instance_id: str, limits: dict, predictions_file: str, test_patch_dir: 
             docker_client,
             instance,
             limits_obj,
+            observe_tests,
             edit_test_file,
             test_patch,
             inverted_patch,
@@ -372,6 +379,11 @@ if __name__ == "__main__":
         type=str,
         help="Directory containing existing test patches. Existing test patches will not be re-solved, and will be used to seed the code solver.",
         default="data/test_patches",
+    )
+    parser.add_argument(
+        "--observe_tests",
+        action="store_true",
+        help="Observe synthetic tests to collect AppMap data",
     )
 
     configure_limits(parser)

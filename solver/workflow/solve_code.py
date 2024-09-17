@@ -32,14 +32,15 @@ class SolveCode(SolveBase):
         edit_test_file: Optional[Path],
         test_patch: Optional[Patch],
         inverted_patch: Optional[Patch],
+        observe_enabled: bool = False
     ):
         super().__init__(log, work_dir, docker_client, test_spec, issue_text, limits)
 
+        self.observe_enabled = observe_enabled
         self.edit_test_file = edit_test_file
         self.test_patch = test_patch
         self.inverted_patch = inverted_patch
 
-        self.observe_enabled = True
         self.observed_context: Optional[dict[str, str]] = None
         self.code_patch: Optional[Patch] = None
 
