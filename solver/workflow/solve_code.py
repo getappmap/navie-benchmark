@@ -71,7 +71,7 @@ class SolveCode(SolveBase):
             return score
 
         generate_code_results: list[CodePatchResult] = []
-        code_patch: Optional[Patch] = None
+
         # TODO: Allow groups of two files, focusing on the first but using the other if necessary.
         for (index, code_file) in enumerate(code_files):
             attempt = index + 1
@@ -126,7 +126,7 @@ class SolveCode(SolveBase):
 
         self.log("workflow", "Choosing best patch")
 
-        if not code_patch and generate_code_results:
+        if not self.code_patch and generate_code_results:
             # Sort code_patches by score
             code_patches = list(generate_code_results)
             code_patches.sort(
