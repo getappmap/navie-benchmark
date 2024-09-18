@@ -51,10 +51,10 @@ def main(instance_set: str, predictions_path: str, no_pull: bool):
     predictions: list = []
     for solution_file in solution_files:
 
-        def add_run_id_to_prediction(prediction: dict):
-            # run_id = solution_file.parent.parent.stem
-            prediction["model_run_id"] = run_id
-            return prediction
+        # def add_run_id_to_prediction(prediction: dict):
+        #     # run_id = solution_file.parent.parent.stem
+        #     prediction["model_run_id"] = run_id
+        #     return prediction
 
         if solution_file.is_symlink():
             solution_file_link_source = (
