@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import Callable, Optional
 
-from swebench.harness.test_spec import TestSpec
-
 from navie.editor import Editor
 
 from .work_dir import WorkDir
