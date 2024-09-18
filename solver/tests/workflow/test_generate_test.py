@@ -18,6 +18,7 @@ class TestGenerateTest(unittest.TestCase):
         self.test_file_path = Path("/work/directory/test_file.py")
         self.issue_text = "Sample issue text"
         self.observed_errors = ["Error 1", "Error 2"]
+        self.assertion_hint = "Sample assertion hint"
         self.generator = GenerateTest(
             self.log_mock,
             self.work_dir,
@@ -25,6 +26,7 @@ class TestGenerateTest(unittest.TestCase):
             self.test_command,
             self.test_file_path,
             self.issue_text,
+            self.assertion_hint,
             self.observed_errors,
             python_version="3.8",
         )
