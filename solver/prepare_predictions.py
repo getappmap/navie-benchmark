@@ -41,17 +41,6 @@ def main(instance_set: str, predictions_path: str, no_pull: bool):
     print(f"Preparing predictions for instance set '{instance_set}'")
 
     instance_ids = load_instance_set(instance_set)
-    dataset = load_dataset(DATASET_NAME, list(instance_ids))
-
-    if not no_pull:
-        print("Loading Docker images...")
-        docker_client = docker.from_env()
-        test_specs = [make_test_spec(instance) for instance in dataset]
-        image_store = ImageStore(
-            docker_client,
-        )
-        image_store.set_image_types(["base", "env"])
-        image_store.ensure(test_specs)
 
     # Collect every instance in data/code_patches/*.json
     code_patches_dir = Path("data") / "code_patches"
@@ -61,6 +50,12 @@ def main(instance_set: str, predictions_path: str, no_pull: bool):
 
     predictions: list = []
     for solution_file in solution_files:
+
+        def add_run_id_to_prediction(prediction: dict):
+            # run_id = solution_file.parent.parent.stem
+            prediction["model_run_id"] = run_id
+            return prediction
+
         if solution_file.is_symlink():
             solution_file_link_source = (
                 Path("data") / "solve_code_runs" / readlink(solution_file)
@@ -100,6 +95,17 @@ def main(instance_set: str, predictions_path: str, no_pull: bool):
     with open(predictions_path, "w") as f:
         for prediction in predictions:
             f.write(json.dumps(prediction) + "\n")
+
+    if not no_pull:
+        print("Loading Docker images...")
+        dataset = load_dataset(DATASET_NAME, list(instance_ids))
+        docker_client = docker.from_env()
+        test_specs = [make_test_spec(instance) for instance in dataset]
+        image_store = ImageStore(
+            docker_client,
+        )
+        image_store.set_image_types(["base", "env"])
+        image_store.ensure(test_specs)
 
 
 if __name__ == "__main__":

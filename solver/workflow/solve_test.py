@@ -1,5 +1,6 @@
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
+from solver.workflow.assert_behavior import AssertBehavior
 from solver.workflow.choose_test_file import choose_test_files
 from solver.workflow.generate_and_validate_test import (
     Context as GenerateTestContext,
@@ -147,6 +148,10 @@ class SolveTest(SolveBase):
             Path(test_file_name).stem + "_inverted" + Path(test_file_name).suffix
         )
 
+        assertion_hint = AssertBehavior(
+            self.log, self.work_dir, self.trajectory_file, self.issue_text
+        ).assert_fixed()
+
         generator = GenerateTest(
             self.log,
             work_dir,
@@ -154,6 +159,7 @@ class SolveTest(SolveBase):
             self.test_command,
             test_file_path,
             self.issue_text,
+            assertion_hint,
             [],
             self.python_version,
         )
@@ -186,6 +192,10 @@ class SolveTest(SolveBase):
         observed_errors: list,
     ) -> Optional[Patch]:
         self.clean_git_state()
+
+        assertion_hint = AssertBehavior(
+            self.log, self.work_dir, self.trajectory_file, self.issue_text
+        ).assert_actual()
 
         editor = Editor(
             work_dir.path_name,
@@ -239,6 +249,7 @@ Python version: {self.python_version}
             self.test_command,
             test_file_path,
             self.issue_text,
+            assertion_hint,
             observed_errors,
             self.python_version,
         )

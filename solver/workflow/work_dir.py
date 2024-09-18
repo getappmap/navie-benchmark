@@ -56,6 +56,12 @@ class WorkDir:
     def choose_test_files(self) -> WorkDir:
         return WorkDir(self._dir / "choose-test-files", self)
 
+    def assert_actual(self) -> WorkDir:
+        return WorkDir(self._dir / "assert-actual", self)
+
+    def assert_fixed(self) -> WorkDir:
+        return WorkDir(self._dir / "assert-fixed", self)
+
     def choose_code_files(self) -> WorkDir:
         return WorkDir(self._dir / "choose-code-files", self)
 

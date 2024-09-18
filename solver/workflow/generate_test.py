@@ -26,6 +26,7 @@ class GenerateTest:
         test_command: str,
         test_file_path: Path,
         issue_text: str,
+        assertion_hint: str,
         observed_errors: list[str],
         python_version: str,
     ):
@@ -35,6 +36,7 @@ class GenerateTest:
         self.test_command = test_command
         self.test_file_path = test_file_path
         self.issue_text = issue_text
+        self.assertion_hint = assertion_hint
         self.observed_errors = observed_errors
         self.python_version = python_version
 
@@ -52,6 +54,12 @@ one test case that reproduces the issue.
 <issue>
 {self.issue_text}
 </issue>
+
+The primary assertion of the test case should be based on the following hint:
+
+<assertion-hint>
+{self.assertion_hint}
+</assertion-hint>
 
 The test case should be based on the existing test case file: {edit_test_file}.
 
@@ -151,7 +159,9 @@ Do not use Python features that are not available in this Python version.
 This test was written to PASS when the issue is observed. Now, the test should FAIL
 specifically at the location where the presence of the bug was previously asserted.
 
-When the bug is observed and the test fails, the following error message should be raised: "__BUG__HERE__"
+When the bug is observed and the test fails, the following error message should be raised: "__BUG__HERE__".
+
+Do not add assertions beyond what is necessary.
 
 <code>
 {code}
@@ -160,6 +170,12 @@ When the bug is observed and the test fails, the following error message should 
 <issue>
 {self.issue_text}
 </issue>
+
+You can base the test case assertion on the following hint:
+
+<assertion-hint>
+{self.assertion_hint}
+</assertion-hint>
 """
         ]
         if lint_errors:
