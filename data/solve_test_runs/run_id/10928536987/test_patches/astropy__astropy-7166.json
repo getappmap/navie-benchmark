@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/utils/tests/test_misc.py",
+  "test_patch": "diff --git a/astropy/utils/tests/test_inheritdocstrings_properties.py b/astropy/utils/tests/test_inheritdocstrings_properties.py\nnew file mode 100644\nindex 0000000..43d111a\n--- /dev/null\n+++ b/astropy/utils/tests/test_inheritdocstrings_properties.py\n@@ -0,0 +1,19 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import inspect\n+from astropy.utils import misc\n+\n+def test_inherit_docstrings_with_property():\n+    class Base(metaclass=misc.InheritDocstrings):\n+        @property\n+        def some_property(self):\n+            \"\"\"This is a property docstring.\"\"\"\n+            return \"property value\"\n+\n+    class Subclass(Base):\n+        @property\n+        def some_property(self):\n+            return super().some_property\n+\n+    # The issue is that inspect.isfunction returns False for properties\n+    assert not inspect.isfunction(Subclass.some_property)\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

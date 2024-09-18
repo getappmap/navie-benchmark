@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/core/tests/test_arit.py",
+  "test_patch": "diff --git a/sympy/core/tests/test_lambdify_mod.py b/sympy/core/tests/test_lambdify_mod.py\nnew file mode 100644\nindex 0000000..8f114c9\n--- /dev/null\n+++ b/sympy/core/tests/test_lambdify_mod.py\n@@ -0,0 +1,9 @@\n+# File: sympy/core/tests/test_lambdify_mod.py\n+\n+from sympy import Mod, lambdify, symbols\n+\n+def test_lambdify_mod_bug():\n+    x, y = symbols('x y')\n+    expr = -Mod(x, y)\n+    g = lambdify([x, y], expr, modules=[])\n+    assert g(3, 7) == 4\n\\ No newline at end of file\n",
+  "inverted_patch": "diff --git a/sympy/core/tests/test_lambdify_mod_inverted.py b/sympy/core/tests/test_lambdify_mod_inverted.py\nnew file mode 100644\nindex 0000000..ca02f8c\n--- /dev/null\n+++ b/sympy/core/tests/test_lambdify_mod_inverted.py\n@@ -0,0 +1,9 @@\n+# File: sympy/core/tests/test_lambdify_mod.py\n+\n+from sympy import Mod, lambdify, symbols\n+\n+def test_lambdify_mod_bug():\n+    x, y = symbols('x y')\n+    expr = -Mod(x, y)\n+    g = lambdify([x, y], expr, modules=[])\n+    assert g(3, 7) == -3, \"__BUG__HERE__\"\n\\ No newline at end of file\n"
+}

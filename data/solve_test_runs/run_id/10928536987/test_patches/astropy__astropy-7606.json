@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/units/tests/test_units.py",
+  "test_patch": "diff --git a/astropy/units/tests/test_unrecognized_unit_equality.py b/astropy/units/tests/test_unrecognized_unit_equality.py\nnew file mode 100644\nindex 0000000..6b57bbb\n--- /dev/null\n+++ b/astropy/units/tests/test_unrecognized_unit_equality.py\n@@ -0,0 +1,9 @@\n+# astropy/units/tests/test_unrecognized_unit_equality.py\n+\n+import pytest\n+from astropy import units as u\n+\n+def test_unrecognized_unit_equality_with_none():\n+    x = u.Unit('asdf', parse_strict='silent')\n+    with pytest.raises(TypeError):\n+        _ = x == None  # noqa: E711\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

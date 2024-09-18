@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/staticfiles_tests/test_storage.py",
+  "test_patch": "diff --git a/tests/staticfiles_tests/test_manifest_static_files_storage_issue.py b/tests/staticfiles_tests/test_manifest_static_files_storage_issue.py\nnew file mode 100644\nindex 0000000..06e653d\n--- /dev/null\n+++ b/tests/staticfiles_tests/test_manifest_static_files_storage_issue.py\n@@ -0,0 +1,12 @@\n+import unittest\n+from django.contrib.staticfiles.storage import ManifestStaticFilesStorage\n+\n+class MyManifestStaticFilesStorage(ManifestStaticFilesStorage):\n+    max_post_process_passes = 0\n+\n+class TestManifestStaticFilesStorageIssue(unittest.TestCase):\n+    def test_max_post_process_passes_zero(self):\n+        storage_instance = MyManifestStaticFilesStorage()\n+        with self.assertRaises(UnboundLocalError) as context:\n+            list(storage_instance.post_process({}))\n+        self.assertIn(\"local variable 'substitutions' referenced before assignment\", str(context.exception))\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

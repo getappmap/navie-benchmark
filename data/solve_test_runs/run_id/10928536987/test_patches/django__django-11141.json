@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/utils_tests/test_autoreload.py",
+  "test_patch": "diff --git a/tests/utils_tests/test_migrations_namespace.py b/tests/utils_tests/test_migrations_namespace.py\nnew file mode 100644\nindex 0000000..4e9a45f\n--- /dev/null\n+++ b/tests/utils_tests/test_migrations_namespace.py\n@@ -0,0 +1,15 @@\n+import unittest\n+import types\n+\n+class TestNamespaceMigrations(unittest.TestCase):\n+    def test_migrations_package_without_init(self):\n+        # Simulate a namespace package by creating a module without a __file__ attribute\n+        migrations_package = types.ModuleType('migrations')\n+        if hasattr(migrations_package, '__file__'):\n+            del migrations_package.__file__\n+\n+        # Assert that the migrations package does not have a __file__ attribute\n+        self.assertFalse(hasattr(migrations_package, '__file__'))\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

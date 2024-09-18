@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/backends/sqlite/tests.py",
+  "test_patch": "diff --git a/tests/backends/sqlite/test_sqlite_support.py b/tests/backends/sqlite/test_sqlite_support.py\nnew file mode 100644\nindex 0000000..c06317d\n--- /dev/null\n+++ b/tests/backends/sqlite/test_sqlite_support.py\n@@ -0,0 +1,12 @@\n+import unittest\n+import sqlite3\n+\n+class SQLiteVersionSupportTest(unittest.TestCase):\n+    def test_sqlite_version_support(self):\n+        # This test checks if the current SQLite version is below 3.9.0\n+        # which should not be supported according to the issue description.\n+        self.assertLess(sqlite3.sqlite_version, \"3.9.0\", \n+                        \"The code is currently supporting SQLite versions below 3.9.0.\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/multipledispatch/tests/test_dispatcher.py",
+  "test_patch": "diff --git a/sympy/multipledispatch/tests/test_solveset_conditionset.py b/sympy/multipledispatch/tests/test_solveset_conditionset.py\nnew file mode 100644\nindex 0000000..a9d5633\n--- /dev/null\n+++ b/sympy/multipledispatch/tests/test_solveset_conditionset.py\n@@ -0,0 +1,11 @@\n+import sympy as sp\n+from sympy import Symbol, Eq, cos, sin, S\n+from sympy.sets import ConditionSet\n+\n+def test_solveset_returns_conditionset():\n+    n = Symbol('n')\n+    expr = Eq(n*cos(n) - 3*sin(n), 0)\n+    result = sp.solveset(expr, n, domain=S.Reals)\n+    assert isinstance(result, ConditionSet)\n+    assert result.condition == expr\n+    assert result.base_set == S.Reals\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}
