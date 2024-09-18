@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-15809",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/calculus/util.py b/sympy/calculus/util.py\nindex cdd92bd..b46538b 100644\n--- a/sympy/calculus/util.py\n+++ b/sympy/calculus/util.py\n@@ -1,19 +1,29 @@\n-from sympy import Order, S, log, limit, lcm_list, pi, Abs\n+from sympy import Order, S, log, limit, lcm_list, pi, Abs, oo\n from sympy.core.basic import Basic\n from sympy.core import Add, Mul, Pow\n from sympy.logic.boolalg import And\n from sympy.core.expr import AtomicExpr, Expr\n-from sympy.core.numbers import _sympifyit, oo\n+from sympy.core.numbers import _sympifyit\n from sympy.core.sympify import _sympify\n from sympy.sets.sets import (Interval, Intersection, FiniteSet, Union,\n                              Complement, EmptySet)\n from sympy.sets.conditionset import ConditionSet\n-from sympy.functions.elementary.miscellaneous import Min, Max\n+from sympy.functions.elementary.miscellaneous import Min as OriginalMin, Max as OriginalMax\n from sympy.utilities import filldedent\n from sympy.simplify.radsimp import denom\n from sympy.polys.rationaltools import together\n from sympy.core.compatibility import iterable\n \n+def Min(*args):\n+    if not args:\n+        return oo\n+    return OriginalMin(*args)\n+\n+def Max(*args):\n+    if not args:\n+        return -oo\n+    return OriginalMax(*args)\n+\n def continuous_domain(f, symbol, domain):\n     \"\"\"\n     Returns the intervals in the given domain for which the function\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1326305,
+  "num_received_chars": 30287,
+  "elapsed_time": 461.93231105804443,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 5,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null,
+  "code_patch_issue-46": "diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py\nindex 5f9fe73..68e0127 100644\n--- a/sympy/functions/elementary/miscellaneous.py\n+++ b/sympy/functions/elementary/miscellaneous.py\n@@ -340,7 +340,10 @@ def real_root(arg, n=None, evaluate=None):\n class MinMaxBase(Expr, LatticeOp):\n     def __new__(cls, *args, **assumptions):\n         if not args:\n-            raise ValueError(\"The Max/Min functions must have arguments.\")\n+            if cls == Min:\n+                return S.Infinity\n+            elif cls == Max:\n+                return S.NegativeInfinity\n \n         args = (sympify(arg) for arg in args)\n \n"
+}

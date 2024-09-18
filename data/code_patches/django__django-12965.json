@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-12965",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/mysql/compiler.py b/django/db/backends/mysql/compiler.py\nindex 3682d6d..062f6ee 100644\n--- a/django/db/backends/mysql/compiler.py\n+++ b/django/db/backends/mysql/compiler.py\n@@ -17,16 +17,19 @@ class SQLDeleteCompiler(compiler.SQLDeleteCompiler, SQLCompiler):\n     def as_sql(self):\n         if self.connection.features.update_can_self_select or self.single_alias:\n             return super().as_sql()\n-        # MySQL and MariaDB < 10.3.2 doesn't support deletion with a subquery\n-        # which is what the default implementation of SQLDeleteCompiler uses\n-        # when multiple tables are involved. Use the MySQL/MariaDB specific\n-        # DELETE table FROM table syntax instead to avoid performing the\n-        # operation in two queries.\n-        result = [\n-            'DELETE %s FROM' % self.quote_name_unless_alias(\n-                self.query.get_initial_alias()\n-            )\n-        ]\n+        # Use simple DELETE FROM syntax if no multiple tables or complex constraints are involved.\n+        if not self.query.tables or len(self.query.tables) == 1:\n+            result = [\n+                'DELETE FROM %s' % self.quote_name_unless_alias(\n+                    self.query.get_initial_alias()\n+                )\n+            ]\n+        else:\n+            result = [\n+                'DELETE %s FROM' % self.quote_name_unless_alias(\n+                    self.query.get_initial_alias()\n+                )\n+            ]\n         from_sql, from_params = self.get_from_clause()\n         result.extend(from_sql)\n         where, params = self.compile(self.query.where)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1356084,
+  "num_received_chars": 39276,
+  "elapsed_time": 379.86402916908264,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null,
+  "code_patch_issue-46": "diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py\nindex 29e33c0..e2bd050 100644\n--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@ -1423,7 +1423,8 @@ class SQLDeleteCompiler(SQLCompiler):\n         Create the SQL for this query. Return the SQL string and list of\n         parameters.\n         \"\"\"\n-        if self.single_alias:\n+        if self.single_alias or not self.query.where:\n+            # Direct DELETE when no conditions are present\n             return self._as_sql(self.query)\n         innerq = self.query.clone()\n         innerq.__class__ = Query\n"
+}

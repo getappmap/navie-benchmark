@@ -1,0 +1,21 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10435",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/builders/latex/__init__.py b/sphinx/builders/latex/__init__.py\nindex 47aa593..4cf8bf6 100644\n--- a/sphinx/builders/latex/__init__.py\n+++ b/sphinx/builders/latex/__init__.py\n@@ -193,6 +193,9 @@ class LaTeXBuilder(Builder):\n         self.context['packages'] = registry.latex_packages\n         self.context['packages_after_hyperref'] = registry.latex_packages_after_hyperref\n \n+        # Ensure no leading/trailing spaces in inline code\n+        self.context['inline_code'] = lambda code: f\"\\\\sphinxcode{{\\\\sphinxupquote{{{code.strip()}}}}}\"\n+\n     def init_babel(self) -> None:\n         self.babel = ExtBabel(self.config.language, not self.context['babel'])\n         if not self.babel.is_supported_language():\n@@ -247,7 +250,7 @@ class LaTeXBuilder(Builder):\n             f.write('\\\\ProvidesPackage{sphinxhighlight}'\n                     '[2016/05/29 stylesheet for highlighting with pygments]\\n')\n             f.write('% Its contents depend on pygments_style configuration variable.\\n\\n')\n-            f.write(highlighter.get_stylesheet())\n+            f.write(highlighter.get_stylesheet().strip())\n \n     def write(self, *ignored: Any) -> None:\n         docwriter = LaTeXWriter(self)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1603883,
+  "num_received_chars": 37869,
+  "elapsed_time": 306.47648549079895,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null,
+  "code_patch_issue-46": "diff --git a/sphinx/writers/latex.py b/sphinx/writers/latex.py\nindex e0c7d56..bcebde8 100644\n--- a/sphinx/writers/latex.py\n+++ b/sphinx/writers/latex.py\n@@ -724,7 +724,7 @@ class LaTeXTranslator(SphinxTranslator):\n         self.body.append(r'\\sphinxcode{\\sphinxupquote{')\n \n     def depart_desc_inline(self, node: Element) -> None:\n-        self.body.append('}}')\n+        self.body.append('%}}')\n \n     # Nodes for high-level structure in signatures\n     ##############################################\n@@ -1694,14 +1694,14 @@ class LaTeXTranslator(SphinxTranslator):\n \n     def visit_literal(self, node: Element) -> None:\n         if self.in_title:\n-            self.body.append(r'\\sphinxstyleliteralintitle{\\sphinxupquote{')\n+            self.body.append(r'\\sphinxstyleliteralintitle{\\sphinxupquote{%')\n             return\n         elif 'kbd' in node['classes']:\n-            self.body.append(r'\\sphinxkeyboard{\\sphinxupquote{')\n+            self.body.append(r'\\sphinxkeyboard{\\sphinxupquote{%')\n             return\n         lang = node.get(\"language\", None)\n         if 'code' not in node['classes'] or not lang:\n-            self.body.append(r'\\sphinxcode{\\sphinxupquote{')\n+            self.body.append(r'\\sphinxcode{\\sphinxupquote{%')\n             return\n \n         opts = self.config.highlight_options.get(lang, {})\n"
+}
