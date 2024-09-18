@@ -29,6 +29,8 @@ on:
           # Code solvers using only known synthetic tests
           - test_files=0 code_files=3 code_status_retry=3
           - test_files=0 code_files=6 code_status_retry=3
+          # Tests indexing
+          - test_files=0 code_files=0
       context_tokens:
         description: "LLM token limit to apply to the solver"
         type: string
@@ -74,7 +76,7 @@ permissions:
 
 jobs:
   show-inputs:
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     steps:
       - name: Display Input Values
         run: |
@@ -88,7 +90,7 @@ jobs:
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
           echo "name: ${{ github.event.inputs.name }}"
   build-appmap-js:
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -168,7 +170,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       # Restore the appmap-js build
       - name: Restore appmap-js build
@@ -310,7 +312,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
