@@ -18,14 +18,6 @@ def debug_msg(msg: str = ""):
     sys.stderr.write(f"{msg}\n")
 
 
-def match_optimal_patch(line: str) -> Optional[str]:
-    # Example: 2024-09-16 18:23:50,545 - INFO - Optimal code patch generated: 1
-    match = re.search(r"Optimal code patch generated: [0-9]+", line)
-    if match:
-        return match.group()
-    return None
-
-
 def find_running_test_log_entry(line: str) -> Optional[tuple]:
     # Example: 2024-09-16 18:23:50,545 - INFO - [run-test] (django__django-15851) Running tests tests/dbshell/test_postgresql.py in /Users/kgilpin/source/appland/navie-benchmark/solve/django__django-15851/navie/solve-code-1/generate-code/attempt-1/run-test/pass-to-pass
     pattern = r"\[run-test\] \(([^)]+)\) Running tests (?:.*) in ([^ ]+)"
