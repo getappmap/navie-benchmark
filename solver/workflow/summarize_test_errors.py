@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from navie.editor import Editor
 
 from solver.workflow.work_dir import WorkDir

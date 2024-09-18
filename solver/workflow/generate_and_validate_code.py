@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Iterable, List, Optional
+from typing import Callable, List, Optional
 import docker
 
 from solver.workflow.work_dir import WorkDir
