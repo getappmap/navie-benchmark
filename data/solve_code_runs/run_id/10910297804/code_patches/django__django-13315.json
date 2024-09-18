@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13315",
+  "edit_test_file": "tests/admin_widgets/tests.py",
+  "code_patch": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex 397146a..e68cc50 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -986,9 +986,10 @@ class ForeignKey(ForeignObject):\n             raise ValueError(\"Cannot create form field for %r yet, because \"\n                              \"its related model %r has not been loaded yet\" %\n                              (self.name, self.remote_field.model))\n+        queryset = self.remote_field.model._default_manager.using(using).distinct()\n         return super().formfield(**{\n             'form_class': forms.ModelChoiceField,\n-            'queryset': self.remote_field.model._default_manager.using(using),\n+            'queryset': queryset,\n             'to_field_name': self.remote_field.field_name,\n             **kwargs,\n             'blank': self.blank,\n",
+  "test_patch": "diff --git a/tests/admin_widgets/test_foreignkey_limit_choices.py b/tests/admin_widgets/test_foreignkey_limit_choices.py\nnew file mode 100644\nindex 0000000..cb7ce46\n--- /dev/null\n+++ b/tests/admin_widgets/test_foreignkey_limit_choices.py\n@@ -0,0 +1,29 @@\n+from django.test import TestCase\n+from django.db import models\n+from django.contrib import admin\n+from django import forms\n+from .models import Band, Event\n+\n+class ForeignKeyLimitChoicesTest(TestCase):\n+    def setUp(self):\n+        self.band1 = Band.objects.create(name='Band 1', style='Rock')\n+        self.band2 = Band.objects.create(name='Band 2', style='Jazz')\n+        self.band3 = Band.objects.create(name='Band 3', style='Rock')\n+\n+    def test_duplicate_options_in_formfield(self):\n+        class EventAdmin(admin.ModelAdmin):\n+            pass\n+\n+        ma = EventAdmin(Event, admin.site)\n+        formfield = ma.formfield_for_dbfield(Event._meta.get_field('main_band'), request=None)\n+        \n+        # Render the formfield to HTML and check for duplicate options\n+        rendered_html = formfield.widget.render('main_band', None)\n+        self.assertIn('Band 1', rendered_html)\n+        self.assertIn('Band 2', rendered_html)\n+        self.assertIn('Band 3', rendered_html)\n+        \n+        # Check for duplicate options\n+        self.assertEqual(rendered_html.count('Band 1'), 1)\n+        self.assertEqual(rendered_html.count('Band 2'), 1)\n+        self.assertEqual(rendered_html.count('Band 3'), 1)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 3574010,
+  "num_received_chars": 70847,
+  "elapsed_time": 729.7617087364197,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

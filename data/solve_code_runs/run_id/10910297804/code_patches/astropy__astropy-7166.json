@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-7166",
+  "edit_test_file": "astropy/utils/tests/test_misc.py",
+  "code_patch": "diff --git a/astropy/utils/misc.py b/astropy/utils/misc.py\nindex de3fb01..b5ef951 100644\n--- a/astropy/utils/misc.py\n+++ b/astropy/utils/misc.py\n@@ -261,10 +261,10 @@ def find_api_page(obj, version=None, openinbrowser=True, timeout=None):\n \n     resurl = None\n \n-    for l in decompressed.strip().splitlines():\n-        ls = l.split()\n-        name = ls[0]\n-        loc = ls[3]\n+    for line in decompressed.strip().splitlines():\n+        line_split = line.split()\n+        name = line_split[0]\n+        loc = line_split[3]\n         if loc.endswith('$'):\n             loc = loc[:-1] + name\n \n@@ -528,13 +528,16 @@ class InheritDocstrings(type):\n                 not key.startswith('_'))\n \n         for key, val in dct.items():\n-            if (inspect.isfunction(val) and\n+            if ((inspect.isfunction(val) or isinstance(val, property)) and\n                 is_public_member(key) and\n                 val.__doc__ is None):\n                 for base in cls.__mro__[1:]:\n                     super_method = getattr(base, key, None)\n                     if super_method is not None:\n-                        val.__doc__ = super_method.__doc__\n+                        if isinstance(val, property) and isinstance(super_method, property):\n+                            val.__doc__ = super_method.fget.__doc__\n+                        else:\n+                            val.__doc__ = super_method.__doc__\n                         break\n \n         super().__init__(name, bases, dct)\n",
+  "test_patch": "diff --git a/astropy/utils/tests/test_inherit_docstrings_properties.py b/astropy/utils/tests/test_inherit_docstrings_properties.py\nnew file mode 100644\nindex 0000000..b585125\n--- /dev/null\n+++ b/astropy/utils/tests/test_inherit_docstrings_properties.py\n@@ -0,0 +1,23 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import unittest\n+from astropy.utils import misc\n+\n+class TestInheritDocstringsProperties(unittest.TestCase):\n+    def test_inherit_docstrings_with_property(self):\n+        class Base(metaclass=misc.InheritDocstrings):\n+            @property\n+            def foo(self):\n+                \"\"\"FOO\"\"\"\n+                return \"foo\"\n+\n+        class Subclass(Base):\n+            @property\n+            def foo(self):\n+                return \"bar\"\n+\n+        # The issue is that the docstring is not inherited for properties\n+        self.assertIsNone(Subclass.foo.__doc__)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1747132,
+  "num_received_chars": 27021,
+  "elapsed_time": 286.0563666820526,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

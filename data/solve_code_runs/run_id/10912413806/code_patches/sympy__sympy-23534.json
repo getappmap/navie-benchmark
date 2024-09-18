@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23534",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/core/symbol.py b/sympy/core/symbol.py\nindex f4a555c..3069593 100644\n--- a/sympy/core/symbol.py\n+++ b/sympy/core/symbol.py\n@@ -778,20 +778,17 @@ def literal(s):\n                     names = split_list[0]\n                 else:\n                     names = [''.join(s) for s in product(*split_list)]\n-                if literals:\n-                    result.extend([cls(literal(s), **args) for s in names])\n-                else:\n-                    result.extend([cls(s, **args) for s in names])\n+                result.extend([cls(literal(s), **args) for s in names])\n \n         if not seq and len(result) <= 1:\n             if not result:\n                 return ()\n             return result[0]\n \n-        return tuple(result)\n+        return type(names)(result)\n     else:\n         for name in names:\n-            result.append(symbols(name, **args))\n+            result.append(symbols(name, cls=cls, **args))\n \n         return type(names)(result)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4359282,
+  "num_received_chars": 60357,
+  "elapsed_time": 821.7965302467346,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 8,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

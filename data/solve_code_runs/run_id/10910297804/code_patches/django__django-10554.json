@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-10554",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py\nindex a791908..283aca2 100644\n--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@ -422,8 +422,8 @@ class SQLCompiler:\n         parts = ()\n         for compiler in compilers:\n             try:\n-                # If the columns list is limited, then all combined queries\n-                # must have the same columns list. Set the selects defined on\n+                # Ensure ORDER BY columns are in SELECT list\n+                compiler.query.add_select_related_ordering()\n                 # the query on all combined queries, if not already set.\n                 if not compiler.query.values_select and self.query.values_select:\n                     compiler.query = compiler.query.clone()\n@@ -460,6 +460,8 @@ class SQLCompiler:\n         params = []\n         for part in args_parts:\n             params.extend(part)\n+        # Adjust ORDER BY to use positional references if necessary\n+        result = self.adjust_order_by_for_union(result)\n         return result, params\n \n     def as_sql(self, with_limits=True, with_col_aliases=False):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2625918,
+  "num_received_chars": 63672,
+  "elapsed_time": 645.6349196434021,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16485",
+  "edit_test_file": "tests/template_tests/filter_tests/test_pluralize.py",
+  "code_patch": "diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py\nindex 23c3a08..6009c94 100644\n--- a/django/template/defaultfilters.py\n+++ b/django/template/defaultfilters.py\n@@ -168,7 +168,7 @@ def floatformat(text, arg=-1):\n     except (ValueError, OverflowError, InvalidOperation):\n         return input_val\n \n-    if not m and p < 0:\n+    if not m and p <= 0:\n         return mark_safe(\n             formats.number_format(\n                 \"%d\" % (int(d)),\n@@ -183,7 +183,7 @@ def floatformat(text, arg=-1):\n     tupl = d.as_tuple()\n     units = len(tupl[1])\n     units += -tupl[2] if m else tupl[2]\n-    prec = abs(p) + units + 1\n+    prec = max(1, abs(p) + units + 1)\n \n     # Avoid conversion to scientific notation by accessing `sign`, `digits`,\n     # and `exponent` from Decimal.as_tuple() directly.\n",
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_floatformat_edge_cases.py b/tests/template_tests/filter_tests/test_floatformat_edge_cases.py\nnew file mode 100644\nindex 0000000..547ceb5\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_floatformat_edge_cases.py\n@@ -0,0 +1,14 @@\n+from decimal import Decimal\n+from django.template.defaultfilters import floatformat\n+from django.test import SimpleTestCase\n+\n+class FloatformatEdgeCasesTests(SimpleTestCase):\n+    def test_floatformat_crashes_on_zero_string(self):\n+        with self.assertRaises(ValueError) as cm:\n+            floatformat('0.00', 0)\n+        self.assertIn(\"valid range for prec is [1, MAX_PREC]\", str(cm.exception))\n+\n+    def test_floatformat_crashes_on_zero_decimal(self):\n+        with self.assertRaises(ValueError) as cm:\n+            floatformat(Decimal('0.00'), 0)\n+        self.assertIn(\"valid range for prec is [1, MAX_PREC]\", str(cm.exception))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_floatformat_edge_cases_inverted.py b/tests/template_tests/filter_tests/test_floatformat_edge_cases_inverted.py\nnew file mode 100644\nindex 0000000..9ae1d0e\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_floatformat_edge_cases_inverted.py\n@@ -0,0 +1,18 @@\n+from decimal import Decimal\n+from django.template.defaultfilters import floatformat\n+from django.test import SimpleTestCase\n+\n+class FloatformatEdgeCasesTests(SimpleTestCase):\n+    def test_floatformat_crashes_on_zero_string(self):\n+        # The test should now fail when the issue is observed\n+        try:\n+            floatformat('0.00', 0)\n+        except ValueError as e:\n+            self.fail(\"__BUG__HERE__\")\n+\n+    def test_floatformat_crashes_on_zero_decimal(self):\n+        # The test should now fail when the issue is observed\n+        try:\n+            floatformat(Decimal('0.00'), 0)\n+        except ValueError as e:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 252473,
+  "num_received_chars": 4635,
+  "elapsed_time": 47.44085168838501,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

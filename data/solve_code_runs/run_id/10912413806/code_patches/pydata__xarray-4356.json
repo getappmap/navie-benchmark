@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4356",
+  "edit_test_file": "xarray/tests/test_duck_array_ops.py",
+  "code_patch": "diff --git a/xarray/core/variable.py b/xarray/core/variable.py\nindex f00d818..680f9c3 100644\n--- a/xarray/core/variable.py\n+++ b/xarray/core/variable.py\n@@ -1585,6 +1585,7 @@ class Variable(\n         keep_attrs=None,\n         keepdims=False,\n         allow_lazy=None,\n+        min_count=None,\n         **kwargs,\n     ):\n         \"\"\"Reduce this array by applying `func` along some dimension(s).\n@@ -1637,9 +1638,17 @@ class Variable(\n         input_data = self.data if allow_lazy else self.values\n \n         if axis is not None:\n-            data = func(input_data, axis=axis, **kwargs)\n+            if min_count is not None:\n+                valid_count = np.sum(~np.isnan(input_data), axis=axis)\n+                data = np.where(valid_count >= min_count, func(input_data, axis=axis, **kwargs), np.nan)\n+            else:\n+                data = func(input_data, axis=axis, **kwargs)\n         else:\n-            data = func(input_data, **kwargs)\n+            if min_count is not None:\n+                valid_count = np.sum(~np.isnan(input_data))\n+                data = np.where(valid_count >= min_count, func(input_data, **kwargs), np.nan)\n+            else:\n+                data = func(input_data, **kwargs)\n \n         if getattr(data, \"shape\", ()) == self.shape:\n             dims = self.dims\n",
+  "test_patch": "diff --git a/xarray/tests/test_nanops.py b/xarray/tests/test_nanops.py\nnew file mode 100644\nindex 0000000..45c04c1\n--- /dev/null\n+++ b/xarray/tests/test_nanops.py\n@@ -0,0 +1,7 @@\n+import pytest\n+import xarray as xr\n+\n+def test_sum_min_count_multiple_dims():\n+    da = xr.DataArray([[1., 2, 3], [4, 5, 6]])\n+    with pytest.raises(ValueError, match=\"min_count is not available for reduction with more than one dimension\"):\n+        da.sum([\"dim_0\", \"dim_1\"], min_count=1)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_nanops_inverted.py b/xarray/tests/test_nanops_inverted.py\nnew file mode 100644\nindex 0000000..266ec06\n--- /dev/null\n+++ b/xarray/tests/test_nanops_inverted.py\n@@ -0,0 +1,8 @@\n+import pytest\n+import xarray as xr\n+\n+def test_sum_min_count_multiple_dims():\n+    da = xr.DataArray([[1., 2, 3], [4, 5, 6]])\n+    # The test should now fail when the issue is observed, raising the specified error message\n+    with pytest.raises(Exception, match=\"__BUG__HERE__\"):\n+        da.sum([\"dim_0\", \"dim_1\"], min_count=1)\n\\ No newline at end of file\n",
+  "num_sent_chars": 2002656,
+  "num_received_chars": 49765,
+  "elapsed_time": 483.80058789253235,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16116",
+  "edit_test_file": "tests/migrations/test_multidb.py",
+  "code_patch": "diff --git a/django/core/management/commands/makemigrations.py b/django/core/management/commands/makemigrations.py\nindex 2e97d90..8f7705d 100644\n--- a/django/core/management/commands/makemigrations.py\n+++ b/django/core/management/commands/makemigrations.py\n@@ -247,13 +247,15 @@ class Command(BaseCommand):\n                         )\n                 else:\n                     self.log(\"No changes detected\")\n+            if check_changes:\n+                sys.exit(0)\n         else:\n+            if check_changes:\n+                sys.exit(1)\n             if self.update:\n                 self.write_to_last_migration_files(changes)\n             else:\n                 self.write_migration_files(changes)\n-            if check_changes:\n-                sys.exit(1)\n \n     def write_to_last_migration_files(self, changes):\n         loader = MigrationLoader(connections[DEFAULT_DB_ALIAS])\n",
+  "test_patch": "diff --git a/tests/migrations/test_migrations_check_consistency.py b/tests/migrations/test_migrations_check_consistency.py\nnew file mode 100644\nindex 0000000..d92bfb0\n--- /dev/null\n+++ b/tests/migrations/test_migrations_check_consistency.py\n@@ -0,0 +1,22 @@\n+import os\n+import subprocess\n+from django.test import SimpleTestCase\n+\n+class TestMakemigrationsCheckConsistency(SimpleTestCase):\n+    def test_makemigrations_check_inconsistency(self):\n+        \"\"\"\n+        Test that `makemigrations --check` generates migrations, which is inconsistent\n+        with other uses of --check.\n+        \"\"\"\n+        # Run the makemigrations command with --check\n+        result = subprocess.run(\n+            [\"python\", \"manage.py\", \"makemigrations\", \"--check\"],\n+            capture_output=True,\n+            text=True\n+        )\n+\n+        # Check if migrations were generated\n+        migrations_generated = \"No changes detected\" not in result.stdout\n+\n+        # Assert that migrations were generated, which is the issue\n+        self.assertTrue(migrations_generated, \"makemigrations --check should not generate migrations\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/migrations/test_migrations_check_consistency_inverted.py b/tests/migrations/test_migrations_check_consistency_inverted.py\nnew file mode 100644\nindex 0000000..4da9e3c\n--- /dev/null\n+++ b/tests/migrations/test_migrations_check_consistency_inverted.py\n@@ -0,0 +1,22 @@\n+import os\n+import subprocess\n+from django.test import SimpleTestCase\n+\n+class TestMakemigrationsCheckConsistency(SimpleTestCase):\n+    def test_makemigrations_check_inconsistency(self):\n+        \"\"\"\n+        Test that `makemigrations --check` does not generate migrations, which is consistent\n+        with other uses of --check.\n+        \"\"\"\n+        # Run the makemigrations command with --check\n+        result = subprocess.run(\n+            [\"python\", \"manage.py\", \"makemigrations\", \"--check\"],\n+            capture_output=True,\n+            text=True\n+        )\n+\n+        # Check if migrations were generated\n+        migrations_generated = \"No changes detected\" not in result.stdout\n+\n+        # Assert that migrations were not generated, which is the expected behavior\n+        self.assertFalse(migrations_generated, \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1869923,
+  "num_received_chars": 42727,
+  "elapsed_time": 404.34110021591187,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

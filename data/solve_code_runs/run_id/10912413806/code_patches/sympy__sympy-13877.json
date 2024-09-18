@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13877",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/matrices.py b/sympy/matrices/matrices.py\nindex 97cde62..afbe356 100644\n--- a/sympy/matrices/matrices.py\n+++ b/sympy/matrices/matrices.py\n@@ -174,6 +174,9 @@ def _eval_det_bareiss(self):\n         http://www.eecis.udel.edu/~saunders/papers/sffge/it5.ps.\n         \"\"\"\n \n+        if self.has(Symbol):\n+            return self._eval_det_berkowitz()\n+\n         # XXX included as a workaround for issue #12362.  Should use `_find_reasonable_pivot` instead\n         def _find_pivot(l):\n             for pos,val in enumerate(l):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2132919,
+  "num_received_chars": 20889,
+  "elapsed_time": 210.4224145412445,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

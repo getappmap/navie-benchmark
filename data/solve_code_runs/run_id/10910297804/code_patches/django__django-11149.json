@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11149",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex 880a2cc..03ffaf5 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -585,11 +585,12 @@ class ModelAdmin(BaseModelAdmin):\n         for inline_class in self.inlines:\n             inline = inline_class(self.model, self.admin_site)\n             if request:\n-                if not (inline.has_view_or_change_permission(request, obj) or\n+                if not (inline.has_view_permission(request, obj) or\n                         inline.has_add_permission(request, obj) or\n+                        inline.has_change_permission(request, obj) or\n                         inline.has_delete_permission(request, obj)):\n                     continue\n-                if not inline.has_add_permission(request, obj):\n+                if not inline.has_add_permission(request, obj) or not inline.has_change_permission(request, obj):\n                     inline.max_num = 0\n             inline_instances.append(inline)\n \n@@ -1469,6 +1470,10 @@ class ModelAdmin(BaseModelAdmin):\n             has_change_permission = inline.has_change_permission(request, obj)\n             has_delete_permission = inline.has_delete_permission(request, obj)\n             has_view_permission = inline.has_view_permission(request, obj)\n+            if not has_change_permission:\n+                formset.can_delete = False\n+                formset.can_order = False\n+                formset.extra = 0\n             prepopulated = dict(inline.get_prepopulated_fields(request, obj))\n             inline_admin_formset = helpers.InlineAdminFormSet(\n                 inline, formset, fieldsets, prepopulated, readonly, model_admin=self,\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2311569,
+  "num_received_chars": 81639,
+  "elapsed_time": 653.0116019248962,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 5,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

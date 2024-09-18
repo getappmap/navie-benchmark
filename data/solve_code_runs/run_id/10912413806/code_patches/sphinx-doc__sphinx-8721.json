@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8721",
+  "edit_test_file": "tests/test_build_epub.py",
+  "code_patch": "diff --git a/sphinx/ext/viewcode.py b/sphinx/ext/viewcode.py\nindex a7d52a9..060604e 100644\n--- a/sphinx/ext/viewcode.py\n+++ b/sphinx/ext/viewcode.py\n@@ -182,6 +182,8 @@ def collect_pages(app: Sphinx) -> Generator[Tuple[str, Dict[str, Any], str], Non\n     env = app.builder.env\n     if not hasattr(env, '_viewcode_modules'):\n         return\n+    if app.builder.name.startswith(\"epub\") and not env.config.viewcode_enable_epub:\n+        return\n     highlighter = app.builder.highlighter  # type: ignore\n     urito = app.builder.get_relative_uri\n \n",
+  "test_patch": "diff --git a/tests/test_viewcode_epub_disable.py b/tests/test_viewcode_epub_disable.py\nnew file mode 100644\nindex 0000000..7d014f5\n--- /dev/null\n+++ b/tests/test_viewcode_epub_disable.py\n@@ -0,0 +1,50 @@\n+\"\"\"\n+    test_viewcode_epub_disable\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test that viewcode does not create pages for epub when viewcode_enable_epub is False.\n+\n+    :copyright: Copyright 2007-2021 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import os\n+import subprocess\n+from subprocess import PIPE, CalledProcessError\n+from xml.etree import ElementTree\n+import unittest\n+\n+from sphinx.util import docutils\n+\n+\n+class TestViewcodeEpubDisable(unittest.TestCase):\n+    def test_viewcode_creates_epub_pages(self):\n+        # Setup a temporary Sphinx project\n+        srcdir = os.path.join(os.getcwd(), 'test_viewcode_epub_disable')\n+        os.makedirs(srcdir, exist_ok=True)\n+        with open(os.path.join(srcdir, 'conf.py'), 'w') as f:\n+            f.write(\"\"\"\n+extensions = ['sphinx.ext.viewcode']\n+viewcode_enable_epub = False\n+\"\"\")\n+        with open(os.path.join(srcdir, 'index.rst'), 'w') as f:\n+            f.write(\"\"\"\n+.. automodule:: example\n+\"\"\")\n+        with open(os.path.join(srcdir, 'example.py'), 'w') as f:\n+            f.write(\"\"\"\n+def foo():\n+    pass\n+\"\"\")\n+\n+        # Run Sphinx build\n+        try:\n+            subprocess.run(['sphinx-build', '-b', 'epub', srcdir, os.path.join(srcdir, '_build')],\n+                           stdout=PIPE, stderr=PIPE, check=True)\n+        except CalledProcessError as exc:\n+            self.fail(f\"Sphinx build failed: {exc.stderr.decode('utf-8')}\")\n+\n+        # Check that module pages are not created\n+        epub_dir = os.path.join(srcdir, '_build')\n+        self.assertFalse(os.path.exists(os.path.join(epub_dir, '_modules', 'example.html')),\n+                         \"Module pages should not be created for epub when viewcode_enable_epub is False.\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2396328,
+  "num_received_chars": 38502,
+  "elapsed_time": 407.9150290489197,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

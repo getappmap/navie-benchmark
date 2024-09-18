@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24661",
+  "edit_test_file": "sympy/parsing/tests/test_ast_parser.py",
+  "code_patch": "diff --git a/sympy/parsing/sympy_parser.py b/sympy/parsing/sympy_parser.py\nindex 52711d1..99bbe23 100644\n--- a/sympy/parsing/sympy_parser.py\n+++ b/sympy/parsing/sympy_parser.py\n@@ -805,32 +805,42 @@ def rationalize(tokens: List[TOKEN], local_dict: DICT, global_dict: DICT):\n     return result\n \n \n-def _transform_equals_sign(tokens: List[TOKEN], local_dict: DICT, global_dict: DICT):\n-    \"\"\"Transforms the equals sign ``=`` to instances of Eq.\n+def _transform_equals_sign(tokens: List[TOKEN], local_dict: DICT, global_dict: DICT, evaluate=True):\n+    \"\"\"Transforms relational operators to instances of Eq, Lt, Gt, etc.\n \n     This is a helper function for ``convert_equals_signs``.\n-    Works with expressions containing one equals sign and no\n-    nesting. Expressions like ``(1=2)=False`` will not work with this\n+    Works with expressions containing relational operators and no\n+    nesting. Expressions like ``(1<2)=False`` will not work with this\n     and should be used with ``convert_equals_signs``.\n \n     Examples: 1=2     to Eq(1,2)\n+              1<2     to Lt(1,2)\n               1*2=x   to Eq(1*2, x)\n \n     This does not deal with function arguments yet.\n \n     \"\"\"\n     result: List[TOKEN] = []\n-    if (OP, \"=\") in tokens:\n-        result.append((NAME, \"Eq\"))\n-        result.append((OP, \"(\"))\n-        for token in tokens:\n-            if token == (OP, \"=\"):\n-                result.append((OP, \",\"))\n-                continue\n+    relational_map = {\n+        \"=\": \"Eq\",\n+        \"<\": \"Lt\",\n+        \"<=\": \"Le\",\n+        \">\": \"Gt\",\n+        \">=\": \"Ge\",\n+        \"!=\": \"Ne\"\n+    }\n+    for token in tokens:\n+        if token[0] == OP and token[1] in relational_map:\n+            result.append((NAME, relational_map[token[1]]))\n+            result.append((OP, \"(\"))\n+            result.append((OP, \",\"))\n+        else:\n             result.append(token)\n+    if evaluate is False:\n+        result.append((NAME, \"evaluate\"))\n+        result.append((OP, \"=\"))\n+        result.append((NAME, \"False\"))\n         result.append((OP, \")\"))\n-    else:\n-        result = tokens\n     return result\n \n \n",
+  "test_patch": "diff --git a/sympy/parsing/tests/test_relationals_parser.py b/sympy/parsing/tests/test_relationals_parser.py\nnew file mode 100644\nindex 0000000..5efa4a9\n--- /dev/null\n+++ b/sympy/parsing/tests/test_relationals_parser.py\n@@ -0,0 +1,7 @@\n+from sympy.parsing.sympy_parser import parse_expr\n+from sympy.core.relational import Lt\n+\n+def test_parse_expr_evaluate_false_for_relationals():\n+    # This test reproduces the issue where evaluate=False is ignored for relationals\n+    result = parse_expr('1 < 2', evaluate=False)\n+    assert result == True  # The incorrect output that should be produced\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/parsing/tests/test_relationals_parser_inverted.py b/sympy/parsing/tests/test_relationals_parser_inverted.py\nnew file mode 100644\nindex 0000000..e562013\n--- /dev/null\n+++ b/sympy/parsing/tests/test_relationals_parser_inverted.py\n@@ -0,0 +1,8 @@\n+from sympy.parsing.sympy_parser import parse_expr\n+from sympy.core.relational import Lt\n+\n+def test_parse_expr_evaluate_false_for_relationals():\n+    # This test should fail when the issue is observed\n+    result = parse_expr('1 < 2', evaluate=False)\n+    expected_result = Lt(1, 2, evaluate=False)\n+    assert result == expected_result, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2008672,
+  "num_received_chars": 72122,
+  "elapsed_time": 777.6962954998016,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

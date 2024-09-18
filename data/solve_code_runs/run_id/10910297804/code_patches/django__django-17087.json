@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-17087",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/postgres/fields/array.py b/django/contrib/postgres/fields/array.py\nindex c8e8e13..f56b2d6 100644\n--- a/django/contrib/postgres/fields/array.py\n+++ b/django/contrib/postgres/fields/array.py\n@@ -141,6 +141,9 @@ class ArrayField(CheckFieldDefaultMixin, Field):\n                 \"size\": self.size,\n             }\n         )\n+        # Ensure the default value is correctly serialized with the full path\n+        if callable(self.default):\n+            kwargs['default'] = '%s.%s' % (self.default.__self__.__class__.__module__, self.default.__qualname__)\n         return name, path, args, kwargs\n \n     def to_python(self, value):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1654412,
+  "num_received_chars": 23342,
+  "elapsed_time": 176.9969162940979,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

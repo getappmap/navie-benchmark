@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13837",
+  "edit_test_file": "tests/utils_tests/test_autoreload.py",
+  "code_patch": "diff --git a/django/__main__.py b/django/__main__.py\nindex 8b96e91..3a20713 100644\n--- a/django/__main__.py\n+++ b/django/__main__.py\n@@ -4,6 +4,10 @@ Invokes django-admin when the django module is run as a script.\n Example: python -m django check\n \"\"\"\n from django.core import management\n+import sys\n \n if __name__ == \"__main__\":\n-    management.execute_from_command_line()\n+    if getattr(sys.modules['__main__'], '__spec__', None) is not None:\n+        package_name = sys.modules['__main__'].__spec__.parent\n+        if package_name:\n+            management.execute_from_command_line()\n",
+  "test_patch": "diff --git a/tests/utils_tests/test_autoreload_mod.py b/tests/utils_tests/test_autoreload_mod.py\nnew file mode 100644\nindex 0000000..33f8549\n--- /dev/null\n+++ b/tests/utils_tests/test_autoreload_mod.py\n@@ -0,0 +1,14 @@\n+import sys\n+import unittest\n+from unittest import mock\n+from django.utils import autoreload\n+\n+class TestAutoreloadCommand(unittest.TestCase):\n+    @mock.patch('sys.argv', ['-m', 'pkg_other_than_django', 'runserver'])\n+    @mock.patch('sys.warnoptions', [])\n+    def test_get_child_arguments_with_non_django_package(self):\n+        with self.assertRaises(RuntimeError):\n+            autoreload.get_child_arguments()\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_autoreload_mod_inverted.py b/tests/utils_tests/test_autoreload_mod_inverted.py\nnew file mode 100644\nindex 0000000..0325ae9\n--- /dev/null\n+++ b/tests/utils_tests/test_autoreload_mod_inverted.py\n@@ -0,0 +1,17 @@\n+import sys\n+import unittest\n+from unittest import mock\n+from django.utils import autoreload\n+\n+class TestAutoreloadCommand(unittest.TestCase):\n+    @mock.patch('sys.argv', ['-m', 'pkg_other_than_django', 'runserver'])\n+    @mock.patch('sys.warnoptions', [])\n+    def test_get_child_arguments_with_non_django_package(self):\n+        # The test should now fail when the issue is observed\n+        try:\n+            autoreload.get_child_arguments()\n+        except RuntimeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1914009,
+  "num_received_chars": 59950,
+  "elapsed_time": 647.8046219348907,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

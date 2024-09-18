@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-17139",
+  "edit_test_file": "sympy/core/tests/test_noncommutative.py",
+  "code_patch": "diff --git a/sympy/simplify/fu.py b/sympy/simplify/fu.py\nindex ad1130e..c852062 100644\n--- a/sympy/simplify/fu.py\n+++ b/sympy/simplify/fu.py\n@@ -481,7 +481,7 @@ def _TR56(rv, f, g, h, max, pow):\n \n     >>> from sympy.simplify.fu import _TR56 as T\n     >>> from sympy.abc import x\n-    >>> from sympy import sin, cos\n+    >>> from sympy import sin, cos, I\n     >>> h = lambda x: 1 - x\n     >>> T(sin(x)**3, sin, cos, h, 4, False)\n     sin(x)**3\n@@ -501,6 +501,8 @@ def _f(rv):\n         if not (rv.is_Pow and rv.base.func == f):\n             return rv\n \n+        if rv.exp.is_complex:\n+            return rv\n         if (rv.exp < 0) == True:\n             return rv\n         if (rv.exp > max) == True:\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_simplify.py b/sympy/core/tests/test_simplify.py\nnew file mode 100644\nindex 0000000..3e159ce\n--- /dev/null\n+++ b/sympy/core/tests/test_simplify.py\n@@ -0,0 +1,7 @@\n+from sympy import Symbol, cos, I, simplify\n+from sympy.utilities.pytest import raises\n+\n+def test_simplify_cos_I_raises_TypeError():\n+    x = Symbol('x')\n+    with raises(TypeError):\n+        simplify(cos(x)**I)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_simplify_inverted.py b/sympy/core/tests/test_simplify_inverted.py\nnew file mode 100644\nindex 0000000..3d9899f\n--- /dev/null\n+++ b/sympy/core/tests/test_simplify_inverted.py\n@@ -0,0 +1,12 @@\n+from sympy import Symbol, cos, I, simplify\n+from sympy.utilities.pytest import raises\n+\n+def test_simplify_cos_I_raises_bug_error():\n+    x = Symbol('x')\n+    try:\n+        simplify(cos(x)**I)\n+    except TypeError as e:\n+        if \"Invalid comparison of complex\" in str(e):\n+            raise AssertionError(\"__BUG__HERE__\")\n+        else:\n+            raise e\n\\ No newline at end of file\n",
+  "num_sent_chars": 2518792,
+  "num_received_chars": 83900,
+  "elapsed_time": 946.6731836795807,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

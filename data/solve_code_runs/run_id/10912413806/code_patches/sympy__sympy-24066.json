@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24066",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/physics/units/unitsystem.py b/sympy/physics/units/unitsystem.py\nindex 3daf84c..4736c6b 100644\n--- a/sympy/physics/units/unitsystem.py\n+++ b/sympy/physics/units/unitsystem.py\n@@ -192,8 +192,9 @@ def _collect_factor_and_dimension(self, expr):\n         elif isinstance(expr, Function):\n             fds = [self._collect_factor_and_dimension(\n                 arg) for arg in expr.args]\n-            return (expr.func(*(f[0] for f in fds)),\n-                    *(d[1] for d in fds))\n+            if all(self.get_dimension_system().is_dimensionless(d[1]) for d in fds):\n+                return expr.func(*(f[0] for f in fds)), S.One\n+            return expr.func(*(f[0] for f in fds)), expr.func(*(d[1] for d in fds))\n         elif isinstance(expr, Dimension):\n             return S.One, expr\n         else:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3614047,
+  "num_received_chars": 82444,
+  "elapsed_time": 767.6334838867188,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

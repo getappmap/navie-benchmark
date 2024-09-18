@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-24870",
+  "edit_test_file": "lib/mpl_toolkits/mplot3d/tests/test_legend3d.py",
+  "code_patch": "diff --git a/lib/matplotlib/contour.py b/lib/matplotlib/contour.py\nindex 144eade..0e2ac97 100644\n--- a/lib/matplotlib/contour.py\n+++ b/lib/matplotlib/contour.py\n@@ -1123,7 +1123,10 @@ class ContourSet(cm.ScalarMappable, ContourLabeler):\n         \"\"\"\n         if self.levels is None:\n             if len(args) == 0:\n-                levels_arg = 7  # Default, hard-wired.\n+                if np.issubdtype(self.z.dtype, np.bool_):\n+                    levels_arg = [0.5]  # Default for boolean arrays.\n+                else:\n+                    levels_arg = 7  # Default, hard-wired.\n             else:\n                 levels_arg = args[0]\n         else:\n",
+  "test_patch": "diff --git a/lib/mpl_toolkits/mplot3d/tests/test_contour_bool_autodetect.py b/lib/mpl_toolkits/mplot3d/tests/test_contour_bool_autodetect.py\nnew file mode 100644\nindex 0000000..3dc401f\n--- /dev/null\n+++ b/lib/mpl_toolkits/mplot3d/tests/test_contour_bool_autodetect.py\n@@ -0,0 +1,24 @@\n+import matplotlib.pyplot as plt\n+import numpy as np\n+import pytest\n+\n+def test_contour_bool_autodetect():\n+    # Create a boolean 2D array\n+    ii, jj = np.ogrid[:100, :100]\n+    im = (ii + jj) % 20 < 10\n+\n+    # Create a figure with two subplots\n+    fig, (ax1, ax2) = plt.subplots(1, 2)\n+\n+    # Plot the contour without specifying levels\n+    cs1 = ax1.contour(im)\n+\n+    # Plot the contour with levels specified\n+    cs2 = ax2.contour(im, levels=[0.5])\n+\n+    # Assert that the number of levels in the first contour is not 1\n+    # This reproduces the issue where multiple levels are drawn on top of each other\n+    assert len(cs1.levels) != 1\n+\n+    # Assert that the number of levels in the second contour is 1\n+    assert len(cs2.levels) == 1\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/mpl_toolkits/mplot3d/tests/test_contour_bool_autodetect_inverted.py b/lib/mpl_toolkits/mplot3d/tests/test_contour_bool_autodetect_inverted.py\nnew file mode 100644\nindex 0000000..7911060\n--- /dev/null\n+++ b/lib/mpl_toolkits/mplot3d/tests/test_contour_bool_autodetect_inverted.py\n@@ -0,0 +1,24 @@\n+import matplotlib.pyplot as plt\n+import numpy as np\n+import pytest\n+\n+def test_contour_bool_autodetect():\n+    # Create a boolean 2D array\n+    ii, jj = np.ogrid[:100, :100]\n+    im = (ii + jj) % 20 < 10\n+\n+    # Create a figure with two subplots\n+    fig, (ax1, ax2) = plt.subplots(1, 2)\n+\n+    # Plot the contour without specifying levels\n+    cs1 = ax1.contour(im)\n+\n+    # Plot the contour with levels specified\n+    cs2 = ax2.contour(im, levels=[0.5])\n+\n+    # Assert that the number of levels in the first contour is 1\n+    # This should fail if the bug is present, as multiple levels are drawn on top of each other\n+    assert len(cs1.levels) == 1, \"__BUG__HERE__\"\n+\n+    # Assert that the number of levels in the second contour is 1\n+    assert len(cs2.levels) == 1\n\\ No newline at end of file\n",
+  "num_sent_chars": 1555375,
+  "num_received_chars": 35657,
+  "elapsed_time": 347.3651213645935,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

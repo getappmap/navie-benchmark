@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14349",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/validators.py b/django/core/validators.py\nindex a385819..f5dfef2 100644\n--- a/django/core/validators.py\n+++ b/django/core/validators.py\n@@ -101,6 +101,11 @@ class URLValidator(RegexValidator):\n     def __call__(self, value):\n         if not isinstance(value, str):\n             raise ValidationError(self.message, code=self.code, params={'value': value})\n+        \n+        # Proactively reject URLs with forbidden characters\n+        if any(char in value for char in ['\\n', '\\r', '\\t']):\n+            raise ValidationError(self.message, code=self.code, params={'value': value})\n+\n         # Check if the scheme is valid.\n         scheme = value.split('://')[0].lower()\n         if scheme not in self.schemes:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1719296,
+  "num_received_chars": 18014,
+  "elapsed_time": 178.54621577262878,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

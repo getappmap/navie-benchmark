@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14351",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex 6629a1f..f5591a1 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1241,6 +1241,10 @@ class Query(BaseExpression):\n         The method will create a filter clause that can be added to the current\n         query. However, if the filter isn't added to the query then the caller\n         is responsible for unreffing the joins used.\n+\n+        # Ensure subqueries only select necessary columns\n+        if isinstance(filter_expr, tuple) and '__in' in filter_expr[0]:\n+            filter_expr = (filter_expr[0], filter_expr[1].values_list('id', flat=True))\n         \"\"\"\n         if isinstance(filter_expr, dict):\n             raise FieldError(\"Cannot parse keyword query as dict\")\n@@ -1719,6 +1723,9 @@ class Query(BaseExpression):\n                     )\n                 return Ref(name, self.annotation_select[name])\n             else:\n+                # Ensure only necessary columns are selected for subqueries\n+                if isinstance(annotation, Col) and annotation.target:\n+                    return annotation.target.get_col(annotation.alias)\n                 return annotation\n         else:\n             field_list = name.split(LOOKUP_SEP)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2099535,
+  "num_received_chars": 33862,
+  "elapsed_time": 286.46278047561646,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-13989",
+  "edit_test_file": "lib/matplotlib/tests/test_pyplot.py",
+  "code_patch": "diff --git a/lib/matplotlib/pyplot.py b/lib/matplotlib/pyplot.py\nindex 67b021f..1b3bd3f 100644\n--- a/lib/matplotlib/pyplot.py\n+++ b/lib/matplotlib/pyplot.py\n@@ -2614,6 +2614,9 @@ def hist(\n         orientation='vertical', rwidth=None, log=False, color=None,\n         label=None, stacked=False, normed=None, *, data=None,\n         **kwargs):\n+    # Ensure range is respected when density=True\n+    if density and range is not None:\n+        kwargs['range'] = range\n     return gca().hist(\n         x, bins=bins, range=range, density=density, weights=weights,\n         cumulative=cumulative, bottom=bottom, histtype=histtype,\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_hist_density_range.py b/lib/matplotlib/tests/test_hist_density_range.py\nnew file mode 100644\nindex 0000000..640cd86\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_hist_density_range.py\n@@ -0,0 +1,16 @@\n+import matplotlib.pyplot as plt\n+import numpy as np\n+import unittest\n+\n+class TestHistDensityRange(unittest.TestCase):\n+    def test_hist_density_range(self):\n+        # Generate a histogram with density=True and a specified range\n+        _, bins, _ = plt.hist(np.random.rand(10), \"auto\", range=(0, 1), density=True)\n+        \n+        # Assert that the first bin edge is not 0 and the last bin edge is not 1\n+        # This is the incorrect behavior we want to reproduce\n+        self.assertNotEqual(bins[0], 0)\n+        self.assertNotEqual(bins[-1], 1)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_hist_density_range_inverted.py b/lib/matplotlib/tests/test_hist_density_range_inverted.py\nnew file mode 100644\nindex 0000000..89e3615\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_hist_density_range_inverted.py\n@@ -0,0 +1,16 @@\n+import matplotlib.pyplot as plt\n+import numpy as np\n+import unittest\n+\n+class TestHistDensityRange(unittest.TestCase):\n+    def test_hist_density_range(self):\n+        # Generate a histogram with density=True and a specified range\n+        _, bins, _ = plt.hist(np.random.rand(10), \"auto\", range=(0, 1), density=True)\n+        \n+        # Assert that the first bin edge is 0 and the last bin edge is 1\n+        # This is the correct behavior we want to enforce\n+        if bins[0] != 0 or bins[-1] != 1:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1879241,
+  "num_received_chars": 36396,
+  "elapsed_time": 445.982515335083,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

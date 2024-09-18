@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13757",
+  "edit_test_file": "sympy/polys/tests/test_pythonrational.py",
+  "code_patch": "diff --git a/sympy/polys/domains/expressiondomain.py b/sympy/polys/domains/expressiondomain.py\nindex b4c572d..79c1065 100644\n--- a/sympy/polys/domains/expressiondomain.py\n+++ b/sympy/polys/domains/expressiondomain.py\n@@ -83,15 +83,21 @@ def __rsub__(f, g):\n             return f.simplify(f.__class__(g).ex - f.ex)\n \n         def __mul__(f, g):\n+            from sympy.polys.polytools import Poly\n             g = f._to_ex(g)\n \n             if g is not None:\n-                return f.simplify(f.ex*g.ex)\n+                if isinstance(g.ex, Poly):\n+                    return Poly(f.ex * g.ex, *g.ex.gens)\n+                return f.simplify(f.ex * g.ex)\n             else:\n                 return NotImplemented\n \n         def __rmul__(f, g):\n-            return f.simplify(f.__class__(g).ex*f.ex)\n+            from sympy.polys.polytools import Poly\n+            if isinstance(f.ex, Poly):\n+                return Poly(g * f.ex, *f.ex.gens)\n+            return f.simplify(f.__class__(g).ex * f.ex)\n \n         def __pow__(f, n):\n             n = f._to_ex(n)\n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_multiplication_behavior.py b/sympy/polys/tests/test_multiplication_behavior.py\nnew file mode 100644\nindex 0000000..52467ec\n--- /dev/null\n+++ b/sympy/polys/tests/test_multiplication_behavior.py\n@@ -0,0 +1,12 @@\n+from sympy import Poly, Symbol, S\n+\n+x = Symbol('x')\n+\n+def test_multiplication_behavior():\n+    # Test case to reproduce the issue where multiplying an expression by a Poly\n+    # does not evaluate when the expression is on the left side of the multiplication\n+\n+    # Expected behavior: x * Poly(x) should evaluate to Poly(x**2, x, domain='ZZ')\n+    # Current behavior: x * Poly(x) remains unevaluated\n+    expr = x * Poly(x)\n+    assert expr == x * Poly(x, x, domain='ZZ'), \"Multiplication did not evaluate as expected\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_multiplication_behavior_inverted.py b/sympy/polys/tests/test_multiplication_behavior_inverted.py\nnew file mode 100644\nindex 0000000..ced26aa\n--- /dev/null\n+++ b/sympy/polys/tests/test_multiplication_behavior_inverted.py\n@@ -0,0 +1,12 @@\n+from sympy import Poly, Symbol\n+\n+x = Symbol('x')\n+\n+def test_multiplication_behavior():\n+    # Test case to reproduce the issue where multiplying an expression by a Poly\n+    # does not evaluate when the expression is on the left side of the multiplication\n+\n+    # Expected behavior: x * Poly(x) should evaluate to Poly(x**2, x, domain='ZZ')\n+    # Current behavior: x * Poly(x) remains unevaluated\n+    expr = x * Poly(x)\n+    assert expr == Poly(x**2, x, domain='ZZ'), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2235783,
+  "num_received_chars": 54542,
+  "elapsed_time": 625.6162657737732,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
