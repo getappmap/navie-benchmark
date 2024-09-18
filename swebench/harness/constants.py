@@ -77,7 +77,7 @@ SPECS_SKLEARN.update(
             "python": "3.9",
             "packages": "numpy scipy cython setuptools pytest pandas matplotlib joblib threadpoolctl",
             "install": "python -m pip install -v --no-use-pep517 --no-build-isolation -e .",
-            "pip_packages": ["cython", "setuptools", "numpy", "scipy"],
+            "pip_packages": ["cython", "setuptools", "numpy==1.26.4", "scipy"],
             "test_cmd": TEST_PYTEST,
         }
         for k in ["1.3", "1.4"]
