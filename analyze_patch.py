@@ -67,7 +67,6 @@ def main(instance_id: str):
         analyze_dir = Path("analyze") / "run_evaluation" / run_id
         print(f"Unpacking run evaluation logs to to {analyze_dir}")
         analyze_dir.mkdir(exist_ok=True, parents=True)
-        shutil.rmtree(analyze_dir)
 
         with zipfile.ZipFile(evaluate_zip_file, "r") as zip_ref:
             # Extract the specified run_evaluation-*.json files
@@ -82,7 +81,6 @@ def main(instance_id: str):
         print(f"Unpacking solve logs to to {analyze_dir}")
         print("")
         analyze_dir.mkdir(exist_ok=True, parents=True)
-        shutil.rmtree(analyze_dir)
 
         with zipfile.ZipFile(evaluate_zip_file, "r") as zip_ref:
             # Extract the specified solve-*.json files
