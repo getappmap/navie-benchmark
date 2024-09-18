@@ -196,7 +196,7 @@ def configure_runner_index(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--runner_index",
         type=int,
-        help="Select instances based on the runner index (instance index % num_runners == runner_index)",
+        help=r"Select instances based on the runner index (instance index %% num_runners == runner_index)",
     )
 
 
