@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-2317",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/sessions.py b/requests/sessions.py\nindex d701ff2..6f3a845 100644\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -425,7 +425,10 @@ class Session(SessionRedirectMixin):\n             If Tuple, ('cert', 'key') pair.\n         \"\"\"\n \n-        method = builtin_str(method)\n+        if isinstance(method, bytes):\n+            method = method.decode('utf-8')\n+        else:\n+            method = builtin_str(method)\n \n         # Create the Request.\n         req = Request(\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 575149,
+  "num_received_chars": 4309,
+  "elapsed_time": 162.4251310825348,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

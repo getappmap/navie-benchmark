@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19040",
+  "edit_test_file": "sympy/core/tests/test_exprtools.py",
+  "code_patch": "diff --git a/sympy/polys/polytools.py b/sympy/polys/polytools.py\nindex 68b69d1..21c0e49 100644\n--- a/sympy/polys/polytools.py\n+++ b/sympy/polys/polytools.py\n@@ -5914,6 +5914,9 @@ def _symbolic_factor_list(expr, opt, method):\n             if base.is_Number:\n                 factors.append((base, exp))\n                 continue\n+        elif arg.is_Symbol:\n+            factors.append((arg, S.One))\n+            continue\n         else:\n             base, exp = arg, S.One\n \n@@ -5988,6 +5991,11 @@ def _generic_factor_list(expr, gens, args, method):\n         if fq and not opt.frac:\n             raise PolynomialError(\"a polynomial expected, got %s\" % expr)\n \n+        # Ensure all factors are considered, even with extensions\n+        if opt.extension:\n+            fp.extend(fq)\n+            fq = []\n+\n         _opt = opt.clone(dict(expand=True))\n \n         for factors in (fp, fq):\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_factor_drop.py b/sympy/core/tests/test_factor_drop.py\nnew file mode 100644\nindex 0000000..7f1e6e6\n--- /dev/null\n+++ b/sympy/core/tests/test_factor_drop.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, expand, I, factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    assert factor(z, extension=[I]) == x - 1\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_factor_drop_inverted.py b/sympy/core/tests/test_factor_drop_inverted.py\nnew file mode 100644\nindex 0000000..b366473\n--- /dev/null\n+++ b/sympy/core/tests/test_factor_drop_inverted.py\n@@ -0,0 +1,7 @@\n+from sympy import symbols, expand, I, factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    # The test should now fail if the factor of y-1 is dropped\n+    assert factor(z, extension=[I]) == (x - 1) * (y - 1), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1854277,
+  "num_received_chars": 39934,
+  "elapsed_time": 618.5148854255676,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

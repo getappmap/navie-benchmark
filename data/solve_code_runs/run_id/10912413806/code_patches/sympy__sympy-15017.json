@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15017",
+  "edit_test_file": "sympy/tensor/array/tests/test_immutable_ndim_array.py",
+  "code_patch": "diff --git a/sympy/tensor/array/ndim_array.py b/sympy/tensor/array/ndim_array.py\nindex 099b291..53e5889 100644\n--- a/sympy/tensor/array/ndim_array.py\n+++ b/sympy/tensor/array/ndim_array.py\n@@ -175,7 +175,7 @@ def __len__(self):\n         9\n \n         \"\"\"\n-        return self._loop_size\n+        return 1 if self.rank() == 0 else self._loop_size\n \n     @property\n     def shape(self):\n",
+  "test_patch": "diff --git a/sympy/tensor/array/tests/test_ndim_array_len.py b/sympy/tensor/array/tests/test_ndim_array_len.py\nnew file mode 100644\nindex 0000000..48e3536\n--- /dev/null\n+++ b/sympy/tensor/array/tests/test_ndim_array_len.py\n@@ -0,0 +1,6 @@\n+from sympy import Array\n+\n+def test_len_of_rank_0_array():\n+    a = Array(3)\n+    assert len(a) == 0  # This is the incorrect behavior that we want to reproduce\n+    assert len(list(a)) == 1  # This shows the expected number of elements\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/tensor/array/tests/test_ndim_array_len_inverted.py b/sympy/tensor/array/tests/test_ndim_array_len_inverted.py\nnew file mode 100644\nindex 0000000..8507998\n--- /dev/null\n+++ b/sympy/tensor/array/tests/test_ndim_array_len_inverted.py\n@@ -0,0 +1,6 @@\n+from sympy import Array\n+\n+def test_len_of_rank_0_array():\n+    a = Array(3)\n+    assert len(a) == 1, \"__BUG__HERE__\"  # This should fail if the bug is present\n+    assert len(list(a)) == 1  # This shows the expected number of elements\n\\ No newline at end of file\n",
+  "num_sent_chars": 1881600,
+  "num_received_chars": 20252,
+  "elapsed_time": 359.1461477279663,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

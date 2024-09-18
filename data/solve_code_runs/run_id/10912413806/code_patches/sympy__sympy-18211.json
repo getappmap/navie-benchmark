@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-18211",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/solvers/solveset.py b/sympy/solvers/solveset.py\nindex 445be3e..a3c32e0 100644\n--- a/sympy/solvers/solveset.py\n+++ b/sympy/solvers/solveset.py\n@@ -1984,8 +1984,7 @@ def solveset(f, symbol=None, domain=S.Complexes):\n         elif b is S.false:\n             return S.EmptySet\n         else:\n-            raise NotImplementedError(filldedent('''\n-                relationship between value and 0 is unknown: %s''' % b))\n+            return ConditionSet(symbol, Eq(f, 0), domain)\n \n     if symbol is None:\n         if len(free_symbols) == 1:\n@@ -2008,7 +2007,7 @@ def solveset(f, symbol=None, domain=S.Complexes):\n                 return solveset(f.xreplace({symbol: r}), r, domain\n                     ).xreplace({r: symbol})\n             except InconsistentAssumptions:\n-                pass\n+                return ConditionSet(symbol, Eq(f, 0), domain)\n     # Abs has its own handling method which avoids the\n     # rewriting property that the first piece of abs(x)\n     # is for x >= 0 and the 2nd piece for x < 0 -- solutions\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1899406,
+  "num_received_chars": 17233,
+  "elapsed_time": 345.1984033584595,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-10880",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py\nindex 87852bc..b404a4a 100644\n--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@ -1472,6 +1472,9 @@ class SQLAggregateCompiler(SQLCompiler):\n         sql, params = [], []\n         for annotation in self.query.annotation_select.values():\n             ann_sql, ann_params = self.compile(annotation, select_format=FORCE)\n+            # Ensure proper spacing between DISTINCT and CASE\n+            if 'DISTINCTCASE' in ann_sql:\n+                ann_sql = ann_sql.replace('DISTINCTCASE', 'DISTINCT CASE')\n             sql.append(ann_sql)\n             params.extend(ann_params)\n         self.col_count = len(self.query.annotation_select)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 707242,
+  "num_received_chars": 4686,
+  "elapsed_time": 70.71511244773865,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

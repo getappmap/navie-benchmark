@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9461",
+  "edit_test_file": "tests/test_ext_autodoc_autoproperty.py",
+  "code_patch": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex d79de15..075c17f 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -721,7 +721,9 @@ class PyMethod(PyObject):\n     })\n \n     def needs_arglist(self) -> bool:\n-        if 'property' in self.options:\n+        if 'property' in self.options and 'classmethod' in self.options:\n+            return False\n+        elif 'property' in self.options:\n             return False\n         else:\n             return True\n@@ -758,7 +760,9 @@ class PyMethod(PyObject):\n             else:\n                 return '%s()' % name\n \n-        if 'classmethod' in self.options:\n+        if 'classmethod' in self.options and 'property' in self.options:\n+            return _('%s() (%s class property)') % (methname, clsname)\n+        elif 'classmethod' in self.options:\n             return _('%s() (%s class method)') % (methname, clsname)\n         elif 'property' in self.options:\n             return _('%s() (%s property)') % (methname, clsname)\n",
+  "test_patch": "diff --git a/tests/test_ext_autodoc_classproperty.py b/tests/test_ext_autodoc_classproperty.py\nnew file mode 100644\nindex 0000000..e3383e5\n--- /dev/null\n+++ b/tests/test_ext_autodoc_classproperty.py\n@@ -0,0 +1,21 @@\n+\"\"\"\n+    test_ext_autodoc_classproperty\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test the autodoc extension for class properties. This test reproduces the issue\n+    where methods decorated with @classmethod and @property do not get documented.\n+\n+    :copyright: Copyright 2007-2021 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import pytest\n+\n+from .test_ext_autodoc import do_autodoc\n+\n+\n+@pytest.mark.sphinx('html', testroot='ext-autodoc')\n+def test_class_properties(app):\n+    actual = do_autodoc(app, 'property', 'target.properties.MetaClass.metaclass_class_property')\n+    # Expecting the output to be empty or incorrect due to the issue\n+    assert list(actual) == []\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_ext_autodoc_classproperty_inverted.py b/tests/test_ext_autodoc_classproperty_inverted.py\nnew file mode 100644\nindex 0000000..f761997\n--- /dev/null\n+++ b/tests/test_ext_autodoc_classproperty_inverted.py\n@@ -0,0 +1,24 @@\n+\"\"\"\n+    test_ext_autodoc_classproperty\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test the autodoc extension for class properties. This test reproduces the issue\n+    where methods decorated with @classmethod and @property do not get documented.\n+\n+    :copyright: Copyright 2007-2021 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import pytest\n+\n+from .test_ext_autodoc import do_autodoc\n+\n+\n+@pytest.mark.sphinx('html', testroot='ext-autodoc')\n+def test_class_properties(app):\n+    actual = do_autodoc(app, 'property', 'target.properties.MetaClass.metaclass_class_property')\n+    # The test should now fail if the issue is observed\n+    if list(actual) == []:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    # If the output is not empty, the test should pass\n+    assert list(actual) != []\n\\ No newline at end of file\n",
+  "num_sent_chars": 2384225,
+  "num_received_chars": 66020,
+  "elapsed_time": 673.2721154689789,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

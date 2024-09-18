@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-5414",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/models.py b/requests/models.py\nindex e7d292d..07d910d 100644\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -403,7 +403,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):\n                 host = self._get_idna_encoded_host(host)\n             except UnicodeError:\n                 raise InvalidURL('URL has an invalid label.')\n-        elif host.startswith(u'*'):\n+        elif host.startswith(u'*') or host == '':\n             raise InvalidURL('URL has an invalid label.')\n \n         # Carefully reconstruct the network location\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3489517,
+  "num_received_chars": 46780,
+  "elapsed_time": 366.8389456272125,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

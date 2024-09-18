@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11141",
+  "edit_test_file": "tests/file_storage/tests.py",
+  "code_patch": "diff --git a/django/db/migrations/loader.py b/django/db/migrations/loader.py\nindex 8c30862..d075fcc 100644\n--- a/django/db/migrations/loader.py\n+++ b/django/db/migrations/loader.py\n@@ -84,11 +84,6 @@ class MigrationLoader:\n                     continue\n                 raise\n             else:\n-                # Empty directories are namespaces.\n-                # getattr() needed on PY36 and older (replace w/attribute access).\n-                if getattr(module, '__file__', None) is None:\n-                    self.unmigrated_apps.add(app_config.label)\n-                    continue\n                 # Module is not a package (e.g. migrations.py).\n                 if not hasattr(module, '__path__'):\n                     self.unmigrated_apps.add(app_config.label)\n",
+  "test_patch": "diff --git a/tests/file_storage/test_migration_namespace_package.py b/tests/file_storage/test_migration_namespace_package.py\nnew file mode 100644\nindex 0000000..38bb2ad\n--- /dev/null\n+++ b/tests/file_storage/test_migration_namespace_package.py\n@@ -0,0 +1,27 @@\n+import os\n+import tempfile\n+import unittest\n+from django.core.management import call_command\n+from django.core.management.base import CommandError\n+from django.test import TestCase, override_settings\n+\n+class NamespaceMigrationsTestCase(TestCase):\n+    def setUp(self):\n+        # Create a temporary directory to simulate a namespace package\n+        self.temp_dir = tempfile.mkdtemp()\n+        self.app_name = 'namespace_app'\n+        self.migrations_dir = os.path.join(self.temp_dir, self.app_name, 'migrations')\n+        os.makedirs(self.migrations_dir)\n+\n+    def tearDown(self):\n+        # Clean up the temporary directory\n+        os.rmdir(self.migrations_dir)\n+        os.rmdir(os.path.join(self.temp_dir, self.app_name))\n+        os.rmdir(self.temp_dir)\n+\n+    def test_migrate_command_with_namespace_package(self):\n+        \"\"\"\n+        Test that the migrate command raises an error when run on a namespace package.\n+        \"\"\"\n+        with self.assertRaises(CommandError):\n+            call_command('migrate', self.app_name)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/file_storage/test_migration_namespace_package_inverted.py b/tests/file_storage/test_migration_namespace_package_inverted.py\nnew file mode 100644\nindex 0000000..bb02240\n--- /dev/null\n+++ b/tests/file_storage/test_migration_namespace_package_inverted.py\n@@ -0,0 +1,29 @@\n+import os\n+import tempfile\n+import unittest\n+from django.core.management import call_command\n+from django.core.management.base import CommandError\n+from django.test import TestCase, override_settings\n+\n+class NamespaceMigrationsTestCase(TestCase):\n+    def setUp(self):\n+        # Create a temporary directory to simulate a namespace package\n+        self.temp_dir = tempfile.mkdtemp()\n+        self.app_name = 'namespace_app'\n+        self.migrations_dir = os.path.join(self.temp_dir, self.app_name, 'migrations')\n+        os.makedirs(self.migrations_dir)\n+\n+    def tearDown(self):\n+        # Clean up the temporary directory\n+        os.rmdir(self.migrations_dir)\n+        os.rmdir(os.path.join(self.temp_dir, self.app_name))\n+        os.rmdir(self.temp_dir)\n+\n+    def test_migrate_command_with_namespace_package(self):\n+        \"\"\"\n+        Test that the migrate command does not raise an error when run on a namespace package.\n+        \"\"\"\n+        try:\n+            call_command('migrate', self.app_name)\n+        except CommandError:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 3797742,
+  "num_received_chars": 92454,
+  "elapsed_time": 1067.5196075439453,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

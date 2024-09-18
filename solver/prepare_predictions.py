@@ -37,19 +37,21 @@ def find_prediction_in_zip_archive(zip_file: Path, instance_id: str) -> Optional
     return None
 
 
-def main(instance_set: str, predictions_path: str):
+def main(instance_set: str, predictions_path: str, no_pull: bool):
     print(f"Preparing predictions for instance set '{instance_set}'")
 
-    print("Loading Docker images...")
-    docker_client = docker.from_env()
     instance_ids = load_instance_set(instance_set)
     dataset = load_dataset(DATASET_NAME, list(instance_ids))
-    test_specs = [make_test_spec(instance) for instance in dataset]
-    image_store = ImageStore(
-        docker_client,
-    )
-    image_store.set_image_types(["base", "env"])
-    image_store.ensure(test_specs)
+
+    if not no_pull:
+        print("Loading Docker images...")
+        docker_client = docker.from_env()
+        test_specs = [make_test_spec(instance) for instance in dataset]
+        image_store = ImageStore(
+            docker_client,
+        )
+        image_store.set_image_types(["base", "env"])
+        image_store.ensure(test_specs)
 
     # Collect every instance in data/code_patches/*.json
     code_patches_dir = Path("data") / "code_patches"
@@ -59,20 +61,35 @@ def main(instance_set: str, predictions_path: str):
 
     predictions: list = []
     for solution_file in solution_files:
-        solution_file_link_source = (
-            Path("data") / "solve_code_runs" / readlink(solution_file)
-        )
-        with solution_file_link_source.open() as f:
-            solution = json.load(f)
-        run_dir = solution_file_link_source.parent.parent
-        predictions_files = run_dir.glob("predictions-*.zip")
-        for predictions_file in predictions_files:
-            prediction = find_prediction_in_zip_archive(
-                predictions_file, solution["instance_id"]
+        if solution_file.is_symlink():
+            solution_file_link_source = (
+                Path("data") / "solve_code_runs" / readlink(solution_file)
             )
-            if prediction:
-                predictions.append(prediction)
-                break
+            with solution_file_link_source.open() as f:
+                solution = json.load(f)
+            run_dir = solution_file_link_source.parent.parent
+            predictions_files = run_dir.glob("predictions-*.zip")
+            for predictions_file in predictions_files:
+                prediction = find_prediction_in_zip_archive(
+                    predictions_file, solution["instance_id"]
+                )
+                if prediction:
+                    predictions.append(prediction)
+                    break
+        else:
+            instance_id = solution_file.stem
+
+            def prediction_for_solution_file():
+                predictions_dir = Path("data") / "predictions_issue-46"
+                prediction_file = predictions_dir / f"{instance_id}.json"
+                with prediction_file.open() as f:
+                    return json.load(f)
+
+            print(
+                f"Loading prediction for {instance_id} from data/predictions_issue-46",
+                file=sys.stderr,
+            )
+            predictions.append(prediction_for_solution_file())
 
     print(f"Collected {len(predictions)} predictions (out of {len(instance_ids)}).")
     for instance_id in instance_ids:
@@ -105,6 +122,11 @@ if __name__ == "__main__":
         type=str,
         help="File to write predictions to",
         default="predictions.jsonl",
+    )
+    parser.add_argument(
+        "--no_pull",
+        action="store_true",
+        help="Do not pull Docker images",
     )
 
     args = parser.parse_args()

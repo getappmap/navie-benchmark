@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-6028",
+  "edit_test_file": "tests/test_testserver.py",
+  "code_patch": "diff --git a/requests/adapters.py b/requests/adapters.py\nindex fe22ff4..2ac4b9a 100644\n--- a/requests/adapters.py\n+++ b/requests/adapters.py\n@@ -176,6 +176,7 @@ class HTTPAdapter(BaseAdapter):\n         :returns: ProxyManager\n         :rtype: urllib3.ProxyManager\n         \"\"\"\n+        proxy = prepend_scheme_if_needed(proxy, 'http')\n         if proxy in self.proxy_manager:\n             manager = self.proxy_manager[proxy]\n         elif proxy.lower().startswith('socks'):\n@@ -308,6 +309,7 @@ class HTTPAdapter(BaseAdapter):\n                 raise InvalidProxyURL(\"Please check proxy URL. It is malformed\"\n                                       \" and could be missing the host.\")\n             proxy_manager = self.proxy_manager_for(proxy)\n+            proxy_manager = self.proxy_manager_for(proxy)\n             conn = proxy_manager.connection_from_url(url)\n         else:\n             # Only scheme should be lower case\n@@ -384,6 +386,7 @@ class HTTPAdapter(BaseAdapter):\n         :rtype: dict\n         \"\"\"\n         headers = {}\n+        proxy = prepend_scheme_if_needed(proxy, 'http')\n         username, password = get_auth_from_url(proxy)\n \n         if username:\n",
+  "test_patch": "diff --git a/tests/test_proxy_authentication_bug.py b/tests/test_proxy_authentication_bug.py\nnew file mode 100644\nindex 0000000..cd4ef05\n--- /dev/null\n+++ b/tests/test_proxy_authentication_bug.py\n@@ -0,0 +1,18 @@\n+import unittest\n+import requests\n+from unittest.mock import patch\n+\n+class TestProxyAuthenticationBug(unittest.TestCase):\n+    def test_proxy_authentication_bug(self):\n+        proxies = {\n+            'http': 'http://user:pass@proxy.example.com:8080',\n+            'https': 'http://user:pass@proxy.example.com:8080',\n+        }\n+        \n+        with patch('requests.get') as mock_get:\n+            mock_get.return_value.status_code = 407\n+            response = requests.get('https://example.org/', proxies=proxies)\n+            self.assertEqual(response.status_code, 407)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_proxy_authentication_bug_inverted.py b/tests/test_proxy_authentication_bug_inverted.py\nnew file mode 100644\nindex 0000000..b10ed4d\n--- /dev/null\n+++ b/tests/test_proxy_authentication_bug_inverted.py\n@@ -0,0 +1,19 @@\n+import unittest\n+import requests\n+from unittest.mock import patch\n+\n+class TestProxyAuthenticationBug(unittest.TestCase):\n+    def test_proxy_authentication_bug(self):\n+        proxies = {\n+            'http': 'http://user:pass@proxy.example.com:8080',\n+            'https': 'http://user:pass@proxy.example.com:8080',\n+        }\n+        \n+        with patch('requests.get') as mock_get:\n+            mock_get.return_value.status_code = 407\n+            response = requests.get('https://example.org/', proxies=proxies)\n+            # Altered the assertion to expect a 200 status code, which should fail if the bug is present\n+            self.assertEqual(response.status_code, 200, \"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1630887,
+  "num_received_chars": 46611,
+  "elapsed_time": 469.81879711151123,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10435",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/writers/latex.py b/sphinx/writers/latex.py\nindex e0c7d56..3701eab 100644\n--- a/sphinx/writers/latex.py\n+++ b/sphinx/writers/latex.py\n@@ -1707,12 +1707,11 @@ class LaTeXTranslator(SphinxTranslator):\n         opts = self.config.highlight_options.get(lang, {})\n         hlcode = self.highlighter.highlight_block(\n             node.astext(), lang, opts=opts, location=node)\n-        # TODO: Use nowrap option once LaTeX formatter supports it\n-        # https://github.com/pygments/pygments/pull/1343\n+        # Adjust LaTeX commands to prevent extra whitespace\n         hlcode = hlcode.replace(r'\\begin{Verbatim}[commandchars=\\\\\\{\\}]',\n-                                r'\\sphinxcode{\\sphinxupquote{')\n-        # get consistent trailer\n-        hlcode = hlcode.rstrip()[:-14]  # strip \\end{Verbatim}\n+                                r'\\sphinxcode{\\sphinxupquote{').strip()\n+        # Ensure no leading/trailing spaces\n+        hlcode = hlcode.strip().rstrip()[:-14]  # strip \\end{Verbatim}\n         self.body.append(hlcode)\n         self.body.append('}}')\n         raise nodes.SkipNode\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2475234,
+  "num_received_chars": 42219,
+  "elapsed_time": 299.4117200374603,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

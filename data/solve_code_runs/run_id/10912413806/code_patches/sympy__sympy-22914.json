@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-22914",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py\nindex 3a72ab6..f26c6bf 100644\n--- a/sympy/printing/pycode.py\n+++ b/sympy/printing/pycode.py\n@@ -450,6 +450,12 @@ def _print_frac(self, expr):\n         from sympy.core.mod import Mod\n         return self._print_Mod(Mod(expr.args[0], 1))\n \n+    def _print_Min(self, expr):\n+        return 'min({})'.format(', '.join(self._print(arg) for arg in expr.args))\n+\n+    def _print_Max(self, expr):\n+        return 'max({})'.format(', '.join(self._print(arg) for arg in expr.args))\n+\n     def _print_Symbol(self, expr):\n \n         name = super()._print_Symbol(expr)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1685664,
+  "num_received_chars": 15004,
+  "elapsed_time": 231.75711941719055,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

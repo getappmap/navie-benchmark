@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23262",
+  "edit_test_file": "sympy/core/tests/test_containers.py",
+  "code_patch": "diff --git a/sympy/utilities/lambdify.py b/sympy/utilities/lambdify.py\nindex da67263..9f4c1b7 100644\n--- a/sympy/utilities/lambdify.py\n+++ b/sympy/utilities/lambdify.py\n@@ -959,6 +959,8 @@ def _recursive_to_string(doprint, arg):\n             left, right = \"[]\"\n         elif isinstance(arg, tuple):\n             left, right = \"()\"\n+            if len(arg) == 1:\n+                return left + _recursive_to_string(doprint, arg[0]) + ',' + right\n         else:\n             raise NotImplementedError(\"unhandled type: %s, %s\" % (type(arg), arg))\n         return left +', '.join(_recursive_to_string(doprint, e) for e in arg) + right\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_code_printer.py b/sympy/core/tests/test_code_printer.py\nnew file mode 100644\nindex 0000000..890429d\n--- /dev/null\n+++ b/sympy/core/tests/test_code_printer.py\n@@ -0,0 +1,11 @@\n+import inspect\n+from sympy import lambdify\n+from sympy.testing.pytest import raises\n+\n+def test_python_code_printer_single_element_tuple():\n+    # Test to reproduce the issue with single element tuple in lambdify\n+    generated_code = inspect.getsource(lambdify([], tuple([1])))\n+    expected_code = 'def _lambdifygenerated():\\n    return (1,)\\n'\n+    \n+    # Assert that the generated code is incorrect as described in the issue\n+    assert generated_code == 'def _lambdifygenerated():\\n    return (1)\\n'\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_code_printer_inverted.py b/sympy/core/tests/test_code_printer_inverted.py\nnew file mode 100644\nindex 0000000..8087733\n--- /dev/null\n+++ b/sympy/core/tests/test_code_printer_inverted.py\n@@ -0,0 +1,14 @@\n+import inspect\n+from sympy import lambdify\n+from sympy.testing.pytest import raises\n+\n+def test_python_code_printer_single_element_tuple():\n+    # Test to reproduce the issue with single element tuple in lambdify\n+    generated_code = inspect.getsource(lambdify([], tuple([1])))\n+    expected_code = 'def _lambdifygenerated():\\n    return (1,)\\n'\n+    \n+    # Assert that the generated code is incorrect as described in the issue\n+    # This should now fail when the bug is observed\n+    if generated_code == 'def _lambdifygenerated():\\n    return (1)\\n':\n+        raise AssertionError(\"__BUG__HERE__\")\n+    assert generated_code == expected_code\n\\ No newline at end of file\n",
+  "num_sent_chars": 2299074,
+  "num_received_chars": 34022,
+  "elapsed_time": 465.61136865615845,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

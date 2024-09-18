@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-17084",
+  "edit_test_file": "tests/annotations/tests.py",
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 395ba6e..2c7b605 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -1970,6 +1970,18 @@ class QuerySet(AltersData):\n                     \", \".join(invalid_args),\n                 )\n             )\n+        \n+        # Check for invalid use of window functions within aggregate functions\n+        for value in values:\n+            if hasattr(value, \"contains_aggregate\") and value.contains_aggregate:\n+                if hasattr(value, \"source_expressions\"):\n+                    for expr in value.source_expressions:\n+                        if hasattr(expr, \"contains_over_clause\") and expr.contains_over_clause:\n+                            raise exceptions.FieldError(\n+                                \"Aggregate functions cannot contain window function calls. \"\n+                                \"Please restructure your query to separate window function \"\n+                                \"results before aggregation.\"\n+                            )\n \n     def _not_support_combined_queries(self, operation_name):\n         if self.query.combinator:\n",
+  "test_patch": "diff --git a/tests/annotations/test_aggregate_over_window_functions.py b/tests/annotations/test_aggregate_over_window_functions.py\nnew file mode 100644\nindex 0000000..5fe3eaa\n--- /dev/null\n+++ b/tests/annotations/test_aggregate_over_window_functions.py\n@@ -0,0 +1,25 @@\n+import unittest\n+from django.db import connection\n+from django.db.models import Sum, F, Window\n+from django.db.models.functions import Coalesce\n+from django.test import TestCase\n+from .models import Book\n+\n+@unittest.skipUnless(connection.vendor == \"postgresql\", \"PostgreSQL specific tests\")\n+class AggregateOverWindowFunctionTestCase(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        # Create test data\n+        Book.objects.create(isbn=\"1234567890\", name=\"Test Book 1\", pages=100, rating=4.5, price=10.0)\n+        Book.objects.create(isbn=\"0987654321\", name=\"Test Book 2\", pages=200, rating=3.5, price=20.0)\n+\n+    def test_aggregate_over_window_function(self):\n+        queryset = Book.objects.annotate(\n+            cumul_DJR=Coalesce(Window(Sum(\"rating\"), order_by=F(\"pages\").asc()), 0.0)\n+        )\n+        with self.assertRaises(Exception) as context:\n+            queryset.aggregate(\n+                DJR_total=Sum(\"rating\"),\n+                cumul_DJR_total=Sum(\"cumul_DJR\")\n+            )\n+        self.assertIn(\"aggregate function calls cannot contain window function calls\", str(context.exception))\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2920834,
+  "num_received_chars": 59775,
+  "elapsed_time": 464.1949212551117,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

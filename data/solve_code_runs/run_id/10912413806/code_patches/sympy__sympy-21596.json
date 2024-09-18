@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-21596",
+  "edit_test_file": "sympy/sets/tests/test_fancysets.py",
+  "code_patch": "diff --git a/sympy/sets/sets.py b/sympy/sets/sets.py\nindex 9f19ecf..4ef8713 100644\n--- a/sympy/sets/sets.py\n+++ b/sympy/sets/sets.py\n@@ -396,6 +396,11 @@ def is_subset(self, other):\n         if self.intersect(other) == self:\n             return True\n \n+        # Handle intersection with Reals\n+        if other == S.Reals:\n+            real_intersection = self.intersect(S.Reals)\n+            return real_intersection == self\n+\n     def _eval_is_subset(self, other):\n         '''Returns a fuzzy bool for whether self is a subset of other.'''\n         return None\n",
+  "test_patch": "diff --git a/sympy/sets/tests/test_reals_intersection.py b/sympy/sets/tests/test_reals_intersection.py\nnew file mode 100644\nindex 0000000..aaea3b4\n--- /dev/null\n+++ b/sympy/sets/tests/test_reals_intersection.py\n@@ -0,0 +1,8 @@\n+from sympy import I, S, symbols, imageset, Lambda\n+from sympy.sets import Reals, Integers\n+\n+def test_issue_19513():\n+    n = symbols('n', integer=True)\n+    S1 = imageset(Lambda(n, n + (n - 1)*(n + 1)*I), Integers)\n+    assert (2 in S1) is False\n+    assert (2 in S1.intersect(Reals)) is True\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/sets/tests/test_reals_intersection_inverted.py b/sympy/sets/tests/test_reals_intersection_inverted.py\nnew file mode 100644\nindex 0000000..39ed0e9\n--- /dev/null\n+++ b/sympy/sets/tests/test_reals_intersection_inverted.py\n@@ -0,0 +1,8 @@\n+from sympy import I, S, symbols, imageset, Lambda\n+from sympy.sets import Reals, Integers\n+\n+def test_issue_19513():\n+    n = symbols('n', integer=True)\n+    S1 = imageset(Lambda(n, n + (n - 1)*(n + 1)*I), Integers)\n+    assert (2 in S1) is False\n+    assert (2 in S1.intersect(Reals)) is False, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2664310,
+  "num_received_chars": 78772,
+  "elapsed_time": 1110.9372253417969,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

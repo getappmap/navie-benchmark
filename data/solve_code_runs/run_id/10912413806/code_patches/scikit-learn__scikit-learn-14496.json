@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-14496",
+  "edit_test_file": "sklearn/cluster/tests/test_optics.py",
+  "code_patch": "diff --git a/sklearn/cluster/optics_.py b/sklearn/cluster/optics_.py\nindex 4f7eb11..228d88c 100755\n--- a/sklearn/cluster/optics_.py\n+++ b/sklearn/cluster/optics_.py\n@@ -437,7 +437,7 @@ if metric=\u2019precomputed\u2019.\n     n_samples = X.shape[0]\n     _validate_size(min_samples, n_samples, 'min_samples')\n     if min_samples <= 1:\n-        min_samples = max(2, min_samples * n_samples)\n+        min_samples = int(round(max(2, min_samples * n_samples)))\n \n     # Start all points as 'unprocessed' ##\n     reachability_ = np.empty(n_samples)\n",
+  "test_patch": "diff --git a/sklearn/cluster/tests/test_optics_min_samples_bug.py b/sklearn/cluster/tests/test_optics_min_samples_bug.py\nnew file mode 100644\nindex 0000000..744b3f0\n--- /dev/null\n+++ b/sklearn/cluster/tests/test_optics_min_samples_bug.py\n@@ -0,0 +1,14 @@\n+import numpy as np\n+from sklearn.cluster import OPTICS\n+from sklearn.datasets import make_blobs\n+from sklearn.utils.testing import assert_raises\n+\n+def test_optics_float_min_samples():\n+    # Generate some sample data\n+    X, _ = make_blobs(n_samples=100, centers=3, random_state=42)\n+\n+    # Instantiate OPTICS with min_samples as a float\n+    clust = OPTICS(metric='minkowski', n_jobs=-1, min_samples=0.1)\n+\n+    # Expect a TypeError due to float min_samples\n+    assert_raises(TypeError, clust.fit, X)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/cluster/tests/test_optics_min_samples_bug_inverted.py b/sklearn/cluster/tests/test_optics_min_samples_bug_inverted.py\nnew file mode 100644\nindex 0000000..5ae9400\n--- /dev/null\n+++ b/sklearn/cluster/tests/test_optics_min_samples_bug_inverted.py\n@@ -0,0 +1,20 @@\n+import numpy as np\n+from sklearn.cluster import OPTICS\n+from sklearn.datasets import make_blobs\n+\n+def test_optics_float_min_samples():\n+    # Generate some sample data\n+    X, _ = make_blobs(n_samples=100, centers=3, random_state=42)\n+\n+    # Instantiate OPTICS with min_samples as a float\n+    clust = OPTICS(metric='minkowski', n_jobs=-1, min_samples=0.1)\n+\n+    try:\n+        # Attempt to fit the model, expecting a TypeError due to float min_samples\n+        clust.fit(X)\n+    except TypeError:\n+        # If a TypeError is raised, the test should fail with the specific error message\n+        raise AssertionError(\"__BUG__HERE__\")\n+    else:\n+        # If no error is raised, the test should fail because the bug is not observed\n+        raise AssertionError(\"Expected TypeError was not raised\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1240221,
+  "num_received_chars": 19037,
+  "elapsed_time": 284.80003786087036,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

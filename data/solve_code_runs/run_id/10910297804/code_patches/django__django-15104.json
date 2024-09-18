@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15104",
+  "edit_test_file": "tests/model_fields/test_foreignkey.py",
+  "code_patch": "diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py\nindex 97977d7..bf9c2ac 100644\n--- a/django/db/migrations/autodetector.py\n+++ b/django/db/migrations/autodetector.py\n@@ -96,7 +96,7 @@ class MigrationAutodetector:\n         for name, field in sorted(fields.items()):\n             deconstruction = self.deep_deconstruct(field)\n             if field.remote_field and field.remote_field.model:\n-                del deconstruction[2]['to']\n+                deconstruction[2].pop('to', None)\n             fields_def.append(deconstruction)\n         return fields_def\n \n",
+  "test_patch": "diff --git a/tests/model_fields/test_customfkfield.py b/tests/model_fields/test_customfkfield.py\nnew file mode 100644\nindex 0000000..84a7b07\n--- /dev/null\n+++ b/tests/model_fields/test_customfkfield.py\n@@ -0,0 +1,27 @@\n+from django.db import models\n+from django.db.migrations.autodetector import MigrationAutodetector\n+from django.db.migrations.state import ModelState, ProjectState\n+from django.test import TestCase\n+\n+class CustomFKField(models.ForeignKey):\n+    def __init__(self, *args, **kwargs):\n+        kwargs['to'] = 'testapp.HardcodedModel'\n+        super().__init__(*args, **kwargs)\n+\n+    def deconstruct(self):\n+        name, path, args, kwargs = super().deconstruct()\n+        del kwargs[\"to\"]\n+        return name, path, args, kwargs\n+\n+class ReproTestCase(TestCase):\n+    def test_reproduction(self):\n+        before = ProjectState()\n+        before.add_model(ModelState('testapp', 'HardcodedModel', []))\n+        after = ProjectState()\n+        after.add_model(ModelState('testapp', 'HardcodedModel', []))\n+        after.add_model(ModelState('testapp', 'TestModel', [('custom', CustomFKField(on_delete=models.CASCADE))]))\n+        \n+        with self.assertRaises(KeyError) as cm:\n+            MigrationAutodetector(before, after)._detect_changes()\n+        \n+        self.assertEqual(str(cm.exception), \"'to'\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/model_fields/test_customfkfield_inverted.py b/tests/model_fields/test_customfkfield_inverted.py\nnew file mode 100644\nindex 0000000..27183e1\n--- /dev/null\n+++ b/tests/model_fields/test_customfkfield_inverted.py\n@@ -0,0 +1,27 @@\n+from django.db import models\n+from django.db.migrations.autodetector import MigrationAutodetector\n+from django.db.migrations.state import ModelState, ProjectState\n+from django.test import TestCase\n+\n+class CustomFKField(models.ForeignKey):\n+    def __init__(self, *args, **kwargs):\n+        kwargs['to'] = 'testapp.HardcodedModel'\n+        super().__init__(*args, **kwargs)\n+\n+    def deconstruct(self):\n+        name, path, args, kwargs = super().deconstruct()\n+        del kwargs[\"to\"]\n+        return name, path, args, kwargs\n+\n+class ReproTestCase(TestCase):\n+    def test_reproduction(self):\n+        before = ProjectState()\n+        before.add_model(ModelState('testapp', 'HardcodedModel', []))\n+        after = ProjectState()\n+        after.add_model(ModelState('testapp', 'HardcodedModel', []))\n+        after.add_model(ModelState('testapp', 'TestModel', [('custom', CustomFKField(on_delete=models.CASCADE))]))\n+        \n+        with self.assertRaises(KeyError) as cm:\n+            MigrationAutodetector(before, after)._detect_changes()\n+        \n+        self.assertEqual(str(cm.exception), \"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1590234,
+  "num_received_chars": 29255,
+  "elapsed_time": 291.03349781036377,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

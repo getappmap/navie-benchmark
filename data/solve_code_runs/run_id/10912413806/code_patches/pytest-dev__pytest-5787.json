@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5787",
+  "edit_test_file": "testing/test_reports.py",
+  "code_patch": "diff --git a/doc/en/example/assertion/failure_demo.py b/doc/en/example/assertion/failure_demo.py\nindex 26454e4..85e3f7d 100644\n--- a/doc/en/example/assertion/failure_demo.py\n+++ b/doc/en/example/assertion/failure_demo.py\n@@ -15,6 +15,30 @@ def otherfunc_multi(a, b):\n     assert a == b\n \n \n+def test_chained_exception_with_from():\n+    try:\n+        try:\n+            raise ValueError(\"Initial error\")\n+        except ValueError as e:\n+            raise TypeError(\"Secondary error\") from e\n+    except TypeError as e:\n+        assert e.__cause__ is not None\n+        assert isinstance(e.__cause__, ValueError)\n+        assert str(e.__cause__) == \"Initial error\"\n+\n+\n+def test_chained_exception_without_from():\n+    try:\n+        try:\n+            raise ValueError(\"Initial error\")\n+        except ValueError as e:\n+            raise TypeError(\"Secondary error\")\n+    except TypeError as e:\n+        assert e.__context__ is not None\n+        assert isinstance(e.__context__, ValueError)\n+        assert str(e.__context__) == \"Initial error\"\n+\n+\n @pytest.mark.parametrize(\"param1, param2\", [(3, 6)])\n def test_generative(param1, param2):\n     assert param1 * 2 < param2\n",
+  "test_patch": "diff --git a/testing/test_chained_exceptions.py b/testing/test_chained_exceptions.py\nnew file mode 100644\nindex 0000000..6795ca7\n--- /dev/null\n+++ b/testing/test_chained_exceptions.py\n@@ -0,0 +1,23 @@\n+import pytest\n+\n+def test_chained_exception_with_from():\n+    with pytest.raises(ValueError) as excinfo:\n+        try:\n+            try:\n+                raise ValueError(11)\n+            except Exception as e1:\n+                raise ValueError(12) from e1\n+        except Exception as e2:\n+            raise ValueError(13) from e2\n+    assert str(excinfo.value) == \"13\"\n+\n+def test_chained_exception_without_from():\n+    with pytest.raises(ValueError) as excinfo:\n+        try:\n+            try:\n+                raise ValueError(21)\n+            except Exception:\n+                raise ValueError(22)\n+        except Exception:\n+            raise ValueError(23)\n+    assert str(excinfo.value) == \"23\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_chained_exceptions_inverted.py b/testing/test_chained_exceptions_inverted.py\nnew file mode 100644\nindex 0000000..5c6abb4\n--- /dev/null\n+++ b/testing/test_chained_exceptions_inverted.py\n@@ -0,0 +1,23 @@\n+import pytest\n+\n+def test_chained_exception_with_from():\n+    with pytest.raises(ValueError) as excinfo:\n+        try:\n+            try:\n+                raise ValueError(11)\n+            except Exception as e1:\n+                raise ValueError(12) from e1\n+        except Exception as e2:\n+            raise ValueError(13) from e2\n+    assert str(excinfo.value) != \"13\", \"__BUG__HERE__\"\n+\n+def test_chained_exception_without_from():\n+    with pytest.raises(ValueError) as excinfo:\n+        try:\n+            try:\n+                raise ValueError(21)\n+            except Exception:\n+                raise ValueError(22)\n+        except Exception:\n+            raise ValueError(23)\n+    assert str(excinfo.value) != \"23\", \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1852363,
+  "num_received_chars": 51650,
+  "elapsed_time": 383.58128786087036,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

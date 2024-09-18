@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14311",
+  "edit_test_file": "tests/utils_tests/test_module_loading.py",
+  "code_patch": "diff --git a/django/utils/autoreload.py b/django/utils/autoreload.py\nindex b6af5f5..3657ac2 100644\n--- a/django/utils/autoreload.py\n+++ b/django/utils/autoreload.py\n@@ -223,9 +223,14 @@ def get_child_arguments():\n     # __spec__ is set when the server was started with the `-m` option,\n     # see https://docs.python.org/3/reference/import.html#main-spec\n     # __spec__ may not exist, e.g. when running in a Conda env.\n-    if getattr(__main__, '__spec__', None) is not None and __main__.__spec__.parent:\n-        args += ['-m', __main__.__spec__.parent]\n-        args += sys.argv[1:]\n+    if getattr(__main__, '__spec__', None) is not None:\n+        module_name = __main__.__spec__.name\n+        if module_name:\n+            args += ['-m', module_name]\n+            args += sys.argv[1:]\n+        else:\n+            args += ['-m', __main__.__spec__.parent]\n+            args += sys.argv[1:]\n     elif not py_script.exists():\n         # sys.argv[0] may not exist for several reasons on Windows.\n         # It may exist with a .exe extension or have a -script.py suffix.\n",
+  "test_patch": "diff --git a/tests/utils_tests/test_module_autoreload_issue.py b/tests/utils_tests/test_module_autoreload_issue.py\nnew file mode 100644\nindex 0000000..7bdaabd\n--- /dev/null\n+++ b/tests/utils_tests/test_module_autoreload_issue.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from unittest.mock import patch\n+from django.utils import autoreload\n+\n+class TestAutoreloadWithCustomModule(unittest.TestCase):\n+    def test_autoreload_with_custom_module(self):\n+        \"\"\"\n+        Test to reproduce the issue with autoreloading when using `python -m custom_module runserver`.\n+        The test should pass when the issue is observed, i.e., when the incorrect arguments are produced.\n+        \"\"\"\n+        original_args = ['-m', 'custom_module.runserver']\n+        expected_args = ['-m', 'custom_module.runserver']\n+\n+        with patch('django.utils.autoreload.get_child_arguments', return_value=original_args):\n+            actual_args = autoreload.get_child_arguments()\n+            self.assertEqual(actual_args, expected_args, \"Autoreload arguments are incorrect for custom module.\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_module_autoreload_issue_inverted.py b/tests/utils_tests/test_module_autoreload_issue_inverted.py\nnew file mode 100644\nindex 0000000..a9a036a\n--- /dev/null\n+++ b/tests/utils_tests/test_module_autoreload_issue_inverted.py\n@@ -0,0 +1,18 @@\n+import unittest\n+from unittest.mock import patch\n+from django.utils import autoreload\n+\n+class TestAutoreloadWithCustomModule(unittest.TestCase):\n+    def test_autoreload_with_custom_module(self):\n+        \"\"\"\n+        Test to reproduce the issue with autoreloading when using `python -m custom_module runserver`.\n+        The test should fail when the issue is observed, i.e., when the incorrect arguments are produced.\n+        \"\"\"\n+        original_args = ['-m', 'custom_module.runserver']\n+        expected_args = ['-m', 'custom_module.runserver']\n+\n+        with patch('django.utils.autoreload.get_child_arguments', return_value=original_args):\n+            actual_args = autoreload.get_child_arguments()\n+            if actual_args == expected_args:\n+                raise AssertionError(\"__BUG__HERE__\")\n+            self.assertNotEqual(actual_args, expected_args, \"Autoreload arguments are incorrect for custom module.\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1875197,
+  "num_received_chars": 42460,
+  "elapsed_time": 496.8236002922058,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

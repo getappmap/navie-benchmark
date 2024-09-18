@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13798",
+  "edit_test_file": "sympy/printing/tests/test_mathematica.py",
+  "code_patch": "diff --git a/sympy/printing/printer.py b/sympy/printing/printer.py\nindex b0fa790..4b518fa 100644\n--- a/sympy/printing/printer.py\n+++ b/sympy/printing/printer.py\n@@ -230,8 +230,10 @@ def order(self):\n         else:\n             raise AttributeError(\"No order defined.\")\n \n-    def doprint(self, expr):\n+    def doprint(self, expr, mul_symbol=None):\n         \"\"\"Returns printer's representation for expr (as a string)\"\"\"\n+        if mul_symbol is not None:\n+            self._settings['mul_symbol'] = mul_symbol\n         return self._str(self._print(expr))\n \n     def _print(self, expr, *args, **kwargs):\n@@ -251,6 +253,13 @@ def _print(self, expr, *args, **kwargs):\n                     and not isinstance(expr, BasicMeta)):\n                 return getattr(expr, self.printmethod)(self, *args, **kwargs)\n \n+            # Check for custom multiplication symbol\n+            mul_symbol = self._settings.get('mul_symbol', None)\n+            if mul_symbol:\n+                # Validate the custom symbol if necessary\n+                # This is a placeholder for any validation logic\n+                pass\n+\n             # See if the class of expr is known, or if one of its super\n             # classes is known, and use that print function\n             for cls in type(expr).__mro__:\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_mul_symbol_latex.py b/sympy/printing/tests/test_mul_symbol_latex.py\nnew file mode 100644\nindex 0000000..a242872\n--- /dev/null\n+++ b/sympy/printing/tests/test_mul_symbol_latex.py\n@@ -0,0 +1,8 @@\n+from sympy import Symbol, latex\n+from sympy.utilities.pytest import raises\n+\n+def test_latex_mul_symbol_custom():\n+    x = Symbol('x')\n+    expr = 3 * x**2\n+    # Attempt to use a custom multiplication symbol\n+    raises(KeyError, lambda: latex(expr, mul_symbol='\\\\,'))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_mul_symbol_latex_inverted.py b/sympy/printing/tests/test_mul_symbol_latex_inverted.py\nnew file mode 100644\nindex 0000000..3457798\n--- /dev/null\n+++ b/sympy/printing/tests/test_mul_symbol_latex_inverted.py\n@@ -0,0 +1,10 @@\n+from sympy import Symbol, latex\n+\n+def test_latex_mul_symbol_custom():\n+    x = Symbol('x')\n+    expr = 3 * x**2\n+    # Attempt to use a custom multiplication symbol\n+    try:\n+        latex(expr, mul_symbol='\\\\,')\n+    except KeyError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1154846,
+  "num_received_chars": 25291,
+  "elapsed_time": 187.91317319869995,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

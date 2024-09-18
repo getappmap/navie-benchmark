@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-18189",
+  "edit_test_file": "sympy/combinatorics/tests/test_permutations.py",
+  "code_patch": "diff --git a/sympy/solvers/diophantine.py b/sympy/solvers/diophantine.py\nindex 6092e35..f41e063 100644\n--- a/sympy/solvers/diophantine.py\n+++ b/sympy/solvers/diophantine.py\n@@ -112,6 +112,9 @@ def diophantine(eq, param=symbols(\"t\", integer=True), syms=None,\n     form and to interpret the output correctly; ``diophantine()`` is\n     the public-facing function to use in general.)\n \n+    If `permute` is True, ensure all permutations of `syms` are considered\n+    to collect a comprehensive set of solutions.\n+\n     Output of ``diophantine()`` is a set of tuples. The elements of the\n     tuple are the solutions for each variable in the equation and\n     are arranged according to the alphabetic ordering of the variables.\n",
+  "test_patch": "diff --git a/sympy/combinatorics/tests/test_diophantine_permute_syms_order.py b/sympy/combinatorics/tests/test_diophantine_permute_syms_order.py\nnew file mode 100644\nindex 0000000..201db3b\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_diophantine_permute_syms_order.py\n@@ -0,0 +1,16 @@\n+from sympy import symbols\n+from sympy.solvers.diophantine import diophantine\n+\n+def test_diophantine_permute_syms_order():\n+    m, n = symbols('m n', integer=True)\n+    eq = n**4 + m**4 - 2**4 - 3**4\n+\n+    # Test with syms order (m, n)\n+    result_mn = diophantine(eq, syms=(m, n), permute=True)\n+    expected_mn = {(-3, -2), (-3, 2), (-2, -3), (-2, 3), (2, -3), (2, 3), (3, -2), (3, 2)}\n+    assert result_mn == expected_mn, f\"Expected {expected_mn}, but got {result_mn}\"\n+\n+    # Test with syms order (n, m)\n+    result_nm = diophantine(eq, syms=(n, m), permute=True)\n+    expected_nm = {(3, 2)}\n+    assert result_nm == expected_nm, f\"Expected {expected_nm}, but got {result_nm}\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/combinatorics/tests/test_diophantine_permute_syms_order_inverted.py b/sympy/combinatorics/tests/test_diophantine_permute_syms_order_inverted.py\nnew file mode 100644\nindex 0000000..81181db\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_diophantine_permute_syms_order_inverted.py\n@@ -0,0 +1,17 @@\n+from sympy import symbols\n+from sympy.solvers.diophantine import diophantine\n+\n+def test_diophantine_permute_syms_order():\n+    m, n = symbols('m n', integer=True)\n+    eq = n**4 + m**4 - 2**4 - 3**4\n+\n+    # Test with syms order (m, n)\n+    result_mn = diophantine(eq, syms=(m, n), permute=True)\n+    expected_mn = {(-3, -2), (-3, 2), (-2, -3), (-2, 3), (2, -3), (2, 3), (3, -2), (3, 2)}\n+    assert result_mn == expected_mn, f\"Expected {expected_mn}, but got {result_mn}\"\n+\n+    # Test with syms order (n, m)\n+    result_nm = diophantine(eq, syms=(n, m), permute=True)\n+    expected_nm = {(-3, -2), (-3, 2), (-2, -3), (-2, 3), (2, -3), (2, 3), (3, -2), (3, 2)}\n+    if result_nm != expected_nm:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 620053,
+  "num_received_chars": 27276,
+  "elapsed_time": 330.07030749320984,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14765",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/state.py b/django/db/migrations/state.py\nindex 088f5c4..7b3ad45 100644\n--- a/django/db/migrations/state.py\n+++ b/django/db/migrations/state.py\n@@ -91,8 +91,9 @@ class ProjectState:\n     def __init__(self, models=None, real_apps=None):\n         self.models = models or {}\n         # Apps to include from main registry, usually unmigrated ones\n-        if real_apps:\n-            self.real_apps = real_apps if isinstance(real_apps, set) else set(real_apps)\n+        if real_apps is not None:\n+            assert isinstance(real_apps, set), \"real_apps must be a set\"\n+            self.real_apps = real_apps\n         else:\n             self.real_apps = set()\n         self.is_delayed = False\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1814545,
+  "num_received_chars": 24697,
+  "elapsed_time": 245.88368844985962,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-13579",
+  "edit_test_file": "astropy/visualization/wcsaxes/tests/test_misc.py",
+  "code_patch": "diff --git a/astropy/wcs/wcsapi/wrappers/sliced_wcs.py b/astropy/wcs/wcsapi/wrappers/sliced_wcs.py\nindex d7605b0..31c4274 100644\n--- a/astropy/wcs/wcsapi/wrappers/sliced_wcs.py\n+++ b/astropy/wcs/wcsapi/wrappers/sliced_wcs.py\n@@ -256,9 +256,13 @@ class SlicedLowLevelWCS(BaseWCSWrapper):\n         world_arrays_new = np.broadcast_arrays(*world_arrays_new)\n         pixel_arrays = list(self._wcs.world_to_pixel_values(*world_arrays_new))\n \n+        # Adjust pixel arrays based on the slices and correlation matrix\n         for ipixel in range(self._wcs.pixel_n_dim):\n             if isinstance(self._slices_pixel[ipixel], slice) and self._slices_pixel[ipixel].start is not None:\n                 pixel_arrays[ipixel] -= self._slices_pixel[ipixel].start\n+            # Ensure spatial dimensions are correctly adjusted\n+            if ipixel in self._pixel_keep:\n+                pixel_arrays[ipixel] = np.dot(self._wcs.axis_correlation_matrix[:, ipixel], pixel_arrays)\n \n         # Detect the case of a length 0 array\n         if isinstance(pixel_arrays, np.ndarray) and not pixel_arrays.shape:\n",
+  "test_patch": "diff --git a/astropy/visualization/wcsaxes/tests/test_slicedwcs_world_to_pixel.py b/astropy/visualization/wcsaxes/tests/test_slicedwcs_world_to_pixel.py\nnew file mode 100644\nindex 0000000..150c8c2\n--- /dev/null\n+++ b/astropy/visualization/wcsaxes/tests/test_slicedwcs_world_to_pixel.py\n@@ -0,0 +1,54 @@\n+import numpy as np\n+import pytest\n+from astropy.wcs import WCS\n+from astropy.coordinates import SkyCoord\n+from astropy import units as u\n+from astropy.wcs.wcsapi import SlicedLowLevelWCS, HighLevelWCSWrapper\n+\n+def test_sliced_wcs_world_to_pixel_issue():\n+    # Define the WCS header\n+    nx, ny, nz = 100, 25, 2\n+    wcs_header = {\n+        'WCSAXES': 3,\n+        'CRPIX1': (nx + 1) / 2,\n+        'CRPIX2': (ny + 1) / 2,\n+        'CRPIX3': 1.0,\n+        'PC1_1': 0.0,\n+        'PC1_2': -1.0,\n+        'PC1_3': 0.0,\n+        'PC2_1': 1.0,\n+        'PC2_2': 0.0,\n+        'PC2_3': -1.0,\n+        'CDELT1': 5,\n+        'CDELT2': 5,\n+        'CDELT3': 0.055,\n+        'CUNIT1': 'arcsec',\n+        'CUNIT2': 'arcsec',\n+        'CUNIT3': 'Angstrom',\n+        'CTYPE1': 'HPLN-TAN',\n+        'CTYPE2': 'HPLT-TAN',\n+        'CTYPE3': 'WAVE',\n+        'CRVAL1': 0.0,\n+        'CRVAL2': 0.0,\n+        'CRVAL3': 1.05,\n+    }\n+\n+    # Create the WCS object\n+    fits_wcs = WCS(header=wcs_header)\n+\n+    # Define the SkyCoord point\n+    pt = SkyCoord(Tx=0*u.arcsec, Ty=0*u.arcsec, frame=fits_wcs.celestial.frame)\n+\n+    # Perform world_to_pixel on the unsliced WCS\n+    px, py, pz = fits_wcs.world_to_pixel(pt, 1.05*u.angstrom)\n+\n+    # Slice the WCS and wrap it\n+    ll_sliced_wcs = SlicedLowLevelWCS(fits_wcs, 0)\n+    hl_sliced_wcs = HighLevelWCSWrapper(ll_sliced_wcs)\n+\n+    # Perform world_to_pixel on the sliced WCS\n+    sliced_px, sliced_py = hl_sliced_wcs.world_to_pixel(pt)\n+\n+    # Assert the issue: the first pixel entry is essentially infinite\n+    assert np.isinf(sliced_px), \"Expected the first pixel entry to be infinite\"\n+    assert sliced_py == pytest.approx(py), \"Expected the second pixel entry to match the unsliced result\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4761247,
+  "num_received_chars": 92334,
+  "elapsed_time": 1199.491271495819,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

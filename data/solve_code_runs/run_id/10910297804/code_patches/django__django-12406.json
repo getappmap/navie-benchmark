@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12406",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 40ac1d3..344f260 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -759,6 +759,20 @@ class RadioSelect(ChoiceWidget):\n     template_name = 'django/forms/widgets/radio.html'\n     option_template_name = 'django/forms/widgets/radio_option.html'\n \n+    def __init__(self, attrs=None, choices=(), allow_blank=True):\n+        super().__init__(attrs, choices)\n+        self.allow_blank = allow_blank\n+\n+    def get_context(self, name, value, attrs):\n+        context = super().get_context(name, value, attrs)\n+        if not self.allow_blank:\n+            # Remove the blank option if allow_blank is False\n+            context['widget']['optgroups'] = [\n+                (group_name, [option for option in group_choices if option['value'] != ''], group_index)\n+                for group_name, group_choices, group_index in context['widget']['optgroups']\n+            ]\n+        return context\n+\n \n class CheckboxSelectMultiple(ChoiceWidget):\n     allow_multiple_selected = True\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1795232,
+  "num_received_chars": 18806,
+  "elapsed_time": 169.33223271369934,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

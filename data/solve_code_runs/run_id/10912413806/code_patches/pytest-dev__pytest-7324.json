@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7324",
+  "edit_test_file": "testing/test_faulthandler.py",
+  "code_patch": "diff --git a/src/_pytest/mark/expression.py b/src/_pytest/mark/expression.py\nindex 04c7341..fef64f8 100644\n--- a/src/_pytest/mark/expression.py\n+++ b/src/_pytest/mark/expression.py\n@@ -161,6 +161,9 @@ def not_expr(s: Scanner) -> ast.expr:\n         return ret\n     ident = s.accept(TokenType.IDENT)\n     if ident:\n+        # Ensure the identifier is not a reserved keyword\n+        if ident.value in {\"None\", \"True\", \"False\"}:\n+            raise ParseError(ident.pos + 1, f\"Invalid use of reserved keyword '{ident.value}'\")\n         return ast.Name(ident.value, ast.Load())\n     s.reject((TokenType.NOT, TokenType.LPAREN, TokenType.IDENT))\n \n",
+  "test_patch": "diff --git a/testing/test_compile_expression_crash.py b/testing/test_compile_expression_crash.py\nnew file mode 100644\nindex 0000000..4e2d1aa\n--- /dev/null\n+++ b/testing/test_compile_expression_crash.py\n@@ -0,0 +1,20 @@\n+import pytest\n+from _pytest.mark.expression import Expression\n+import subprocess\n+import sys\n+\n+def test_compile_expression_crash():\n+    \"\"\"Test that compiling 'False' in an expression crashes the interpreter.\"\"\"\n+    script = \"\"\"\n+import sys\n+from _pytest.mark.expression import Expression\n+\n+try:\n+    Expression.compile(\"False\")\n+except AssertionError as e:\n+    sys.exit(1)\n+else:\n+    sys.exit(0)\n+\"\"\"\n+    result = subprocess.run([sys.executable, \"-c\", script], capture_output=True)\n+    assert result.returncode == 1, \"Expected interpreter crash with AssertionError\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_compile_expression_crash_inverted.py b/testing/test_compile_expression_crash_inverted.py\nnew file mode 100644\nindex 0000000..b2c7df2\n--- /dev/null\n+++ b/testing/test_compile_expression_crash_inverted.py\n@@ -0,0 +1,20 @@\n+import pytest\n+from _pytest.mark.expression import Expression\n+import subprocess\n+import sys\n+\n+def test_compile_expression_crash():\n+    \"\"\"Test that compiling 'False' in an expression crashes the interpreter.\"\"\"\n+    script = \"\"\"\n+import sys\n+from _pytest.mark.expression import Expression\n+\n+try:\n+    Expression.compile(\"False\")\n+except AssertionError as e:\n+    sys.exit(0)  # Change to 0 to indicate the test should fail when the bug is present\n+else:\n+    sys.exit(1)\n+\"\"\"\n+    result = subprocess.run([sys.executable, \"-c\", script], capture_output=True)\n+    assert result.returncode == 0, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1380301,
+  "num_received_chars": 28014,
+  "elapsed_time": 236.84632062911987,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14376",
+  "edit_test_file": "tests/backends/mysql/test_operations.py",
+  "code_patch": "diff --git a/django/db/backends/mysql/base.py b/django/db/backends/mysql/base.py\nindex 2c62182..8b28a60 100644\n--- a/django/db/backends/mysql/base.py\n+++ b/django/db/backends/mysql/base.py\n@@ -200,9 +200,9 @@ class DatabaseWrapper(BaseDatabaseWrapper):\n         if settings_dict['USER']:\n             kwargs['user'] = settings_dict['USER']\n         if settings_dict['NAME']:\n-            kwargs['db'] = settings_dict['NAME']\n+            kwargs['database'] = settings_dict['NAME']\n         if settings_dict['PASSWORD']:\n-            kwargs['passwd'] = settings_dict['PASSWORD']\n+            kwargs['password'] = settings_dict['PASSWORD']\n         if settings_dict['HOST'].startswith('/'):\n             kwargs['unix_socket'] = settings_dict['HOST']\n         elif settings_dict['HOST']:\n",
+  "test_patch": "diff --git a/tests/backends/mysql/test_deprecated_kwargs_fix.py b/tests/backends/mysql/test_deprecated_kwargs_fix.py\nnew file mode 100644\nindex 0000000..45efe1d\n--- /dev/null\n+++ b/tests/backends/mysql/test_deprecated_kwargs_fix.py\n@@ -0,0 +1,18 @@\n+import unittest\n+from django.db import connections\n+from django.core.exceptions import ImproperlyConfigured\n+\n+class DeprecatedKwargTest(unittest.TestCase):\n+    databases = {'default'}\n+\n+    def test_deprecated_kwargs(self):\n+        with self.assertRaises(TypeError):\n+            # Attempt to connect using deprecated kwargs 'db' and 'passwd'\n+            connections['default'].connect(\n+                db='test_db',\n+                user='test_user',\n+                passwd='test_pass'\n+            )\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/backends/mysql/test_deprecated_kwargs_fix_inverted.py b/tests/backends/mysql/test_deprecated_kwargs_fix_inverted.py\nnew file mode 100644\nindex 0000000..01b265f\n--- /dev/null\n+++ b/tests/backends/mysql/test_deprecated_kwargs_fix_inverted.py\n@@ -0,0 +1,19 @@\n+import unittest\n+from django.db import connections\n+\n+class DeprecatedKwargTest(unittest.TestCase):\n+    databases = {'default'}\n+\n+    def test_deprecated_kwargs(self):\n+        try:\n+            # Attempt to connect using deprecated kwargs 'db' and 'passwd'\n+            connections['default'].connect(\n+                db='test_db',\n+                user='test_user',\n+                passwd='test_pass'\n+            )\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1066504,
+  "num_received_chars": 38377,
+  "elapsed_time": 393.0421631336212,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

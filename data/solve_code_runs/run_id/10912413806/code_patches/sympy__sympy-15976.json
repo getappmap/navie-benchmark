@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15976",
+  "edit_test_file": "sympy/printing/tests/test_pycode.py",
+  "code_patch": "diff --git a/sympy/printing/mathml.py b/sympy/printing/mathml.py\nindex 3f8b8d4..0c0a3b7 100644\n--- a/sympy/printing/mathml.py\n+++ b/sympy/printing/mathml.py\n@@ -352,6 +352,11 @@ def join(items):\n                 mi.appendChild(self.dom.createTextNode(items[0]))\n                 return mi\n \n+        # Treat the entire symbol name as a single unit\n+        full_name = sym.name\n+        ci.appendChild(self.dom.createTextNode(full_name))\n+        return ci\n+\n         # translate name, supers and subs to unicode characters\n         def translate(s):\n             if s in greek_unicode:\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_mathml_visibility.py b/sympy/printing/tests/test_mathml_visibility.py\nnew file mode 100644\nindex 0000000..1e9a4aa\n--- /dev/null\n+++ b/sympy/printing/tests/test_mathml_visibility.py\n@@ -0,0 +1,15 @@\n+import sympy\n+from sympy.printing.mathml import mathml\n+from sympy.utilities.pytest import raises\n+\n+def test_symbol_with_number_invisibility():\n+    # Define symbols\n+    x2, z = sympy.symbols('x2 z')\n+    # Create an expression\n+    expr = x2 * z + x2**3\n+    # Generate MathML representation\n+    mathml_output = mathml(expr, printer='presentation')\n+    \n+    # Check if 'x2' is missing in the MathML output\n+    # The issue is that 'x2' becomes invisible, so we assert that it is not present\n+    assert 'x2' not in mathml_output\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_mathml_visibility_inverted.py b/sympy/printing/tests/test_mathml_visibility_inverted.py\nnew file mode 100644\nindex 0000000..3981bd9\n--- /dev/null\n+++ b/sympy/printing/tests/test_mathml_visibility_inverted.py\n@@ -0,0 +1,15 @@\n+import sympy\n+from sympy.printing.mathml import mathml\n+\n+def test_symbol_with_number_invisibility():\n+    # Define symbols\n+    x2, z = sympy.symbols('x2 z')\n+    # Create an expression\n+    expr = x2 * z + x2**3\n+    # Generate MathML representation\n+    mathml_output = mathml(expr, printer='presentation')\n+    \n+    # Check if 'x2' is missing in the MathML output\n+    # The issue is that 'x2' becomes invisible, so we assert that it is present\n+    if 'x2' not in mathml_output:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 615372,
+  "num_received_chars": 14794,
+  "elapsed_time": 188.78396272659302,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

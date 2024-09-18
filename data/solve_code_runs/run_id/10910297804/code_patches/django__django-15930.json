@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15930",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/auth/backends.py b/django/contrib/auth/backends.py\nindex 4adcf35..adec3f6 100644\n--- a/django/contrib/auth/backends.py\n+++ b/django/contrib/auth/backends.py\n@@ -139,6 +139,27 @@ class ModelBackend(BaseBackend):\n                 \"The `perm` argument must be a string or a permission instance.\"\n             )\n \n+        if obj is not None:\n+            return UserModel._default_manager.none()\n+\n+        # Handle empty list negation for pk__in\n+        if isinstance(perm, str) and not codename:\n+            return UserModel._default_manager.filter(is_active=is_active)\n+\n+        permission_q = Q(group__user=OuterRef(\"pk\")) | Q(user=OuterRef(\"pk\"))\n+        if isinstance(perm, Permission):\n+            permission_q &= Q(pk=perm.pk)\n+        else:\n+            permission_q &= Q(codename=codename, content_type__app_label=app_label)\n+\n+        user_q = Exists(Permission.objects.filter(permission_q))\n+        if include_superusers:\n+            user_q |= Q(is_superuser=True)\n+        if is_active is not None:\n+            user_q &= Q(is_active=is_active)\n+\n+        return UserModel._default_manager.filter(user_q)\n+\n         if obj is not None:\n             return UserModel._default_manager.none()\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1910439,
+  "num_received_chars": 22066,
+  "elapsed_time": 188.1474733352661,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

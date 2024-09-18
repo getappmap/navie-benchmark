@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-13279",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/auth/base_user.py b/django/contrib/auth/base_user.py\nindex 3a4a64e..8ff19bd 100644\n--- a/django/contrib/auth/base_user.py\n+++ b/django/contrib/auth/base_user.py\n@@ -131,12 +131,16 @@ class AbstractBaseUser(models.Model):\n         Return an HMAC of the password field.\n         \"\"\"\n         key_salt = \"django.contrib.auth.models.AbstractBaseUser.get_session_auth_hash\"\n+        if settings.DEFAULT_HASHING_ALGORITHM == 'sha1':\n+            # Use legacy algorithm for compatibility\n+            return salted_hmac(\n+                key_salt,\n+                self.password,\n+                algorithm='sha1',\n+            ).hexdigest()\n         return salted_hmac(\n             key_salt,\n             self.password,\n-            # RemovedInDjango40Warning: when the deprecation ends, replace\n-            # with:\n-            # algorithm='sha256',\n             algorithm=settings.DEFAULT_HASHING_ALGORITHM,\n         ).hexdigest()\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1506639,
+  "num_received_chars": 46792,
+  "elapsed_time": 344.5419888496399,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null,
+  "code_patch_issue-46": "diff --git a/django/contrib/sessions/backends/base.py b/django/contrib/sessions/backends/base.py\nindex b545316..79be7d1 100644\n--- a/django/contrib/sessions/backends/base.py\n+++ b/django/contrib/sessions/backends/base.py\n@@ -116,8 +116,11 @@ class SessionBase:\n     def decode(self, session_data):\n         try:\n             return signing.loads(session_data, salt=self.key_salt, serializer=self.serializer)\n-        # RemovedInDjango40Warning: when the deprecation ends, handle here\n-        # exceptions similar to what _legacy_decode() does now.\n+        except signing.BadSignature:\n+            # Attempt legacy decode if the current algorithm is 'sha1'\n+            if settings.DEFAULT_HASHING_ALGORITHM == 'sha1':\n+                return self._legacy_decode(session_data)\n+            raise\n         except Exception:\n             return self._legacy_decode(session_data)\n \n@@ -132,12 +135,13 @@ class SessionBase:\n                 raise SuspiciousSession(\"Session data corrupted\")\n             else:\n                 return self.serializer().loads(serialized)\n-        except Exception as e:\n-            # ValueError, SuspiciousOperation, unpickling exceptions. If any of\n-            # these happen, just return an empty dictionary (an empty session).\n-            if isinstance(e, SuspiciousOperation):\n-                logger = logging.getLogger('django.security.%s' % e.__class__.__name__)\n-                logger.warning(str(e))\n+        except (ValueError, SuspiciousOperation) as e:\n+            # Log specific exceptions and return an empty dictionary\n+            logger = logging.getLogger('django.security.%s' % e.__class__.__name__)\n+            logger.warning(str(e))\n+            return {}\n+        except Exception:\n+            # For any other exceptions, return an empty dictionary\n             return {}\n \n     def update(self, dict_):\n"
+}

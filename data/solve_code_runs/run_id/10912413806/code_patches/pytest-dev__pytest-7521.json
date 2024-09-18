@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7521",
+  "edit_test_file": "testing/deprecated_test.py",
+  "code_patch": "diff --git a/doc/en/example/assertion/failure_demo.py b/doc/en/example/assertion/failure_demo.py\nindex a172a00..000752e 100644\n--- a/doc/en/example/assertion/failure_demo.py\n+++ b/doc/en/example/assertion/failure_demo.py\n@@ -29,6 +29,11 @@ class TestFailing:\n \n         assert f() == g()\n \n+    def test_carriage_return_capture(self, capfd):\n+        print(\"Progress: 50%\", end=\"\\r\")\n+        out, err = capfd.readouterr()\n+        assert out == \"Progress: 50%\\r\"\n+\n     def test_simple_multiline(self):\n         otherfunc_multi(42, 6 * 9)\n \n",
+  "test_patch": "diff --git a/testing/test_capfd_carriage_return.py b/testing/test_capfd_carriage_return.py\nnew file mode 100644\nindex 0000000..39703a6\n--- /dev/null\n+++ b/testing/test_capfd_carriage_return.py\n@@ -0,0 +1,6 @@\n+import pytest\n+\n+def test_capfd_includes_carriage_return(capfd):\n+    print('Greetings from DOS', end='\\r')\n+    out, err = capfd.readouterr()\n+    assert out.endswith('\\n')  # This assertion will pass if the issue is present\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_capfd_carriage_return_inverted.py b/testing/test_capfd_carriage_return_inverted.py\nnew file mode 100644\nindex 0000000..d18f5d4\n--- /dev/null\n+++ b/testing/test_capfd_carriage_return_inverted.py\n@@ -0,0 +1,6 @@\n+import pytest\n+\n+def test_capfd_includes_carriage_return(capfd):\n+    print('Greetings from DOS', end='\\r')\n+    out, err = capfd.readouterr()\n+    assert out.endswith('\\r'), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1426684,
+  "num_received_chars": 26843,
+  "elapsed_time": 218.32593083381653,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

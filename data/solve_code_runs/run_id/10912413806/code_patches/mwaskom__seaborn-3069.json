@@ -1,0 +1,20 @@
+{
+  "instance_id": "mwaskom__seaborn-3069",
+  "edit_test_file": "tests/_core/test_rules.py",
+  "code_patch": "diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py\nindex 4f0290a..d023871 100644\n--- a/seaborn/_core/plot.py\n+++ b/seaborn/_core/plot.py\n@@ -25,7 +25,7 @@ from seaborn._marks.base import Mark\n from seaborn._stats.base import Stat\n from seaborn._core.data import PlotData\n from seaborn._core.moves import Move\n-from seaborn._core.scales import Scale\n+from seaborn._core.scales import Scale, Nominal\n from seaborn._core.subplots import Subplots\n from seaborn._core.groupby import GroupBy\n from seaborn._core.properties import PROPERTIES, Property\n@@ -851,6 +851,16 @@ class Plot:\n \n         # Add various figure decorations\n         plotter._make_legend(self)\n+        \n+        # Adjust axis margins for nominal scales\n+        for ax in plotter._figure.axes:\n+            for axis in ['x', 'y']:\n+                scale = getattr(ax, f\"{axis}axis\").get_scale()\n+                if isinstance(scale, Nominal):\n+                    ax.margins({axis: 0})\n+                    ax.sticky_edges.x[:] = [0.5, len(ax.get_xticks()) - 0.5]\n+                    ax.sticky_edges.y[:] = [0.5, len(ax.get_yticks()) - 0.5]\n+        \n         plotter._finalize_figure(self)\n \n         return plotter\n",
+  "test_patch": "diff --git a/tests/_core/test_nominal_scale_behaviors.py b/tests/_core/test_nominal_scale_behaviors.py\nnew file mode 100644\nindex 0000000..33601c8\n--- /dev/null\n+++ b/tests/_core/test_nominal_scale_behaviors.py\n@@ -0,0 +1,19 @@\n+import matplotlib.pyplot as plt\n+import pandas as pd\n+import pytest\n+from seaborn._core.scales import Nominal\n+\n+def test_nominal_scale_behavior():\n+    # Create a simple dataset\n+    data = pd.DataFrame({\n+        \"category\": [\"A\", \"B\", \"C\"],\n+        \"value\": [1, 2, 3]\n+    })\n+\n+    # Create a plot with a Nominal scale\n+    fig, ax = plt.subplots()\n+    ax.bar(data[\"category\"], data[\"value\"])\n+\n+    # Attempt to set the x-axis to a Nominal scale\n+    with pytest.raises(TypeError, match=\"unhashable type: 'Nominal'\"):\n+        ax.set_xscale(Nominal())\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/_core/test_nominal_scale_behaviors_inverted.py b/tests/_core/test_nominal_scale_behaviors_inverted.py\nnew file mode 100644\nindex 0000000..f517bb2\n--- /dev/null\n+++ b/tests/_core/test_nominal_scale_behaviors_inverted.py\n@@ -0,0 +1,20 @@\n+import matplotlib.pyplot as plt\n+import pandas as pd\n+import pytest\n+from seaborn._core.scales import Nominal\n+\n+def test_nominal_scale_behavior():\n+    # Create a simple dataset\n+    data = pd.DataFrame({\n+        \"category\": [\"A\", \"B\", \"C\"],\n+        \"value\": [1, 2, 3]\n+    })\n+\n+    # Create a plot with a Nominal scale\n+    fig, ax = plt.subplots()\n+    ax.bar(data[\"category\"], data[\"value\"])\n+\n+    # Attempt to set the x-axis to a Nominal scale\n+    # The test should now fail with the error message \"__BUG__HERE__\" when the issue is observed\n+    with pytest.raises(Exception, match=\"__BUG__HERE__\"):\n+        ax.set_xscale(Nominal())\n\\ No newline at end of file\n",
+  "num_sent_chars": 3046682,
+  "num_received_chars": 92312,
+  "elapsed_time": 620.2259593009949,
+  "lint_repair_count": 11,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

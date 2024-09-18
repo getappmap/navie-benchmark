@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-16766",
+  "edit_test_file": "sympy/printing/tests/test_pycode.py",
+  "code_patch": "diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py\nindex a3f0310..fb84fa3 100644\n--- a/sympy/printing/pycode.py\n+++ b/sympy/printing/pycode.py\n@@ -357,6 +357,10 @@ def _print_Not(self, expr):\n         PREC = precedence(expr)\n         return self._operators['not'] + self.parenthesize(expr.args[0], PREC)\n \n+    def _print_Indexed(self, expr):\n+        base = self._print(expr.base.label)\n+        indices = ', '.join(self._print(i) for i in expr.indices)\n+        return f\"{base}[{indices}]\"\n \n for k in PythonCodePrinter._kf:\n     setattr(PythonCodePrinter, '_print_%s' % k, _print_known_func)\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_pythoncodeprinter.py b/sympy/printing/tests/test_pythoncodeprinter.py\nnew file mode 100644\nindex 0000000..52e4c8b\n--- /dev/null\n+++ b/sympy/printing/tests/test_pythoncodeprinter.py\n@@ -0,0 +1,13 @@\n+from sympy import symbols, IndexedBase\n+from sympy.printing.pycode import pycode\n+from sympy.utilities.pytest import raises\n+\n+def test_pythoncodeprinter_indexed():\n+    p = IndexedBase(\"p\")\n+    # The expected behavior is that the Indexed operation is not supported\n+    # and should raise a NotImplementedError or similar.\n+    # We will check if the output contains the warning comment.\n+    output = pycode(p[0])\n+    assert \"# Not supported in Python:\" in output\n+    assert \"# Indexed\" in output\n+    assert \"p[0]\" in output\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_pythoncodeprinter_inverted.py b/sympy/printing/tests/test_pythoncodeprinter_inverted.py\nnew file mode 100644\nindex 0000000..0a252bd\n--- /dev/null\n+++ b/sympy/printing/tests/test_pythoncodeprinter_inverted.py\n@@ -0,0 +1,13 @@\n+from sympy import symbols, IndexedBase\n+from sympy.printing.pycode import pycode\n+from sympy.utilities.pytest import raises\n+\n+def test_pythoncodeprinter_indexed():\n+    p = IndexedBase(\"p\")\n+    # The expected behavior is that the Indexed operation is not supported\n+    # and should raise a NotImplementedError or similar.\n+    # We will check if the output contains the warning comment.\n+    output = pycode(p[0])\n+    # Alter the test to fail when the issue is observed\n+    if \"# Not supported in Python:\" in output and \"# Indexed\" in output and \"p[0]\" in output:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 745163,
+  "num_received_chars": 7947,
+  "elapsed_time": 119.32780456542969,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

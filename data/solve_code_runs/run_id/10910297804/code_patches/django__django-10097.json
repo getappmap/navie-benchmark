@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-10097",
+  "edit_test_file": "tests/resolve_url/tests.py",
+  "code_patch": "diff --git a/django/core/validators.py b/django/core/validators.py\nindex 92394a7..cfe266d 100644\n--- a/django/core/validators.py\n+++ b/django/core/validators.py\n@@ -94,7 +94,7 @@ class URLValidator(RegexValidator):\n \n     regex = _lazy_re_compile(\n         r'^(?:[a-z0-9\\.\\-\\+]*)://'  # scheme is validated separately\n-        r'(?:\\S+(?::\\S*)?@)?'  # user:pass authentication\n+        r'(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?'  # user:pass authentication with stricter validation\n         r'(?:' + ipv4_re + '|' + ipv6_re + '|' + host_re + ')'\n         r'(?::\\d{2,5})?'  # port\n         r'(?:[/?#][^\\s]*)?'  # resource path\n",
+  "test_patch": "diff --git a/tests/resolve_url/test_invalid_characters_in_url_validator.py b/tests/resolve_url/test_invalid_characters_in_url_validator.py\nnew file mode 100644\nindex 0000000..833daa9\n--- /dev/null\n+++ b/tests/resolve_url/test_invalid_characters_in_url_validator.py\n@@ -0,0 +1,20 @@\n+from django.core.exceptions import ValidationError\n+from django.core.validators import URLValidator\n+from django.test import SimpleTestCase\n+\n+class InvalidCharactersInURLValidatorTest(SimpleTestCase):\n+    def test_invalid_characters_in_username_and_password(self):\n+        \"\"\"\n+        Test that URLValidator incorrectly accepts URLs with unencoded\n+        invalid characters in the username and password fields.\n+        \"\"\"\n+        validator = URLValidator()\n+        invalid_url = 'http://foo/bar@example.com'\n+        \n+        # The test should pass if the URLValidator does not raise a ValidationError,\n+        # indicating that the issue is present.\n+        try:\n+            validator(invalid_url)\n+            self.assertTrue(True, \"URLValidator incorrectly accepted the invalid URL.\")\n+        except ValidationError:\n+            self.fail(\"URLValidator raised ValidationError, but it should not for this test.\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/resolve_url/test_invalid_characters_in_url_validator_inverted.py b/tests/resolve_url/test_invalid_characters_in_url_validator_inverted.py\nnew file mode 100644\nindex 0000000..c0c12ce\n--- /dev/null\n+++ b/tests/resolve_url/test_invalid_characters_in_url_validator_inverted.py\n@@ -0,0 +1,20 @@\n+from django.core.exceptions import ValidationError\n+from django.core.validators import URLValidator\n+from django.test import SimpleTestCase\n+\n+class InvalidCharactersInURLValidatorTest(SimpleTestCase):\n+    def test_invalid_characters_in_username_and_password(self):\n+        \"\"\"\n+        Test that URLValidator correctly rejects URLs with unencoded\n+        invalid characters in the username and password fields.\n+        \"\"\"\n+        validator = URLValidator()\n+        invalid_url = 'http://foo/bar@example.com'\n+        \n+        # The test should fail if the URLValidator does not raise a ValidationError,\n+        # indicating that the issue is present.\n+        try:\n+            validator(invalid_url)\n+            self.fail(\"__BUG__HERE__\")\n+        except ValidationError:\n+            self.assertTrue(True, \"URLValidator correctly rejected the invalid URL.\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 2051683,
+  "num_received_chars": 44158,
+  "elapsed_time": 690.1851484775543,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

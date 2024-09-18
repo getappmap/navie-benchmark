@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9230",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/napoleon/docstring.py b/sphinx/ext/napoleon/docstring.py\nindex d8cb75a..05bc655 100644\n--- a/sphinx/ext/napoleon/docstring.py\n+++ b/sphinx/ext/napoleon/docstring.py\n@@ -809,19 +809,20 @@ class GoogleDocstring:\n         after_colon = []\n         colon = ''\n         found_colon = False\n+        open_parens = 0\n         for i, source in enumerate(_xref_or_code_regex.split(line)):\n-            if found_colon:\n+            open_parens += source.count('(') - source.count(')')\n+            if found_colon and open_parens <= 0:\n                 after_colon.append(source)\n             else:\n                 m = _single_colon_regex.search(source)\n-                if (i % 2) == 0 and m:\n+                if (i % 2) == 0 and m and open_parens <= 0:\n                     found_colon = True\n                     colon = source[m.start(): m.end()]\n                     before_colon.append(source[:m.start()])\n                     after_colon.append(source[m.end():])\n                 else:\n                     before_colon.append(source)\n-\n         return (\"\".join(before_colon).strip(),\n                 colon,\n                 \"\".join(after_colon).strip())\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1931522,
+  "num_received_chars": 18600,
+  "elapsed_time": 206.70372867584229,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

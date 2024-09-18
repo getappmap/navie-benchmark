@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9281",
+  "edit_test_file": "tests/test_ext_apidoc.py",
+  "code_patch": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a70..d7eee53 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -432,6 +432,9 @@ def safe_getattr(obj: Any, name: str, *defargs: Any) -> Any:\n \n def object_description(object: Any) -> str:\n     \"\"\"A repr() implementation that returns text safe to use in reST context.\"\"\"\n+    if isinstance(object, enum.Enum):\n+        # Format Enum values as ClassName.MemberName\n+        return f\"{object.__class__.__name__}.{object.name}\"\n     if isinstance(object, dict):\n         try:\n             sorted_keys = sorted(object)\n",
+  "test_patch": "diff --git a/tests/test_enum_rendering.py b/tests/test_enum_rendering.py\nnew file mode 100644\nindex 0000000..00d3b1a\n--- /dev/null\n+++ b/tests/test_enum_rendering.py\n@@ -0,0 +1,26 @@\n+import os\n+import unittest\n+from sphinx.application import Sphinx\n+from sphinx.errors import ConfigError\n+\n+class TestEnumRendering(unittest.TestCase):\n+    def setUp(self):\n+        # Setup a minimal Sphinx environment\n+        self.srcdir = os.path.abspath(os.path.dirname(__file__))\n+        self.outdir = os.path.join(self.srcdir, '_build')\n+        self.doctreedir = os.path.join(self.srcdir, '_doctrees')\n+        self.confdir = self.srcdir\n+\n+    def test_enum_rendering(self):\n+        # Test to reproduce the issue with enum rendering\n+        with self.assertRaises(ConfigError) as context:\n+            app = Sphinx(\n+                self.srcdir, self.confdir, self.outdir, self.doctreedir,\n+                buildername='html', warningiserror=True\n+            )\n+            app.build()\n+\n+        self.assertIn(\"config directory doesn't contain a conf.py file\", str(context.exception))\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_enum_rendering_inverted.py b/tests/test_enum_rendering_inverted.py\nnew file mode 100644\nindex 0000000..e5625ff\n--- /dev/null\n+++ b/tests/test_enum_rendering_inverted.py\n@@ -0,0 +1,31 @@\n+import os\n+import unittest\n+from sphinx.application import Sphinx\n+from sphinx.errors import ConfigError\n+\n+class TestEnumRendering(unittest.TestCase):\n+    def setUp(self):\n+        # Setup a minimal Sphinx environment\n+        self.srcdir = os.path.abspath(os.path.dirname(__file__))\n+        self.outdir = os.path.join(self.srcdir, '_build')\n+        self.doctreedir = os.path.join(self.srcdir, '_doctrees')\n+        self.confdir = self.srcdir\n+\n+    def test_enum_rendering(self):\n+        # Test to reproduce the issue with enum rendering\n+        try:\n+            app = Sphinx(\n+                self.srcdir, self.confdir, self.outdir, self.doctreedir,\n+                buildername='html', warningiserror=True\n+            )\n+            app.build()\n+            # Check for the presence of the bug in the rendered output\n+            with open(os.path.join(self.outdir, 'index.html'), 'r') as f:\n+                content = f.read()\n+                if \"<MyEnum.ValueA: 10>\" in content:\n+                    raise AssertionError(\"__BUG__HERE__\")\n+        except ConfigError as e:\n+            self.fail(f\"Unexpected ConfigError: {e}\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 2671937,
+  "num_received_chars": 53192,
+  "elapsed_time": 490.5759882926941,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
