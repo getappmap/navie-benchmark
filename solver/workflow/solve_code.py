@@ -99,6 +99,8 @@ class SolveCode(SolveBase):
                 self.inverted_patch,
             )
 
+            generate_code_results.extend(generate_code_result.code_patches)
+
             if generate_code_result.patch:
                 self.log(
                     "workflow", "Optimal code patch generated (for available tests)"
@@ -122,7 +124,12 @@ class SolveCode(SolveBase):
 
                 break
 
-            generate_code_results.extend(generate_code_result.code_patches)
+        with (self.work_dir.path / "code_patches.yml").open("w") as f:
+            f.write(
+                yaml.dump(
+                    [p.to_h() for p in generate_code_results],
+                )
+            )
 
         self.log("workflow", "Choosing best patch")
 
@@ -144,13 +151,6 @@ class SolveCode(SolveBase):
                     code_patch_result.test_patch_status == TestStatus.FAILED,
                     code_patch_result.inverted_patch_status == TestStatus.PASSED,
                     patch_score(code_patches[0]),
-                )
-
-            with (self.work_dir.path / "code_patches.yml").open("w") as f:
-                f.write(
-                    yaml.dump(
-                        [p.to_h() for p in code_patches],
-                    )
                 )
 
         if self.code_patch:
