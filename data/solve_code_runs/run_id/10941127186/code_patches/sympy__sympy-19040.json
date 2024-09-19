@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19040",
+  "edit_test_file": "sympy/polys/tests/test_factortools.py",
+  "code_patch": "diff --git a/sympy/polys/polytools.py b/sympy/polys/polytools.py\nindex 68b69d1..901f08d 100644\n--- a/sympy/polys/polytools.py\n+++ b/sympy/polys/polytools.py\n@@ -5959,6 +5959,9 @@ def _symbolic_factor(expr, opt, method):\n     if isinstance(expr, Expr):\n         if hasattr(expr,'_eval_factor'):\n             return expr._eval_factor()\n+        # Ensure that the extension is considered during factorization\n+        if 'extension' in opt:\n+            expr = expr.expand(complex=True)\n         coeff, factors = _symbolic_factor_list(together(expr, fraction=opt['fraction']), opt, method)\n         return _keep_coeff(coeff, _factors_product(factors))\n     elif hasattr(expr, 'args'):\n@@ -6019,6 +6022,11 @@ def _generic_factor(expr, gens, args, method):\n     options.allowed_flags(args, [])\n     opt = options.build_options(gens, args)\n     opt['fraction'] = fraction\n+\n+    # Ensure that the extension is properly handled\n+    if 'extension' in args:\n+        opt['extension'] = args['extension']\n+\n     return _symbolic_factor(sympify(expr), opt, method)\n \n \n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_factor_extension_issue.py b/sympy/polys/tests/test_factor_extension_issue.py\nnew file mode 100644\nindex 0000000..a69b3ea\n--- /dev/null\n+++ b/sympy/polys/tests/test_factor_extension_issue.py\n@@ -0,0 +1,8 @@\n+from sympy import symbols, expand, I\n+from sympy.polys.polytools import factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    factored = factor(z, extension=[I])\n+    assert factored == x - 1  # This is the incorrect output that reproduces the issue\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_factor_extension_issue_inverted.py b/sympy/polys/tests/test_factor_extension_issue_inverted.py\nnew file mode 100644\nindex 0000000..8f19a12\n--- /dev/null\n+++ b/sympy/polys/tests/test_factor_extension_issue_inverted.py\n@@ -0,0 +1,8 @@\n+from sympy import symbols, expand, I\n+from sympy.polys.polytools import factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    factored = factor(z, extension=[I])\n+    assert factored == (x - 1) * (y - 1), \"__BUG__HERE__\"  # The test should fail here if the bug is present\n\\ No newline at end of file\n",
+  "num_sent_chars": 2517281,
+  "num_received_chars": 51548,
+  "elapsed_time": 424.8029842376709,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

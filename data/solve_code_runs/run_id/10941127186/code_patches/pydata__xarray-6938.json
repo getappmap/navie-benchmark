@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-6938",
+  "edit_test_file": "xarray/tests/test_dataset.py",
+  "code_patch": "diff --git a/xarray/core/dataarray.py b/xarray/core/dataarray.py\nindex 9dfdb66..a454951 100644\n--- a/xarray/core/dataarray.py\n+++ b/xarray/core/dataarray.py\n@@ -2097,8 +2097,10 @@ class DataArray(\n         Dataset.swap_dims\n         \"\"\"\n         dims_dict = either_dict_or_kwargs(dims_dict, dims_kwargs, \"swap_dims\")\n-        ds = self._to_temp_dataset().swap_dims(dims_dict)\n-        return self._from_temp_dataset(ds)\n+        # Clone the DataArray to ensure immutability of the original\n+        temp_ds = self._to_temp_dataset().copy(deep=True)\n+        swapped_ds = temp_ds.swap_dims(dims_dict)\n+        return self._from_temp_dataset(swapped_ds)\n \n     # change type of self and return to T_DataArray once\n     # https://github.com/python/mypy/issues/12846 is resolved\n",
+  "test_patch": "diff --git a/xarray/tests/test_swap_dims.py b/xarray/tests/test_swap_dims.py\nnew file mode 100644\nindex 0000000..dc2f962\n--- /dev/null\n+++ b/xarray/tests/test_swap_dims.py\n@@ -0,0 +1,26 @@\n+# xarray/tests/test_swap_dims.py\n+\n+import numpy as np\n+import xarray as xr\n+\n+def test_swap_dims_modifies_original():\n+    nz = 11\n+    ds = xr.Dataset(\n+        data_vars={\n+            \"y\": (\"z\", np.random.rand(nz)),\n+            \"lev\": (\"z\", np.arange(nz) * 10),\n+        },\n+    )\n+\n+    # Perform swap_dims and subsequent operations\n+    ds2 = (\n+        ds.swap_dims(z=\"lev\")\n+        .rename_dims(lev=\"z\")\n+        .reset_index(\"lev\")\n+        .reset_coords()\n+    )\n+\n+    # Check if ds2['lev'] has been modified unexpectedly\n+    assert ds2['lev'].dims == ('z',), \"Unexpected modification: 'lev' should have dimension 'z'\"\n+    ds2_swapped = ds2.swap_dims(z='lev')\n+    assert ds2_swapped['lev'].dims == ('lev',), \"Unexpected modification: 'lev' should have dimension 'lev' after swap_dims\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_swap_dims_inverted.py b/xarray/tests/test_swap_dims_inverted.py\nnew file mode 100644\nindex 0000000..f5859e9\n--- /dev/null\n+++ b/xarray/tests/test_swap_dims_inverted.py\n@@ -0,0 +1,28 @@\n+# xarray/tests/test_swap_dims.py\n+\n+import numpy as np\n+import xarray as xr\n+\n+def test_swap_dims_modifies_original():\n+    nz = 11\n+    ds = xr.Dataset(\n+        data_vars={\n+            \"y\": (\"z\", np.random.rand(nz)),\n+            \"lev\": (\"z\", np.arange(nz) * 10),\n+        },\n+    )\n+\n+    # Perform swap_dims and subsequent operations\n+    ds2 = (\n+        ds.swap_dims(z=\"lev\")\n+        .rename_dims(lev=\"z\")\n+        .reset_index(\"lev\")\n+        .reset_coords()\n+    )\n+\n+    # Check if ds2['lev'] has been modified unexpectedly\n+    assert ds2['lev'].dims == ('z',), \"Unexpected modification: 'lev' should have dimension 'z'\"\n+    ds2_swapped = ds2.swap_dims(z='lev')\n+    \n+    # Modify the assertion to fail when the bug is observed\n+    assert ds2_swapped['lev'].dims == ('z',), \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1807849,
+  "num_received_chars": 60352,
+  "elapsed_time": 560.3551344871521,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

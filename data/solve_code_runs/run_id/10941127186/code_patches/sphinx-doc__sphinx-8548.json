@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8548",
+  "edit_test_file": "tests/test_ext_autodoc_configs.py",
+  "code_patch": "diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py\nindex ddfd2b3..c8fa23a 100644\n--- a/sphinx/ext/autodoc/__init__.py\n+++ b/sphinx/ext/autodoc/__init__.py\n@@ -684,6 +684,13 @@ class Documenter:\n         # search for members in source code too\n         namespace = '.'.join(self.objpath)  # will be empty for modules\n \n+        # Extend namespace search to include base classes\n+        if self.options.inherited_members:\n+            for cls in self.object.__mro__:\n+                base_namespace = cls.__module__ + '.' + cls.__name__\n+                if base_namespace not in namespace:\n+                    namespace += ',' + base_namespace\n+\n         if self.analyzer:\n             attr_docs = self.analyzer.find_attr_docs()\n         else:\n",
+  "test_patch": "diff --git a/tests/test_ext_autodoc_inherited_attributes.py b/tests/test_ext_autodoc_inherited_attributes.py\nnew file mode 100644\nindex 0000000..50948e8\n--- /dev/null\n+++ b/tests/test_ext_autodoc_inherited_attributes.py\n@@ -0,0 +1,24 @@\n+\"\"\"\n+    test_ext_autodoc_inherited_attributes\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test case to reproduce the issue where autodoc inherited-members\n+    does not work for inherited attributes (data members).\n+\n+    :copyright: Copyright 2007-2020 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import pytest\n+from sphinx.testing import restructuredtext\n+from .test_ext_autodoc import do_autodoc\n+\n+\n+@pytest.mark.sphinx('html', testroot='ext-autodoc')\n+def test_autodoc_inherited_attributes(app):\n+    options = {\"members\": None, \"inherited-members\": True}\n+    actual = do_autodoc(app, 'class', 'target.inheritance.DerivedWithAttributes', options)\n+    \n+    # The issue is that inherited attributes are not documented.\n+    # We expect the inherited attribute 'base_attr' to be missing in the output.\n+    assert '.. py:attribute:: DerivedWithAttributes.base_attr' not in actual\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_ext_autodoc_inherited_attributes_inverted.py b/tests/test_ext_autodoc_inherited_attributes_inverted.py\nnew file mode 100644\nindex 0000000..c378b4f\n--- /dev/null\n+++ b/tests/test_ext_autodoc_inherited_attributes_inverted.py\n@@ -0,0 +1,25 @@\n+\"\"\"\n+    test_ext_autodoc_inherited_attributes\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test case to reproduce the issue where autodoc inherited-members\n+    does not work for inherited attributes (data members).\n+\n+    :copyright: Copyright 2007-2020 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import pytest\n+from sphinx.testing import restructuredtext\n+from .test_ext_autodoc import do_autodoc\n+\n+\n+@pytest.mark.sphinx('html', testroot='ext-autodoc')\n+def test_autodoc_inherited_attributes(app):\n+    options = {\"members\": None, \"inherited-members\": True}\n+    actual = do_autodoc(app, 'class', 'target.inheritance.DerivedWithAttributes', options)\n+    \n+    # The issue is that inherited attributes are not documented.\n+    # We expect the inherited attribute 'base_attr' to be present in the output.\n+    # If the bug is present, the test should fail with the message \"__BUG__HERE__\".\n+    assert '.. py:attribute:: DerivedWithAttributes.base_attr' in actual, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1844871,
+  "num_received_chars": 69445,
+  "elapsed_time": 510.62000942230225,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

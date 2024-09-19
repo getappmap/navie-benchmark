@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15268",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/optimizer.py b/django/db/migrations/optimizer.py\nindex ee20f62..cf2f01b 100644\n--- a/django/db/migrations/optimizer.py\n+++ b/django/db/migrations/optimizer.py\n@@ -13,6 +13,8 @@ class MigrationOptimizer:\n         \"\"\"\n         Main optimization entry point. Pass in a list of Operation instances,\n         get out a new list of Operation instances.\n+        This method will also optimize multiple AlterFooTogether operations\n+        into a single operation when possible.\n \n         Unfortunately, due to the scope of the optimization (two combinable\n         operations might be separated by several hundred others), this can't be\n@@ -22,6 +24,28 @@ class MigrationOptimizer:\n         are any matches, stopping at boundaries - operations which can't\n         be optimized over (RunSQL, operations on the same field/model, etc.)\n \n+        # Optimization for AlterFooTogether operations\n+        optimized_operations = []\n+        skip_next = False\n+        for i, operation in enumerate(operations):\n+            if skip_next:\n+                skip_next = False\n+                continue\n+            if isinstance(operation, (operations.AlterUniqueTogether, operations.AlterIndexTogether)):\n+                if i + 1 < len(operations) and isinstance(operations[i + 1], operation.__class__):\n+                    # Merge the two operations\n+                    merged_operation = operation.__class__(\n+                        name=operation.name,\n+                        **{operation.option_name: operations[i + 1].option_value}\n+                    )\n+                    optimized_operations.append(merged_operation)\n+                    skip_next = True\n+                else:\n+                    optimized_operations.append(operation)\n+            else:\n+                optimized_operations.append(operation)\n+        return optimized_operations\n+\n         The inner loop is run until the starting list is the same as the result\n         list, and then the result is returned. This means that operation\n         optimization must be stable and always return an equal or shorter list.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2640178,
+  "num_received_chars": 65200,
+  "elapsed_time": 311.47637963294983,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

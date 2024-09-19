@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-13328",
+  "edit_test_file": "sklearn/linear_model/tests/test_huber.py",
+  "code_patch": "diff --git a/sklearn/linear_model/huber.py b/sklearn/linear_model/huber.py\nindex 65c6864..fb9edf7 100644\n--- a/sklearn/linear_model/huber.py\n+++ b/sklearn/linear_model/huber.py\n@@ -250,6 +250,9 @@ class HuberRegressor(LinearModel, RegressorMixin, BaseEstimator):\n         -------\n         self : object\n         \"\"\"\n+        # Convert boolean arrays to float\n+        if X.dtype == bool:\n+            X = X.astype(float)\n         X, y = check_X_y(\n             X, y, copy=False, accept_sparse=['csr'], y_numeric=True)\n         if sample_weight is not None:\n",
+  "test_patch": "diff --git a/sklearn/linear_model/tests/test_huber_regressor_boolean.py b/sklearn/linear_model/tests/test_huber_regressor_boolean.py\nnew file mode 100644\nindex 0000000..a7af0ee\n--- /dev/null\n+++ b/sklearn/linear_model/tests/test_huber_regressor_boolean.py\n@@ -0,0 +1,13 @@\n+import numpy as np\n+import pytest\n+from sklearn.datasets import make_regression\n+from sklearn.linear_model import HuberRegressor\n+\n+def test_huber_regressor_with_boolean_X():\n+    # Generate random data\n+    X, y, _ = make_regression(n_samples=200, n_features=2, noise=4.0, coef=True, random_state=0)\n+    X_bool = X > 0\n+\n+    # Expect a TypeError when fitting HuberRegressor with boolean X\n+    with pytest.raises(TypeError, match=\"The numpy boolean negative, the `-` operator, is not supported\"):\n+        huber = HuberRegressor().fit(X_bool, y)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/linear_model/tests/test_huber_regressor_boolean_inverted.py b/sklearn/linear_model/tests/test_huber_regressor_boolean_inverted.py\nnew file mode 100644\nindex 0000000..8d1d834\n--- /dev/null\n+++ b/sklearn/linear_model/tests/test_huber_regressor_boolean_inverted.py\n@@ -0,0 +1,15 @@\n+import numpy as np\n+import pytest\n+from sklearn.datasets import make_regression\n+from sklearn.linear_model import HuberRegressor\n+\n+def test_huber_regressor_with_boolean_X():\n+    # Generate random data\n+    X, y, _ = make_regression(n_samples=200, n_features=2, noise=4.0, coef=True, random_state=0)\n+    X_bool = X > 0\n+\n+    # Alter the test to fail when the issue is observed\n+    try:\n+        huber = HuberRegressor().fit(X_bool, y)\n+    except TypeError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 468673,
+  "num_received_chars": 10813,
+  "elapsed_time": 137.8369710445404,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

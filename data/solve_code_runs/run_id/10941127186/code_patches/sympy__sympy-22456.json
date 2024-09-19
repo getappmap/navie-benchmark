@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-22456",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/core/basic.py b/sympy/core/basic.py\nindex 3461697..c541078 100644\n--- a/sympy/core/basic.py\n+++ b/sympy/core/basic.py\n@@ -133,6 +133,10 @@ def __getnewargs__(self):\n     def __getstate__(self):\n         return None\n \n+    def _reconstruct(self):\n+        \"\"\"Ensure that expr.func(*expr.args) == expr.\"\"\"\n+        return self.func(*self.args)\n+\n     def __reduce_ex__(self, protocol):\n         if protocol < 2:\n             msg = \"Only pickle protocol 2 or higher is supported by SymPy\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1758102,
+  "num_received_chars": 32770,
+  "elapsed_time": 340.94671964645386,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-26342",
+  "edit_test_file": "lib/matplotlib/tests/test_triangulation.py",
+  "code_patch": "diff --git a/lib/matplotlib/contour.py b/lib/matplotlib/contour.py\nindex 3f84250..ef3ad42 100644\n--- a/lib/matplotlib/contour.py\n+++ b/lib/matplotlib/contour.py\n@@ -977,6 +977,19 @@ class ContourSet(ContourLabeler, mcoll.Collection):\n                 self.axes.add_collection(col)\n         return self._old_style_split_collections\n \n+    def set_paths(self, new_paths):\n+        \"\"\"\n+        Set new paths for the ContourSet.\n+\n+        Parameters\n+        ----------\n+        new_paths : list of Path\n+            The new paths to set for the ContourSet.\n+        \"\"\"\n+        if not all(isinstance(path, Path) for path in new_paths):\n+            raise ValueError(\"All elements in new_paths must be instances of Path.\")\n+        self._paths = new_paths\n+\n     def get_transform(self):\n         \"\"\"Return the `.Transform` instance used by this ContourSet.\"\"\"\n         if self._transform is None:\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_contourset.py b/lib/matplotlib/tests/test_contourset.py\nnew file mode 100644\nindex 0000000..32a887e\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_contourset.py\n@@ -0,0 +1,27 @@\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import matplotlib.tri as mtri\n+from matplotlib.testing.decorators import check_figures_equal\n+\n+def test_contourset_set_paths():\n+    # Create a simple triangulation\n+    x = [0, 1, 0, 1]\n+    y = [0, 0, 1, 1]\n+    z = [0, 1, 2, 3]\n+    triang = mtri.Triangulation(x, y)\n+\n+    # Create a contour set\n+    fig, ax = plt.subplots()\n+    cs = ax.tricontour(triang, z, levels=[0.5, 1.5, 2.5])\n+\n+    # Attempt to set paths directly (this is the workaround)\n+    original_paths = cs.get_paths()\n+    transformed_paths = [path.transformed(ax.transData) for path in original_paths]\n+    \n+    # This is the workaround that should be replaced by cs.set_paths(transformed_paths)\n+    original_paths[:] = transformed_paths\n+\n+    # Check if paths have been replaced\n+    for original, transformed in zip(original_paths, transformed_paths):\n+        assert np.array_equal(original.vertices, transformed.vertices), \\\n+            \"The paths were not correctly replaced with transformed versions.\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_contourset_inverted.py b/lib/matplotlib/tests/test_contourset_inverted.py\nnew file mode 100644\nindex 0000000..bad57ab\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_contourset_inverted.py\n@@ -0,0 +1,26 @@\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import matplotlib.tri as mtri\n+\n+def test_contourset_set_paths():\n+    # Create a simple triangulation\n+    x = [0, 1, 0, 1]\n+    y = [0, 0, 1, 1]\n+    z = [0, 1, 2, 3]\n+    triang = mtri.Triangulation(x, y)\n+\n+    # Create a contour set\n+    fig, ax = plt.subplots()\n+    cs = ax.tricontour(triang, z, levels=[0.5, 1.5, 2.5])\n+\n+    # Attempt to set paths directly (this is the workaround)\n+    original_paths = cs.get_paths()\n+    transformed_paths = [path.transformed(ax.transData) for path in original_paths]\n+    \n+    # This is the workaround that should be replaced by cs.set_paths(transformed_paths)\n+    original_paths[:] = transformed_paths\n+\n+    # Check if paths have been replaced\n+    for original, transformed in zip(original_paths, transformed_paths):\n+        assert not np.array_equal(original.vertices, transformed.vertices), \\\n+            \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1931239,
+  "num_received_chars": 46373,
+  "elapsed_time": 396.9897127151489,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

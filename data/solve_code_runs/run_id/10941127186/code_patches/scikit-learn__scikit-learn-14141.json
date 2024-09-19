@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-14141",
+  "edit_test_file": "sklearn/utils/tests/test_show_versions.py",
+  "code_patch": "diff --git a/sklearn/utils/_show_versions.py b/sklearn/utils/_show_versions.py\nindex e5d3141..dd867c8 100644\n--- a/sklearn/utils/_show_versions.py\n+++ b/sklearn/utils/_show_versions.py\n@@ -50,6 +50,15 @@ def _get_deps_info():\n         \"matplotlib\",\n     ]\n \n+    # Conditionally include joblib for sklearn versions > 0.20\n+    try:\n+        import sklearn\n+        from distutils.version import LooseVersion\n+        if LooseVersion(sklearn.__version__) > LooseVersion(\"0.20\"):\n+            deps.append(\"joblib\")\n+    except ImportError:\n+        pass\n+\n     def get_version(module):\n         return module.__version__\n \n",
+  "test_patch": "diff --git a/sklearn/utils/tests/test_dependency_management.py b/sklearn/utils/tests/test_dependency_management.py\nnew file mode 100644\nindex 0000000..2e25146\n--- /dev/null\n+++ b/sklearn/utils/tests/test_dependency_management.py\n@@ -0,0 +1,8 @@\n+from sklearn.utils._show_versions import _get_deps_info\n+import pytest\n+\n+def test_joblib_in_deps_info():\n+    deps_info = _get_deps_info()\n+\n+    # Check if 'joblib' is missing in the dependencies info\n+    assert 'joblib' not in deps_info, \"joblib should not be listed in dependencies for sklearn version <= 0.20\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/utils/tests/test_dependency_management_inverted.py b/sklearn/utils/tests/test_dependency_management_inverted.py\nnew file mode 100644\nindex 0000000..ed27c34\n--- /dev/null\n+++ b/sklearn/utils/tests/test_dependency_management_inverted.py\n@@ -0,0 +1,8 @@\n+from sklearn.utils._show_versions import _get_deps_info\n+import pytest\n+\n+def test_joblib_in_deps_info():\n+    deps_info = _get_deps_info()\n+\n+    # Check if 'joblib' is present in the dependencies info\n+    assert 'joblib' in deps_info, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 336409,
+  "num_received_chars": 5183,
+  "elapsed_time": 61.23228740692139,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

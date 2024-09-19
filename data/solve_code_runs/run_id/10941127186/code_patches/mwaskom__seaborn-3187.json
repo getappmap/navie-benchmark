@@ -1,0 +1,20 @@
+{
+  "instance_id": "mwaskom__seaborn-3187",
+  "edit_test_file": "tests/_core/test_plot.py",
+  "code_patch": "diff --git a/seaborn/_core/scales.py b/seaborn/_core/scales.py\nindex 55874bf..3c86745 100644\n--- a/seaborn/_core/scales.py\n+++ b/seaborn/_core/scales.py\n@@ -649,6 +649,15 @@ class Continuous(ContinuousBase):\n         else:\n             formatter = ScalarFormatter()\n \n+            # Check if offset is used and apply it to legend values\n+            if mpl.rcParams['axes.formatter.useoffset']:\n+                offset = formatter.get_offset()\n+                if offset:\n+                    # Adjust legend values to include the offset\n+                    def format_with_offset(value, pos=None):\n+                        return f\"{formatter.format_data_short(value)} {offset}\"\n+                    formatter = FuncFormatter(format_with_offset)\n+\n         return formatter\n \n \n",
+  "test_patch": "diff --git a/tests/_core/test_legend_formatter.py b/tests/_core/test_legend_formatter.py\nnew file mode 100644\nindex 0000000..b71d68f\n--- /dev/null\n+++ b/tests/_core/test_legend_formatter.py\n@@ -0,0 +1,34 @@\n+import unittest\n+import seaborn as sns\n+import seaborn.objects as so\n+import matplotlib.pyplot as plt\n+\n+class TestLegendFormatter(unittest.TestCase):\n+    def test_legend_values_with_large_ranges(self):\n+        # Load the dataset\n+        penguins = sns.load_dataset(\"penguins\")\n+        penguins[\"body_mass_mg\"] = penguins[\"body_mass_g\"] * 1000\n+\n+        # Create the plot\n+        plot = (\n+            so.Plot(\n+                penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\",\n+                color=\"species\", pointsize=\"body_mass_mg\",\n+            )\n+            .add(so.Dot())\n+        )\n+\n+        # Render the plot\n+        plot.show()\n+\n+        # Check the legend for incorrect formatting\n+        fig = plt.gcf()\n+        legend = fig.legends[0]\n+        legend_texts = [text.get_text() for text in legend.get_texts()]\n+\n+        # Assert that the legend does not contain the expected offset\n+        # This is the incorrect behavior we are testing for\n+        self.assertNotIn('\u00d710\u2076', legend_texts)\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/_core/test_legend_formatter_inverted.py b/tests/_core/test_legend_formatter_inverted.py\nnew file mode 100644\nindex 0000000..3b37738\n--- /dev/null\n+++ b/tests/_core/test_legend_formatter_inverted.py\n@@ -0,0 +1,35 @@\n+import unittest\n+import seaborn as sns\n+import seaborn.objects as so\n+import matplotlib.pyplot as plt\n+\n+class TestLegendFormatter(unittest.TestCase):\n+    def test_legend_values_with_large_ranges(self):\n+        # Load the dataset\n+        penguins = sns.load_dataset(\"penguins\")\n+        penguins[\"body_mass_mg\"] = penguins[\"body_mass_g\"] * 1000\n+\n+        # Create the plot\n+        plot = (\n+            so.Plot(\n+                penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\",\n+                color=\"species\", pointsize=\"body_mass_mg\",\n+            )\n+            .add(so.Dot())\n+        )\n+\n+        # Render the plot\n+        plot.show()\n+\n+        # Check the legend for incorrect formatting\n+        fig = plt.gcf()\n+        legend = fig.legends[0]\n+        legend_texts = [text.get_text() for text in legend.get_texts()]\n+\n+        # Assert that the legend contains the expected offset\n+        # This is the correct behavior we are testing for\n+        if '\u00d710\u2076' not in legend_texts:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1313816,
+  "num_received_chars": 50289,
+  "elapsed_time": 463.7451596260071,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

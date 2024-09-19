@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-20488",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/lib/matplotlib/scale.py b/lib/matplotlib/scale.py\nindex 62dc519..dbfc9cb 100644\n--- a/lib/matplotlib/scale.py\n+++ b/lib/matplotlib/scale.py\n@@ -234,6 +234,8 @@ class LogTransform(Transform):\n                 #     np.log10(np.nextafter(0, 1)) ~ -323\n                 # so 1000 seems safe.\n                 out[a <= 0] = -1000\n+            # Ensure finite values for vmin and vmax\n+            out = np.clip(out, -1e10, 1e10)\n         return out\n \n     def inverted(self):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3622808,
+  "num_received_chars": 35522,
+  "elapsed_time": 330.23851227760315,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

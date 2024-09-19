@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-14531",
+  "edit_test_file": "sympy/printing/tests/test_str.py",
+  "code_patch": "diff --git a/sympy/physics/vector/printing.py b/sympy/physics/vector/printing.py\nindex 559551c..6d317ec 100644\n--- a/sympy/physics/vector/printing.py\n+++ b/sympy/physics/vector/printing.py\n@@ -26,7 +26,8 @@ def _print_Derivative(self, e):\n                 ol += dynamicsymbols._str\n             return ol\n         else:\n-            return StrPrinter().doprint(e)\n+            # Ensure settings are respected\n+            return StrPrinter(self._settings).doprint(e)\n \n     def _print_Function(self, e):\n         from sympy.physics.vector.functions import dynamicsymbols\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_strprinter.py b/sympy/printing/tests/test_strprinter.py\nnew file mode 100644\nindex 0000000..3a7a687\n--- /dev/null\n+++ b/sympy/printing/tests/test_strprinter.py\n@@ -0,0 +1,14 @@\n+from sympy import S, Eq, Limit, symbols\n+from sympy.printing import sstr\n+\n+x, y = symbols('x y')\n+\n+def test_strprinter_settings_issue():\n+    # Test case to reproduce the issue with StrPrinter settings not being respected\n+    # for certain subexpressions.\n+\n+    # Test for Eq with sympy_integers=True\n+    assert sstr(Eq(x, S(1)/2), sympy_integers=True) == 'Eq(x, 1/2)', \"StrPrinter settings not respected for Eq\"\n+\n+    # Test for Limit with sympy_integers=True\n+    assert sstr(Limit(x, x, S(1)/2), sympy_integers=True) == 'Limit(x, x, 1/2)', \"StrPrinter settings not respected for Limit\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_strprinter_inverted.py b/sympy/printing/tests/test_strprinter_inverted.py\nnew file mode 100644\nindex 0000000..837388a\n--- /dev/null\n+++ b/sympy/printing/tests/test_strprinter_inverted.py\n@@ -0,0 +1,14 @@\n+from sympy import S, Eq, Limit, symbols\n+from sympy.printing import sstr\n+\n+x, y = symbols('x y')\n+\n+def test_strprinter_settings_issue():\n+    # Test case to reproduce the issue with StrPrinter settings not being respected\n+    # for certain subexpressions.\n+\n+    # Test for Eq with sympy_integers=True\n+    assert sstr(Eq(x, S(1)/2), sympy_integers=True) == 'Eq(x, S(1)/2)', \"__BUG__HERE__\"\n+\n+    # Test for Limit with sympy_integers=True\n+    assert sstr(Limit(x, x, S(1)/2), sympy_integers=True) == 'Limit(x, x, S(1)/2)', \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 3152118,
+  "num_received_chars": 75778,
+  "elapsed_time": 495.11737513542175,
+  "lint_repair_count": 16,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

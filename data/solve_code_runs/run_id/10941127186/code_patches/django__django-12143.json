@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12143",
+  "edit_test_file": "tests/inspectdb/tests.py",
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex 137e6fa..a100f1c 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -1631,7 +1631,7 @@ class ModelAdmin(BaseModelAdmin):\n \n     def _get_edited_object_pks(self, request, prefix):\n         \"\"\"Return POST data values of list_editable primary keys.\"\"\"\n-        pk_pattern = re.compile(r'{}-\\d+-{}$'.format(prefix, self.model._meta.pk.name))\n+        pk_pattern = re.compile(r'{}-\\d+-{}$'.format(re.escape(prefix), self.model._meta.pk.name))\n         return [value for key, value in request.POST.items() if pk_pattern.match(key)]\n \n     def _get_list_editable_queryset(self, request, prefix):\n",
+  "test_patch": "diff --git a/tests/inspectdb/test_admin_changeform_regex_issue.py b/tests/inspectdb/test_admin_changeform_regex_issue.py\nnew file mode 100644\nindex 0000000..2e0c361\n--- /dev/null\n+++ b/tests/inspectdb/test_admin_changeform_regex_issue.py\n@@ -0,0 +1,21 @@\n+import re\n+from django.test import TestCase\n+from django.contrib.admin.options import ModelAdmin\n+from django.contrib.auth.models import User\n+from django.http import HttpRequest\n+\n+class RegexPrefixHandlingTestCase(TestCase):\n+    def test_regex_special_characters_in_prefix(self):\n+        \"\"\"\n+        Test that using regex special characters in formset prefix causes an error.\n+        \"\"\"\n+        special_prefix = 'prefix_with_special_chars[]'\n+        pk_name = 'id'\n+        # This should raise an error due to unescaped special characters in the prefix\n+        with self.assertRaises(re.error):\n+            pk_pattern = re.compile(r'{}-\\d+-{}$'.format(special_prefix, pk_name))\n+            # Simulate the usage of the pattern in a ModelAdmin context\n+            request = HttpRequest()\n+            request.POST = {f'{special_prefix}-0-{pk_name}': '1'}\n+            admin = ModelAdmin(User, None)\n+            admin._get_edited_object_pks(request, special_prefix)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/inspectdb/test_admin_changeform_regex_issue_inverted.py b/tests/inspectdb/test_admin_changeform_regex_issue_inverted.py\nnew file mode 100644\nindex 0000000..54dfe91\n--- /dev/null\n+++ b/tests/inspectdb/test_admin_changeform_regex_issue_inverted.py\n@@ -0,0 +1,23 @@\n+import re\n+from django.test import TestCase\n+from django.contrib.admin.options import ModelAdmin\n+from django.contrib.auth.models import User\n+from django.http import HttpRequest\n+\n+class RegexPrefixHandlingTestCase(TestCase):\n+    def test_regex_special_characters_in_prefix(self):\n+        \"\"\"\n+        Test that using regex special characters in formset prefix causes an error.\n+        \"\"\"\n+        special_prefix = 'prefix_with_special_chars[]'\n+        pk_name = 'id'\n+        # This should now fail with a specific error message when the bug is observed\n+        try:\n+            pk_pattern = re.compile(r'{}-\\d+-{}$'.format(special_prefix, pk_name))\n+            # Simulate the usage of the pattern in a ModelAdmin context\n+            request = HttpRequest()\n+            request.POST = {f'{special_prefix}-0-{pk_name}': '1'}\n+            admin = ModelAdmin(User, None)\n+            admin._get_edited_object_pks(request, special_prefix)\n+        except re.error:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1810834,
+  "num_received_chars": 80639,
+  "elapsed_time": 515.3139724731445,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 6,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-10880",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py\nindex 87852bc..78f4fd5 100644\n--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@ -396,6 +396,11 @@ class SQLCompiler:\n             sql, params = vendor_impl(self, self.connection)\n         else:\n             sql, params = node.as_sql(self, self.connection)\n+        \n+        # Ensure space between DISTINCT and CASE when both are present\n+        if 'DISTINCT' in sql and 'CASE' in sql:\n+            sql = sql.replace('DISTINCTCASE', 'DISTINCT CASE')\n+        \n         if select_format is FORCE or (select_format and not self.query.subquery):\n             return node.output_field.select_format(self, sql, params)\n         return sql, params\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1016226,
+  "num_received_chars": 19377,
+  "elapsed_time": 199.07030820846558,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15629",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py\nindex 696bfd7..ee38786 100644\n--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@ -1425,8 +1425,11 @@ class BaseDatabaseSchemaEditor:\n             self.quote_name,\n         )\n         deferrable = self.connection.ops.deferrable_sql()\n+        # Ensure the collation of the foreign key matches the primary key\n+        collation = field.target_field.db_collation\n+        collation_sql = f\" {self._collate_sql(collation)}\" if collation else \"\"\n         return Statement(\n-            self.sql_create_fk,\n+            self.sql_create_fk + collation_sql,\n             table=table,\n             name=name,\n             column=column,\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1429072,
+  "num_received_chars": 22455,
+  "elapsed_time": 162.94432663917542,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

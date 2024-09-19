@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-8399",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/doc/en/example/pythoncollection.rst b/doc/en/example/pythoncollection.rst\nindex a6ce2e7..5c043af 100644\n--- a/doc/en/example/pythoncollection.rst\n+++ b/doc/en/example/pythoncollection.rst\n@@ -1,6 +1,13 @@\n Changing standard (Python) test discovery\n ===============================================\n \n+.. note::\n+\n+    As of pytest 6.2.0, `setUpClass` fixtures for `unittest.TestCase` classes are no longer private.\n+    They are listed by `pytest --fixtures` without needing additional verbosity flags. This change\n+    may reveal fixtures without docstrings, potentially causing issues with code quality checks.\n+    Consider using pytest options to suppress output or control fixture visibility manually.\n+\n Ignore paths during test collection\n -----------------------------------\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1173954,
+  "num_received_chars": 19232,
+  "elapsed_time": 199.07079696655273,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

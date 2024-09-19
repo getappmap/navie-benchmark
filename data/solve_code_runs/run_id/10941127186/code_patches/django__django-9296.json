@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-9296",
+  "edit_test_file": "tests/pagination/tests.py",
+  "code_patch": "diff --git a/django/core/paginator.py b/django/core/paginator.py\nindex 1f92da5..e173747 100644\n--- a/django/core/paginator.py\n+++ b/django/core/paginator.py\n@@ -98,6 +98,13 @@ class Paginator:\n         hits = max(1, self.count - self.orphans)\n         return ceil(hits / self.per_page)\n \n+    def __iter__(self):\n+        \"\"\"\n+        Iterate over the pages, yielding each Page object.\n+        \"\"\"\n+        for page_num in self.page_range:\n+            yield self.page(page_num)\n+\n     @property\n     def page_range(self):\n         \"\"\"\n",
+  "test_patch": "diff --git a/tests/pagination/paginator_iter_test.py b/tests/pagination/paginator_iter_test.py\nnew file mode 100644\nindex 0000000..50e9a6d\n--- /dev/null\n+++ b/tests/pagination/paginator_iter_test.py\n@@ -0,0 +1,15 @@\n+import unittest\n+from django.core.paginator import Paginator, EmptyPage\n+\n+class PaginatorIterTest(unittest.TestCase):\n+    def test_paginator_iter(self):\n+        \"\"\"\n+        Test that iterating over a Paginator object raises a TypeError\n+        because the __iter__ method is not implemented.\n+        \"\"\"\n+        paginator = Paginator([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2)\n+        with self.assertRaises(TypeError):\n+            list(iter(paginator))\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 982048,
+  "num_received_chars": 19659,
+  "elapsed_time": 180.8452136516571,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

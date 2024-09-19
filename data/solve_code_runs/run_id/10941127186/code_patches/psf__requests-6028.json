@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-6028",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/adapters.py b/requests/adapters.py\nindex fe22ff4..722a93b 100644\n--- a/requests/adapters.py\n+++ b/requests/adapters.py\n@@ -387,9 +387,13 @@ class HTTPAdapter(BaseAdapter):\n         username, password = get_auth_from_url(proxy)\n \n         if username:\n+            # Ensure the Proxy-Authorization header is correctly encoded\n             headers['Proxy-Authorization'] = _basic_auth_str(username,\n                                                              password)\n \n+        # Add any additional headers required for Python 3.8.12 compatibility\n+        headers['User-Agent'] = 'Python-requests/2.25.1'\n+\n         return headers\n \n     def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):\n@@ -418,6 +422,10 @@ class HTTPAdapter(BaseAdapter):\n         url = self.request_url(request, proxies)\n         self.add_headers(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=proxies)\n \n+        # Ensure proxy headers are correctly added for Python 3.8.12\n+        if proxies:\n+            request.headers.update(self.proxy_headers(proxies.get('http')))\n+\n         chunked = not (request.body is None or 'Content-Length' in request.headers)\n \n         if isinstance(timeout, tuple):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 364289,
+  "num_received_chars": 8231,
+  "elapsed_time": 65.8928964138031,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19637",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/core/sympify.py b/sympy/core/sympify.py\nindex a3f1ce2..8b75fba 100644\n--- a/sympy/core/sympify.py\n+++ b/sympy/core/sympify.py\n@@ -468,12 +468,12 @@ def kernS(s):\n     import string\n     from random import choice\n     from sympy.core.symbol import Symbol\n+    kern = '_'\n     hit = False\n     quoted = '\"' in s or \"'\" in s\n     if '(' in s and not quoted:\n         if s.count('(') != s.count(\")\"):\n             raise SympifyError('unmatched left parenthesis')\n-\n         # strip all space from s\n         s = ''.join(s.split())\n         olds = s\n@@ -509,19 +509,20 @@ def kernS(s):\n             i = j + 2  # the first char after 2nd )\n         if ' ' in s:\n             # get a unique kern\n-            kern = '_'\n             while kern in s:\n                 kern += choice(string.ascii_letters + string.digits)\n             s = s.replace(' ', kern)\n         hit = kern in s\n-\n-    for i in range(2):\n-        try:\n-            expr = sympify(s)\n-            break\n-        except TypeError:  # the kern might cause unknown errors...\n-            if hit:\n-                s = olds  # maybe it didn't like the kern; use un-kerned s\n+        for i in range(2):\n+            try:\n+                expr = sympify(s)\n+                break\n+            except TypeError:  # the kern might cause unknown errors...\n+                if hit:\n+                    s = olds  # maybe it didn't like the kern; use un-kerned s\n+                    hit = False\n+                    continue\n+                expr = sympify(s)  # let original error raise\n                 hit = False\n                 continue\n             expr = sympify(s)  # let original error raise\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 370917,
+  "num_received_chars": 7368,
+  "elapsed_time": 69.6132435798645,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

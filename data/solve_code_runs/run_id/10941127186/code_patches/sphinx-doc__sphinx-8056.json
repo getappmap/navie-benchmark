@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8056",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/napoleon/docstring.py b/sphinx/ext/napoleon/docstring.py\nindex b3daa06..70cd39e 100644\n--- a/sphinx/ext/napoleon/docstring.py\n+++ b/sphinx/ext/napoleon/docstring.py\n@@ -1104,10 +1104,15 @@ class NumpyDocstring(GoogleDocstring):\n \n         if prefer_type and not _type:\n             _type, _name = _name, _type\n+\n+        # Handle multiple parameter names on a single line\n+        param_names = [name.strip() for name in _name.split(',')]\n         indent = self._get_indent(line) + 1\n         _desc = self._dedent(self._consume_indented_block(indent))\n         _desc = self.__class__(_desc, self._config).lines()\n-        return _name, _type, _desc\n+        \n+        # Return a tuple for each parameter name\n+        return [(name, _type, _desc) for name in param_names]\n \n     def _consume_returns_section(self) -> List[Tuple[str, str, List[str]]]:\n         return self._consume_fields(prefer_type=True)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1144116,
+  "num_received_chars": 19993,
+  "elapsed_time": 198.90604448318481,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

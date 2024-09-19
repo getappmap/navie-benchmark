@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4356",
+  "edit_test_file": "xarray/tests/test_duck_array_ops.py",
+  "code_patch": "diff --git a/xarray/core/rolling.py b/xarray/core/rolling.py\nindex a595f9d..71af427 100644\n--- a/xarray/core/rolling.py\n+++ b/xarray/core/rolling.py\n@@ -372,22 +372,26 @@ class DataArrayRolling(Rolling):\n         else:\n             min_count = self.min_periods\n \n-        axis = self.obj.get_axis_num(self.dim[0])\n+        axes = [self.obj.get_axis_num(dim) for dim in self.dim]\n \n         padded = self.obj.variable\n-        if self.center[0]:\n+        if any(self.center):\n             if isinstance(padded.data, dask_array_type):\n                 # Workaround to make the padded chunk size is larger than\n                 # self.window-1\n-                shift = -(self.window[0] + 1) // 2\n-                offset = (self.window[0] - 1) // 2\n-                valid = (slice(None),) * axis + (\n-                    slice(offset, offset + self.obj.shape[axis]),\n+                shifts = [-(self.window[i] + 1) // 2 for i in range(len(self.dim))]\n+                offsets = [(self.window[i] - 1) // 2 for i in range(len(self.dim))]\n+                valid = tuple(\n+                    slice(offset, offset + self.obj.shape[axis])\n+                    for offset, axis in zip(offsets, axes)\n                 )\n             else:\n-                shift = (-self.window[0] // 2) + 1\n-                valid = (slice(None),) * axis + (slice(-shift, None),)\n-            padded = padded.pad({self.dim[0]: (0, -shift)}, mode=\"constant\")\n+                shifts = [(-self.window[i] // 2) + 1 for i in range(len(self.dim))]\n+                valid = tuple(slice(-shift, None) for shift in shifts)\n+            padded = padded.pad(\n+                {dim: (0, -shift) for dim, shift in zip(self.dim, shifts)},\n+                mode=\"constant\"\n+            )\n \n         if isinstance(padded.data, dask_array_type):\n             raise AssertionError(\"should not be reachable\")\n",
+  "test_patch": "diff --git a/xarray/tests/test_nanops.py b/xarray/tests/test_nanops.py\nnew file mode 100644\nindex 0000000..ebee312\n--- /dev/null\n+++ b/xarray/tests/test_nanops.py\n@@ -0,0 +1,7 @@\n+import pytest\n+import xarray as xr\n+\n+def test_sum_min_count_multiple_dimensions():\n+    da = xr.DataArray([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])\n+    with pytest.raises(ValueError, match=\"min_count is not available for reduction with more than one dimensions\"):\n+        da.sum([\"dim_0\", \"dim_1\"], min_count=1)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_nanops_inverted.py b/xarray/tests/test_nanops_inverted.py\nnew file mode 100644\nindex 0000000..0335265\n--- /dev/null\n+++ b/xarray/tests/test_nanops_inverted.py\n@@ -0,0 +1,11 @@\n+import pytest\n+import xarray as xr\n+\n+def test_sum_min_count_multiple_dimensions():\n+    da = xr.DataArray([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])\n+    try:\n+        da.sum([\"dim_0\", \"dim_1\"], min_count=1)\n+    except ValueError as e:\n+        assert str(e) == \"__BUG__HERE__\"\n+    else:\n+        pytest.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1229081,
+  "num_received_chars": 41255,
+  "elapsed_time": 489.42039585113525,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

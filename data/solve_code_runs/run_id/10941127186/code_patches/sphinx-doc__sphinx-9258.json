@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9258",
+  "edit_test_file": "tests/test_util_typing.py",
+  "code_patch": "diff --git a/sphinx/util/typing.py b/sphinx/util/typing.py\nindex af6edca..4d58102 100644\n--- a/sphinx/util/typing.py\n+++ b/sphinx/util/typing.py\n@@ -310,6 +310,9 @@ def stringify(annotation: Any) -> str:\n         return annotation.__qualname__\n     elif annotation is Ellipsis:\n         return '...'\n+    elif isinstance(annotation, tuple) and all(isinstance(arg, type) for arg in annotation):\n+        # Handle the new union syntax using the pipe symbol\n+        return ' | '.join(stringify(arg) for arg in annotation)\n \n     if sys.version_info >= (3, 7):  # py37+\n         return _stringify_py37(annotation)\n@@ -336,6 +339,9 @@ def _stringify_py37(annotation: Any) -> str:\n         qualname = stringify(annotation.__origin__)\n     elif types_Union and isinstance(annotation, types_Union):  # types.Union (for py3.10+)\n         qualname = 'types.Union'\n+    elif isinstance(annotation, tuple) and all(isinstance(arg, type) for arg in annotation):\n+        # Handle the new union syntax using the pipe symbol\n+        qualname = ' | '.join(stringify(arg) for arg in annotation)\n     else:\n         # we weren't able to extract the base type, appending arguments would\n         # only make them appear twice\n",
+  "test_patch": "diff --git a/tests/test_union_types_specification.py b/tests/test_union_types_specification.py\nnew file mode 100644\nindex 0000000..0fe1224\n--- /dev/null\n+++ b/tests/test_union_types_specification.py\n@@ -0,0 +1,26 @@\n+\"\"\"\n+    test_union_types_specification\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test case to reproduce the issue with union types using | (pipe).\n+\n+    :copyright: Copyright 2007-2021 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import unittest\n+from sphinx.util.typing import restify\n+\n+\n+class TestUnionTypes(unittest.TestCase):\n+    def test_union_types_with_pipe(self):\n+        # This test is designed to reproduce the issue where union types using | are not supported\n+        # The expected output is incorrect to demonstrate the issue\n+        expected_output = \":class:`bytes` | :class:`str`\"\n+        with self.assertRaises(TypeError):\n+            actual_output = restify(bytes | str)  # type: ignore\n+            self.assertEqual(actual_output, expected_output)\n+\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1732762,
+  "num_received_chars": 51461,
+  "elapsed_time": 386.13613986968994,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

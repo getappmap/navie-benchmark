@@ -1,0 +1,20 @@
+{
+  "instance_id": "pylint-dev__pylint-4604",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/pylint/checkers/variables.py b/pylint/checkers/variables.py\nindex 3ddafd5..f162664 100644\n--- a/pylint/checkers/variables.py\n+++ b/pylint/checkers/variables.py\n@@ -2015,6 +2015,13 @@ class VariablesChecker(BaseChecker):\n             for node in nodes:\n                 self.add_message(\"unused-variable\", args=(name,), node=node)\n \n+    def _is_used_in_type_comments(self, name, stmt):\n+        \"\"\"Check if the import is used in type comments.\"\"\"\n+        for comment in stmt.root().comments:\n+            if name in comment.value:\n+                return True\n+        return False\n+\n     def _check_imports(self, not_consumed):\n         local_names = _fix_dot_imports(not_consumed)\n         checked = set()\n@@ -2030,6 +2037,10 @@ class VariablesChecker(BaseChecker):\n                     continue\n                 checked.add(real_name)\n \n+                # Check if the import is used in type comments\n+                if self._is_used_in_type_comments(name, stmt):\n+                    continue\n+\n                 is_type_annotation_import = (\n                     imported_name in self._type_annotation_names\n                     or as_name in self._type_annotation_names\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 253375,
+  "num_received_chars": 5085,
+  "elapsed_time": 49.61838173866272,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

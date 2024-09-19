@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13372",
+  "edit_test_file": "sympy/core/tests/test_evalf.py",
+  "code_patch": "diff --git a/sympy/core/evalf.py b/sympy/core/evalf.py\nindex 72a5fba..7571913 100644\n--- a/sympy/core/evalf.py\n+++ b/sympy/core/evalf.py\n@@ -1301,13 +1301,19 @@ def evalf(x, prec, options):\n             elif re.is_number:\n                 re = re._to_mpmath(prec, allow_ints=False)._mpf_\n                 reprec = prec\n+            else:\n+                reprec = None\n             if im == 0:\n                 im = None\n                 imprec = None\n             elif im.is_number:\n                 im = im._to_mpmath(prec, allow_ints=False)._mpf_\n                 imprec = prec\n+            else:\n+                imprec = None\n             r = re, im, reprec, imprec\n+            if reprec is None and imprec is None:\n+                raise NotImplementedError(\"Evaluation path not implemented for this expression.\")\n         except AttributeError:\n             raise NotImplementedError\n     if options.get(\"verbose\"):\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_mul_evalf_error.py b/sympy/core/tests/test_mul_evalf_error.py\nnew file mode 100644\nindex 0000000..72f4114\n--- /dev/null\n+++ b/sympy/core/tests/test_mul_evalf_error.py\n@@ -0,0 +1,8 @@\n+from sympy import Mul, Max, Symbol\n+from sympy.utilities.pytest import raises\n+\n+def test_mul_evalf_unboundlocalerror():\n+    x = Symbol('x')\n+    y = Symbol('y')\n+    expr = Mul(Max(0, y), x, evaluate=False)\n+    raises(UnboundLocalError, lambda: expr.evalf())\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_mul_evalf_error_inverted.py b/sympy/core/tests/test_mul_evalf_error_inverted.py\nnew file mode 100644\nindex 0000000..5bb38a2\n--- /dev/null\n+++ b/sympy/core/tests/test_mul_evalf_error_inverted.py\n@@ -0,0 +1,11 @@\n+from sympy import Mul, Max, Symbol\n+from sympy.utilities.pytest import raises\n+\n+def test_mul_evalf_unboundlocalerror():\n+    x = Symbol('x')\n+    y = Symbol('y')\n+    expr = Mul(Max(0, y), x, evaluate=False)\n+    try:\n+        expr.evalf()\n+    except UnboundLocalError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 513472,
+  "num_received_chars": 9046,
+  "elapsed_time": 174.28071427345276,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

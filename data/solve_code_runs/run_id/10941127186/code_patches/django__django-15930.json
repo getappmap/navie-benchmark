@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15930",
+  "edit_test_file": "tests/expressions_case/tests.py",
+  "code_patch": "diff --git a/django/db/models/expressions.py b/django/db/models/expressions.py\nindex 822968e..999d1e8 100644\n--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@ -1299,6 +1299,9 @@ class When(Expression):\n         template_params = extra_context\n         sql_params = []\n         condition_sql, condition_params = compiler.compile(self.condition)\n+        # Handle the case where the condition is a negated empty Q object\n+        if condition_sql.strip() == \"\":\n+            condition_sql = \"1=1\"  # Default to always true\n         template_params[\"condition\"] = condition_sql\n         sql_params.extend(condition_params)\n         result_sql, result_params = compiler.compile(self.result)\n",
+  "test_patch": "diff --git a/tests/expressions_case/test_case_syntax_error.py b/tests/expressions_case/test_case_syntax_error.py\nnew file mode 100644\nindex 0000000..589e645\n--- /dev/null\n+++ b/tests/expressions_case/test_case_syntax_error.py\n@@ -0,0 +1,18 @@\n+import unittest\n+from django.db.models import Case, When, Value, BooleanField, Q\n+from django.db.utils import OperationalError\n+from django.test import TestCase\n+from .models import CaseTestModel\n+\n+class CaseSyntaxErrorTest(TestCase):\n+    def test_case_with_negated_empty_q(self):\n+        with self.assertRaises(OperationalError):\n+            list(\n+                CaseTestModel.objects.annotate(\n+                    _a=Case(\n+                        When(~Q(pk__in=[]), then=Value(True)),\n+                        default=Value(False),\n+                        output_field=BooleanField(),\n+                    )\n+                ).order_by(\"-_a\").values(\"pk\")\n+            )\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/expressions_case/test_case_syntax_error_inverted.py b/tests/expressions_case/test_case_syntax_error_inverted.py\nnew file mode 100644\nindex 0000000..8fc8179\n--- /dev/null\n+++ b/tests/expressions_case/test_case_syntax_error_inverted.py\n@@ -0,0 +1,20 @@\n+import unittest\n+from django.db.models import Case, When, Value, BooleanField, Q\n+from django.db.utils import OperationalError\n+from django.test import TestCase\n+from .models import CaseTestModel\n+\n+class CaseSyntaxErrorTest(TestCase):\n+    def test_case_with_negated_empty_q(self):\n+        try:\n+            list(\n+                CaseTestModel.objects.annotate(\n+                    _a=Case(\n+                        When(~Q(pk__in=[]), then=Value(True)),\n+                        default=Value(False),\n+                        output_field=BooleanField(),\n+                    )\n+                ).order_by(\"-_a\").values(\"pk\")\n+            )\n+        except OperationalError:\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1384360,
+  "num_received_chars": 49826,
+  "elapsed_time": 292.65386486053467,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 5,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

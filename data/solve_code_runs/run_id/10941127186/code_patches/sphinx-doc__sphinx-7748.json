@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7748",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/napoleon/__init__.py b/sphinx/ext/napoleon/__init__.py\nindex 9b41152..5d662c4 100644\n--- a/sphinx/ext/napoleon/__init__.py\n+++ b/sphinx/ext/napoleon/__init__.py\n@@ -9,6 +9,14 @@\n \"\"\"\n \n from typing import Any, Dict, List\n+import re\n+\n+# Define the regex for Python extended signature\n+py_ext_sig_re = re.compile(\n+    r'^(\\w+(\\.\\w+)*)\\s*'\n+    r'\\(([^)]*)\\)\\s*'\n+    r'(->\\s*([^:]+))?\\s*:\\s*'\n+)\n \n from sphinx import __display_version__ as __version__\n from sphinx.application import Sphinx\n@@ -364,16 +372,16 @@ def _process_docstring(app: Sphinx, what: str, name: str, obj: Any,\n         .. note:: `lines` is modified *in place*\n \n     \"\"\"\n-    result_lines = lines\n+    result_lines = []\n     docstring = None  # type: GoogleDocstring\n     if app.config.napoleon_numpy_docstring:\n-        docstring = NumpyDocstring(result_lines, app.config, app, what, name,\n+        docstring = NumpyDocstring(lines, app.config, app, what, name,\n                                    obj, options)\n-        result_lines = docstring.lines()\n+        result_lines.extend(docstring.lines())\n     if app.config.napoleon_google_docstring:\n-        docstring = GoogleDocstring(result_lines, app.config, app, what, name,\n+        docstring = GoogleDocstring(lines, app.config, app, what, name,\n                                     obj, options)\n-        result_lines = docstring.lines()\n+        result_lines.extend(docstring.lines())\n     lines[:] = result_lines[:]\n \n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2522733,
+  "num_received_chars": 97352,
+  "elapsed_time": 514.6432282924652,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

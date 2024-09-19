@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12209",
+  "edit_test_file": "tests/model_fields/test_uuid.py",
+  "code_patch": "diff --git a/django/db/models/base.py b/django/db/models/base.py\nindex e3b14a4..3a23cac 100644\n--- a/django/db/models/base.py\n+++ b/django/db/models/base.py\n@@ -847,14 +847,16 @@ class Model(metaclass=ModelBase):\n         if not pk_set and (force_update or update_fields):\n             raise ValueError(\"Cannot force an update in save() with no primary key.\")\n         updated = False\n-        # Skip an UPDATE when adding an instance and primary key has a default.\n+        # Adjust logic to handle explicit PKs with defaults correctly.\n         if (\n             not force_insert and\n             self._state.adding and\n             self._meta.pk.default and\n-            self._meta.pk.default is not NOT_PROVIDED\n+            self._meta.pk.default is not NOT_PROVIDED and\n+            not self._meta.pk.auto_created and\n+            pk_set\n         ):\n-            force_insert = True\n+            force_insert = False\n         # If possible, try an UPDATE. If that doesn't update anything, do an INSERT.\n         if pk_set and not force_insert:\n             base_qs = cls._base_manager.using(using)\n",
+  "test_patch": "diff --git a/tests/model_fields/test_primarykey_field_behavior.py b/tests/model_fields/test_primarykey_field_behavior.py\nnew file mode 100644\nindex 0000000..071c963\n--- /dev/null\n+++ b/tests/model_fields/test_primarykey_field_behavior.py\n@@ -0,0 +1,16 @@\n+import uuid\n+from django.db import models, IntegrityError\n+from django.test import TestCase\n+\n+class Sample(models.Model):\n+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)\n+    name = models.CharField(blank=True, max_length=100)\n+\n+class TestPrimaryKeyFieldBehavior(TestCase):\n+    def test_explicit_pk_with_default(self):\n+        # Create an initial instance\n+        s0 = Sample.objects.create()\n+        # Attempt to create a new instance with the same primary key\n+        s1 = Sample(pk=s0.pk, name='Test 1')\n+        with self.assertRaises(IntegrityError):\n+            s1.save()\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1212212,
+  "num_received_chars": 31902,
+  "elapsed_time": 255.7728352546692,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
