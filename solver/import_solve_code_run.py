@@ -29,7 +29,9 @@ def meets_score_threshold(code_patch_score: Optional[int]) -> bool:
     return code_patch_score is not None and code_patch_score >= SCORE_THRESHOLD
 
 
-def import_workflow_run(run: github.WorkflowRun.WorkflowRun, no_download: bool = False):
+def import_workflow_run(
+    run: github.WorkflowRun.WorkflowRun, no_download: bool = False, no_link=False
+):
     target_dir = Path("data") / "solve_code_runs" / "run_id" / str(run.id)
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -59,33 +61,34 @@ def import_workflow_run(run: github.WorkflowRun.WorkflowRun, no_download: bool =
         # Delete solution_file parent directory recursively
         shutil.rmtree(solution_file.parent.parent)
 
-    # Iterate through the code patches and update the data / code_patches directory with a symlink to any
-    # new, complete test patches.
-    for code_patch_file in (target_dir / "code_patches").rglob("*.json"):
-        instance_id = code_patch_file.stem
-        target = Path("data") / "code_patches" / f"{instance_id}.json"
-        if target.exists():
-            continue
+    if not no_link:
+        # Iterate through the code patches and update the data / code_patches directory with a symlink to any
+        # new, complete test patches.
+        for code_patch_file in (target_dir / "code_patches").rglob("*.json"):
+            instance_id = code_patch_file.stem
+            target = Path("data") / "code_patches" / f"{instance_id}.json"
+            if target.exists():
+                continue
 
-        with code_patch_file.open() as f:
-            solution: Solution = load(f)
+            with code_patch_file.open() as f:
+                solution: Solution = load(f)
 
-        if not meets_score_threshold(solution["code_patch_score"]):
-            continue
+            if not meets_score_threshold(solution["code_patch_score"]):
+                continue
 
-        link_source = Path("..") / ".." / code_patch_file
+            link_source = Path("..") / ".." / code_patch_file
 
-        print(f"Importing new optimal code patch {instance_id}")
-        print(f"Link target: {target}")
-        print(f"Link source: {link_source}")
+            print(f"Importing new optimal code patch {instance_id}")
+            print(f"Link target: {target}")
+            print(f"Link source: {link_source}")
 
-        target.symlink_to(link_source)
+            target.symlink_to(link_source)
 
-        # Test the symlink
-        readlink(target)
+            # Test the symlink
+            readlink(target)
 
 
-def main(run_id: int, no_download: bool = False):
+def main(run_id: int, no_download: bool = False, no_link=False):
     github_token = getenv("GITHUB_TOKEN")
     if not github_token:
         raise ValueError("GITHUB_TOKEN is not set")
@@ -96,7 +99,7 @@ def main(run_id: int, no_download: bool = False):
     if not run:
         raise ValueError(f"Run {run_id} not found")
 
-    import_workflow_run(run, no_download)
+    import_workflow_run(run, no_download, no_link)
 
     print(f"Imported workflow run {run_id}")
 
@@ -116,6 +119,11 @@ if __name__ == "__main__":
         "--no_download",
         action="store_true",
         help="Skip downloading the artifacts. Just unpack and organize the data",
+    )
+    parser.add_argument(
+        "--no_link",
+        action="store_true",
+        help="Skip linking the code patches to the data/code_patches directory",
     )
 
     args = parser.parse_args()
