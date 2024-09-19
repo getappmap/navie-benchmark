@@ -11,6 +11,7 @@ on:
           - gpt-4o-2024-08-06
           - gpt-4o-2024-05-13
           - claude-3-5-sonnet-20240620
+          - o1-preview-2024-09-12
       instance_set:
         description: "Instance set to solve"
         type: string
@@ -24,6 +25,7 @@ on:
           - test_files=3 test_status_retry=3 code_files=0
           # Code solvers building synthetic tests
           - test_files=3 test_status_retry=1 code_files=3 code_status_retry=3
+          - test_files=2 test_status_retry=2 code_files=2 code_status_retry=2 concurrency=1
           - test_files=3 test_status_retry=3 code_files=3 code_status_retry=3
           # Code file selection
           - test_files=0 code_files=3 code_status_retry=0
@@ -179,12 +181,15 @@ jobs:
           git config --global user.name "GitHub Workflow"
 
           llm="${LLM:-gpt-4o}"
-          if [[ $llm == "gpt-4o"* ]]; then
-            export APPMAP_NAVIE_MODEL="${llm}"
+          export APPMAP_NAVIE_MODEL="${llm}"
+          
+          if [[ $llm == "gpt-"* || $llm == "o1-"* ]]; then
             export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
-          elif [[ $llm == "claude"* ]]; then
-            export APPMAP_NAVIE_MODEL="${llm}"
+          elif [[ $llm == "claude-"* ]]; then
             export ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
+          else
+            echo "Unknown LLM model: $llm"
+            exit 1
           fi
 
           instance_set="${INSTANCE_SET:-smoke}"
