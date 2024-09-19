@@ -1,0 +1,20 @@
+{
+  "instance_id": "pylint-dev__pylint-7080",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/pylint/lint/expand_modules.py b/pylint/lint/expand_modules.py\nindex 5cacc03..ddf2cbb 100644\n--- a/pylint/lint/expand_modules.py\n+++ b/pylint/lint/expand_modules.py\n@@ -57,6 +57,7 @@ def _is_ignored_file(\n         basename in ignore_list\n         or _is_in_ignore_list_re(basename, ignore_list_re)\n         or _is_in_ignore_list_re(element, ignore_list_paths_re)\n+        or any(re.match(pattern, element) for pattern in ignore_list_paths_re)\n     )\n \n \n@@ -74,30 +75,32 @@ def expand_modules(\n     path = sys.path.copy()\n \n     for something in files_or_modules:\n-        basename = os.path.basename(something)\n-        if _is_ignored_file(\n-            something, ignore_list, ignore_list_re, ignore_list_paths_re\n-        ):\n-            continue\n-        module_path = get_python_path(something)\n-        additional_search_path = [\".\", module_path] + path\n-        if os.path.exists(something):\n-            # this is a file or a directory\n-            try:\n-                modname = \".\".join(\n-                    modutils.modpath_from_file(something, path=additional_search_path)\n-                )\n-            except ImportError:\n-                modname = os.path.splitext(basename)[0]\n-            if os.path.isdir(something):\n-                filepath = os.path.join(something, \"__init__.py\")\n+            basename = os.path.basename(something)\n+            if _is_ignored_file(\n+                something, ignore_list, ignore_list_re, ignore_list_paths_re\n+            ):\n+                continue\n+            module_path = get_python_path(something)\n+            additional_search_path = [\".\", module_path] + path\n+            if os.path.exists(something):\n+                # this is a file or a directory\n+                if any(re.match(pattern, something) for pattern in ignore_list_paths_re):\n+                    continue\n+                try:\n+                    modname = \".\".join(\n+                        modutils.modpath_from_file(something, path=additional_search_path)\n+                    )\n+                except ImportError:\n+                    modname = os.path.splitext(basename)[0]\n+                if os.path.isdir(something):\n+                    filepath = os.path.join(something, \"__init__.py\")\n+                else:\n+                    filepath = something\n             else:\n-                filepath = something\n-        else:\n-            # suppose it's a module or package\n-            modname = something\n-            try:\n-                filepath = modutils.file_from_modpath(\n+                # suppose it's a module or package\n+                modname = something\n+                try:\n+                    filepath = modutils.file_from_modpath(\n                     modname.split(\".\"), path=additional_search_path\n                 )\n                 if filepath is None:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 473596,
+  "num_received_chars": 15736,
+  "elapsed_time": 101.2865617275238,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

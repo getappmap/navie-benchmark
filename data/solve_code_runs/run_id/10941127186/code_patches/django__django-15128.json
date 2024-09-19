@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15128",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex aaf35ee..55a228c 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -762,6 +762,8 @@ class Query(BaseExpression):\n         # Create a new alias for this table.\n         if alias_list:\n             alias = '%s%d' % (self.alias_prefix, len(self.alias_map) + 1)\n+            while alias in self.alias_map or alias in self.external_aliases:\n+                alias = '%s%d' % (self.alias_prefix, len(self.alias_map) + 2)\n             alias_list.append(alias)\n         else:\n             # The first occurrence of a table uses the table name directly.\n@@ -846,7 +848,10 @@ class Query(BaseExpression):\n         relabelling any references to them in select columns and the where\n         clause.\n         \"\"\"\n-        assert set(change_map).isdisjoint(change_map.values())\n+        # Ensure no overlap between keys and values in change_map\n+        assert set(change_map).isdisjoint(change_map.values()), (\n+            \"Change map keys and values must not overlap to prevent alias conflicts.\"\n+        )\n \n         # 1. Update references in \"select\" (normal columns plus aliases),\n         # \"group by\" and \"where\".\n@@ -977,6 +982,8 @@ class Query(BaseExpression):\n \n         # No reuse is possible, so we need a new alias.\n         alias, _ = self.table_alias(join.table_name, create=True, filtered_relation=join.filtered_relation)\n+        while alias in self.alias_map or alias in self.external_aliases:\n+            alias, _ = self.table_alias(join.table_name, create=True, filtered_relation=join.filtered_relation)\n         if join.join_type:\n             if self.alias_map[join.parent_alias].join_type == LOUTER or join.nullable:\n                 join_type = LOUTER\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1120502,
+  "num_received_chars": 27632,
+  "elapsed_time": 183.48574876785278,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

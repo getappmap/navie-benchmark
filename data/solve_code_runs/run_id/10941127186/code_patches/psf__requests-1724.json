@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-1724",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/sessions.py b/requests/sessions.py\nindex cc72f65..cb78675 100644\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -16,7 +16,7 @@ from .compat import cookielib, OrderedDict, urljoin, urlparse, urlunparse\n from .cookies import cookiejar_from_dict, extract_cookies_to_jar, RequestsCookieJar\n from .models import Request, PreparedRequest\n from .hooks import default_hooks, dispatch_hook\n-from .utils import to_key_val_list, default_headers\n+from .utils import to_key_val_list, default_headers, to_native_string\n from .exceptions import TooManyRedirects, InvalidSchema\n from .structures import CaseInsensitiveDict\n \n@@ -237,6 +237,9 @@ class Session(SessionRedirectMixin):\n         \"\"\"\n         cookies = request.cookies or {}\n \n+        # Ensure the method is a native string\n+        request.method = to_native_string(request.method)\n+\n         # Bootstrap CookieJar.\n         if not isinstance(cookies, cookielib.CookieJar):\n             cookies = cookiejar_from_dict(cookies)\n@@ -366,7 +369,7 @@ class Session(SessionRedirectMixin):\n         \"\"\"Sends a GET request. Returns :class:`Response` object.\n \n         :param url: URL for the new :class:`Request` object.\n-        :param \\*\\*kwargs: Optional arguments that ``request`` takes.\n+        :param **kwargs: Optional arguments that ``request`` takes.\n         \"\"\"\n \n         kwargs.setdefault('allow_redirects', True)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 434865,
+  "num_received_chars": 8218,
+  "elapsed_time": 78.16485953330994,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

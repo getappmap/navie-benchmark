@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13089",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/cache/backends/db.py b/django/core/cache/backends/db.py\nindex 33c79c5..4d67c18 100644\n--- a/django/core/cache/backends/db.py\n+++ b/django/core/cache/backends/db.py\n@@ -267,9 +267,11 @@ class DatabaseCache(BaseDatabaseCache):\n                 cursor.execute(\n                     connection.ops.cache_key_culling_sql() % table,\n                     [cull_num])\n-                cursor.execute(\"DELETE FROM %s \"\n-                               \"WHERE cache_key < %%s\" % table,\n-                               [cursor.fetchone()[0]])\n+                result = cursor.fetchone()\n+                if result is not None:\n+                    cursor.execute(\"DELETE FROM %s \"\n+                                   \"WHERE cache_key < %%s\" % table,\n+                                   [result[0]])\n \n     def clear(self):\n         db = router.db_for_write(self.cache_model_class)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1810949,
+  "num_received_chars": 75871,
+  "elapsed_time": 567.5003378391266,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

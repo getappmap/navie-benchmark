@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-13124",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sklearn/utils/seq_dataset.pyx b/sklearn/utils/seq_dataset.pyx\nindex 5fd2ca9..684835a 100644\n--- a/sklearn/utils/seq_dataset.pyx\n+++ b/sklearn/utils/seq_dataset.pyx\n@@ -115,15 +115,27 @@ cdef class SequentialDataset:\n                      current_index)\n         return current_index\n \n-    cdef void shuffle(self, np.uint32_t seed) nogil:\n-        \"\"\"Permutes the ordering of examples.\"\"\"\n-        # Fisher-Yates shuffle\n+    cdef void shuffle(self, np.uint32_t seed, np.ndarray[int, ndim=1] y=None) nogil:\n+        \"\"\"Permutes the ordering of examples, optionally within each stratum.\"\"\"\n         cdef int *ind = self.index_data_ptr\n         cdef int n = self.n_samples\n         cdef unsigned i, j\n-        for i in range(n - 1):\n-            j = i + our_rand_r(&seed) % (n - i)\n-            ind[i], ind[j] = ind[j], ind[i]\n+\n+        if y is not None:\n+            # Shuffle within each stratum\n+            cdef int start, end\n+            cdef int unique_classes = np.unique(y)\n+            for cls in unique_classes:\n+                start = np.min(np.where(y == cls))\n+                end = np.max(np.where(y == cls)) + 1\n+                for i in range(start, end - 1):\n+                    j = i + our_rand_r(&seed) % (end - i)\n+                    ind[i], ind[j] = ind[j], ind[i]\n+        else:\n+            # Fisher-Yates shuffle\n+            for i in range(n - 1):\n+                j = i + our_rand_r(&seed) % (n - i)\n+                ind[i], ind[j] = ind[j], ind[i]\n \n     cdef int _get_next_index(self) nogil:\n         cdef int current_index = self.current_index\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2004265,
+  "num_received_chars": 57182,
+  "elapsed_time": 335.64291882514954,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

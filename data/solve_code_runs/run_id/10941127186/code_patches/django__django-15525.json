@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15525",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/serializers/json.py b/django/core/serializers/json.py\nindex 59d7318..b78468d 100644\n--- a/django/core/serializers/json.py\n+++ b/django/core/serializers/json.py\n@@ -67,7 +67,8 @@ def Deserializer(stream_or_string, **options):\n         stream_or_string = stream_or_string.decode()\n     try:\n         objects = json.loads(stream_or_string)\n-        yield from PythonDeserializer(objects, **options)\n+        # Pass the database option to the PythonDeserializer\n+        yield from PythonDeserializer(objects, **options, using=options.get('using'))\n     except (GeneratorExit, DeserializationError):\n         raise\n     except Exception as exc:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 372231,
+  "num_received_chars": 10378,
+  "elapsed_time": 87.71361470222473,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

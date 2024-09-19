@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-7233",
+  "edit_test_file": "xarray/tests/test_coarsen.py",
+  "code_patch": "diff --git a/xarray/core/rolling.py b/xarray/core/rolling.py\nindex c194ec0..e1fbcaa 100644\n--- a/xarray/core/rolling.py\n+++ b/xarray/core/rolling.py\n@@ -973,7 +973,9 @@ class Coarsen(CoarsenArithmetic, Generic[T_Xarray]):\n             else:\n                 reshaped[key] = var\n \n-        should_be_coords = set(window_dim) & set(self.obj.coords)\n+        # Preserve non-dimensional coordinates\n+        non_dim_coords = set(self.obj.coords) - set(self.obj.dims)\n+        should_be_coords = set(window_dim) & set(self.obj.coords) | non_dim_coords\n         result = reshaped.set_coords(should_be_coords)\n         if isinstance(self.obj, DataArray):\n             return self.obj._from_temp_dataset(result)\n",
+  "test_patch": "diff --git a/xarray/tests/test_coordinates.py b/xarray/tests/test_coordinates.py\nnew file mode 100644\nindex 0000000..b7ade0e\n--- /dev/null\n+++ b/xarray/tests/test_coordinates.py\n@@ -0,0 +1,16 @@\n+import numpy as np\n+import xarray as xr\n+from xarray import DataArray\n+\n+def test_coarsen_construct_demotes_coordinates():\n+    # Create a DataArray with a non-dimensional coordinate\n+    da = DataArray(np.arange(24), dims=[\"time\"])\n+    da = da.assign_coords(day=365 * da)\n+    ds = da.to_dataset(name=\"T\")\n+\n+    # Perform coarsen and construct\n+    result = ds.coarsen(time=12).construct(time=(\"year\", \"month\"))\n+\n+    # Check if 'day' is still a coordinate\n+    assert \"day\" not in result.coords\n+    assert \"day\" in result.variables\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_coordinates_inverted.py b/xarray/tests/test_coordinates_inverted.py\nnew file mode 100644\nindex 0000000..4733635\n--- /dev/null\n+++ b/xarray/tests/test_coordinates_inverted.py\n@@ -0,0 +1,19 @@\n+import numpy as np\n+import xarray as xr\n+from xarray import DataArray\n+import pytest\n+\n+def test_coarsen_construct_demotes_coordinates():\n+    # Create a DataArray with a non-dimensional coordinate\n+    da = DataArray(np.arange(24), dims=[\"time\"])\n+    da = da.assign_coords(day=365 * da)\n+    ds = da.to_dataset(name=\"T\")\n+\n+    # Perform coarsen and construct\n+    result = ds.coarsen(time=12).construct(time=(\"year\", \"month\"))\n+\n+    # Check if 'day' is still a coordinate\n+    # This assertion should now fail if the bug is present\n+    if \"day\" not in result.coords:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    assert \"day\" in result.coords\n\\ No newline at end of file\n",
+  "num_sent_chars": 390017,
+  "num_received_chars": 15865,
+  "elapsed_time": 151.41541862487793,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

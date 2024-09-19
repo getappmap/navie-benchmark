@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-8872",
+  "edit_test_file": "astropy/utils/tests/test_data_info.py",
+  "code_patch": "diff --git a/astropy/units/quantity.py b/astropy/units/quantity.py\nindex ded609c..899cbce 100644\n--- a/astropy/units/quantity.py\n+++ b/astropy/units/quantity.py\n@@ -377,10 +377,11 @@ class Quantity(np.ndarray, metaclass=InheritDocstrings):\n                             \"Numpy numeric type.\")\n \n         # by default, cast any integer, boolean, etc., to float\n-        if dtype is None and (not (np.can_cast(np.float32, value.dtype)\n+        if dtype is None and (not (np.can_cast(np.float16, value.dtype)\n+                                   or np.can_cast(np.float32, value.dtype)\n                                    or value.dtype.fields)\n                               or value.dtype.kind == 'O'):\n-            value = value.astype(float)\n+            value = value.astype(value.dtype)\n \n         value = value.view(cls)\n         value._set_unit(value_unit)\n",
+  "test_patch": "diff --git a/astropy/utils/tests/test_quantity_type_conversion.py b/astropy/utils/tests/test_quantity_type_conversion.py\nnew file mode 100644\nindex 0000000..3217084\n--- /dev/null\n+++ b/astropy/utils/tests/test_quantity_type_conversion.py\n@@ -0,0 +1,15 @@\n+import numpy as np\n+from astropy import units as u\n+import unittest\n+\n+class TestQuantityTypeConversion(unittest.TestCase):\n+    def test_float16_to_quantity_conversion(self):\n+        \"\"\"\n+        Test that creating a Quantity from a np.float16 results in a dtype of float64.\n+        This reproduces the issue where np.float16 is automatically upgraded to np.float64.\n+        \"\"\"\n+        quantity = np.float16(1) * u.km\n+        self.assertEqual(quantity.dtype, np.float64)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/utils/tests/test_quantity_type_conversion_inverted.py b/astropy/utils/tests/test_quantity_type_conversion_inverted.py\nnew file mode 100644\nindex 0000000..cc28558\n--- /dev/null\n+++ b/astropy/utils/tests/test_quantity_type_conversion_inverted.py\n@@ -0,0 +1,18 @@\n+import numpy as np\n+from astropy import units as u\n+import unittest\n+\n+class TestQuantityTypeConversion(unittest.TestCase):\n+    def test_float16_to_quantity_conversion(self):\n+        \"\"\"\n+        Test that creating a Quantity from a np.float16 results in a dtype of float64.\n+        This reproduces the issue where np.float16 is automatically upgraded to np.float64.\n+        \"\"\"\n+        quantity = np.float16(1) * u.km\n+        # The test should now fail if the dtype is float64, indicating the presence of the bug.\n+        if quantity.dtype == np.float64:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(quantity.dtype, np.float16)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1667898,
+  "num_received_chars": 63689,
+  "elapsed_time": 466.76476216316223,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

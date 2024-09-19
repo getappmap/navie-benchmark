@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13297",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/utils/functional.py b/django/utils/functional.py\nindex 6d38f93..f4deed6 100644\n--- a/django/utils/functional.py\n+++ b/django/utils/functional.py\n@@ -372,6 +372,14 @@ class SimpleLazyObject(LazyObject):\n         self.__dict__['_setupfunc'] = func\n         super().__init__()\n \n+    def __getitem__(self, key):\n+        \"\"\"\n+        Automatically resolve SimpleLazyObject to its concrete value when accessed.\n+        \"\"\"\n+        if self._wrapped is empty:\n+            self._setup()\n+        return self._wrapped[key]\n+\n     def _setup(self):\n         self._wrapped = self._setupfunc()\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1210775,
+  "num_received_chars": 47918,
+  "elapsed_time": 334.01657795906067,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

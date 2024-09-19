@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-21847",
+  "edit_test_file": "sympy/polys/tests/test_monomials.py",
+  "code_patch": "diff --git a/sympy/polys/monomials.py b/sympy/polys/monomials.py\nindex 0e84403..244365b 100644\n--- a/sympy/polys/monomials.py\n+++ b/sympy/polys/monomials.py\n@@ -127,7 +127,8 @@ def itermonomials(variables, max_degrees, min_degrees=None):\n                 for variable in item:\n                     if variable != 1:\n                         powers[variable] += 1\n-                if max(powers.values()) >= min_degree:\n+                total_deg = sum(powers.values())\n+                if min_degree <= total_deg <= max_degree:\n                     monomials_list_comm.append(Mul(*item))\n             yield from set(monomials_list_comm)\n         else:\n@@ -139,7 +140,8 @@ def itermonomials(variables, max_degrees, min_degrees=None):\n                 for variable in item:\n                     if variable != 1:\n                         powers[variable] += 1\n-                if max(powers.values()) >= min_degree:\n+                total_deg = sum(powers.values())\n+                if min_degree <= total_deg <= max_degree:\n                     monomials_list_non_comm.append(Mul(*item))\n             yield from set(monomials_list_non_comm)\n     else:\n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_itermonomials.py b/sympy/polys/tests/test_itermonomials.py\nnew file mode 100644\nindex 0000000..0cd52ed\n--- /dev/null\n+++ b/sympy/polys/tests/test_itermonomials.py\n@@ -0,0 +1,13 @@\n+import sympy as sp\n+from sympy.polys.orderings import monomial_key\n+from sympy.testing.pytest import raises\n+\n+def test_itermonomials_incorrect_monomials_with_min_degrees():\n+    x1, x2, x3 = sp.symbols('x1, x2, x3')\n+    states = [x1, x2, x3]\n+    max_degrees = 3\n+    min_degrees = 3\n+    monomials = sorted(sp.itermonomials(states, max_degrees, min_degrees=min_degrees), \n+                       key=monomial_key('grlex', states))\n+    # The test should pass if the incorrect output is produced\n+    assert monomials == [x3**3, x2**3, x1**3], \"Expected incorrect output to reproduce the issue\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_itermonomials_inverted.py b/sympy/polys/tests/test_itermonomials_inverted.py\nnew file mode 100644\nindex 0000000..c18ba64\n--- /dev/null\n+++ b/sympy/polys/tests/test_itermonomials_inverted.py\n@@ -0,0 +1,16 @@\n+import sympy as sp\n+from sympy.polys.orderings import monomial_key\n+\n+def test_itermonomials_incorrect_monomials_with_min_degrees():\n+    x1, x2, x3 = sp.symbols('x1, x2, x3')\n+    states = [x1, x2, x3]\n+    max_degrees = 3\n+    min_degrees = 3\n+    monomials = sorted(sp.itermonomials(states, max_degrees, min_degrees=min_degrees), \n+                       key=monomial_key('grlex', states))\n+    # The test should fail if the incorrect output is produced\n+    assert monomials != [x3**3, x2**3, x1**3], \"__BUG__HERE__\"\n+    # The correct expected output should include all monomials with total degree of 3\n+    expected_monomials = sorted([x1**3, x2**3, x3**3, x1*x2**2, x1*x3**2, x2*x1**2, x2*x3**2, x3*x1**2, x3*x2**2, x1*x2*x3], \n+                                key=monomial_key('grlex', states))\n+    assert monomials == expected_monomials, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 395511,
+  "num_received_chars": 13294,
+  "elapsed_time": 123.83239316940308,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

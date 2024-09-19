@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13023",
+  "edit_test_file": "tests/invalid_models_tests/test_ordinary_fields.py",
+  "code_patch": "diff --git a/django/db/models/fields/__init__.py b/django/db/models/fields/__init__.py\nindex 0fd6905..569badc 100644\n--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@ -1499,9 +1499,15 @@ class DecimalField(Field):\n             return value\n         if isinstance(value, float):\n             return self.context.create_decimal_from_float(value)\n+        if isinstance(value, dict):\n+            raise exceptions.ValidationError(\n+                self.error_messages['invalid'],\n+                code='invalid',\n+                params={'value': value},\n+            )\n         try:\n             return decimal.Decimal(value)\n-        except decimal.InvalidOperation:\n+        except (decimal.InvalidOperation, TypeError):\n             raise exceptions.ValidationError(\n                 self.error_messages['invalid'],\n                 code='invalid',\n",
+  "test_patch": "diff --git a/tests/invalid_models_tests/test_decimal_field_validation.py b/tests/invalid_models_tests/test_decimal_field_validation.py\nnew file mode 100644\nindex 0000000..10076fa\n--- /dev/null\n+++ b/tests/invalid_models_tests/test_decimal_field_validation.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from decimal import Decimal\n+from django.core.exceptions import ValidationError\n+from django.db import models\n+\n+class DecimalFieldValidationTests(unittest.TestCase):\n+    def test_decimalfield_to_python_with_dict(self):\n+        \"\"\"\n+        Test that DecimalField.to_python() raises TypeError when given a dict.\n+        \"\"\"\n+        field = models.DecimalField(max_digits=5, decimal_places=2)\n+        with self.assertRaises(TypeError):\n+            field.to_python({'key': 'value'})\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/invalid_models_tests/test_decimal_field_validation_inverted.py b/tests/invalid_models_tests/test_decimal_field_validation_inverted.py\nnew file mode 100644\nindex 0000000..a35f12c\n--- /dev/null\n+++ b/tests/invalid_models_tests/test_decimal_field_validation_inverted.py\n@@ -0,0 +1,18 @@\n+import unittest\n+from decimal import Decimal\n+from django.core.exceptions import ValidationError\n+from django.db import models\n+\n+class DecimalFieldValidationTests(unittest.TestCase):\n+    def test_decimalfield_to_python_with_dict(self):\n+        \"\"\"\n+        Test that DecimalField.to_python() raises ValidationError when given a dict.\n+        \"\"\"\n+        field = models.DecimalField(max_digits=5, decimal_places=2)\n+        try:\n+            field.to_python({'key': 'value'})\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 1709798,
+  "num_received_chars": 49453,
+  "elapsed_time": 407.7681477069855,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 7,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

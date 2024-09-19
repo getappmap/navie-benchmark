@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9602",
+  "edit_test_file": "tests/test_util_typing.py",
+  "code_patch": "diff --git a/sphinx/util/typing.py b/sphinx/util/typing.py\nindex cf4318c..2e9f047 100644\n--- a/sphinx/util/typing.py\n+++ b/sphinx/util/typing.py\n@@ -117,6 +117,9 @@ def restify(cls: Optional[Type]) -> str:\n             return ':class:`%s`' % INVALID_BUILTIN_CLASSES[cls]\n         elif inspect.isNewType(cls):\n             return ':class:`%s`' % cls.__name__\n+        elif isinstance(cls, typing.Literal):\n+            # Handle Literal by returning its values as strings\n+            return 'Literal[%s]' % ', '.join(repr(arg) for arg in cls.__args__)\n         elif UnionType and isinstance(cls, UnionType):\n             if len(cls.__args__) > 1 and None in cls.__args__:\n                 args = ' | '.join(restify(a) for a in cls.__args__ if a)\n",
+  "test_patch": "diff --git a/tests/test_literal_annotation_nitpick.py b/tests/test_literal_annotation_nitpick.py\nnew file mode 100644\nindex 0000000..a32b600\n--- /dev/null\n+++ b/tests/test_literal_annotation_nitpick.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from sphinx.util.typing import restify\n+from typing import Literal\n+\n+class TestLiteralAnnotationNitpick(unittest.TestCase):\n+    def test_literal_annotation_nitpick(self):\n+        # This test is designed to reproduce the issue where Literal values are flagged as missing py:class\n+        # We expect the restify function to incorrectly treat Literal[True] as a class, triggering a nitpick warning\n+        result = restify(Literal[True])\n+        expected = \":obj:`~typing.Literal`\\\\ [True]\"\n+        \n+        # Assert that the incorrect behavior is reproduced\n+        self.assertEqual(result, expected)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_literal_annotation_nitpick_inverted.py b/tests/test_literal_annotation_nitpick_inverted.py\nnew file mode 100644\nindex 0000000..fa8f025\n--- /dev/null\n+++ b/tests/test_literal_annotation_nitpick_inverted.py\n@@ -0,0 +1,20 @@\n+import unittest\n+from sphinx.util.typing import restify\n+from typing import Literal\n+\n+class TestLiteralAnnotationNitpick(unittest.TestCase):\n+    def test_literal_annotation_nitpick(self):\n+        # This test is designed to reproduce the issue where Literal values are flagged as missing py:class\n+        # We expect the restify function to incorrectly treat Literal[True] as a class, triggering a nitpick warning\n+        result = restify(Literal[True])\n+        expected = \":obj:`~typing.Literal`\\\\ [True]\"\n+        \n+        # Assert that the incorrect behavior is reproduced\n+        # Altered to fail when the issue is observed\n+        if result == expected:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        else:\n+            self.assertNotEqual(result, expected)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 3676172,
+  "num_received_chars": 65719,
+  "elapsed_time": 491.23794174194336,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 7,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

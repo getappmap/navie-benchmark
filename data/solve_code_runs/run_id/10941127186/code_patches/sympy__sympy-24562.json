@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24562",
+  "edit_test_file": "sympy/polys/tests/test_pythonrational.py",
+  "code_patch": "diff --git a/sympy/solvers/solveset.py b/sympy/solvers/solveset.py\nindex 58d2635..7149f61 100644\n--- a/sympy/solvers/solveset.py\n+++ b/sympy/solvers/solveset.py\n@@ -17,7 +17,7 @@\n from sympy.core.function import (Lambda, expand_complex, AppliedUndef,\n                                 expand_log, _mexpand, expand_trig, nfloat)\n from sympy.core.mod import Mod\n-from sympy.core.numbers import igcd, I, Number, Rational, oo, ilcm\n+from sympy.core.numbers import igcd, I, Number, Rational, oo, ilcm, Float\n from sympy.core.power import integer_log\n from sympy.core.relational import Eq, Ne, Relational\n from sympy.core.sorting import default_sort_key, ordered\n@@ -166,9 +166,13 @@ def _invert(f_x, y, x, domain=S.Complexes):\n     x = sympify(x)\n     if not x.is_Symbol:\n         raise ValueError(\"x must be a symbol\")\n+    if isinstance(f_x, str):\n+        f_x = Float(f_x)\n     f_x = sympify(f_x)\n     if x not in f_x.free_symbols:\n         raise ValueError(\"Inverse of constant function doesn't exist\")\n+    if isinstance(y, str):\n+        y = Float(y)\n     y = sympify(y)\n     if x in y.free_symbols:\n         raise ValueError(\"y should be independent of x \")\n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_sympy_rational.py b/sympy/polys/tests/test_sympy_rational.py\nnew file mode 100644\nindex 0000000..b6a3525\n--- /dev/null\n+++ b/sympy/polys/tests/test_sympy_rational.py\n@@ -0,0 +1,6 @@\n+from sympy import Rational\n+\n+def test_rational_calc_value_error():\n+    # This test reproduces the issue where Rational('0.5', '100') gives an incorrect value\n+    assert Rational('0.5', '100') == Rational(1, 100100), \"Rational('0.5', '100') should be 1/100100\"\n+    assert Rational(0.5, 100) == Rational(1, 200), \"Rational(0.5, 100) should be 1/200\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_sympy_rational_inverted.py b/sympy/polys/tests/test_sympy_rational_inverted.py\nnew file mode 100644\nindex 0000000..23aeda0\n--- /dev/null\n+++ b/sympy/polys/tests/test_sympy_rational_inverted.py\n@@ -0,0 +1,8 @@\n+from sympy import Rational\n+\n+def test_rational_calc_value_error():\n+    # This test should fail when the issue is observed\n+    # The bug is that Rational('0.5', '100') gives an incorrect value\n+    # The correct value should be Rational(1, 200)\n+    assert Rational('0.5', '100') == Rational(1, 200), \"__BUG__HERE__\"\n+    assert Rational(0.5, 100) == Rational(1, 200), \"Rational(0.5, 100) should be 1/200\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2252415,
+  "num_received_chars": 284415,
+  "elapsed_time": 1448.53728556633,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

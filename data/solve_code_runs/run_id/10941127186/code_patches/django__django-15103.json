@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15103",
+  "edit_test_file": "tests/sites_tests/tests.py",
+  "code_patch": "diff --git a/django/utils/html.py b/django/utils/html.py\nindex da1b567..8147c5d 100644\n--- a/django/utils/html.py\n+++ b/django/utils/html.py\n@@ -61,7 +61,7 @@ _json_script_escapes = {\n }\n \n \n-def json_script(value, element_id):\n+def json_script(value, element_id=None):\n     \"\"\"\n     Escape all the HTML/XML special characters with their unicode escapes, so\n     value is safe to be output anywhere except for inside a tag attribute. Wrap\n@@ -69,10 +69,16 @@ def json_script(value, element_id):\n     \"\"\"\n     from django.core.serializers.json import DjangoJSONEncoder\n     json_str = json.dumps(value, cls=DjangoJSONEncoder).translate(_json_script_escapes)\n-    return format_html(\n-        '<script id=\"{}\" type=\"application/json\">{}</script>',\n-        element_id, mark_safe(json_str)\n-    )\n+    if element_id:\n+        return format_html(\n+            '<script id=\"{}\" type=\"application/json\">{}</script>',\n+            element_id, mark_safe(json_str)\n+        )\n+    else:\n+        return format_html(\n+            '<script type=\"application/json\">{}</script>',\n+            mark_safe(json_str)\n+        )\n \n \n def conditional_escape(text):\n",
+  "test_patch": "diff --git a/tests/sites_tests/test_json_script_optional_element_id.py b/tests/sites_tests/test_json_script_optional_element_id.py\nnew file mode 100644\nindex 0000000..1c98f2d\n--- /dev/null\n+++ b/tests/sites_tests/test_json_script_optional_element_id.py\n@@ -0,0 +1,11 @@\n+from django.test import SimpleTestCase\n+from django.utils.html import json_script\n+\n+class JsonScriptOptionalElementIdTests(SimpleTestCase):\n+    def test_json_script_without_element_id(self):\n+        \"\"\"\n+        Test that json_script can be called without an element_id.\n+        This should raise a TypeError since element_id is currently required.\n+        \"\"\"\n+        with self.assertRaises(TypeError):\n+            json_script({'key': 'value'})\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/sites_tests/test_json_script_optional_element_id_inverted.py b/tests/sites_tests/test_json_script_optional_element_id_inverted.py\nnew file mode 100644\nindex 0000000..8fad337\n--- /dev/null\n+++ b/tests/sites_tests/test_json_script_optional_element_id_inverted.py\n@@ -0,0 +1,13 @@\n+from django.test import SimpleTestCase\n+from django.utils.html import json_script\n+\n+class JsonScriptOptionalElementIdTests(SimpleTestCase):\n+    def test_json_script_without_element_id(self):\n+        \"\"\"\n+        Test that json_script can be called without an element_id.\n+        This should raise a TypeError since element_id is currently required.\n+        \"\"\"\n+        try:\n+            json_script({'key': 'value'})\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 648143,
+  "num_received_chars": 9330,
+  "elapsed_time": 101.87096238136292,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

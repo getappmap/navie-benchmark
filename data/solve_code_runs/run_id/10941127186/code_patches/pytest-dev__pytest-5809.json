@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5809",
+  "edit_test_file": "testing/test_pastebin.py",
+  "code_patch": "diff --git a/src/_pytest/pastebin.py b/src/_pytest/pastebin.py\nindex 41576a6..79b0d9d 100644\n--- a/src/_pytest/pastebin.py\n+++ b/src/_pytest/pastebin.py\n@@ -79,7 +79,7 @@ def create_new_paste(contents):\n \n     params = {\n         \"code\": contents,\n-        \"lexer\": \"python3\" if sys.version_info[0] >= 3 else \"python\",\n+        \"lexer\": \"text\",\n         \"expiry\": \"1week\",\n     }\n     url = \"https://bpaste.net\"\n",
+  "test_patch": "diff --git a/testing/test_pastebin_http_error.py b/testing/test_pastebin_http_error.py\nnew file mode 100644\nindex 0000000..5fe9dc2\n--- /dev/null\n+++ b/testing/test_pastebin_http_error.py\n@@ -0,0 +1,35 @@\n+# -*- coding: utf-8 -*-\n+from __future__ import absolute_import\n+from __future__ import division\n+from __future__ import print_function\n+\n+import pytest\n+import sys\n+from urllib.error import HTTPError\n+\n+class TestPastebinHTTPError:\n+    @pytest.fixture\n+    def pastebin(self, request):\n+        return request.config.pluginmanager.getplugin(\"pastebin\")\n+\n+    @pytest.fixture\n+    def mocked_urlopen(self, monkeypatch):\n+        \"\"\"\n+        Monkeypatch the actual urlopen calls done by the internal plugin\n+        function that connects to bpaste service.\n+        \"\"\"\n+        def mocked(url, data):\n+            raise HTTPError(url, 400, \"Bad Request\", hdrs=None, fp=None)\n+\n+        if sys.version_info < (3, 0):\n+            import urllib\n+            monkeypatch.setattr(urllib, \"urlopen\", mocked)\n+        else:\n+            import urllib.request\n+            monkeypatch.setattr(urllib.request, \"urlopen\", mocked)\n+\n+    def test_lexer_python3_causes_http_error(self, pastebin, mocked_urlopen):\n+        with pytest.raises(HTTPError) as excinfo:\n+            pastebin.create_new_paste(b\"example content that causes error\")\n+        assert excinfo.value.code == 400\n+        assert \"Bad Request\" in str(excinfo.value)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_pastebin_http_error_inverted.py b/testing/test_pastebin_http_error_inverted.py\nnew file mode 100644\nindex 0000000..fdbaee6\n--- /dev/null\n+++ b/testing/test_pastebin_http_error_inverted.py\n@@ -0,0 +1,36 @@\n+# -*- coding: utf-8 -*-\n+from __future__ import absolute_import\n+from __future__ import division\n+from __future__ import print_function\n+\n+import pytest\n+import sys\n+from urllib.error import HTTPError\n+\n+class TestPastebinHTTPError:\n+    @pytest.fixture\n+    def pastebin(self, request):\n+        return request.config.pluginmanager.getplugin(\"pastebin\")\n+\n+    @pytest.fixture\n+    def mocked_urlopen(self, monkeypatch):\n+        \"\"\"\n+        Monkeypatch the actual urlopen calls done by the internal plugin\n+        function that connects to bpaste service.\n+        \"\"\"\n+        def mocked(url, data):\n+            raise HTTPError(url, 400, \"Bad Request\", hdrs=None, fp=None)\n+\n+        if sys.version_info < (3, 0):\n+            import urllib\n+            monkeypatch.setattr(urllib, \"urlopen\", mocked)\n+        else:\n+            import urllib.request\n+            monkeypatch.setattr(urllib.request, \"urlopen\", mocked)\n+\n+    def test_lexer_python3_causes_http_error(self, pastebin, mocked_urlopen):\n+        with pytest.raises(HTTPError) as excinfo:\n+            pastebin.create_new_paste(b\"example content that causes error\")\n+        assert excinfo.value.code == 400\n+        assert \"Bad Request\" in str(excinfo.value)\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1034660,
+  "num_received_chars": 19078,
+  "elapsed_time": 189.88668084144592,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 7,
+  "code_generation_attempts": 3,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

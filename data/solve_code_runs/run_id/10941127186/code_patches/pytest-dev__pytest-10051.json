@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-10051",
+  "edit_test_file": "testing/test_recwarn.py",
+  "code_patch": "diff --git a/src/_pytest/logging.py b/src/_pytest/logging.py\nindex a4f4214..69a16bd 100644\n--- a/src/_pytest/logging.py\n+++ b/src/_pytest/logging.py\n@@ -396,7 +396,8 @@ class LogCaptureFixture:\n \n         .. versionadded:: 3.4\n         \"\"\"\n-        return self._item.stash[caplog_records_key].get(when, [])\n+        # Ensure it always reflects the current state of records\n+        return self._item.stash[caplog_records_key].setdefault(when, [])\n \n     @property\n     def text(self) -> str:\n@@ -441,6 +442,8 @@ class LogCaptureFixture:\n     def clear(self) -> None:\n         \"\"\"Reset the list of log records and the captured log text.\"\"\"\n         self.handler.reset()\n+        # Ensure that the records list is cleared without replacing it\n+        self._item.stash[caplog_records_key] = {when: [] for when in (\"setup\", \"call\", \"teardown\")}\n \n     def set_level(self, level: Union[int, str], logger: Optional[str] = None) -> None:\n         \"\"\"Set the level of a logger for the duration of a test.\n",
+  "test_patch": "diff --git a/testing/test_caplog_conflict.py b/testing/test_caplog_conflict.py\nnew file mode 100644\nindex 0000000..f0856d7\n--- /dev/null\n+++ b/testing/test_caplog_conflict.py\n@@ -0,0 +1,13 @@\n+import logging\n+import pytest\n+\n+def test_caplog_get_records_and_clear_conflict(caplog) -> None:\n+    def verify_consistency() -> None:\n+        assert caplog.get_records(\"call\") == caplog.records\n+\n+    verify_consistency()\n+    logging.warning(\"test\")\n+    verify_consistency()\n+    caplog.clear()\n+    with pytest.raises(AssertionError):\n+        verify_consistency()  # This should fail due to the issue described\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_caplog_conflict_inverted.py b/testing/test_caplog_conflict_inverted.py\nnew file mode 100644\nindex 0000000..9fa0f84\n--- /dev/null\n+++ b/testing/test_caplog_conflict_inverted.py\n@@ -0,0 +1,12 @@\n+import logging\n+import pytest\n+\n+def test_caplog_get_records_and_clear_conflict(caplog) -> None:\n+    def verify_consistency() -> None:\n+        assert caplog.get_records(\"call\") == caplog.records, \"__BUG__HERE__\"\n+\n+    verify_consistency()\n+    logging.warning(\"test\")\n+    verify_consistency()\n+    caplog.clear()\n+    verify_consistency()  # This should now fail with \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1160172,
+  "num_received_chars": 31000,
+  "elapsed_time": 188.46380424499512,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
