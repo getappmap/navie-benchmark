@@ -11,15 +11,17 @@ from concurrent.futures import (
 
 import docker
 
+
 sys.path.append(
     str(Path(__file__).resolve().parents[1] / "submodules" / "navie-editor")
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from solver.load_instance_set import load_instance_set
 from swebench.harness.test_spec import make_test_spec
 from swebench.harness.constants import SWEbenchInstance
 
+from solver.load_instance_set import load_instance_set
+from solver.workflow.workflow_limits import WorkflowLimits
 from solver.harness.image_store import ImageStore
 from solver.predictions_file import PredictionsFile
 from solver.cli import (
@@ -27,6 +29,7 @@ from solver.cli import (
     configure_limits,
     configure_runner_index,
     load_dataset,
+    parse_limits,
     select_instances_for_runner,
 )
 
@@ -40,7 +43,6 @@ def main(
     clean_work_dir: bool,
     clean_navie: bool,
     limit: list,
-    concurrency: int,
     num_runners: Optional[int] = None,
     runner_index: Optional[int] = None,
     test_patch_dir: Optional[str] = None,
@@ -49,6 +51,8 @@ def main(
     """
     Run evaluation harness for the given dataset and predictions.
     """
+
+    limits_obj = WorkflowLimits.from_dict(parse_limits(limit))
 
     if not instance_ids:
         instance_ids = []
@@ -85,10 +89,11 @@ def main(
         runner_index,
     )
 
-    # TODO: Parallelize this
-    # Make inferences
     solver_path = Path(__file__).parent / "solve_instance.py"
-    log_fn("solve", f"Solving with {concurrency} concurrent worker processes")
+    log_fn(
+        "solve",
+        f"Solving with {limits_obj.concurrency_limit} concurrent worker processes",
+    )
 
     def run_instance(index: int, instance: SWEbenchInstance):
         instance_id = instance["instance_id"]
@@ -128,7 +133,7 @@ def main(
         with open(temp_prediction_path, "r") as temp_predictions_file:
             predictions_manager.write_predictions(temp_predictions_file.read())
 
-    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+    with ThreadPoolExecutor(max_workers=limits_obj.concurrency_limit) as executor:
 
         def instances_with_index():
             for index, instance in enumerate(dataset):
@@ -162,12 +167,6 @@ if __name__ == "__main__":
         "--instance_set",
         type=str,
         help="Instance set to run",
-    )
-    parser.add_argument(
-        "--concurrency",
-        type=int,
-        help="Number of concurrent solver.solve_instance processes to run",
-        default=4,
     )
     parser.add_argument(
         "--test_patch_dir",

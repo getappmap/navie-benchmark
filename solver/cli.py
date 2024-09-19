@@ -31,16 +31,19 @@ def configure_limits(parser: ArgumentParser) -> None:
     )
 
 
-def apply_limits(args) -> None:
-    args.limits = {}
-    if args.limit:
-        limits = args.limit
-        for limit in limits:
+def parse_limits(limits_opt: list[str], limits={}) -> dict:
+    if limits_opt:
+        for limit in limits_opt:
             key, value_str = limit.split("=")
             value_int = int(value_str)
-            args.limits[key] = value_int
+            limits[key] = value_int
+    return limits
 
+
+def apply_limits(args) -> None:
+    args.limits = {}
     if hasattr(args, "limit"):
+        parse_limits(args.limit, args.limits)
         del args.limit
 
 
