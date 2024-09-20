@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16139",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/auth/views.py b/django/contrib/auth/views.py\nindex 2d19d6f..2e3bbe3 100644\n--- a/django/contrib/auth/views.py\n+++ b/django/contrib/auth/views.py\n@@ -360,6 +360,10 @@ class PasswordResetCompleteView(PasswordContextMixin, TemplateView):\n         return context\n \n \n+from django.shortcuts import get_object_or_404\n+from django.contrib.auth import get_user_model\n+from django.core.exceptions import PermissionDenied\n+\n class PasswordChangeView(PasswordContextMixin, FormView):\n     form_class = PasswordChangeForm\n     success_url = reverse_lazy(\"password_change_done\")\n@@ -370,11 +374,25 @@ class PasswordChangeView(PasswordContextMixin, FormView):\n     @method_decorator(csrf_protect)\n     @method_decorator(login_required)\n     def dispatch(self, *args, **kwargs):\n+        self.user = self.get_user(kwargs.get('user_id'))\n+        if self.user is None:\n+            self.user = self.request.user\n+        if not self.request.user.is_authenticated:\n+            return self.handle_no_permission()\n+        if not self.request.user.has_perm('auth.change_user'):\n+            if self.request.user != self.user:\n+                raise PermissionDenied\n         return super().dispatch(*args, **kwargs)\n \n+    def get_user(self, user_id):\n+        User = get_user_model()\n+        if user_id:\n+            return get_object_or_404(User, pk=user_id)\n+        return None\n+\n     def get_form_kwargs(self):\n         kwargs = super().get_form_kwargs()\n-        kwargs[\"user\"] = self.request.user\n+        kwargs[\"user\"] = self.user\n         return kwargs\n \n     def form_valid(self, form):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3421315,
+  "num_received_chars": 181179,
+  "elapsed_time": 1030.2203722000122,
+  "lint_repair_count": 28,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

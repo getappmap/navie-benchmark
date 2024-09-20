@@ -1,0 +1,20 @@
+{
+  "instance_id": "pylint-dev__pylint-7080",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/pylint/checkers/__init__.py b/pylint/checkers/__init__.py\nindex 7e39c68..e19d2f0 100644\n--- a/pylint/checkers/__init__.py\n+++ b/pylint/checkers/__init__.py\n@@ -43,7 +43,9 @@ messages nor reports. XXX not true, emit a 07 report !\n from __future__ import annotations\n \n import sys\n+import re\n from typing import TYPE_CHECKING\n+from pathlib import Path\n \n from pylint.checkers.base_checker import (\n     BaseChecker,\n@@ -131,6 +133,27 @@ def table_lines_from_stats(\n     return lines\n \n \n+def filter_files_by_ignore_paths(file_paths: list[str], ignore_paths: list[str]) -> list[str]:\n+    \"\"\"\n+    Filter out file paths that match any of the ignore-paths patterns.\n+\n+    Args:\n+        file_paths (list[str]): List of file paths to filter.\n+        ignore_paths (list[str]): List of ignore-paths patterns.\n+\n+    Returns:\n+        list[str]: Filtered list of file paths.\n+    \"\"\"\n+    compiled_patterns = [re.compile(pattern) for pattern in ignore_paths]\n+    filtered_paths = []\n+\n+    for file_path in file_paths:\n+        path = Path(file_path)\n+        if not any(pattern.search(str(path)) for pattern in compiled_patterns):\n+            filtered_paths.append(file_path)\n+\n+    return filtered_paths\n+\n def initialize(linter: PyLinter) -> None:\n     \"\"\"Initialize linter with checkers in this package.\"\"\"\n     register_plugins(linter, __path__[0])\n@@ -144,4 +167,5 @@ __all__ = [\n     \"MapReduceMixin\",\n     \"DeprecatedMixin\",\n     \"register_plugins\",\n+    \"filter_files_by_ignore_paths\",\n ]\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1411503,
+  "num_received_chars": 30628,
+  "elapsed_time": 234.28763389587402,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13344",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/handlers/base.py b/django/core/handlers/base.py\nindex 169df6b..ec9321f 100644\n--- a/django/core/handlers/base.py\n+++ b/django/core/handlers/base.py\n@@ -146,6 +146,11 @@ class BaseHandler:\n         # Setup default url resolver for this thread.\n         set_urlconf(settings.ROOT_URLCONF)\n         response = await self._middleware_chain(request)\n+        \n+        # Ensure response is an HttpResponse object\n+        if asyncio.iscoroutine(response):\n+            response = await response\n+        \n         response._resource_closers.append(request.close)\n         if response.status_code >= 400:\n             await sync_to_async(log_response)(\n@@ -220,6 +225,9 @@ class BaseHandler:\n         for middleware_method in self._view_middleware:\n             response = await middleware_method(request, callback, callback_args, callback_kwargs)\n             if response:\n+                # Ensure response is an HttpResponse object\n+                if asyncio.iscoroutine(response):\n+                    response = await response\n                 break\n \n         if response is None:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1129997,
+  "num_received_chars": 77821,
+  "elapsed_time": 400.29476618766785,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

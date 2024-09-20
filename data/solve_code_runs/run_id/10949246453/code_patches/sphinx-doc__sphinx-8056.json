@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8056",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py\nindex 832ee4a..b5dc93a 100644\n--- a/sphinx/ext/autodoc/__init__.py\n+++ b/sphinx/ext/autodoc/__init__.py\n@@ -1092,11 +1092,16 @@ class DocstringSignatureMixin:\n             if hasattr(self.object, '__mro__'):\n                 valid_names.extend(cls.__name__ for cls in self.object.__mro__)\n \n+        # Regular expression to match multiple parameters on a single line\n+        param_re = re.compile(r'^\\s*([^:]+)\\s*:\\s*(.+?)(?:\\s*\\(optional\\))?\\s*$')\n+        multi_param_re = re.compile(r'^([^,]+(?:,\\s*[^,]+)*)\\s*:\\s*(.+?)(?:\\s*\\(optional\\))?\\s*$')\n+\n         docstrings = self.get_doc()\n         self._new_docstrings = docstrings[:]\n         self._signatures = []\n         result = None\n         for i, doclines in enumerate(docstrings):\n+            parameters = []\n             for j, line in enumerate(doclines):\n                 if not line:\n                     # no lines in docstring, no match\n@@ -1111,9 +1116,25 @@ class DocstringSignatureMixin:\n                 # match first line of docstring against signature RE\n                 match = py_ext_sig_re.match(line)\n                 if not match:\n+                    # Check for parameter lines\n+                    param_match = param_re.match(line)\n+                    if param_match:\n+                        param_names, param_type = param_match.groups()\n+                        multi_param_match = multi_param_re.match(param_names)\n+                        if multi_param_match:\n+                            param_list = [p.strip() for p in multi_param_match.group(1).split(',')]\n+                            for param in param_list:\n+                                parameters.append((param, param_type, 'optional' in line))\n+                        else:\n+                            parameters.append((param_names, param_type, 'optional' in line))\n                     continue\n                 exmod, path, base, args, retann = match.groups()\n \n+                # Process collected parameters\n+                if parameters:\n+                    self._process_parameters(parameters)\n+                    parameters = []\n+\n                 # the base name must match ours\n                 if base not in valid_names:\n                     continue\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2131491,
+  "num_received_chars": 153805,
+  "elapsed_time": 791.4415683746338,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-12585",
+  "edit_test_file": "sklearn/tests/test_base.py",
+  "code_patch": "diff --git a/sklearn/base.py b/sklearn/base.py\nindex 56ffb18..d375a33 100644\n--- a/sklearn/base.py\n+++ b/sklearn/base.py\n@@ -36,25 +36,32 @@ def clone(estimator, safe=True):\n \n     Parameters\n     ----------\n-    estimator : estimator object, or list, tuple or set of objects\n+    estimator : estimator object, estimator type, or list, tuple or set of objects\n         The estimator or group of estimators to be cloned\n \n     safe : boolean, optional\n         If safe is false, clone will fall back to a deep copy on objects\n         that are not estimators.\n \n+    Notes\n+    -----\n+    - This function handles both estimator instances and estimator types (classes).\n+    - If the estimator is a type (class), it will be returned as-is without cloning.\n     \"\"\"\n     estimator_type = type(estimator)\n     # XXX: not handling dictionaries\n     if estimator_type in (list, tuple, set, frozenset):\n         return estimator_type([clone(e, safe=safe) for e in estimator])\n+    elif isinstance(estimator, type):\n+        # If estimator is a class (type), return it as-is\n+        return estimator\n     elif not hasattr(estimator, 'get_params'):\n         if not safe:\n             return copy.deepcopy(estimator)\n         else:\n             raise TypeError(\"Cannot clone object '%s' (type %s): \"\n                             \"it does not seem to be a scikit-learn estimator \"\n-                            \"as it does not implement a 'get_params' methods.\"\n+                            \"as it does not implement a 'get_params' method.\"\n                             % (repr(estimator), type(estimator)))\n     klass = estimator.__class__\n     new_object_params = estimator.get_params(deep=False)\n",
+  "test_patch": "diff --git a/sklearn/tests/test_clone_estimator_types.py b/sklearn/tests/test_clone_estimator_types.py\nnew file mode 100644\nindex 0000000..175ebd5\n--- /dev/null\n+++ b/sklearn/tests/test_clone_estimator_types.py\n@@ -0,0 +1,10 @@\n+import pytest\n+from sklearn.base import clone\n+from sklearn.preprocessing import StandardScaler\n+\n+def test_clone_estimator_type_parameter():\n+    \"\"\"\n+    Test that clone raises a TypeError when an estimator parameter is a class.\n+    \"\"\"\n+    with pytest.raises(TypeError, match=\"get_params\\\\(\\\\) missing 1 required positional argument: 'self'\"):\n+        clone(StandardScaler(with_mean=StandardScaler))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/tests/test_clone_estimator_types_inverted.py b/sklearn/tests/test_clone_estimator_types_inverted.py\nnew file mode 100644\nindex 0000000..ecc73e6\n--- /dev/null\n+++ b/sklearn/tests/test_clone_estimator_types_inverted.py\n@@ -0,0 +1,16 @@\n+import pytest\n+from sklearn.base import clone\n+from sklearn.preprocessing import StandardScaler\n+\n+def test_clone_estimator_type_parameter():\n+    \"\"\"\n+    Test that clone raises a TypeError when an estimator parameter is a class.\n+    \"\"\"\n+    try:\n+        cloned = clone(StandardScaler(with_mean=StandardScaler))\n+    except TypeError as e:\n+        if \"get_params() missing 1 required positional argument: 'self'\" in str(e):\n+            pytest.fail(\"__BUG__HERE__\")\n+    else:\n+        # If no exception is raised, the test should fail\n+        raise AssertionError(\"Expected TypeError, but no exception was raised.\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1783981,
+  "num_received_chars": 113137,
+  "elapsed_time": 595.3085174560547,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

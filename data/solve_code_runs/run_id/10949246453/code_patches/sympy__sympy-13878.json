@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13878",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/stats/crv_types.py b/sympy/stats/crv_types.py\nindex fff7da8..e1ed212 100644\n--- a/sympy/stats/crv_types.py\n+++ b/sympy/stats/crv_types.py\n@@ -153,6 +153,14 @@ class ArcsinDistribution(SingleContinuousDistribution):\n     def pdf(self, x):\n         return 1/(pi*sqrt((x - self.a)*(self.b - x)))\n \n+    def _cdf(self, x):\n+        a, b = self.a, self.b\n+        return Piecewise(\n+            (S.Zero, x < a),\n+            (2/pi*asin(sqrt((x - a)/(b - a))), And(a <= x, x <= b)),\n+            (S.One, x > b)\n+        )\n+\n def Arcsin(name, a=0, b=1):\n     r\"\"\"\n     Create a Continuous Random Variable with an arcsin distribution.\n@@ -162,6 +170,16 @@ def Arcsin(name, a=0, b=1):\n     .. math::\n         f(x) := \\frac{1}{\\pi\\sqrt{(x-a)(b-x)}}\n \n+    The cumulative distribution function is:\n+\n+    .. math::\n+        F(x) := \\begin{cases}\n+                  0 & \\text{for } x < a \\\\\n+                  \\frac{2}{\\pi}\\arcsin\\left(\\sqrt{\\frac{x-a}{b-a}}\\right) & \\text{for } a \\leq x \\leq b \\\\\n+                  1 & \\text{for } x > b\n+                \\end{cases}\n+    \"\"\"\n+\n     with :math:`x \\in [a,b]`. It must hold that :math:`-\\infty < a < b < \\infty`.\n \n     Parameters\n@@ -670,6 +688,12 @@ def pdf(self, x):\n         p, a, b = self.p, self.a, self.b\n         return a*p/x*((x/b)**(a*p)/(((x/b)**a + 1)**(p + 1)))\n \n+    def _cdf(self, x):\n+        p, a, b = self.p, self.a, self.b\n+        return Piecewise(\n+            (S.Zero, x <= 0),\n+            (S.One - (S.One + (x/b)**a)**(-p), x > 0)\n+        )\n \n def Dagum(name, p, a, b):\n     r\"\"\"\n@@ -681,6 +705,16 @@ def Dagum(name, p, a, b):\n         f(x) := \\frac{a p}{x} \\left( \\frac{\\left(\\tfrac{x}{b}\\right)^{a p}}\n                 {\\left(\\left(\\tfrac{x}{b}\\right)^a + 1 \\right)^{p+1}} \\right)\n \n+    The cumulative distribution function is:\n+\n+    .. math::\n+        F(x) := \\begin{cases}\n+                  0 & \\text{for } x \\leq 0 \\\\\n+                  1 - \\left(1 + \\left(\\frac{x}{b}\\right)^a\\right)^{-p} & \\text{for } x > 0\n+                \\end{cases}\n+    \"\"\"\n+                {\\left(\\left(\\tfrac{x}{b}\\right)^a + 1 \\right)^{p+1}} \\right)\n+\n     with :math:`x > 0`.\n \n     Parameters\n@@ -733,11 +767,31 @@ def Erlang(name, k, l):\n \n     with :math:`x \\in [0,\\infty]`.\n \n+    The cumulative distribution function is:\n+\n+    .. math::\n+        F(x) := \\begin{cases}\n+                  0 & \\text{for } x < 0 \\\\\n+                  1 - \\sum_{i=0}^{k-1} \\frac{e^{-\\lambda x}(\\lambda x)^i}{i!} & \\text{for } x \\geq 0\n+                \\end{cases}\n+\n     Parameters\n     ==========\n \n     k : Integer\n     l : Real number, `\\lambda > 0`, the rate\n+    \"\"\"\n+    return rv(name, GammaDistribution, (k, 1/l))\n+\n+class GammaDistribution(SingleContinuousDistribution):\n+    _argnames = ('k', 'theta')\n+\n+    set = Interval(0, oo)\n+\n+    @staticmethod\n+    def check(k, theta):\n+        _value_check(k > 0, \"k must be positive\")\n+        _value_check(theta > 0, \"Theta must be positive\")\n \n     Returns\n     =======\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 394955,
+  "num_received_chars": 14689,
+  "elapsed_time": 118.99343967437744,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

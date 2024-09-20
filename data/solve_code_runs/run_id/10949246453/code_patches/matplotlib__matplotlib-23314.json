@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-23314",
+  "edit_test_file": "lib/matplotlib/tests/test_figure.py",
+  "code_patch": "diff --git a/lib/mpl_toolkits/mplot3d/art3d.py b/lib/mpl_toolkits/mplot3d/art3d.py\nindex acbeca9..fe5c221 100644\n--- a/lib/mpl_toolkits/mplot3d/art3d.py\n+++ b/lib/mpl_toolkits/mplot3d/art3d.py\n@@ -171,6 +171,15 @@ class Line3D(lines.Line2D):\n     def set_3d_properties(self, zs=0, zdir='z'):\n         xs = self.get_xdata()\n         ys = self.get_ydata()\n+\n+    def set_visible(self, visible):\n+        \"\"\"\n+        Set the visibility of the 3D line.\n+        \"\"\"\n+        super().set_visible(visible)\n+        self.stale = True\n+        if self.axes:\n+            self.axes.stale = True\n         zs = np.broadcast_to(zs, len(xs))\n         self._verts3d = juggle_axes(xs, ys, zs, zdir)\n         self.stale = True\n@@ -333,6 +342,15 @@ class Patch3D(Patch):\n         self._segment3d = [juggle_axes(x, y, z, zdir)\n                            for ((x, y), z) in zip(verts, zs)]\n \n+    def set_visible(self, visible):\n+        \"\"\"\n+        Set the visibility of the 3D patch.\n+        \"\"\"\n+        super().set_visible(visible)\n+        self.stale = True\n+        if self.axes:\n+            self.axes.stale = True\n+\n     def get_path(self):\n         return self._path2d\n \n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_3d_subplot_visibility.py b/lib/matplotlib/tests/test_3d_subplot_visibility.py\nnew file mode 100644\nindex 0000000..d4fd177\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_3d_subplot_visibility.py\n@@ -0,0 +1,18 @@\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_3d_subplot_visibility():\n+    fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})\n+    ax1.scatter(1, 1, 1)\n+    ax2.scatter(1, 1, 1, c='r')\n+    ax1.set_visible(False)\n+    \n+    # Check if ax1 is still visible despite being set to invisible\n+    assert ax1.get_visible() is False\n+    assert ax1.patch.get_visible() is True\n+    \n+    # Check if ax2 is still visible as expected\n+    assert ax2.get_visible() is True\n+    assert ax2.patch.get_visible() is True\n+    \n+    plt.close(fig)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_3d_subplot_visibility_inverted.py b/lib/matplotlib/tests/test_3d_subplot_visibility_inverted.py\nnew file mode 100644\nindex 0000000..6d261f4\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_3d_subplot_visibility_inverted.py\n@@ -0,0 +1,19 @@\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_3d_subplot_visibility():\n+    fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})\n+    ax1.scatter(1, 1, 1)\n+    ax2.scatter(1, 1, 1, c='r')\n+    ax1.set_visible(False)\n+    \n+    # Check if ax1 is not visible as expected\n+    if ax1.get_visible() or ax1.patch.get_visible():\n+        plt.close(fig)\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Check if ax2 is still visible as expected\n+    assert ax2.get_visible() is True\n+    assert ax2.patch.get_visible() is True\n+    \n+    plt.close(fig)\n\\ No newline at end of file\n",
+  "num_sent_chars": 2357784,
+  "num_received_chars": 90624,
+  "elapsed_time": 894.7051377296448,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 5,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

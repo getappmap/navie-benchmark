@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15599",
+  "edit_test_file": "sympy/core/tests/test_arit.py",
+  "code_patch": "diff --git a/sympy/core/mod.py b/sympy/core/mod.py\nindex eae2563..7acbf45 100644\n--- a/sympy/core/mod.py\n+++ b/sympy/core/mod.py\n@@ -12,14 +12,19 @@ class Mod(Function):\n     The convention used is the same as Python's: the remainder always has the\n     same sign as the divisor.\n \n+    This class also simplifies expressions where the dividend is a product of\n+    an integer and a symbolic integer, e.g., Mod(3*i, 2) simplifies to Mod(i, 2).\n+\n     Examples\n     ========\n \n-    >>> from sympy.abc import x, y\n+    >>> from sympy.abc import x, y, i\n     >>> x**2 % y\n     Mod(x**2, y)\n     >>> _.subs({x: 5, y: 6})\n     1\n+    >>> Mod(3*i, 2)\n+    Mod(i, 2)\n \n     \"\"\"\n \n@@ -30,6 +35,7 @@ def eval(cls, p, q):\n         from sympy.core.singleton import S\n         from sympy.core.exprtools import gcd_terms\n         from sympy.polys.polytools import gcd\n+        from sympy.core.symbol import Symbol\n \n         def doit(p, q):\n             \"\"\"Try to return p % q if both are numbers or +/-p is known\n@@ -38,6 +44,25 @@ def doit(p, q):\n \n             if q == S.Zero:\n                 raise ZeroDivisionError(\"Modulo by zero\")\n+\n+        def extract_integer_coefficient(expr):\n+            \"\"\"Extract integer coefficient and symbolic part from a Mul expression.\"\"\"\n+            if isinstance(expr, Mul):\n+                coeff = 1\n+                sym_part = []\n+                for arg in expr.args:\n+                    if arg.is_Integer:\n+                        coeff *= arg\n+                    else:\n+                        sym_part.append(arg)\n+                return coeff, Mul(*sym_part)\n+            elif expr.is_Integer:\n+                return expr, S.One\n+            else:\n+                return 1, expr\n+\n+        # Check if p is a product of an integer and a symbolic integer\n+        if isinstance(p, Mul) or p.is_Integer or isinstance(p, Symbol):\n             if p.is_infinite or q.is_infinite or p is nan or q is nan:\n                 return nan\n             if p == S.Zero or p == q or p == -q or (p.is_integer and q == 1):\n@@ -57,6 +82,20 @@ def doit(p, q):\n                 if rv is not None:\n                     return rv\n \n+            # Simplify Mod(a*i, b) where a and b are integers and i is symbolic\n+            coeff, sym_part = extract_integer_coefficient(p)\n+            if coeff != 1 and q.is_Integer:\n+                gcd_val = gcd(coeff, q)\n+                if gcd_val != 1:\n+                    new_coeff = coeff // gcd_val\n+                    new_q = q // gcd_val\n+                    if new_coeff == 1:\n+                        return cls(sym_part, new_q)\n+                    else:\n+                        return cls(new_coeff * sym_part, new_q)\n+                if rv is not None:\n+                    return rv\n+\n             # by ratio\n             r = p/q\n             try:\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_mod_simplification.py b/sympy/core/tests/test_mod_simplification.py\nnew file mode 100644\nindex 0000000..23bb329\n--- /dev/null\n+++ b/sympy/core/tests/test_mod_simplification.py\n@@ -0,0 +1,11 @@\n+# File: sympy/core/tests/test_mod_simplification.py\n+\n+from sympy import Symbol, Mod\n+\n+def test_mod_simplification():\n+    i = Symbol('i', integer=True)\n+    \n+    # This test should pass when the issue is present\n+    # It asserts that Mod(3*i, 2) is not simplified to Mod(i, 2)\n+    assert Mod(3*i, 2) == Mod(3*i, 2)\n+    assert Mod(3*i, 2) != Mod(i, 2)\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4037618,
+  "num_received_chars": 116474,
+  "elapsed_time": 1026.1888210773468,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

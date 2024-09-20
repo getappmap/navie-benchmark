@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13568",
+  "edit_test_file": "tests/auth_tests/test_checks.py",
+  "code_patch": "diff --git a/django/contrib/auth/base_user.py b/django/contrib/auth/base_user.py\nindex 3a4a64e..6e70c32 100644\n--- a/django/contrib/auth/base_user.py\n+++ b/django/contrib/auth/base_user.py\n@@ -10,6 +10,7 @@ from django.contrib.auth.hashers import (\n     check_password, is_password_usable, make_password,\n )\n from django.db import models\n+from django.db.models import UniqueConstraint\n from django.utils.crypto import get_random_string, salted_hmac\n from django.utils.translation import gettext_lazy as _\n \n",
+  "test_patch": "diff --git a/tests/auth_tests/test_username_field_unique_constraint.py b/tests/auth_tests/test_username_field_unique_constraint.py\nnew file mode 100644\nindex 0000000..9feb7be\n--- /dev/null\n+++ b/tests/auth_tests/test_username_field_unique_constraint.py\n@@ -0,0 +1,29 @@\n+from django.contrib.auth.base_user import AbstractBaseUser\n+from django.contrib.auth.checks import check_user_model\n+from django.core import checks\n+from django.db import models\n+from django.test import SimpleTestCase, override_settings, override_system_checks\n+\n+\n+@override_system_checks([check_user_model])\n+class UsernameFieldUniqueConstraintTests(SimpleTestCase):\n+    @override_settings(AUTH_USER_MODEL='auth.CustomUserWithUniqueConstraint')\n+    def test_username_field_unique_constraint(self):\n+        class CustomUserWithUniqueConstraint(AbstractBaseUser):\n+            username = models.CharField(max_length=30)\n+            USERNAME_FIELD = \"username\"\n+\n+            class Meta:\n+                app_label = 'auth'\n+                constraints = [\n+                    models.UniqueConstraint(fields=[\"username\"], name=\"user_username_unq\")\n+                ]\n+\n+        errors = checks.run_checks()\n+        self.assertEqual(errors, [\n+            checks.Error(\n+                \"'CustomUserWithUniqueConstraint.username' must be unique because it is named as the 'USERNAME_FIELD'.\",\n+                obj=CustomUserWithUniqueConstraint,\n+                id='auth.E003',\n+            ),\n+        ])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/auth_tests/test_username_field_unique_constraint_inverted.py b/tests/auth_tests/test_username_field_unique_constraint_inverted.py\nnew file mode 100644\nindex 0000000..d30934e\n--- /dev/null\n+++ b/tests/auth_tests/test_username_field_unique_constraint_inverted.py\n@@ -0,0 +1,29 @@\n+from django.contrib.auth.base_user import AbstractBaseUser\n+from django.contrib.auth.checks import check_user_model\n+from django.core import checks\n+from django.db import models\n+from django.test import SimpleTestCase, override_settings, override_system_checks\n+\n+\n+@override_system_checks([check_user_model])\n+class UsernameFieldUniqueConstraintTests(SimpleTestCase):\n+    @override_settings(AUTH_USER_MODEL='auth.CustomUserWithUniqueConstraint')\n+    def test_username_field_unique_constraint(self):\n+        class CustomUserWithUniqueConstraint(AbstractBaseUser):\n+            username = models.CharField(max_length=30)\n+            USERNAME_FIELD = \"username\"\n+\n+            class Meta:\n+                app_label = 'auth'\n+                constraints = [\n+                    models.UniqueConstraint(fields=[\"username\"], name=\"user_username_unq\")\n+                ]\n+\n+        errors = checks.run_checks()\n+        \n+        # The test should now fail if the issue is observed\n+        if errors:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        \n+        # If no errors are found, the test should pass\n+        self.assertEqual(errors, [])\n\\ No newline at end of file\n",
+  "num_sent_chars": 1890595,
+  "num_received_chars": 112752,
+  "elapsed_time": 689.018700838089,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 8,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19040",
+  "edit_test_file": "sympy/polys/tests/test_factortools.py",
+  "code_patch": null,
+  "test_patch": "diff --git a/sympy/polys/tests/test_factor_extension.py b/sympy/polys/tests/test_factor_extension.py\nnew file mode 100644\nindex 0000000..b6dea88\n--- /dev/null\n+++ b/sympy/polys/tests/test_factor_extension.py\n@@ -0,0 +1,13 @@\n+from sympy import expand, factor, symbols, I\n+\n+def test_factor_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x-1)*(y-1))\n+    \n+    # Test that normal factorization works correctly\n+    assert factor(z) == (x - 1)*(y - 1)\n+    \n+    # Test that factorization with extension drops the (y-1) factor\n+    result = factor(z, extension=[I])\n+    assert result == x - 1\n+    assert result != (x - 1)*(y - 1)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_factor_extension_inverted.py b/sympy/polys/tests/test_factor_extension_inverted.py\nnew file mode 100644\nindex 0000000..13c36e2\n--- /dev/null\n+++ b/sympy/polys/tests/test_factor_extension_inverted.py\n@@ -0,0 +1,16 @@\n+from sympy import expand, factor, symbols, I\n+\n+def test_factor_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x-1)*(y-1))\n+    \n+    # Test that normal factorization works correctly\n+    assert factor(z) == (x - 1)*(y - 1)\n+    \n+    # Test that factorization with extension does not drop the (y-1) factor\n+    result = factor(z, extension=[I])\n+    \n+    if result == x - 1:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    assert result == (x - 1)*(y - 1), f\"Expected (x - 1)*(y - 1), but got {result}\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 3646208,
+  "num_received_chars": 116412,
+  "elapsed_time": 958.2132794857025,
+  "lint_repair_count": 18,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": null,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

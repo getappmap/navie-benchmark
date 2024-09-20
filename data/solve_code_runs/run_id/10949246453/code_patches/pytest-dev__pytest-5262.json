@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5262",
+  "edit_test_file": "testing/test_capture.py",
+  "code_patch": null,
+  "test_patch": "diff --git a/testing/test_encoded_file_mode.py b/testing/test_encoded_file_mode.py\nnew file mode 100644\nindex 0000000..903fb34\n--- /dev/null\n+++ b/testing/test_encoded_file_mode.py\n@@ -0,0 +1,27 @@\n+import pytest\n+from _pytest.capture import EncodedFile\n+import io\n+\n+def test_encoded_file_mode():\n+    # Create an EncodedFile instance\n+    underlying_buffer = io.BytesIO()\n+    encoded_file = EncodedFile(underlying_buffer, encoding='utf-8')\n+    \n+    # Attempt to write bytes to the EncodedFile\n+    with pytest.raises(TypeError) as excinfo:\n+        encoded_file.write(b'Hello, world!')\n+    \n+    # Check that the correct error message is raised\n+    assert \"write() argument must be str, not bytes\" in str(excinfo.value)\n+    \n+    # Check that the mode attribute is not present\n+    with pytest.raises(AttributeError):\n+        _ = encoded_file.mode\n+\n+    # Ensure we can write str to the EncodedFile\n+    encoded_file.write('Hello, world!')\n+    \n+    # Read the content to verify it was written correctly\n+    underlying_buffer.seek(0)\n+    content = underlying_buffer.read()\n+    assert content == b'Hello, world!'\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1147383,
+  "num_received_chars": 36889,
+  "elapsed_time": 284.1542582511902,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 0,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": null,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

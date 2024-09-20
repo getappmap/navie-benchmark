@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-24026",
+  "edit_test_file": "lib/matplotlib/tests/test_axes.py",
+  "code_patch": "diff --git a/lib/matplotlib/rcsetup.py b/lib/matplotlib/rcsetup.py\nindex 0a0e0bb..49837bc 100644\n--- a/lib/matplotlib/rcsetup.py\n+++ b/lib/matplotlib/rcsetup.py\n@@ -280,9 +280,17 @@ def validate_color_or_auto(s):\n \n \n def validate_color_for_prop_cycle(s):\n-    # N-th color cycle syntax can't go into the color cycle.\n     if isinstance(s, str) and re.match(\"^C[0-9]$\", s):\n-        raise ValueError(f\"Cannot put cycle reference ({s!r}) in prop_cycler\")\n+        # Convert 'CN' color reference to RGB\n+        from matplotlib import colors\n+        base_colors = colors.BASE_COLORS\n+        color_cycle = colors.TABLEAU_COLORS\n+        if s[1:] == '0':\n+            return base_colors['b']  # Default to blue for 'C0'\n+        try:\n+            return color_cycle[f\"tab:{s[1:]}\"]\n+        except KeyError:\n+            raise ValueError(f\"Invalid color cycle reference: {s!r}\")\n     return validate_color(s)\n \n \n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_stackplot_color_cycler.py b/lib/matplotlib/tests/test_stackplot_color_cycler.py\nnew file mode 100644\nindex 0000000..c6fa7df\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_stackplot_color_cycler.py\n@@ -0,0 +1,13 @@\n+import pytest\n+import numpy as np\n+import matplotlib.pyplot as plt\n+\n+def test_stackplot_color_cycler():\n+    my_data = np.array([[1, 1, 1], [1, 2, 3], [4, 3, 2]])\n+    fig, ax = plt.subplots()\n+    ax.plot([1, 3], [1, 3], color='C0')\n+    \n+    with pytest.raises(ValueError, match=\"Cannot put cycle reference .* in prop_cycler\"):\n+        ax.stackplot([1, 2, 3], my_data, colors=['C2', 'C3', 'C4'])\n+\n+    plt.close(fig)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_stackplot_color_cycler_inverted.py b/lib/matplotlib/tests/test_stackplot_color_cycler_inverted.py\nnew file mode 100644\nindex 0000000..509835e\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_stackplot_color_cycler_inverted.py\n@@ -0,0 +1,19 @@\n+import pytest\n+import numpy as np\n+import matplotlib.pyplot as plt\n+\n+def test_stackplot_color_cycler():\n+    my_data = np.array([[1, 1, 1], [1, 2, 3], [4, 3, 2]])\n+    fig, ax = plt.subplots()\n+    ax.plot([1, 3], [1, 3], color='C0')\n+    \n+    try:\n+        ax.stackplot([1, 2, 3], my_data, colors=['C2', 'C3', 'C4'])\n+    except ValueError as e:\n+        if \"Cannot put cycle reference\" in str(e):\n+            raise AssertionError(\"__BUG__HERE__\") from e\n+    else:\n+        # If no exception is raised, the test should pass\n+        pass\n+\n+    plt.close(fig)\n\\ No newline at end of file\n",
+  "num_sent_chars": 850298,
+  "num_received_chars": 39539,
+  "elapsed_time": 584.4576797485352,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

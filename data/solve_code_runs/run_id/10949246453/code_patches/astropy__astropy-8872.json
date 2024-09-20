@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-8872",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/astropy/units/quantity.py b/astropy/units/quantity.py\nindex ded609c..d4831eb 100644\n--- a/astropy/units/quantity.py\n+++ b/astropy/units/quantity.py\n@@ -281,6 +281,10 @@ class Quantity(np.ndarray, metaclass=InheritDocstrings):\n                 if issubclass(qcls, cls):\n                     cls = qcls\n \n+        # Preserve float16 dtype if it's explicitly given or if the input is float16\n+        if dtype is None and isinstance(value, np.ndarray) and value.dtype == np.float16:\n+            dtype = np.float16\n+\n         # optimize speed for Quantity with no dtype given, copy=False\n         if isinstance(value, Quantity):\n             if unit is not None and unit is not value.unit:\n@@ -297,16 +301,20 @@ class Quantity(np.ndarray, metaclass=InheritDocstrings):\n                     return value\n \n                 if not (np.can_cast(np.float32, value.dtype) or\n-                        value.dtype.fields):\n+                        value.dtype.fields) and value.dtype != np.float16:\n                     dtype = float\n \n+            # Preserve float16 dtype if the input is float16 and no dtype is specified\n+            if dtype is None and isinstance(value, np.ndarray) and value.dtype == np.float16:\n+                dtype = np.float16\n+\n             return np.array(value, dtype=dtype, copy=copy, order=order,\n                             subok=True, ndmin=ndmin)\n \n-        # Maybe str, or list/tuple of Quantity? If so, this may set value_unit.\n-        # To ensure array remains fast, we short-circuit it.\n-        value_unit = None\n-        if not isinstance(value, np.ndarray):\n+    # Maybe str, or list/tuple of Quantity? If so, this may set value_unit.\n+    # To ensure array remains fast, we short-circuit it.\n+    value_unit = None\n+    if not isinstance(value, np.ndarray):\n             if isinstance(value, str):\n                 # The first part of the regex string matches any integer/float;\n                 # the second parts adds possible trailing .+-, which will break\n@@ -380,7 +388,9 @@ class Quantity(np.ndarray, metaclass=InheritDocstrings):\n         if dtype is None and (not (np.can_cast(np.float32, value.dtype)\n                                    or value.dtype.fields)\n                               or value.dtype.kind == 'O'):\n-            value = value.astype(float)\n+            # Preserve float16 dtype\n+            if value.dtype != np.float16:\n+                value = value.astype(float)\n \n         value = value.view(cls)\n         value._set_unit(value_unit)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 383796,
+  "num_received_chars": 11231,
+  "elapsed_time": 91.08968567848206,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

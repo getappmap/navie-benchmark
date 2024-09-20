@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15732",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py\nindex f2ca8c8..ab50448 100644\n--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@ -1614,11 +1614,37 @@ class BaseDatabaseSchemaEditor:\n             )\n         ):\n             return None\n-        if condition or include or opclasses or expressions:\n-            sql = self.sql_delete_index\n+\n+        # Get all unique constraints for the model\n+        unique_constraints = self._constraint_names(model, unique=True)\n+        \n+        # Check if the constraint to be deleted is a primary key\n+        is_primary_key = name in self._constraint_names(model, primary_key=True)\n+\n+        if is_primary_key:\n+            # If it's a primary key, we don't want to delete it\n+            return None\n+\n+        if len(unique_constraints) > 1:\n+            # If there are multiple unique constraints, we need to be careful\n+            # not to delete the primary key constraint\n+            if condition or include or opclasses or expressions:\n+                sql = self.sql_delete_index\n+            else:\n+                sql = self.sql_delete_unique\n+            \n+            # Only delete the constraint if it's not the primary key\n+            if name in unique_constraints and not is_primary_key:\n+                return self._delete_constraint_sql(sql, model, name)\n+            else:\n+                return None\n         else:\n-            sql = self.sql_delete_unique\n-        return self._delete_constraint_sql(sql, model, name)\n+            # If there's only one unique constraint, proceed as before\n+            if condition or include or opclasses or expressions:\n+                sql = self.sql_delete_index\n+            else:\n+                sql = self.sql_delete_unique\n+            return self._delete_constraint_sql(sql, model, name)\n \n     def _check_sql(self, name, check):\n         return self.sql_constraint % {\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2093721,
+  "num_received_chars": 61862,
+  "elapsed_time": 361.18304562568665,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

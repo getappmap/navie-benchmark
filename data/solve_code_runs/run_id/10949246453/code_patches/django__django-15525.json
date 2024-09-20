@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15525",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/contenttypes/models.py b/django/contrib/contenttypes/models.py\nindex 0c1c640..3c0341a 100644\n--- a/django/contrib/contenttypes/models.py\n+++ b/django/contrib/contenttypes/models.py\n@@ -13,14 +13,15 @@ class ContentTypeManager(models.Manager):\n         super().__init__(*args, **kwargs)\n         # Cache shared by all the get_for_* methods to speed up\n         # ContentType retrieval.\n-        self._cache = {}\n+        self._cache = defaultdict(dict)\n \n     def get_by_natural_key(self, app_label, model):\n+        db = self._db or 'default'\n         try:\n-            ct = self._cache[self.db][(app_label, model)]\n+            ct = self._cache[db][(app_label, model)]\n         except KeyError:\n             ct = self.get(app_label=app_label, model=model)\n-            self._add_to_cache(self.db, ct)\n+            self._add_to_cache(db, ct)\n         return ct\n \n     def _get_opts(self, model, for_concrete_model):\n@@ -30,7 +31,8 @@ class ContentTypeManager(models.Manager):\n \n     def _get_from_cache(self, opts):\n         key = (opts.app_label, opts.model_name)\n-        return self._cache[self.db][key]\n+        db = self._db or 'default'\n+        return self._cache[db][key]\n \n     def get_for_model(self, model, for_concrete_model=True):\n         \"\"\"\n@@ -124,13 +126,18 @@ class ContentTypeManager(models.Manager):\n         \"\"\"\n         self._cache.clear()\n \n+    def clear_cache_for_db(self, db):\n+        \"\"\"\n+        Clear out the content-type cache for a specific database.\n+        \"\"\"\n+        self._cache[db].clear()\n+\n     def _add_to_cache(self, using, ct):\n         \"\"\"Insert a ContentType into the cache.\"\"\"\n         # Note it's possible for ContentType objects to be stale; model_class()\n         # will return None. Hence, there is no reliance on\n         # model._meta.app_label here, just using the model fields instead.\n-        key = (ct.app_label, ct.model)\n-        self._cache.setdefault(using, {})[key] = ct\n+        self._cache[using][(ct.app_label, ct.model)] = ct\n         self._cache.setdefault(using, {})[ct.id] = ct\n \n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1379914,
+  "num_received_chars": 68124,
+  "elapsed_time": 412.65662908554077,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

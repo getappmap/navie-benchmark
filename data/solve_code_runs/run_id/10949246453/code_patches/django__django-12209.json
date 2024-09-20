@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12209",
+  "edit_test_file": "tests/basic/tests.py",
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 38c1358..82e7495 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -442,6 +442,20 @@ class QuerySet:\n         \"\"\"\n         obj = self.model(**kwargs)\n         self._for_write = True\n+        \n+        # Check if the primary key is explicitly set and the field has a default value\n+        pk_field = obj._meta.pk\n+        if pk_field.has_default() and obj.pk is not None:\n+            # Check if an object with this primary key already exists\n+            existing_obj = self.filter(pk=obj.pk).first()\n+            if existing_obj:\n+                # If the object exists, update it instead of inserting\n+                for key, value in kwargs.items():\n+                    setattr(existing_obj, key, value)\n+                existing_obj.save(force_update=True, using=self.db)\n+                return existing_obj\n+        \n+        # If no existing object or no explicit PK, proceed with normal creation\n         obj.save(force_insert=True, using=self.db)\n         return obj\n \n@@ -450,6 +464,12 @@ class QuerySet:\n             if obj.pk is None:\n                 obj.pk = obj._meta.pk.get_pk_value_on_save(obj)\n \n+    def _check_existing_objects(self, objs):\n+        # Helper method to check for existing objects with the same PKs\n+        pk_list = [obj.pk for obj in objs if obj.pk is not None]\n+        existing_objs = list(self.filter(pk__in=pk_list))\n+        return {obj.pk: obj for obj in existing_objs}\n+\n     def bulk_create(self, objs, batch_size=None, ignore_conflicts=False):\n         \"\"\"\n         Insert each of the instances into the database. Do *not* call\n",
+  "test_patch": "diff --git a/tests/basic/test_sample_model_save_behavior.py b/tests/basic/test_sample_model_save_behavior.py\nnew file mode 100644\nindex 0000000..7a36ff9\n--- /dev/null\n+++ b/tests/basic/test_sample_model_save_behavior.py\n@@ -0,0 +1,28 @@\n+import uuid\n+from django.test import TestCase\n+from django.db import models, IntegrityError\n+from django.db.transaction import atomic\n+\n+class Sample(models.Model):\n+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)\n+    name = models.CharField(blank=True, max_length=100)\n+\n+class SampleModelSaveBehaviorTest(TestCase):\n+    def test_save_with_explicit_pk_raises_integrity_error(self):\n+        # Create an initial Sample instance\n+        s0 = Sample.objects.create()\n+        \n+        # Attempt to create a new instance with the same pk\n+        s1 = Sample(pk=s0.pk, name='Test 1')\n+        \n+        # In Django 3.0+, this should raise an IntegrityError\n+        with self.assertRaises(IntegrityError):\n+            with atomic():\n+                s1.save()\n+        \n+        # Verify that only one instance exists in the database\n+        self.assertEqual(Sample.objects.count(), 1)\n+        \n+        # Verify that the original instance is unchanged\n+        s0.refresh_from_db()\n+        self.assertEqual(s0.name, '')\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2361227,
+  "num_received_chars": 114563,
+  "elapsed_time": 699.0064074993134,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

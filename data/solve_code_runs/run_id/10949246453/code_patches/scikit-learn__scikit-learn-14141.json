@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-14141",
+  "edit_test_file": "sklearn/utils/tests/test_fixes.py",
+  "code_patch": "diff --git a/sklearn/utils/_show_versions.py b/sklearn/utils/_show_versions.py\nindex e5d3141..ecba9ec 100644\n--- a/sklearn/utils/_show_versions.py\n+++ b/sklearn/utils/_show_versions.py\n@@ -48,6 +48,7 @@ def _get_deps_info():\n         \"Cython\",\n         \"pandas\",\n         \"matplotlib\",\n+        \"joblib\",\n     ]\n \n     def get_version(module):\n",
+  "test_patch": "diff --git a/sklearn/utils/tests/test_joblib_dependency.py b/sklearn/utils/tests/test_joblib_dependency.py\nnew file mode 100644\nindex 0000000..f4e32e0\n--- /dev/null\n+++ b/sklearn/utils/tests/test_joblib_dependency.py\n@@ -0,0 +1,22 @@\n+import pytest\n+from sklearn.utils._show_versions import _get_deps_info\n+from sklearn.utils._show_versions import show_versions\n+from sklearn import __version__ as sklearn_version\n+from packaging import version\n+\n+def test_joblib_in_deps_info():\n+    deps_info = _get_deps_info()\n+    \n+    if version.parse(sklearn_version) > version.parse(\"0.20\"):\n+        assert 'joblib' not in deps_info, \"joblib is unexpectedly listed in deps_info\"\n+    else:\n+        pytest.skip(\"This test is only relevant for sklearn versions > 0.20\")\n+\n+def test_joblib_in_show_versions(capsys):\n+    show_versions()\n+    captured = capsys.readouterr()\n+    \n+    if version.parse(sklearn_version) > version.parse(\"0.20\"):\n+        assert 'joblib' not in captured.out, \"joblib is unexpectedly listed in show_versions output\"\n+    else:\n+        pytest.skip(\"This test is only relevant for sklearn versions > 0.20\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/utils/tests/test_joblib_dependency_inverted.py b/sklearn/utils/tests/test_joblib_dependency_inverted.py\nnew file mode 100644\nindex 0000000..6e0fe88\n--- /dev/null\n+++ b/sklearn/utils/tests/test_joblib_dependency_inverted.py\n@@ -0,0 +1,24 @@\n+import pytest\n+from sklearn.utils._show_versions import _get_deps_info\n+from sklearn.utils._show_versions import show_versions\n+from sklearn import __version__ as sklearn_version\n+from packaging import version\n+\n+def test_joblib_in_deps_info():\n+    deps_info = _get_deps_info()\n+    \n+    if version.parse(sklearn_version) > version.parse(\"0.20\"):\n+        if 'joblib' not in deps_info:\n+            raise AssertionError(\"__BUG__HERE__\")\n+    else:\n+        pytest.skip(\"This test is only relevant for sklearn versions > 0.20\")\n+\n+def test_joblib_in_show_versions(capsys):\n+    show_versions()\n+    captured = capsys.readouterr()\n+    \n+    if version.parse(sklearn_version) > version.parse(\"0.20\"):\n+        if 'joblib' not in captured.out:\n+            raise AssertionError(\"__BUG__HERE__\")\n+    else:\n+        pytest.skip(\"This test is only relevant for sklearn versions > 0.20\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 618231,
+  "num_received_chars": 21432,
+  "elapsed_time": 162.077862739563,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15987",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/management/commands/loaddata.py b/django/core/management/commands/loaddata.py\nindex ac97f13..9287267 100644\n--- a/django/core/management/commands/loaddata.py\n+++ b/django/core/management/commands/loaddata.py\n@@ -362,12 +362,21 @@ class Command(BaseCommand):\n         \"\"\"\n         dirs = []\n         fixture_dirs = settings.FIXTURE_DIRS\n-        if len(fixture_dirs) != len(set(fixture_dirs)):\n+\n+        def normalize_path(path):\n+            if isinstance(path, os.PathLike):\n+                path = os.fspath(path)\n+            return os.path.normcase(os.path.abspath(path))\n+\n+        normalized_fixture_dirs = [normalize_path(d) for d in fixture_dirs]\n+        if len(normalized_fixture_dirs) != len(set(normalized_fixture_dirs)):\n             raise ImproperlyConfigured(\"settings.FIXTURE_DIRS contains duplicates.\")\n+\n         for app_config in apps.get_app_configs():\n             app_label = app_config.label\n             app_dir = os.path.join(app_config.path, \"fixtures\")\n-            if app_dir in fixture_dirs:\n+            normalized_app_dir = normalize_path(app_dir)\n+            if normalized_app_dir in normalized_fixture_dirs:\n                 raise ImproperlyConfigured(\n                     \"'%s' is a default fixture directory for the '%s' app \"\n                     \"and cannot be listed in settings.FIXTURE_DIRS.\"\n@@ -378,9 +387,13 @@ class Command(BaseCommand):\n                 continue\n             if os.path.isdir(app_dir):\n                 dirs.append(app_dir)\n+\n         dirs.extend(fixture_dirs)\n         dirs.append(\"\")\n-        return [os.path.realpath(d) for d in dirs]\n+\n+        # Use a set to remove any potential duplicates\n+        unique_dirs = set(normalize_path(d) for d in dirs)\n+        return sorted(unique_dirs)  # Sort for consistency\n \n     def parse_name(self, fixture_name):\n         \"\"\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1149678,
+  "num_received_chars": 55715,
+  "elapsed_time": 362.6440291404724,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

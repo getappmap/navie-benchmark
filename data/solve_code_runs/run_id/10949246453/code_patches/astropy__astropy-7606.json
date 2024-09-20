@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-7606",
+  "edit_test_file": "astropy/units/tests/test_units.py",
+  "code_patch": "diff --git a/astropy/units/core.py b/astropy/units/core.py\nindex e9bd986..81e75bb 100644\n--- a/astropy/units/core.py\n+++ b/astropy/units/core.py\n@@ -1710,7 +1710,12 @@ class UnrecognizedUnit(IrreducibleUnit):\n         _unrecognized_operator\n \n     def __eq__(self, other):\n-        other = Unit(other, parse_strict='silent')\n+        if other is None:\n+            return False\n+        try:\n+            other = Unit(other, parse_strict='silent')\n+        except TypeError:\n+            return False\n         return isinstance(other, UnrecognizedUnit) and self.name == other.name\n \n     def __ne__(self, other):\n",
+  "test_patch": "diff --git a/astropy/units/tests/test_unit_equality_comparison.py b/astropy/units/tests/test_unit_equality_comparison.py\nnew file mode 100644\nindex 0000000..bcb2f67\n--- /dev/null\n+++ b/astropy/units/tests/test_unit_equality_comparison.py\n@@ -0,0 +1,14 @@\n+import pytest\n+from astropy import units as u\n+\n+def test_unrecognized_unit_equality_with_none():\n+    # Create an UnrecognizedUnit\n+    x = u.Unit('asdf', parse_strict='silent')\n+    \n+    # Test equality comparison with None\n+    with pytest.raises(TypeError):\n+        x.__eq__(None)  # This should raise TypeError\n+    \n+    # Test inequality comparison with None\n+    with pytest.raises(TypeError):\n+        x.__ne__(None)  # This should also raise TypeError\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1844042,
+  "num_received_chars": 77385,
+  "elapsed_time": 565.341952085495,
+  "lint_repair_count": 15,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15022",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/views/main.py b/django/contrib/admin/views/main.py\nindex 43583c8..7e6d4ca 100644\n--- a/django/contrib/admin/views/main.py\n+++ b/django/contrib/admin/views/main.py\n@@ -465,11 +465,35 @@ class ChangeList:\n             if new_qs is not None:\n                 qs = new_qs\n \n+        from django.db.models import Q\n+        from django.core.exceptions import FieldDoesNotExist\n+\n         try:\n             # Finally, we apply the remaining lookup parameters from the query\n             # string (i.e. those that haven't already been processed by the\n             # filters).\n             qs = qs.filter(**remaining_lookup_params)\n+\n+            # Optimize search query construction\n+            if self.search_fields and self.query:\n+                search_terms = self.query.split()\n+                if len(search_terms) > 10:  # Limit the number of search terms\n+                    search_terms = search_terms[:10]\n+\n+                search_query = Q()\n+                for search_term in search_terms:\n+                    term_query = Q()\n+                    for field_name in self.search_fields:\n+                        try:\n+                            field = self.model._meta.get_field(field_name)\n+                            lookup = '%s__icontains' % field_name\n+                            term_query |= Q(**{lookup: search_term})\n+                        except FieldDoesNotExist:\n+                            # Ignore non-existent fields\n+                            pass\n+                    search_query &= term_query\n+                qs = qs.filter(search_query).distinct()\n+\n         except (SuspiciousOperation, ImproperlyConfigured):\n             # Allow certain types of errors to be re-raised as-is so that the\n             # caller can treat them in a special way.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 509739,
+  "num_received_chars": 25818,
+  "elapsed_time": 137.90196108818054,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
