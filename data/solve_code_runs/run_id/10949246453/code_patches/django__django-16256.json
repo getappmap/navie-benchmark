@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16256",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/contenttypes/fields.py b/django/contrib/contenttypes/fields.py\nindex 542368d..a84a536 100644\n--- a/django/contrib/contenttypes/fields.py\n+++ b/django/contrib/contenttypes/fields.py\n@@ -2,6 +2,7 @@ import functools\n import itertools\n from collections import defaultdict\n \n+from asgiref.sync import sync_to_async\n from django.contrib.contenttypes.models import ContentType\n from django.core import checks\n from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist\n@@ -747,6 +748,11 @@ def create_generic_related_manager(superclass, rel):\n \n         create.alters_data = True\n \n+        async def acreate(self, **kwargs):\n+            return await sync_to_async(self.create)(**kwargs)\n+\n+        acreate.alters_data = True\n+\n         def get_or_create(self, **kwargs):\n             kwargs[self.content_type_field_name] = self.content_type\n             kwargs[self.object_id_field_name] = self.pk_val\n@@ -755,6 +761,11 @@ def create_generic_related_manager(superclass, rel):\n \n         get_or_create.alters_data = True\n \n+        async def aget_or_create(self, **kwargs):\n+            return await sync_to_async(self.get_or_create)(**kwargs)\n+\n+        aget_or_create.alters_data = True\n+\n         def update_or_create(self, **kwargs):\n             kwargs[self.content_type_field_name] = self.content_type\n             kwargs[self.object_id_field_name] = self.pk_val\n@@ -763,4 +774,11 @@ def create_generic_related_manager(superclass, rel):\n \n         update_or_create.alters_data = True\n \n+        async def aupdate_or_create(self, **kwargs):\n+            return await sync_to_async(self.update_or_create)(**kwargs)\n+\n+        aupdate_or_create.alters_data = True\n+\n+        update_or_create.alters_data = True\n+\n     return GenericRelatedObjectManager\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3991344,
+  "num_received_chars": 137879,
+  "elapsed_time": 806.9116456508636,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

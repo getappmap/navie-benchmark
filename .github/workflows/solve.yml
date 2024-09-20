@@ -14,31 +14,35 @@ on:
       instance_set:
         description: "Instance set to solve"
         type: string
+        default: verified_33_pct
+        required: true
       limits:
         description: "Limits to apply to the solver"
         type: choice
         required: true
         options:
-          - default
-          # Synthetic test solvers
-          - test_files=3 test_status_retry=3 code_files=0
-          # Code solvers building synthetic tests
+          - test_files=2 test_status_retry=2 code_files=2 code_status_retry=2
           - test_files=3 test_status_retry=3 code_files=3 code_status_retry=3
-          # Code file selection
-          - test_files=0 code_files=3 code_status_retry=0
-          # Code solvers using only known synthetic tests
-          - test_files=0 code_files=3 code_status_retry=3
-          - test_files=0 code_files=6 code_status_retry=3
+          - test_files=4 test_status_retry=3 code_files=4 code_status_retry=3
+          - test_files=4 test_status_retry=4 code_files=4 code_status_retry=4
+          - test_files=5 test_status_retry=3 code_files=5 code_status_retry=3
+          - test_files=5 test_status_retry=5 code_files=5 code_status_retry=5
+        default: "test_files=3 test_status_retry=3 code_files=3 code_status_retry=3"
       context_tokens:
         description: "LLM token limit to apply to the solver"
-        type: string
+        type: choice
         required: false
-        default: "8000"
+        options:
+          - "8000"
+          - "16000"
+          - "32000"
+          - "64000"
+        default: "16000"
       use_synthetic_tests:
         description: "Use synthetic tests"
         type: boolean
         required: false
-        default: true
+        default: false
       observe_synthetic_tests:
         description: "Observe synthetic tests"
         type: boolean
@@ -50,17 +54,15 @@ on:
         default: SWE-Bench_Larger
         type: choice
         options:
-          - ubuntu-latest
-          - swe-bench-ubuntu-latest
           - SWE-Bench_Larger
       num_runners:
         description: "Number of runners to split the workload across"
         required: true
-        default: "2"
+        default: "3"
       name:
         description: "Assign a name to the workflow run"
         type: string
-        required: false
+        required: true
 
   pull_request:
     types: [opened, synchronize]

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7454",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex 893bb0a..34925d6 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -71,6 +71,9 @@ pairindextypes = {\n def _parse_annotation(annotation: str) -> List[Node]:\n     \"\"\"Parse type annotation.\"\"\"\n     def make_xref(text: str) -> addnodes.pending_xref:\n+        if text == 'None':\n+            return pending_xref('', nodes.Text(text),\n+                                refdomain='py', reftype='obj', reftarget=text)\n         return pending_xref('', nodes.Text(text),\n                             refdomain='py', reftype='class', reftarget=text)\n \n@@ -92,6 +95,8 @@ def _parse_annotation(annotation: str) -> List[Node]:\n         elif isinstance(node, ast.Module):\n             return sum((unparse(e) for e in node.body), [])\n         elif isinstance(node, ast.Name):\n+            if node.id == 'None':\n+                return [make_xref(node.id)]\n             return [nodes.Text(node.id)]\n         elif isinstance(node, ast.Subscript):\n             result = unparse(node.value)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2820833,
+  "num_received_chars": 155420,
+  "elapsed_time": 870.8634045124054,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

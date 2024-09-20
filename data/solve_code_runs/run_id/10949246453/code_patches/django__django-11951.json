@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11951",
+  "edit_test_file": "tests/bulk_create/tests.py",
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 794e0fa..70ae0fa 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -471,6 +471,13 @@ class QuerySet:\n         fields = opts.concrete_fields\n         objs = list(objs)\n         self._populate_pk_values(objs)\n+        # Calculate the maximum batch size that the database can handle\n+        max_batch_size = connection.ops.bulk_batch_size(fields, objs)\n+        # Use the minimum of user-specified and compatible batch sizes\n+        if batch_size is not None:\n+            batch_size = min(batch_size, max_batch_size)\n+        else:\n+            batch_size = max_batch_size\n         with transaction.atomic(using=self.db, savepoint=False):\n             objs_with_pk, objs_without_pk = partition(lambda o: o.pk is None, objs)\n             if objs_with_pk:\n",
+  "test_patch": "diff --git a/tests/bulk_create/test_bulk_create_batch_size.py b/tests/bulk_create/test_bulk_create_batch_size.py\nnew file mode 100644\nindex 0000000..e874bc5\n--- /dev/null\n+++ b/tests/bulk_create/test_bulk_create_batch_size.py\n@@ -0,0 +1,36 @@\n+from django.db import connection\n+from django.test import TestCase, override_settings\n+from django.db.models import IntegerField\n+from django.db.models.functions import Cast\n+\n+from .models import TwoFields\n+\n+\n+class BulkCreateBatchSizeTests(TestCase):\n+    @override_settings(DEBUG=True)\n+    def test_batch_size_override(self):\n+        # Create a large number of objects\n+        num_objects = 1000\n+        objects = [TwoFields(f1=i, f2=i) for i in range(num_objects)]\n+\n+        # Set a very small batch size\n+        small_batch_size = 10\n+\n+        # Clear the connection queries\n+        connection.queries_log.clear()\n+\n+        # Perform bulk_create with the small batch size\n+        TwoFields.objects.bulk_create(objects, batch_size=small_batch_size)\n+\n+        # Count the number of INSERT queries\n+        insert_query_count = sum(1 for q in connection.queries if q['sql'].startswith('INSERT'))\n+\n+        # Calculate the expected number of queries if batch_size is respected\n+        expected_query_count = (num_objects + small_batch_size - 1) // small_batch_size\n+\n+        # Assert that the number of INSERT queries matches the expected count\n+        self.assertEqual(insert_query_count, expected_query_count,\n+                         f\"Expected {expected_query_count} INSERT queries, but got {insert_query_count}\")\n+\n+        # Verify that all objects were created\n+        self.assertEqual(TwoFields.objects.count(), num_objects)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2326384,
+  "num_received_chars": 127267,
+  "elapsed_time": 745.0322926044464,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

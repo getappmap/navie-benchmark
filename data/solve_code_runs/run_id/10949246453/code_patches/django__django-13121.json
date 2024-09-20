@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13121",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/base/operations.py b/django/db/backends/base/operations.py\nindex 2e283a3..fd3298d 100644\n--- a/django/db/backends/base/operations.py\n+++ b/django/db/backends/base/operations.py\n@@ -579,8 +579,33 @@ class BaseDatabaseOperations:\n         return []\n \n     def convert_durationfield_value(self, value, expression, connection):\n-        if value is not None:\n-            return datetime.timedelta(0, 0, value)\n+        if value is None:\n+            return None\n+        \n+        if isinstance(value, (int, float, decimal.Decimal)):\n+            # Assume the value is in microseconds\n+            return datetime.timedelta(microseconds=int(value))\n+        \n+        if isinstance(value, str):\n+            try:\n+                # Try to parse as ISO 8601 duration string\n+                if value.startswith('P'):\n+                    days, _, time = value.partition('T')\n+                    days = int(days[1:-1]) if 'D' in days else 0\n+                    hours, minutes, seconds = time.replace('H', ':').replace('M', ':').replace('S', '').split(':')\n+                    hours = int(hours) if hours else 0\n+                    minutes = int(minutes) if minutes else 0\n+                    seconds = float(seconds) if seconds else 0\n+                    return datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)\n+                \n+                # Try to parse as a simple time string (HH:MM:SS.ffffff)\n+                hours, minutes, seconds = value.split(':')\n+                return datetime.timedelta(hours=int(hours), minutes=int(minutes), seconds=float(seconds))\n+            except ValueError:\n+                pass\n+        \n+        # If we can't parse the value, raise a ValueError\n+        raise ValueError(f\"Unable to convert {value} to timedelta\")\n \n     def check_expression_support(self, expression):\n         \"\"\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 7987472,
+  "num_received_chars": 166088,
+  "elapsed_time": 1113.2988712787628,
+  "lint_repair_count": 15,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

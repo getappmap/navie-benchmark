@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13023",
+  "edit_test_file": "tests/model_fields/test_decimalfield.py",
+  "code_patch": "diff --git a/django/db/models/fields/__init__.py b/django/db/models/fields/__init__.py\nindex 0fd6905..b673ca0 100644\n--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@ -1499,6 +1499,12 @@ class DecimalField(Field):\n             return value\n         if isinstance(value, float):\n             return self.context.create_decimal_from_float(value)\n+        if isinstance(value, dict):\n+            raise exceptions.ValidationError(\n+                self.error_messages['invalid_dict'],\n+                code='invalid_dict',\n+                params={'value': value},\n+            )\n         try:\n             return decimal.Decimal(value)\n         except decimal.InvalidOperation:\n",
+  "test_patch": "diff --git a/tests/model_fields/test_decimalfield_dict_input.py b/tests/model_fields/test_decimalfield_dict_input.py\nnew file mode 100644\nindex 0000000..7d3c5f0\n--- /dev/null\n+++ b/tests/model_fields/test_decimalfield_dict_input.py\n@@ -0,0 +1,19 @@\n+from decimal import Decimal\n+\n+from django.core.exceptions import ValidationError\n+from django.db import models\n+from django.test import TestCase\n+\n+\n+class DecimalFieldDictInputTest(TestCase):\n+    def test_to_python_with_dict_input(self):\n+        f = models.DecimalField(max_digits=4, decimal_places=2)\n+        dict_input = {'value': '3.14'}\n+\n+        with self.assertRaises(TypeError):\n+            f.to_python(dict_input)\n+\n+        # The following assertion is commented out because it's what we expect\n+        # to happen after the issue is fixed. Currently, it will not reach this point.\n+        # with self.assertRaisesMessage(ValidationError, '\"{\\\\'value\\\\': \\\\'3.14\\\\'}\" value must be a decimal number.'):\n+        #     f.to_python(dict_input)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/model_fields/test_decimalfield_dict_input_inverted.py b/tests/model_fields/test_decimalfield_dict_input_inverted.py\nnew file mode 100644\nindex 0000000..e90d501\n--- /dev/null\n+++ b/tests/model_fields/test_decimalfield_dict_input_inverted.py\n@@ -0,0 +1,36 @@\n+from decimal import Decimal\n+\n+from django.core.exceptions import ValidationError\n+from django.db import models\n+from django.test import TestCase\n+\n+\n+class DecimalFieldDictInputTest(TestCase):\n+    def test_to_python_with_dict_input(self):\n+        f = models.DecimalField(max_digits=4, decimal_places=2)\n+        dict_input = {'value': '3.14'}\n+\n+        try:\n+            f.to_python(dict_input)\n+        except TypeError:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+        # If no TypeError is raised, the test should fail\n+        self.fail(\"Expected TypeError, but no exception was raised\")\n+\n+    def test_to_python_with_valid_input(self):\n+        f = models.DecimalField(max_digits=4, decimal_places=2)\n+        valid_input = '3.14'\n+\n+        try:\n+            result = f.to_python(valid_input)\n+            self.assertEqual(result, Decimal('3.14'))\n+        except ValidationError:\n+            self.fail(\"Unexpected ValidationError for valid input\")\n+\n+    def test_to_python_with_invalid_input(self):\n+        f = models.DecimalField(max_digits=4, decimal_places=2)\n+        invalid_input = 'not_a_number'\n+\n+        with self.assertRaises(ValidationError):\n+            f.to_python(invalid_input)\n\\ No newline at end of file\n",
+  "num_sent_chars": 2248291,
+  "num_received_chars": 129253,
+  "elapsed_time": 712.146568775177,
+  "lint_repair_count": 11,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

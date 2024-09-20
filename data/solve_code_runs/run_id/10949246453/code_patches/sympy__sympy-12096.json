@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-12096",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/core/function.py b/sympy/core/function.py\nindex 1b8005e..340fa87 100644\n--- a/sympy/core/function.py\n+++ b/sympy/core/function.py\n@@ -507,7 +507,17 @@ def _eval_evalf(self, prec):\n             func = getattr(mpmath, fname)\n         except (AttributeError, KeyError):\n             try:\n-                return Float(self._imp_(*self.args), prec)\n+                result = self._imp_(*self.args)\n+                if isinstance(result, Expr):\n+                    # If the result is a symbolic expression, recursively evaluate it\n+                    from sympy import sympify\n+                    result = sympify(result).evalf(prec)\n+                    if result.is_Number:\n+                        return Float(result, prec)\n+                    return result\n+                else:\n+                    # If the result is not a symbolic expression, return it as a Float\n+                    return Float(result, prec)\n             except (AttributeError, TypeError, ValueError):\n                 return\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 401713,
+  "num_received_chars": 10431,
+  "elapsed_time": 95.12247443199158,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

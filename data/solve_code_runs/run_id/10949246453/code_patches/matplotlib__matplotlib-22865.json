@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-22865",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/lib/matplotlib/colorbar.py b/lib/matplotlib/colorbar.py\nindex c59b0ac..df16478 100644\n--- a/lib/matplotlib/colorbar.py\n+++ b/lib/matplotlib/colorbar.py\n@@ -25,6 +25,7 @@ import matplotlib.scale as mscale\n import matplotlib.spines as mspines\n import matplotlib.transforms as mtransforms\n from matplotlib import _docstring\n+import matplotlib.lines as mlines\n \n _log = logging.getLogger(__name__)\n \n@@ -651,8 +652,27 @@ class Colorbar:\n             if not self.drawedges:\n                 if len(self._y) >= self.n_rasterize:\n                     self.solids.set_rasterized(True)\n-        self.dividers.set_segments(\n-            np.dstack([X, Y])[1:-1] if self.drawedges else [])\n+        \n+        if self.drawedges:\n+            self.dividers.set_segments(np.dstack([X, Y])[1:-1])\n+            \n+            # Add edge lines for extended regions\n+            if self.extend in ['both', 'min', 'max']:\n+                linewidth = mpl.rcParams['axes.linewidth']\n+                color = mpl.rcParams['axes.edgecolor']\n+                \n+                if self.orientation == 'vertical':\n+                    if self._extend_lower():\n+                        self.ax.add_line(mlines.Line2D([0, 1], [Y[0, 0], Y[0, 0]], color=color, linewidth=linewidth))\n+                    if self._extend_upper():\n+                        self.ax.add_line(mlines.Line2D([0, 1], [Y[-1, 0], Y[-1, 0]], color=color, linewidth=linewidth))\n+                else:  # horizontal\n+                    if self._extend_lower():\n+                        self.ax.add_line(mlines.Line2D([X[0, 0], X[0, 0]], [0, 1], color=color, linewidth=linewidth))\n+                    if self._extend_upper():\n+                        self.ax.add_line(mlines.Line2D([X[0, -1], X[0, -1]], [0, 1], color=color, linewidth=linewidth))\n+        else:\n+            self.dividers.set_segments([])\n \n     def _add_solids_patches(self, X, Y, C, mappable):\n         hatches = mappable.hatches * len(C)  # Have enough hatches.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1255497,
+  "num_received_chars": 78022,
+  "elapsed_time": 523.2849771976471,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

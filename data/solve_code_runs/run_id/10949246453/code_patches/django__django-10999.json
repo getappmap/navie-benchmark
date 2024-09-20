@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-10999",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/utils/dateparse.py b/django/utils/dateparse.py\nindex 8d08b7d..10abe2d 100644\n--- a/django/utils/dateparse.py\n+++ b/django/utils/dateparse.py\n@@ -29,7 +29,7 @@ datetime_re = re.compile(\n standard_duration_re = re.compile(\n     r'^'\n     r'(?:(?P<days>-?\\d+) (days?, )?)?'\n-    r'((?:(?P<hours>-?\\d+):)(?=\\d+:\\d+))?'\n+    r'((?:(?P<hours>-?\\d+):)(?=-?\\d+:-?\\d+))?'\n     r'(?:(?P<minutes>-?\\d+):)?'\n     r'(?P<seconds>-?\\d+)'\n     r'(?:\\.(?P<microseconds>\\d{1,6})\\d{0,6})?'\n@@ -143,4 +143,5 @@ def parse_duration(value):\n         if kw.get('seconds') and kw.get('microseconds') and kw['seconds'].startswith('-'):\n             kw['microseconds'] = '-' + kw['microseconds']\n         kw = {k: float(v) for k, v in kw.items() if v is not None}\n-        return days + sign * datetime.timedelta(**kw)\n+        duration = datetime.timedelta(**kw)\n+        return days + (sign * duration if sign == -1 else duration)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 948504,
+  "num_received_chars": 38530,
+  "elapsed_time": 284.9418728351593,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

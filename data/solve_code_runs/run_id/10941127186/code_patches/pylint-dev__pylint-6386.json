@@ -1,0 +1,20 @@
+{
+  "instance_id": "pylint-dev__pylint-6386",
+  "edit_test_file": "tests/config/test_argparse_config.py",
+  "code_patch": "diff --git a/pylint/lint/base_options.py b/pylint/lint/base_options.py\nindex c793cc8..df34d8b 100644\n--- a/pylint/lint/base_options.py\n+++ b/pylint/lint/base_options.py\n@@ -538,11 +538,9 @@ def _make_run_options(self: Run) -> Options:\n         (\n             \"verbose\",\n             {\n-                \"action\": _DoNothingAction,\n-                \"kwargs\": {},\n+                \"action\": \"store_true\",\n                 \"short\": \"v\",\n-                \"help\": \"In verbose mode, extra non-checker-related info \"\n-                \"will be displayed.\",\n+                \"help\": \"Enable verbose mode to display extra non-checker-related info.\",\n                 \"hide_from_config_file\": True,\n             },\n         ),\n",
+  "test_patch": "diff --git a/tests/config/test_verbose_option.py b/tests/config/test_verbose_option.py\nnew file mode 100644\nindex 0000000..15bbd4f\n--- /dev/null\n+++ b/tests/config/test_verbose_option.py\n@@ -0,0 +1,20 @@\n+# Licensed under the GPL: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html\n+# For details: https://github.com/PyCQA/pylint/blob/main/LICENSE\n+# Copyright (c) https://github.com/PyCQA/pylint/blob/main/CONTRIBUTORS.txt\n+\n+\"\"\"Test for the verbose option behavior with short option.\"\"\"\n+\n+import pytest\n+from pylint.lint import Run\n+from os.path import abspath, dirname, join\n+\n+HERE = abspath(dirname(__file__))\n+REGRTEST_DATA_DIR = join(HERE, \"..\", \"regrtest_data\")\n+EMPTY_MODULE = join(REGRTEST_DATA_DIR, \"empty.py\")\n+\n+def test_verbose_short_option_requires_argument(capsys):\n+    \"\"\"Check that the short verbose option '-v' incorrectly expects an argument.\"\"\"\n+    with pytest.raises(SystemExit):\n+        Run([str(EMPTY_MODULE), \"-v\"], exit=False)\n+    output = capsys.readouterr()\n+    assert \"argument --verbose/-v: expected one argument\" in output.err\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/config/test_verbose_option_inverted.py b/tests/config/test_verbose_option_inverted.py\nnew file mode 100644\nindex 0000000..d84de7e\n--- /dev/null\n+++ b/tests/config/test_verbose_option_inverted.py\n@@ -0,0 +1,20 @@\n+# Licensed under the GPL: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html\n+# For details: https://github.com/PyCQA/pylint/blob/main/LICENSE\n+# Copyright (c) https://github.com/PyCQA/pylint/blob/main/CONTRIBUTORS.txt\n+\n+\"\"\"Test for the verbose option behavior with short option.\"\"\"\n+\n+import pytest\n+from pylint.lint import Run\n+from os.path import abspath, dirname, join\n+\n+HERE = abspath(dirname(__file__))\n+REGRTEST_DATA_DIR = join(HERE, \"..\", \"regrtest_data\")\n+EMPTY_MODULE = join(REGRTEST_DATA_DIR, \"empty.py\")\n+\n+def test_verbose_short_option_requires_argument(capsys):\n+    \"\"\"Check that the short verbose option '-v' incorrectly expects an argument.\"\"\"\n+    with pytest.raises(SystemExit):\n+        Run([str(EMPTY_MODULE), \"-v\"], exit=False)\n+    output = capsys.readouterr()\n+    assert \"argument --verbose/-v: expected one argument\" not in output.err, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 1121115,
+  "num_received_chars": 36912,
+  "elapsed_time": 297.21517634391785,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

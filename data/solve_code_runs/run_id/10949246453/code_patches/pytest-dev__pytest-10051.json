@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-10051",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/logging.py b/src/_pytest/logging.py\nindex a4f4214..a50d895 100644\n--- a/src/_pytest/logging.py\n+++ b/src/_pytest/logging.py\n@@ -335,10 +335,14 @@ class LogCaptureHandler(logging_StreamHandler):\n         \"\"\"Create a new log handler.\"\"\"\n         super().__init__(StringIO())\n         self.records: List[logging.LogRecord] = []\n+        self._item: Optional[nodes.Node] = None\n+        self._when: Optional[str] = None\n \n     def emit(self, record: logging.LogRecord) -> None:\n         \"\"\"Keep the log records in a list in addition to the log text.\"\"\"\n         self.records.append(record)\n+        if self._item and self._when:\n+            self._item.stash[caplog_records_key].setdefault(self._when, []).append(record)\n         super().emit(record)\n \n     def reset(self) -> None:\n@@ -364,6 +368,7 @@ class LogCaptureFixture:\n         self._initial_handler_level: Optional[int] = None\n         # Dict of log name -> log level.\n         self._initial_logger_levels: Dict[Optional[str], int] = {}\n+        self._current_when: Optional[str] = None\n \n     def _finalize(self) -> None:\n         \"\"\"Finalize the fixture.\n@@ -377,6 +382,9 @@ class LogCaptureFixture:\n             logger = logging.getLogger(logger_name)\n             logger.setLevel(level)\n \n+    def set_current_when(self, when: str) -> None:\n+        self._current_when = when\n+\n     @property\n     def handler(self) -> LogCaptureHandler:\n         \"\"\"Get the logging handler used by the fixture.\n@@ -385,17 +393,19 @@ class LogCaptureFixture:\n         \"\"\"\n         return self._item.stash[caplog_handler_key]\n \n-    def get_records(self, when: str) -> List[logging.LogRecord]:\n+    def get_records(self, when: Optional[str] = None) -> List[logging.LogRecord]:\n         \"\"\"Get the logging records for one of the possible test phases.\n \n         :param str when:\n             Which test phase to obtain the records from. Valid values are: \"setup\", \"call\" and \"teardown\".\n+            If None, returns records for the current phase.\n \n         :returns: The list of captured records at the given stage.\n         :rtype: List[logging.LogRecord]\n \n         .. versionadded:: 3.4\n         \"\"\"\n+        when = when or self._current_when\n         return self._item.stash[caplog_records_key].get(when, [])\n \n     @property\n@@ -441,10 +451,16 @@ class LogCaptureFixture:\n     def clear(self) -> None:\n         \"\"\"Reset the list of log records and the captured log text.\"\"\"\n         self.handler.reset()\n+        if self._current_when:\n+            self._item.stash[caplog_records_key][self._current_when] = []\n \n     def set_level(self, level: Union[int, str], logger: Optional[str] = None) -> None:\n         \"\"\"Set the level of a logger for the duration of a test.\n \n+        .. versionchanged:: 3.4\n+            The levels of the loggers changed by this function will be\n+            restored to their initial values at the end of the test.\n+\n         .. versionchanged:: 3.4\n             The levels of the loggers changed by this function will be\n             restored to their initial values at the end of the test.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 433792,
+  "num_received_chars": 16645,
+  "elapsed_time": 116.47167658805847,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

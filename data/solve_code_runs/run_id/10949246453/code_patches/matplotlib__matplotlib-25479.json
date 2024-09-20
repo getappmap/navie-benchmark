@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-25479",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/lib/matplotlib/cm.py b/lib/matplotlib/cm.py\nindex 38158db..cb0607c 100644\n--- a/lib/matplotlib/cm.py\n+++ b/lib/matplotlib/cm.py\n@@ -255,6 +255,9 @@ def register_cmap(name=None, cmap=None, *, override_builtin=False):\n         except AttributeError as err:\n             raise ValueError(\"Arguments must include a name or a \"\n                              \"Colormap\") from err\n+    \n+    # Update the internal name of the colormap object to match the registered name\n+    cmap.name = name\n     # override_builtin is allowed here for backward compatibility\n     # this is just a shim to enable that to work privately in\n     # the global ColormapRegistry\n@@ -285,11 +288,18 @@ def _get_cmap(name=None, lut=None):\n         name = mpl.rcParams['image.cmap']\n     if isinstance(name, colors.Colormap):\n         return name\n-    _api.check_in_list(sorted(_colormaps), name=name)\n-    if lut is None:\n-        return _colormaps[name]\n+    \n+    # Prioritize lookup of registered names\n+    if name in _colormaps:\n+        cmap = _colormaps[name]\n     else:\n-        return _colormaps[name].resampled(lut)\n+        # Fallback to internal name lookup\n+        _api.check_in_list(sorted(_colormaps), name=name)\n+        cmap = next((cm for cm in _colormaps.values() if cm.name == name), None)\n+        if cmap is None:\n+            raise ValueError(f\"Colormap {name} is not recognized\")\n+    \n+    return cmap.resampled(lut) if lut is not None else cmap\n \n # do it in two steps like this so we can have an un-deprecated version in\n # pyplot.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1422757,
+  "num_received_chars": 50595,
+  "elapsed_time": 407.99723958969116,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

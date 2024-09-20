@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16527",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/templatetags/admin_modify.py b/django/contrib/admin/templatetags/admin_modify.py\nindex 9df4b7a..38bb0dc 100644\n--- a/django/contrib/admin/templatetags/admin_modify.py\n+++ b/django/contrib/admin/templatetags/admin_modify.py\n@@ -101,6 +101,7 @@ def submit_row(context):\n             ),\n             \"show_save_as_new\": not is_popup\n             and has_change_permission\n+            and has_add_permission\n             and change\n             and save_as,\n             \"show_save_and_add_another\": can_save_and_add_another,\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1912651,
+  "num_received_chars": 55184,
+  "elapsed_time": 418.09578371047974,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

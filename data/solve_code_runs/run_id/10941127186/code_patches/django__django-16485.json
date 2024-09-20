@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16485",
+  "edit_test_file": "tests/template_tests/filter_tests/test_floatformat.py",
+  "code_patch": "diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py\nindex 23c3a08..f22d954 100644\n--- a/django/template/defaultfilters.py\n+++ b/django/template/defaultfilters.py\n@@ -163,6 +163,9 @@ def floatformat(text, arg=-1):\n     except ValueError:\n         return input_val\n \n+    if p == 0:\n+        p = 1  # Default to a valid minimum precision\n+\n     try:\n         m = int(d) - d\n     except (ValueError, OverflowError, InvalidOperation):\n",
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_floatformat_zero.py b/tests/template_tests/filter_tests/test_floatformat_zero.py\nnew file mode 100644\nindex 0000000..ace5a66\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_floatformat_zero.py\n@@ -0,0 +1,14 @@\n+from decimal import Decimal\n+from django.template.defaultfilters import floatformat\n+from django.test import SimpleTestCase\n+\n+class FloatformatZeroTests(SimpleTestCase):\n+    def test_floatformat_zero_string(self):\n+        with self.assertRaises(ValueError) as cm:\n+            floatformat('0.00', 0)\n+        self.assertEqual(str(cm.exception), \"valid range for prec is [1, MAX_PREC]\")\n+\n+    def test_floatformat_zero_decimal(self):\n+        with self.assertRaises(ValueError) as cm:\n+            floatformat(Decimal('0.00'), 0)\n+        self.assertEqual(str(cm.exception), \"valid range for prec is [1, MAX_PREC]\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_floatformat_zero_inverted.py b/tests/template_tests/filter_tests/test_floatformat_zero_inverted.py\nnew file mode 100644\nindex 0000000..5e41552\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_floatformat_zero_inverted.py\n@@ -0,0 +1,18 @@\n+from decimal import Decimal\n+from django.template.defaultfilters import floatformat\n+from django.test import SimpleTestCase\n+\n+class FloatformatZeroTests(SimpleTestCase):\n+    def test_floatformat_zero_string(self):\n+        # The test should now pass when the bug is fixed and fail when the bug is present.\n+        try:\n+            floatformat('0.00', 0)\n+        except ValueError as e:\n+            self.fail(f\"__BUG__HERE__: {str(e)}\")\n+\n+    def test_floatformat_zero_decimal(self):\n+        # The test should now pass when the bug is fixed and fail when the bug is present.\n+        try:\n+            floatformat(Decimal('0.00'), 0)\n+        except ValueError as e:\n+            self.fail(f\"__BUG__HERE__: {str(e)}\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1118439,
+  "num_received_chars": 52841,
+  "elapsed_time": 310.1778998374939,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

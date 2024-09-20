@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-16766",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py\nindex a3f0310..d7f29ab 100644\n--- a/sympy/printing/pycode.py\n+++ b/sympy/printing/pycode.py\n@@ -349,6 +349,11 @@ def _print_NoneToken(self, arg):\n \n class PythonCodePrinter(AbstractPythonCodePrinter):\n \n+    def _print_Indexed(self, expr):\n+        base = self._print(expr.base)\n+        indices = ', '.join(self._print(i) for i in expr.indices)\n+        return f\"{base}[{indices}]\"\n+\n     def _print_sign(self, e):\n         return '(0.0 if {e} == 0 else {f}(1, {e}))'.format(\n             f=self._module_format('math.copysign'), e=self._print(e.args[0]))\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 868398,
+  "num_received_chars": 13571,
+  "elapsed_time": 173.6045880317688,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

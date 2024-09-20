@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-20154",
+  "edit_test_file": "sympy/combinatorics/tests/test_partitions.py",
+  "code_patch": "diff --git a/sympy/utilities/iterables.py b/sympy/utilities/iterables.py\nindex dd36dea..3e46d5b 100644\n--- a/sympy/utilities/iterables.py\n+++ b/sympy/utilities/iterables.py\n@@ -1802,9 +1802,9 @@ def partitions(n, m=None, k=None, size=False):\n         keys.append(r)\n     room = m - q - bool(r)\n     if size:\n-        yield sum(ms.values()), ms\n+        yield sum(ms.values()), ms.copy()\n     else:\n-        yield ms\n+        yield ms.copy()\n \n     while keys != [1]:\n         # Reuse any 1's.\n@@ -1842,9 +1842,9 @@ def partitions(n, m=None, k=None, size=False):\n             break\n         room -= need\n         if size:\n-            yield sum(ms.values()), ms\n+            yield sum(ms.values()), ms.copy()\n         else:\n-            yield ms\n+            yield ms.copy()\n \n \n def ordered_partitions(n, m=None, sort=True):\n",
+  "test_patch": "diff --git a/sympy/combinatorics/tests/test_partitions_behavior.py b/sympy/combinatorics/tests/test_partitions_behavior.py\nnew file mode 100644\nindex 0000000..d2cc8a9\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_partitions_behavior.py\n@@ -0,0 +1,13 @@\n+from sympy.utilities.iterables import partitions\n+\n+def test_partitions_reuse_issue():\n+    # Generate partitions of 6 with k=2\n+    partition_list = list(partitions(6, k=2))\n+    \n+    # The expected result if dictionaries are not reused\n+    expected_result = [\n+        {2: 3}, {1: 2, 2: 2}, {1: 4, 2: 1}, {1: 6}\n+    ]\n+    \n+    # Check if the result is not as expected due to dictionary reuse\n+    assert partition_list != expected_result, \"The partitions() function is reusing dictionaries, leading to incorrect results.\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/combinatorics/tests/test_partitions_behavior_inverted.py b/sympy/combinatorics/tests/test_partitions_behavior_inverted.py\nnew file mode 100644\nindex 0000000..adcbef9\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_partitions_behavior_inverted.py\n@@ -0,0 +1,13 @@\n+from sympy.utilities.iterables import partitions\n+\n+def test_partitions_reuse_issue():\n+    # Generate partitions of 6 with k=2\n+    partition_list = list(partitions(6, k=2))\n+    \n+    # The expected result if dictionaries are not reused\n+    expected_result = [\n+        {2: 3}, {1: 2, 2: 2}, {1: 4, 2: 1}, {1: 6}\n+    ]\n+    \n+    # Check if the result is as expected, which should fail if dictionaries are reused\n+    assert partition_list == expected_result, \"__BUG__HERE__\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 537125,
+  "num_received_chars": 15887,
+  "elapsed_time": 147.07467579841614,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

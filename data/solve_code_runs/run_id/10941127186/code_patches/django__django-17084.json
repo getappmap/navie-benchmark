@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-17084",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 395ba6e..e9b1f6d 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -579,6 +579,8 @@ class QuerySet(AltersData):\n                 arg.default_alias\n             except (AttributeError, TypeError):\n                 raise TypeError(\"Complex aggregates require an alias\")\n+            if arg.contains_over_clause:\n+                raise NotSupportedError(\"Aggregates over window functions are not supported.\")\n             kwargs[arg.default_alias] = arg\n \n         return self.query.chain().get_aggregation(self.db, kwargs)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1100564,
+  "num_received_chars": 26667,
+  "elapsed_time": 166.69931149482727,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

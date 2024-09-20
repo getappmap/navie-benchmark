@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4695",
+  "edit_test_file": "xarray/tests/test_variable.py",
+  "code_patch": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex dbac288..d63adb8 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -497,10 +497,16 @@ class _LocIndexer:\n     def __init__(self, dataset: \"Dataset\"):\n         self.dataset = dataset\n \n+    def _sanitize_dim_name(self, key: Hashable) -> Hashable:\n+        # Add a prefix to dimension names that conflict with reserved keywords\n+        return f\"_dim_{key}\" if key in {\"method\"} else key\n+\n     def __getitem__(self, key: Mapping[Hashable, Any]) -> \"Dataset\":\n         if not utils.is_dict_like(key):\n             raise TypeError(\"can only lookup dictionaries from Dataset.loc\")\n-        return self.dataset.sel(key)\n+        # Sanitize dimension names in the key\n+        sanitized_key = {self._sanitize_dim_name(k): v for k, v in key.items()}\n+        return self.dataset.sel(sanitized_key)\n \n \n class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n",
+  "test_patch": "diff --git a/xarray/tests/test_dimension_naming.py b/xarray/tests/test_dimension_naming.py\nnew file mode 100644\nindex 0000000..880aacd\n--- /dev/null\n+++ b/xarray/tests/test_dimension_naming.py\n@@ -0,0 +1,17 @@\n+# File: xarray/tests/test_dimension_naming.py\n+\n+import numpy as np\n+import pytest\n+from xarray import DataArray\n+\n+def test_dimension_naming_with_method():\n+    empty = np.zeros((2, 2))\n+    D1 = DataArray(empty, dims=['dim1', 'dim2'], coords={'dim1': ['x', 'y'], 'dim2': ['a', 'b']})\n+    D2 = DataArray(empty, dims=['dim1', 'method'], coords={'dim1': ['x', 'y'], 'method': ['a', 'b']})\n+\n+    # This should work without any issues\n+    assert D1.loc[dict(dim1='x', dim2='a')] == 0\n+\n+    # This should raise a ValueError due to the dimension being named 'method'\n+    with pytest.raises(ValueError, match=\"Invalid fill method. Expecting pad \\(ffill\\), backfill \\(bfill\\) or nearest.\"):\n+        D2.loc[dict(dim1='x', method='a')]\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_dimension_naming_inverted.py b/xarray/tests/test_dimension_naming_inverted.py\nnew file mode 100644\nindex 0000000..0f7d071\n--- /dev/null\n+++ b/xarray/tests/test_dimension_naming_inverted.py\n@@ -0,0 +1,18 @@\n+# File: xarray/tests/test_dimension_naming.py\n+\n+import numpy as np\n+import pytest\n+from xarray import DataArray\n+\n+def test_dimension_naming_with_method():\n+    empty = np.zeros((2, 2))\n+    D1 = DataArray(empty, dims=['dim1', 'dim2'], coords={'dim1': ['x', 'y'], 'dim2': ['a', 'b']})\n+    D2 = DataArray(empty, dims=['dim1', 'method'], coords={'dim1': ['x', 'y'], 'method': ['a', 'b']})\n+\n+    # This should work without any issues\n+    assert D1.loc[dict(dim1='x', dim2='a')] == 0\n+\n+    # This should raise a ValueError due to the dimension being named 'method'\n+    # Altered to raise a custom error message \"__BUG__HERE__\" when the bug is observed\n+    with pytest.raises(ValueError, match=\"__BUG__HERE__\"):\n+        D2.loc[dict(dim1='x', method='a')]\n\\ No newline at end of file\n",
+  "num_sent_chars": 2124106,
+  "num_received_chars": 28478,
+  "elapsed_time": 678.4004275798798,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5809",
+  "edit_test_file": "testing/test_pastebin.py",
+  "code_patch": "diff --git a/src/_pytest/pastebin.py b/src/_pytest/pastebin.py\nindex 41576a6..79b0d9d 100644\n--- a/src/_pytest/pastebin.py\n+++ b/src/_pytest/pastebin.py\n@@ -79,7 +79,7 @@ def create_new_paste(contents):\n \n     params = {\n         \"code\": contents,\n-        \"lexer\": \"python3\" if sys.version_info[0] >= 3 else \"python\",\n+        \"lexer\": \"text\",\n         \"expiry\": \"1week\",\n     }\n     url = \"https://bpaste.net\"\n",
+  "test_patch": "diff --git a/testing/test_pastebin_lexer.py b/testing/test_pastebin_lexer.py\nnew file mode 100644\nindex 0000000..c66c20d\n--- /dev/null\n+++ b/testing/test_pastebin_lexer.py\n@@ -0,0 +1,28 @@\n+import pytest\n+from urllib.error import HTTPError\n+\n+def test_pastebin_lexer_http_error(testdir, monkeypatch):\n+    # Create a sample test file\n+    testdir.makepyfile(\"\"\"\n+    def test_sample():\n+        assert True\n+    \"\"\")\n+\n+    # Mock the urlopen function to simulate the HTTP error\n+    def mock_urlopen(url, data):\n+        if b\"lexer=python3\" in data:\n+            raise HTTPError(url, 400, \"Bad Request\", {}, None)\n+        return None\n+\n+    monkeypatch.setattr(\"urllib.request.urlopen\", mock_urlopen)\n+\n+    # Run pytest with --pastebin=all option\n+    result = testdir.runpytest(\"--pastebin=all\")\n+\n+    # Check that the HTTP error is raised and captured in the output\n+    result.stderr.fnmatch_lines([\n+        \"*HTTP Error 400: Bad Request*\"\n+    ])\n+\n+    # Ensure the test run itself was successful\n+    result.assert_outcomes(passed=1)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_pastebin_lexer_inverted.py b/testing/test_pastebin_lexer_inverted.py\nnew file mode 100644\nindex 0000000..8d0f316\n--- /dev/null\n+++ b/testing/test_pastebin_lexer_inverted.py\n@@ -0,0 +1,36 @@\n+import pytest\n+from urllib.error import HTTPError\n+\n+def test_pastebin_lexer_http_error(testdir, monkeypatch):\n+    # Create a sample test file\n+    testdir.makepyfile(\"\"\"\n+    def test_sample():\n+        assert True\n+    \"\"\")\n+\n+    # Mock the urlopen function to simulate the HTTP error\n+    def mock_urlopen(url, data):\n+        if b\"lexer=python3\" in data:\n+            raise HTTPError(url, 400, \"Bad Request\", {}, None)\n+        elif b\"lexer=text\" in data:\n+            return None\n+        else:\n+            pytest.fail(\"Unexpected lexer used\")\n+\n+    monkeypatch.setattr(\"urllib.request.urlopen\", mock_urlopen)\n+\n+    # Run pytest with --pastebin=all option\n+    result = testdir.runpytest(\"--pastebin=all\")\n+\n+    # Check that the HTTP error is raised and captured in the output\n+    error_lines = result.stderr.str().splitlines()\n+    http_error_line = next((line for line in error_lines if \"HTTP Error 400: Bad Request\" in line), None)\n+    \n+    if http_error_line:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    else:\n+        # If the HTTP error is not found, ensure that 'lexer=text' was used\n+        assert b\"lexer=text\" in mock_urlopen.call_args[0][1], \"Expected 'lexer=text' to be used\"\n+\n+    # Ensure the test run itself was successful\n+    result.assert_outcomes(passed=1)\n\\ No newline at end of file\n",
+  "num_sent_chars": 1844336,
+  "num_received_chars": 71801,
+  "elapsed_time": 519.1847634315491,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 5,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

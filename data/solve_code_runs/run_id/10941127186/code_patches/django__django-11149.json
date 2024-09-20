@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11149",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex 880a2cc..b52079a 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -2030,19 +2030,36 @@ class InlineModelAdmin(BaseModelAdmin):\n         # default.\n         exclude = exclude or None\n         can_delete = self.can_delete and self.has_delete_permission(request, obj)\n-        defaults = {\n-            'form': self.form,\n-            'formset': self.formset,\n-            'fk_name': self.fk_name,\n-            'fields': fields,\n-            'exclude': exclude,\n-            'formfield_callback': partial(self.formfield_for_dbfield, request=request),\n-            'extra': self.get_extra(request, obj, **kwargs),\n-            'min_num': self.get_min_num(request, obj, **kwargs),\n-            'max_num': self.get_max_num(request, obj, **kwargs),\n-            'can_delete': can_delete,\n-            **kwargs,\n-        }\n+        can_add = self.has_add_permission(request, obj)\n+        can_change = self.has_change_permission(request, obj)\n+        if not (can_add or can_change or can_delete):\n+            defaults = {\n+                'form': self.form,\n+                'formset': self.formset,\n+                'fk_name': self.fk_name,\n+                'fields': fields,\n+                'exclude': exclude,\n+                'formfield_callback': partial(self.formfield_for_dbfield, request=request),\n+                'extra': 0,\n+                'min_num': 0,\n+                'max_num': 0,\n+                'can_delete': False,\n+                **kwargs,\n+            }\n+        else:\n+            defaults = {\n+                'form': self.form,\n+                'formset': self.formset,\n+                'fk_name': self.fk_name,\n+                'fields': fields,\n+                'exclude': exclude,\n+                'formfield_callback': partial(self.formfield_for_dbfield, request=request),\n+                'extra': self.get_extra(request, obj, **kwargs),\n+                'min_num': self.get_min_num(request, obj, **kwargs),\n+                'max_num': self.get_max_num(request, obj, **kwargs),\n+                'can_delete': can_delete,\n+                **kwargs,\n+            }\n \n         base_model_form = defaults['form']\n         can_change = self.has_change_permission(request, obj) if request else True\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 882579,
+  "num_received_chars": 28576,
+  "elapsed_time": 188.29923272132874,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

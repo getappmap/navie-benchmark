@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9367",
+  "edit_test_file": "tests/test_pycode_ast.py",
+  "code_patch": "diff --git a/sphinx/pycode/ast.py b/sphinx/pycode/ast.py\nindex f541ec0..607547f 100644\n--- a/sphinx/pycode/ast.py\n+++ b/sphinx/pycode/ast.py\n@@ -213,7 +213,9 @@ class _UnparseVisitor(ast.NodeVisitor):\n         return \"%s %s\" % (self.visit(node.op), self.visit(node.operand))\n \n     def visit_Tuple(self, node: ast.Tuple) -> str:\n-        if node.elts:\n+        if len(node.elts) == 1:\n+            return \"(\" + self.visit(node.elts[0]) + \",)\"\n+        elif node.elts:\n             return \"(\" + \", \".join(self.visit(e) for e in node.elts) + \")\"\n         else:\n             return \"()\"\n",
+  "test_patch": "diff --git a/tests/test_pycode_ast_single_element_tuple.py b/tests/test_pycode_ast_single_element_tuple.py\nnew file mode 100644\nindex 0000000..79c3b85\n--- /dev/null\n+++ b/tests/test_pycode_ast_single_element_tuple.py\n@@ -0,0 +1,9 @@\n+import pytest\n+from sphinx.pycode import ast\n+\n+def test_unparse_single_element_tuple():\n+    source = \"(1,)\"\n+    expected = \"(1)\"  # This is the incorrect output we're expecting due to the bug\n+    module = ast.parse(source)\n+    result = ast.unparse(module.body[0].value, source)\n+    assert result == expected, f\"Expected '{expected}', but got '{result}'\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_pycode_ast_single_element_tuple_inverted.py b/tests/test_pycode_ast_single_element_tuple_inverted.py\nnew file mode 100644\nindex 0000000..4d5c4b1\n--- /dev/null\n+++ b/tests/test_pycode_ast_single_element_tuple_inverted.py\n@@ -0,0 +1,25 @@\n+import pytest\n+from sphinx.pycode import ast\n+\n+def test_unparse_single_element_tuple():\n+    source = \"(1,)\"\n+    expected = \"(1,)\"  # This is the correct output we're expecting\n+    module = ast.parse(source)\n+    result = ast.unparse(module.body[0].value, source)\n+    \n+    if result != expected:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    assert result == expected, f\"Expected '{expected}', but got '{result}'\"\n+\n+@pytest.mark.parametrize('source,expected', [\n+    (\"(1,)\", \"(1,)\"),  # Tuple (single element)\n+])\n+def test_unparse_single_element_tuple_parametrized(source, expected):\n+    module = ast.parse(source)\n+    result = ast.unparse(module.body[0].value, source)\n+    \n+    if result != expected:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    assert result == expected, f\"Expected '{expected}', but got '{result}'\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 330587,
+  "num_received_chars": 9952,
+  "elapsed_time": 86.946537733078,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

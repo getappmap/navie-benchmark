@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-20859",
+  "edit_test_file": "lib/matplotlib/tests/test_figure.py",
+  "code_patch": "diff --git a/lib/matplotlib/legend.py b/lib/matplotlib/legend.py\nindex 44ab024..aaa2e30 100644\n--- a/lib/matplotlib/legend.py\n+++ b/lib/matplotlib/legend.py\n@@ -360,7 +360,7 @@ class Legend(Artist):\n         \"\"\"\n         # local import only to avoid circularity\n         from matplotlib.axes import Axes\n-        from matplotlib.figure import Figure\n+        from matplotlib.figure import Figure, FigureBase\n \n         super().__init__()\n \n@@ -434,11 +434,11 @@ class Legend(Artist):\n             self.isaxes = True\n             self.axes = parent\n             self.set_figure(parent.figure)\n-        elif isinstance(parent, Figure):\n+        elif isinstance(parent, FigureBase):\n             self.isaxes = False\n             self.set_figure(parent)\n         else:\n-            raise TypeError(\"Legend needs either Axes or Figure as parent\")\n+            raise TypeError(\"Legend needs either Axes or FigureBase as parent\")\n         self.parent = parent\n \n         self._loc_used_default = loc is None\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_subfigure_legend.py b/lib/matplotlib/tests/test_subfigure_legend.py\nnew file mode 100644\nindex 0000000..c41eeee\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_subfigure_legend.py\n@@ -0,0 +1,11 @@\n+import pytest\n+import matplotlib.pyplot as plt\n+from matplotlib.figure import SubFigure\n+\n+def test_subfigure_legend():\n+    fig = plt.figure()\n+    subfig = fig.subfigures(1, 1)\n+    ax = subfig.subplots()\n+    ax.plot([0, 1, 2], [0, 1, 2], label=\"test\")\n+    with pytest.raises(TypeError, match=\"Legend needs either Axes or Figure as parent\"):\n+        subfig.legend()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_subfigure_legend_inverted.py b/lib/matplotlib/tests/test_subfigure_legend_inverted.py\nnew file mode 100644\nindex 0000000..6f76e78\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_subfigure_legend_inverted.py\n@@ -0,0 +1,14 @@\n+import pytest\n+import matplotlib.pyplot as plt\n+from matplotlib.figure import SubFigure\n+\n+def test_subfigure_legend():\n+    fig = plt.figure()\n+    subfig = fig.subfigures(1, 1)\n+    ax = subfig.subplots()\n+    ax.plot([0, 1, 2], [0, 1, 2], label=\"test\")\n+    try:\n+        subfig.legend()\n+    except TypeError as e:\n+        if str(e) == \"Legend needs either Axes or Figure as parent\":\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 899692,
+  "num_received_chars": 10503,
+  "elapsed_time": 178.98693013191223,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

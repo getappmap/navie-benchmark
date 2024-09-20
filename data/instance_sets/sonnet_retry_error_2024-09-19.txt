@@ -1,0 +1,19 @@
+# These instances from run https://github.com/getappmap/navie-benchmark/actions/runs/10949246453
+# are missing from the report, primarily due to Sonnet errors:
+# Failed to complete: SSE Error: {"type":"error","error":{"details":null,"type":"invalid_request_error","message":"Output blocked by content filtering policy"}             }
+django__django-14539
+django__django-15280
+django__django-15563
+matplotlib__matplotlib-24870
+matplotlib__matplotlib-26113
+pydata__xarray-7233
+scikit-learn__scikit-learn-10908
+scikit-learn__scikit-learn-13779
+scikit-learn__scikit-learn-14710
+scikit-learn__scikit-learn-26194
+sympy__sympy-14531
+sympy__sympy-18211
+sympy__sympy-19040
+sympy__sympy-20154
+sympy__sympy-21379
+sympy__sympy-21847

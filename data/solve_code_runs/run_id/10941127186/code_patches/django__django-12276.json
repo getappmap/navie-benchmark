@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12276",
+  "edit_test_file": "tests/forms_tests/widget_tests/test_clearablefileinput.py",
+  "code_patch": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d..fed5b05 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -387,6 +387,9 @@ class FileInput(Input):\n     def value_omitted_from_data(self, data, files, name):\n         return name not in files\n \n+    def use_required_attribute(self, initial):\n+        return super().use_required_attribute(initial) and not initial\n+\n \n FILE_INPUT_CONTRADICTION = object()\n \n@@ -396,7 +399,7 @@ class ClearableFileInput(FileInput):\n     initial_text = _('Currently')\n     input_text = _('Change')\n     template_name = 'django/forms/widgets/clearable_file_input.html'\n-\n+    \n     def clear_checkbox_name(self, name):\n         \"\"\"\n         Given the name of the file input, return the name of the clear checkbox\n",
+  "test_patch": "diff --git a/tests/forms_tests/widget_tests/test_requiredattribute.py b/tests/forms_tests/widget_tests/test_requiredattribute.py\nnew file mode 100644\nindex 0000000..c392f38\n--- /dev/null\n+++ b/tests/forms_tests/widget_tests/test_requiredattribute.py\n@@ -0,0 +1,17 @@\n+from django.forms import FileInput\n+from django.test import SimpleTestCase\n+\n+class FileInputRequiredAttributeTest(SimpleTestCase):\n+    def test_file_input_does_not_use_required_attribute_when_initial_data_exists(self):\n+        \"\"\"\n+        FileInput should not use the 'required' attribute when initial data exists.\n+        \"\"\"\n+        widget = FileInput()\n+        widget.is_required = True\n+        initial_data = 'existing_file.txt'\n+        \n+        # Render the widget with initial data\n+        html = widget.render('myfile', initial_data)\n+        \n+        # Check that the 'required' attribute is not present in the rendered HTML\n+        self.assertNotIn('required', html)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2104606,
+  "num_received_chars": 45139,
+  "elapsed_time": 384.71323680877686,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

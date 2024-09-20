@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-20859",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/lib/matplotlib/legend.py b/lib/matplotlib/legend.py\nindex 44ab024..dbb1b7f 100644\n--- a/lib/matplotlib/legend.py\n+++ b/lib/matplotlib/legend.py\n@@ -430,15 +430,20 @@ class Legend(Artist):\n         # method.\n         self._legend_box = None\n \n+        from matplotlib.figure import SubFigure\n         if isinstance(parent, Axes):\n             self.isaxes = True\n             self.axes = parent\n             self.set_figure(parent.figure)\n-        elif isinstance(parent, Figure):\n+        elif isinstance(parent, (Figure, SubFigure)):\n             self.isaxes = False\n-            self.set_figure(parent)\n+            if isinstance(parent, SubFigure):\n+                self.set_figure(parent.figure)\n+                self.subfigure = parent\n+            else:\n+                self.set_figure(parent)\n         else:\n-            raise TypeError(\"Legend needs either Axes or Figure as parent\")\n+            raise TypeError(\"Legend needs either Axes, Figure, or SubFigure as parent\")\n         self.parent = parent\n \n         self._loc_used_default = loc is None\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1033171,
+  "num_received_chars": 33664,
+  "elapsed_time": 346.8726348876953,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

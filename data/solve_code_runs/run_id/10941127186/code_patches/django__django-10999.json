@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-10999",
+  "edit_test_file": "tests/forms_tests/field_tests/test_durationfield.py",
+  "code_patch": "diff --git a/django/utils/dateparse.py b/django/utils/dateparse.py\nindex 8d08b7d..a037758 100644\n--- a/django/utils/dateparse.py\n+++ b/django/utils/dateparse.py\n@@ -29,7 +29,7 @@ datetime_re = re.compile(\n standard_duration_re = re.compile(\n     r'^'\n     r'(?:(?P<days>-?\\d+) (days?, )?)?'\n-    r'((?:(?P<hours>-?\\d+):)(?=\\d+:\\d+))?'\n+    r'((?:(?P<hours>-?\\d+):)(?=-?\\d+:-?\\d+))?'\n     r'(?:(?P<minutes>-?\\d+):)?'\n     r'(?P<seconds>-?\\d+)'\n     r'(?:\\.(?P<microseconds>\\d{1,6})\\d{0,6})?'\n",
+  "test_patch": "diff --git a/tests/forms_tests/field_tests/test_parse_duration.py b/tests/forms_tests/field_tests/test_parse_duration.py\nnew file mode 100644\nindex 0000000..a59ddce\n--- /dev/null\n+++ b/tests/forms_tests/field_tests/test_parse_duration.py\n@@ -0,0 +1,14 @@\n+import unittest\n+from datetime import timedelta\n+from django.utils.dateparse import parse_duration\n+\n+class TestParseDurationNegative(unittest.TestCase):\n+    def test_negative_duration(self):\n+        # This test is expected to fail due to the issue with negative durations\n+        test_values = (\n+            ('-1:15:30', timedelta(hours=-1, minutes=15, seconds=30)),\n+            ('-4 15:30', timedelta(days=-4, minutes=15, seconds=30)),\n+        )\n+        for source, expected in test_values:\n+            with self.subTest(source=source):\n+                self.assertEqual(parse_duration(source), expected)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/forms_tests/field_tests/test_parse_duration_inverted.py b/tests/forms_tests/field_tests/test_parse_duration_inverted.py\nnew file mode 100644\nindex 0000000..9a5d6c5\n--- /dev/null\n+++ b/tests/forms_tests/field_tests/test_parse_duration_inverted.py\n@@ -0,0 +1,17 @@\n+import unittest\n+from datetime import timedelta\n+from django.utils.dateparse import parse_duration\n+\n+class TestParseDurationNegative(unittest.TestCase):\n+    def test_negative_duration(self):\n+        # This test is expected to fail due to the issue with negative durations\n+        test_values = (\n+            ('-1:15:30', timedelta(hours=-1, minutes=15, seconds=30)),\n+            ('-4 15:30', timedelta(days=-4, minutes=15, seconds=30)),\n+        )\n+        for source, expected in test_values:\n+            with self.subTest(source=source):\n+                result = parse_duration(source)\n+                if result == expected:\n+                    raise AssertionError(\"__BUG__HERE__\")\n+                self.assertNotEqual(result, expected)\n\\ No newline at end of file\n",
+  "num_sent_chars": 1449401,
+  "num_received_chars": 30927,
+  "elapsed_time": 344.44593477249146,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 7,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

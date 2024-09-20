@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11265",
+  "edit_test_file": "tests/generic_relations/tests.py",
+  "code_patch": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 90289d0..1e1eff1 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -317,11 +317,25 @@ class FilteredRelation:\n         )\n \n     def clone(self):\n-        clone = FilteredRelation(self.relation_name, condition=self.condition)\n+        clone = FilteredRelation(self.relation_name, condition=self.condition.clone())\n         clone.alias = self.alias\n         clone.path = self.path[:]\n         return clone\n \n+    def deep_clone(self):\n+        clone = FilteredRelation(self.relation_name, condition=self.condition.clone())\n+        clone.alias = self.alias\n+        clone.path = self.path[:]\n+        return clone\n+\n+    @classmethod\n+    def transfer_annotations(cls, from_query, to_query):\n+        for key, value in from_query._filtered_relations.items():\n+            to_query._filtered_relations[key] = value.deep_clone()\n+\n+    def get_filtered_relation_keys(self):\n+        return [self.alias or self.relation_name]\n+\n     def resolve_expression(self, *args, **kwargs):\n         \"\"\"\n         QuerySet.annotate() only accepts expression-like arguments\n",
+  "test_patch": "diff --git a/tests/generic_relations/test_filtered_relation_exclude.py b/tests/generic_relations/test_filtered_relation_exclude.py\nnew file mode 100644\nindex 0000000..92cd89f\n--- /dev/null\n+++ b/tests/generic_relations/test_filtered_relation_exclude.py\n@@ -0,0 +1,27 @@\n+from django.core.exceptions import FieldError\n+from django.db.models import FilteredRelation, Q\n+from django.test import TestCase\n+\n+from .models import Animal, TaggedItem\n+\n+\n+class FilteredRelationExcludeTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.lion = Animal.objects.create(common_name=\"Lion\", latin_name=\"Panthera leo\")\n+        cls.platypus = Animal.objects.create(common_name=\"Platypus\", latin_name=\"Ornithorhynchus anatinus\")\n+        \n+        TaggedItem.objects.create(tag=\"mammal\", content_object=cls.lion)\n+        TaggedItem.objects.create(tag=\"carnivore\", content_object=cls.lion)\n+        TaggedItem.objects.create(tag=\"mammal\", content_object=cls.platypus)\n+\n+    def test_filtered_relation_exclude(self):\n+        with self.assertRaises(FieldError) as cm:\n+            Animal.objects.annotate(\n+                carnivore_tag=FilteredRelation('tags', condition=Q(tags__tag='carnivore'))\n+            ).exclude(carnivore_tag__isnull=False)\n+\n+        self.assertIn(\n+            \"Cannot resolve keyword 'carnivore_tag' into field.\",\n+            str(cm.exception)\n+        )\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4472323,
+  "num_received_chars": 245257,
+  "elapsed_time": 1368.667414188385,
+  "lint_repair_count": 20,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

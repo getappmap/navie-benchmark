@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13821",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/gis/db/models/functions.py b/django/contrib/gis/db/models/functions.py\nindex 1f2d372..e122bbb 100644\n--- a/django/contrib/gis/db/models/functions.py\n+++ b/django/contrib/gis/db/models/functions.py\n@@ -97,8 +97,9 @@ class GeomOutputGeoFunc(GeoFunc):\n \n class SQLiteDecimalToFloatMixin:\n     \"\"\"\n-    By default, Decimal values are converted to str by the SQLite backend, which\n-    is not acceptable by the GIS functions expecting numeric values.\n+    Convert Decimal values to float for SQLite GIS functions.\n+    \n+    Note: This mixin assumes SQLite version 3.9.0 or newer.\n     \"\"\"\n     def as_sqlite(self, compiler, connection, **extra_context):\n         copy = self.copy()\n@@ -138,8 +139,7 @@ class Area(OracleToleranceMixin, GeoFunc):\n \n     def as_sqlite(self, compiler, connection, **extra_context):\n         if self.geo_field.geodetic(connection):\n-            extra_context['template'] = '%(function)s(%(expressions)s, %(spheroid)d)'\n-            extra_context['spheroid'] = True\n+            extra_context['template'] = '%(function)s(%(expressions)s, 1)'\n         return self.as_sql(compiler, connection, **extra_context)\n \n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1216827,
+  "num_received_chars": 61640,
+  "elapsed_time": 416.0783863067627,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

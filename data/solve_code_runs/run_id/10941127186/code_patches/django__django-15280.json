@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15280",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/auth/models.py b/django/contrib/auth/models.py\nindex a9faef3..89a3c3f 100644\n--- a/django/contrib/auth/models.py\n+++ b/django/contrib/auth/models.py\n@@ -143,6 +143,7 @@ class UserManager(BaseUserManager):\n         GlobalUserModel = apps.get_model(self.model._meta.app_label, self.model._meta.object_name)\n         username = GlobalUserModel.normalize_username(username)\n         user = self.model(username=username, email=email, **extra_fields)\n+        user._state.deferred_fields = set()  # Ensure no deferred fields are inherited\n         user.password = make_password(password)\n         user.save(using=self._db)\n         return user\n\ndiff --git a/django/db/models/query.py b/django/db/models/query.py\nindex fb66397..51ea44a 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -1358,6 +1358,10 @@ class QuerySet:\n     def _fetch_all(self):\n         if self._result_cache is None:\n             self._result_cache = list(self._iterable_class(self))\n+            # Reset deferred fields for prefetched objects\n+            for obj in self._result_cache:\n+                if hasattr(obj, '_state'):\n+                    obj._state.deferred_fields = set()\n         if self._prefetch_related_lookups and not self._prefetch_done:\n             self._prefetch_related_objects()\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1314904,
+  "num_received_chars": 32747,
+  "elapsed_time": 229.4393663406372,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

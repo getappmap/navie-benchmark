@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13658",
+  "edit_test_file": "tests/utils_tests/test_autoreload.py",
+  "code_patch": "diff --git a/django/core/management/__init__.py b/django/core/management/__init__.py\nindex 1ba093e..e411e86 100644\n--- a/django/core/management/__init__.py\n+++ b/django/core/management/__init__.py\n@@ -344,7 +344,7 @@ class ManagementUtility:\n         # Preprocess options to extract --settings and --pythonpath.\n         # These options could affect the commands that are available, so they\n         # must be processed early.\n-        parser = CommandParser(usage='%(prog)s subcommand [options] [args]', add_help=False, allow_abbrev=False)\n+        parser = CommandParser(prog=self.prog_name, usage='%(prog)s subcommand [options] [args]', add_help=False, allow_abbrev=False)\n         parser.add_argument('--settings')\n         parser.add_argument('--pythonpath')\n         parser.add_argument('args', nargs='*')  # catch-all\n",
+  "test_patch": "diff --git a/tests/utils_tests/test_management_utility.py b/tests/utils_tests/test_management_utility.py\nnew file mode 100644\nindex 0000000..63a5876\n--- /dev/null\n+++ b/tests/utils_tests/test_management_utility.py\n@@ -0,0 +1,18 @@\n+import sys\n+from django.core.management import execute_from_command_line\n+from django.test import SimpleTestCase\n+\n+class TestManagementUtility(SimpleTestCase):\n+    def test_command_parser_prog_name(self):\n+        \"\"\"\n+        Test that ManagementUtility uses the correct program name when\n+        instantiating CommandParser.\n+        \"\"\"\n+        # Simulate an environment where sys.argv[0] is None\n+        original_argv = sys.argv\n+        try:\n+            sys.argv = [None, 'runserver']\n+            with self.assertRaises(TypeError):\n+                execute_from_command_line(['manage.py', 'runserver'])\n+        finally:\n+            sys.argv = original_argv\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_management_utility_inverted.py b/tests/utils_tests/test_management_utility_inverted.py\nnew file mode 100644\nindex 0000000..b09ad7f\n--- /dev/null\n+++ b/tests/utils_tests/test_management_utility_inverted.py\n@@ -0,0 +1,19 @@\n+import sys\n+from django.core.management import execute_from_command_line\n+from django.test import SimpleTestCase\n+\n+class TestManagementUtility(SimpleTestCase):\n+    def test_command_parser_prog_name(self):\n+        \"\"\"\n+        Test that ManagementUtility uses the correct program name when\n+        instantiating CommandParser.\n+        \"\"\"\n+        # Simulate an environment where sys.argv[0] is None\n+        original_argv = sys.argv\n+        try:\n+            sys.argv = [None, 'runserver']\n+            # The test should now fail with a specific error message when the bug is observed\n+            with self.assertRaisesRegex(TypeError, \"__BUG__HERE__\"):\n+                execute_from_command_line(['manage.py', 'runserver'])\n+        finally:\n+            sys.argv = original_argv\n\\ No newline at end of file\n",
+  "num_sent_chars": 1187446,
+  "num_received_chars": 31829,
+  "elapsed_time": 351.7433443069458,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

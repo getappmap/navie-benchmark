@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-20590",
+  "edit_test_file": "sympy/printing/tests/test_repr.py",
+  "code_patch": "diff --git a/sympy/core/assumptions.py b/sympy/core/assumptions.py\nindex c957931..089acba 100644\n--- a/sympy/core/assumptions.py\n+++ b/sympy/core/assumptions.py\n@@ -573,3 +573,7 @@ def __init__(cls, *args, **kws):\n             pname = as_property(fact)\n             if not hasattr(cls, pname):\n                 setattr(cls, pname, make_property(fact))\n+\n+        # Ensure __slots__ is properly set\n+        if '__slots__' not in cls.__dict__:\n+            cls.__slots__ = ()\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_symbol_dict_attribute.py b/sympy/printing/tests/test_symbol_dict_attribute.py\nnew file mode 100644\nindex 0000000..be35169\n--- /dev/null\n+++ b/sympy/printing/tests/test_symbol_dict_attribute.py\n@@ -0,0 +1,25 @@\n+from sympy import Symbol\n+from sympy.testing.pytest import raises\n+\n+def test_symbol_dict_attribute():\n+    s = Symbol('s')\n+    \n+    # Check if __dict__ attribute exists\n+    assert hasattr(s, '__dict__')\n+    \n+    # Check if __dict__ is empty\n+    assert s.__dict__ == {}\n+    \n+    # Attempt to add a new attribute\n+    s.new_attr = 'test'\n+    \n+    # Check if the new attribute was added successfully\n+    assert hasattr(s, 'new_attr')\n+    assert s.new_attr == 'test'\n+    \n+    # Check if __slots__ still exists and contains 'name'\n+    assert hasattr(s, '__slots__')\n+    assert 'name' in s.__slots__\n+\n+    # Verify that we can access the 'name' attribute\n+    assert s.name == 's'\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_symbol_dict_attribute_inverted.py b/sympy/printing/tests/test_symbol_dict_attribute_inverted.py\nnew file mode 100644\nindex 0000000..294c4cc\n--- /dev/null\n+++ b/sympy/printing/tests/test_symbol_dict_attribute_inverted.py\n@@ -0,0 +1,27 @@\n+from sympy import Symbol\n+from sympy.testing.pytest import raises\n+\n+def test_symbol_dict_attribute():\n+    s = Symbol('s')\n+    \n+    # Check if __dict__ attribute does not exist\n+    if hasattr(s, '__dict__'):\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Attempt to access __dict__ should raise an AttributeError\n+    with raises(AttributeError):\n+        s.__dict__\n+    \n+    # Check if __slots__ exists and contains 'name'\n+    assert hasattr(s, '__slots__')\n+    assert 'name' in s.__slots__\n+    \n+    # Verify that we can access the 'name' attribute\n+    assert s.name == 's'\n+    \n+    # Attempt to add a new attribute should raise an AttributeError\n+    with raises(AttributeError):\n+        s.new_attr = 'test'\n+    \n+    # Check that the new attribute was not added\n+    assert not hasattr(s, 'new_attr')\n",
+  "num_sent_chars": 1625376,
+  "num_received_chars": 99232,
+  "elapsed_time": 665.0515758991241,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 8,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

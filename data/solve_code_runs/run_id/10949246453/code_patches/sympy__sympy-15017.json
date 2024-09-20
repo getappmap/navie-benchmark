@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15017",
+  "edit_test_file": "sympy/tensor/array/tests/test_immutable_ndim_array.py",
+  "code_patch": "diff --git a/sympy/tensor/array/ndim_array.py b/sympy/tensor/array/ndim_array.py\nindex 099b291..1911bfc 100644\n--- a/sympy/tensor/array/ndim_array.py\n+++ b/sympy/tensor/array/ndim_array.py\n@@ -164,6 +164,9 @@ def _handle_ndarray_creation_inputs(cls, iterable=None, shape=None, **kwargs):\n     def __len__(self):\n         \"\"\"Overload common function len(). Returns number of elements in array.\n \n+        For rank-0 arrays (scalars), it returns 1.\n+        For all other arrays, it returns the total number of elements.\n+\n         Examples\n         ========\n \n@@ -174,7 +177,13 @@ def __len__(self):\n         >>> len(a)\n         9\n \n+        >>> b = MutableDenseNDimArray(42)  # Rank-0 array (scalar)\n+        >>> len(b)\n+        1\n+\n         \"\"\"\n+        if self._rank == 0:\n+            return 1\n         return self._loop_size\n \n     @property\n",
+  "test_patch": "diff --git a/sympy/tensor/array/tests/test_rank0_array_length.py b/sympy/tensor/array/tests/test_rank0_array_length.py\nnew file mode 100644\nindex 0000000..ab88536\n--- /dev/null\n+++ b/sympy/tensor/array/tests/test_rank0_array_length.py\n@@ -0,0 +1,16 @@\n+from sympy import Array\n+from sympy.utilities.pytest import raises\n+\n+def test_rank0_array_length():\n+    # Create a rank-0 array\n+    a = Array(3)\n+    \n+    # Test that len(a) returns 0\n+    assert len(a) == 0\n+    \n+    # Test that the array has one element when converted to a list\n+    assert len(list(a)) == 1\n+    \n+    # Test that iterating over the array yields one element\n+    count = sum(1 for _ in a)\n+    assert count == 1\n",
+  "test_inverted_patch": "diff --git a/sympy/tensor/array/tests/test_rank0_array_length_inverted.py b/sympy/tensor/array/tests/test_rank0_array_length_inverted.py\nnew file mode 100644\nindex 0000000..eb97256\n--- /dev/null\n+++ b/sympy/tensor/array/tests/test_rank0_array_length_inverted.py\n@@ -0,0 +1,29 @@\n+from sympy import Array\n+from sympy.utilities.pytest import raises\n+\n+def test_rank0_array_length():\n+    # Create a rank-0 array\n+    a = Array(3)\n+    \n+    # Test that len(a) returns 1 (expected behavior)\n+    # This should now fail when the bug is present\n+    try:\n+        assert len(a) == 1, \"__BUG__HERE__\"\n+    except AssertionError as e:\n+        if str(e) == \"__BUG__HERE__\":\n+            raise\n+        else:\n+            # If the assertion fails for a different reason, re-raise the original error\n+            raise AssertionError(f\"Unexpected length: {len(a)}\") from e\n+    \n+    # Test that the array has one element when converted to a list\n+    assert len(list(a)) == 1\n+    \n+    # Test that iterating over the array yields one element\n+    count = sum(1 for _ in a)\n+    assert count == 1\n+\n+    # Additional test to ensure consistency\n+    with raises(TypeError):\n+        # Accessing index 0 should raise a TypeError for a rank-0 array\n+        a[0]\n\\ No newline at end of file\n",
+  "num_sent_chars": 1303634,
+  "num_received_chars": 51727,
+  "elapsed_time": 419.4031283855438,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11265",
+  "edit_test_file": "tests/filtered_relation/tests.py",
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex d69c244..a7ef335 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1666,6 +1666,7 @@ class Query(BaseExpression):\n             filter_expr = (filter_lhs, OuterRef(filter_rhs.name))\n         # Generate the inner query.\n         query = Query(self.model)\n+        query.__dict__.update(self.__dict__)\n         query.add_filter(filter_expr)\n         query.clear_ordering(True)\n         # Try to have as simple as possible subquery -> trim leading joins from\n",
+  "test_patch": "diff --git a/tests/filtered_relation/filtered_relation_exclude_test.py b/tests/filtered_relation/filtered_relation_exclude_test.py\nnew file mode 100644\nindex 0000000..0483256\n--- /dev/null\n+++ b/tests/filtered_relation/filtered_relation_exclude_test.py\n@@ -0,0 +1,21 @@\n+from django.core.exceptions import FieldError\n+from django.db.models import FilteredRelation, Q\n+from django.test import TestCase\n+from .models import Author, Book, Editor\n+\n+class FilteredRelationExcludeTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.author1 = Author.objects.create(name='Alice')\n+        cls.editor_a = Editor.objects.create(name='a')\n+        cls.book1 = Book.objects.create(\n+            title='Poem by Alice',\n+            editor=cls.editor_a,\n+            author=cls.author1,\n+        )\n+\n+    def test_with_join_exclude(self):\n+        with self.assertRaises(FieldError):\n+            list(Author.objects.annotate(\n+                book_alice=FilteredRelation('book', condition=Q(book__title__iexact='poem by alice')),\n+            ).exclude(book_alice__isnull=False))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/filtered_relation/filtered_relation_exclude_test_inverted.py b/tests/filtered_relation/filtered_relation_exclude_test_inverted.py\nnew file mode 100644\nindex 0000000..a22e718\n--- /dev/null\n+++ b/tests/filtered_relation/filtered_relation_exclude_test_inverted.py\n@@ -0,0 +1,23 @@\n+from django.core.exceptions import FieldError\n+from django.db.models import FilteredRelation, Q\n+from django.test import TestCase\n+from .models import Author, Book, Editor\n+\n+class FilteredRelationExcludeTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.author1 = Author.objects.create(name='Alice')\n+        cls.editor_a = Editor.objects.create(name='a')\n+        cls.book1 = Book.objects.create(\n+            title='Poem by Alice',\n+            editor=cls.editor_a,\n+            author=cls.author1,\n+        )\n+\n+    def test_with_join_exclude(self):\n+        try:\n+            list(Author.objects.annotate(\n+                book_alice=FilteredRelation('book', condition=Q(book__title__iexact='poem by alice')),\n+            ).exclude(book_alice__isnull=False))\n+        except FieldError:\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1716634,
+  "num_received_chars": 185147,
+  "elapsed_time": 735.1288597583771,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

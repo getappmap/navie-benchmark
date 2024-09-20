@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-26194",
+  "edit_test_file": "sklearn/metrics/tests/test_common.py",
+  "code_patch": "diff --git a/sklearn/metrics/_ranking.py b/sklearn/metrics/_ranking.py\nindex 0cdead9..cd44367 100644\n--- a/sklearn/metrics/_ranking.py\n+++ b/sklearn/metrics/_ranking.py\n@@ -1083,7 +1083,10 @@ def roc_curve(\n     # to make sure that the curve starts at (0, 0)\n     tps = np.r_[0, tps]\n     fps = np.r_[0, fps]\n-    thresholds = np.r_[thresholds[0] + 1, thresholds]\n+    if thresholds[0] <= 1:\n+        thresholds = np.r_[1, thresholds]  # Ensure the extra threshold does not exceed 1\n+    else:\n+        thresholds = np.r_[thresholds[0] + 1, thresholds]\n \n     if fps[-1] <= 0:\n         warnings.warn(\n",
+  "test_patch": "diff --git a/sklearn/metrics/tests/test_roc_curve_threshold_issue.py b/sklearn/metrics/tests/test_roc_curve_threshold_issue.py\nnew file mode 100644\nindex 0000000..439a5ce\n--- /dev/null\n+++ b/sklearn/metrics/tests/test_roc_curve_threshold_issue.py\n@@ -0,0 +1,12 @@\n+# File: sklearn/metrics/tests/test_roc_curve_threshold_issue.py\n+\n+import numpy as np\n+from sklearn.metrics import roc_curve\n+\n+def test_roc_curve_with_probability_estimates():\n+    rng = np.random.RandomState(42)\n+    y_true = rng.randint(0, 2, size=10)\n+    y_score = rng.rand(10)\n+    _, _, thresholds = roc_curve(y_true, y_score)\n+    # Assert that the issue is reproduced: thresholds can exceed 1\n+    assert (thresholds > 1).any(), \"Thresholds should exceed 1 to reproduce the issue\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/metrics/tests/test_roc_curve_threshold_issue_inverted.py b/sklearn/metrics/tests/test_roc_curve_threshold_issue_inverted.py\nnew file mode 100644\nindex 0000000..811537a\n--- /dev/null\n+++ b/sklearn/metrics/tests/test_roc_curve_threshold_issue_inverted.py\n@@ -0,0 +1,13 @@\n+# File: sklearn/metrics/tests/test_roc_curve_threshold_issue.py\n+\n+import numpy as np\n+from sklearn.metrics import roc_curve\n+\n+def test_roc_curve_with_probability_estimates():\n+    rng = np.random.RandomState(42)\n+    y_true = rng.randint(0, 2, size=10)\n+    y_score = rng.rand(10)\n+    _, _, thresholds = roc_curve(y_true, y_score)\n+    # Assert that the issue is NOT reproduced: thresholds should not exceed 1\n+    if (thresholds > 1).any():\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1198675,
+  "num_received_chars": 10803,
+  "elapsed_time": 191.7888572216034,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

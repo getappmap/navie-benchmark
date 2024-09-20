@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-21379",
+  "edit_test_file": "sympy/core/tests/test_expr.py",
+  "code_patch": "diff --git a/sympy/polys/polyerrors.py b/sympy/polys/polyerrors.py\nindex 2cd7582..ea568c6 100644\n--- a/sympy/polys/polyerrors.py\n+++ b/sympy/polys/polyerrors.py\n@@ -113,7 +113,12 @@ class DomainError(BasePolynomialError):\n \n @public\n class PolynomialError(BasePolynomialError):\n-    pass\n+    def __init__(self, message=None, *args):\n+        self.message = message or \"A polynomial error occurred\"\n+        super().__init__(*args)\n+\n+    def __str__(self):\n+        return self.message\n \n @public\n class UnificationFailed(BasePolynomialError):\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_polynomial_error.py b/sympy/core/tests/test_polynomial_error.py\nnew file mode 100644\nindex 0000000..d43fb48\n--- /dev/null\n+++ b/sympy/core/tests/test_polynomial_error.py\n@@ -0,0 +1,11 @@\n+from sympy import symbols, exp, sinh, Piecewise\n+from sympy.core.cache import clear_cache\n+from sympy.testing.pytest import raises\n+from sympy.polys.polyerrors import PolynomialError\n+\n+def test_polynomial_error_with_subs():\n+    x, y, z = symbols('x y z', real=True)\n+    expr = exp(sinh(Piecewise((x, y > x), (y, True)) / z))\n+    \n+    with raises(PolynomialError):\n+        expr.subs({1: 1.0})\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_polynomial_error_inverted.py b/sympy/core/tests/test_polynomial_error_inverted.py\nnew file mode 100644\nindex 0000000..d734e78\n--- /dev/null\n+++ b/sympy/core/tests/test_polynomial_error_inverted.py\n@@ -0,0 +1,14 @@\n+from sympy import symbols, exp, sinh, Piecewise\n+from sympy.core.cache import clear_cache\n+from sympy.testing.pytest import raises\n+from sympy.polys.polyerrors import PolynomialError\n+\n+def test_polynomial_error_with_subs():\n+    x, y, z = symbols('x y z', real=True)\n+    expr = exp(sinh(Piecewise((x, y > x), (y, True)) / z))\n+    \n+    # Alter the test to fail when the bug is observed\n+    try:\n+        expr.subs({1: 1.0})\n+    except PolynomialError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 3021364,
+  "num_received_chars": 98672,
+  "elapsed_time": 957.9559082984924,
+  "lint_repair_count": 13,
+  "test_generation_attempts": 8,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

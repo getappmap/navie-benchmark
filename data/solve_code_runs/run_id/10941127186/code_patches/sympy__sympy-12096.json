@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-12096",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/core/function.py b/sympy/core/function.py\nindex 1b8005e..84d98c8 100644\n--- a/sympy/core/function.py\n+++ b/sympy/core/function.py\n@@ -507,7 +507,9 @@ def _eval_evalf(self, prec):\n             func = getattr(mpmath, fname)\n         except (AttributeError, KeyError):\n             try:\n-                return Float(self._imp_(*self.args), prec)\n+                # Recursively apply evalf to arguments if they are functions\n+                evaluated_args = [arg.evalf(prec) if isinstance(arg, Function) else arg for arg in self.args]\n+                return Float(self._imp_(*evaluated_args), prec)\n             except (AttributeError, TypeError, ValueError):\n                 return\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 401178,
+  "num_received_chars": 8212,
+  "elapsed_time": 96.5960681438446,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

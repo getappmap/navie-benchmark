@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14053",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/staticfiles/storage.py b/django/contrib/staticfiles/storage.py\nindex 494890c..025d662 100644\n--- a/django/contrib/staticfiles/storage.py\n+++ b/django/contrib/staticfiles/storage.py\n@@ -232,11 +232,14 @@ class HashedFilesMixin:\n             yield name, hashed_name, processed\n \n         paths = {path: paths[path] for path in adjustable_paths}\n+        processed_files = set()\n \n         for i in range(self.max_post_process_passes):\n             substitutions = False\n             for name, hashed_name, processed, subst in self._post_process(paths, adjustable_paths, hashed_files):\n-                yield name, hashed_name, processed\n+                if name not in processed_files:\n+                    yield name, hashed_name, processed\n+                    processed_files.add(name)\n                 substitutions = substitutions or subst\n \n             if not substitutions:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1182965,
+  "num_received_chars": 33858,
+  "elapsed_time": 214.71395015716553,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

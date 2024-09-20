@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16100",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex 5f07a42..f38a90c 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -1916,6 +1916,7 @@ class ModelAdmin(BaseModelAdmin):\n         The 'change list' admin view for this model.\n         \"\"\"\n         from django.contrib.admin.views.main import ERROR_FLAG\n+        from django.db import transaction\n \n         app_label = self.opts.app_label\n         if not self.has_view_or_change_permission(request):\n@@ -2011,25 +2012,32 @@ class ModelAdmin(BaseModelAdmin):\n             )\n             if formset.is_valid():\n                 changecount = 0\n-                for form in formset.forms:\n-                    if form.has_changed():\n-                        obj = self.save_form(request, form, change=True)\n-                        self.save_model(request, obj, form, change=True)\n-                        self.save_related(request, form, formsets=[], change=True)\n-                        change_msg = self.construct_change_message(request, form, None)\n-                        self.log_change(request, obj, change_msg)\n-                        changecount += 1\n-\n-                if changecount:\n-                    msg = ngettext(\n-                        \"%(count)s %(name)s was changed successfully.\",\n-                        \"%(count)s %(name)s were changed successfully.\",\n-                        changecount,\n-                    ) % {\n-                        \"count\": changecount,\n-                        \"name\": model_ngettext(self.opts, changecount),\n-                    }\n-                    self.message_user(request, msg, messages.SUCCESS)\n+                try:\n+                    with transaction.atomic():\n+                        for form in formset.forms:\n+                            if form.has_changed():\n+                                obj = self.save_form(request, form, change=True)\n+                                self.save_model(request, obj, form, change=True)\n+                                self.save_related(request, form, formsets=[], change=True)\n+                                change_msg = self.construct_change_message(request, form, None)\n+                                self.log_change(request, obj, change_msg)\n+                                changecount += 1\n+\n+                        if changecount:\n+                            msg = ngettext(\n+                                \"%(count)s %(name)s was changed successfully.\",\n+                                \"%(count)s %(name)s were changed successfully.\",\n+                                changecount,\n+                            ) % {\n+                                \"count\": changecount,\n+                                \"name\": model_ngettext(self.opts, changecount),\n+                            }\n+                            self.message_user(request, msg, messages.SUCCESS)\n+                except Exception as e:\n+                    # If an error occurs, roll back the transaction and display an error message\n+                    transaction.set_rollback(True)\n+                    msg = _(\"An error occurred while saving the changes: %s\") % str(e)\n+                    self.message_user(request, msg, messages.ERROR)\n \n                 return HttpResponseRedirect(request.get_full_path())\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2348970,
+  "num_received_chars": 88981,
+  "elapsed_time": 527.6059889793396,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

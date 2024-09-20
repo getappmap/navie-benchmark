@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15599",
+  "edit_test_file": "sympy/core/tests/test_numbers.py",
+  "code_patch": "diff --git a/sympy/core/mod.py b/sympy/core/mod.py\nindex eae2563..c832849 100644\n--- a/sympy/core/mod.py\n+++ b/sympy/core/mod.py\n@@ -187,6 +187,18 @@ def doit(p, q):\n         if rv is not None:\n             return rv*G\n \n+        # check for common multiplicative factors\n+        if isinstance(p, Mul):\n+            common_factors = []\n+            for factor in p.args:\n+                if q % factor == 0:\n+                    common_factors.append(factor)\n+            if common_factors:\n+                common_factor = Mul(*common_factors)\n+                p = p / common_factor\n+                q = q / common_factor\n+                return common_factor * cls(p, q, evaluate=False)\n+\n         # put 1.0 from G on inside\n         if G.is_Float and G == 1:\n             p *= G\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_mod.py b/sympy/core/tests/test_mod.py\nnew file mode 100644\nindex 0000000..f0c3972\n--- /dev/null\n+++ b/sympy/core/tests/test_mod.py\n@@ -0,0 +1,7 @@\n+# File: sympy/core/tests/test_mod.py\n+\n+from sympy import Symbol, Mod\n+\n+def test_mod_issue():\n+    i = Symbol('i', integer=True)\n+    assert Mod(3*i, 2) == Mod(3*i, 2)  # This should reproduce the issue\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_mod_inverted.py b/sympy/core/tests/test_mod_inverted.py\nnew file mode 100644\nindex 0000000..d6c1a88\n--- /dev/null\n+++ b/sympy/core/tests/test_mod_inverted.py\n@@ -0,0 +1,8 @@\n+# File: sympy/core/tests/test_mod.py\n+\n+from sympy import Symbol, Mod\n+\n+def test_mod_issue():\n+    i = Symbol('i', integer=True)\n+    if Mod(3*i, 2) == Mod(3*i, 2):  # This should reproduce the issue\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 2831059,
+  "num_received_chars": 57315,
+  "elapsed_time": 546.9399540424347,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 6,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

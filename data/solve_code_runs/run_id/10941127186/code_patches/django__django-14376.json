@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14376",
+  "edit_test_file": "tests/backends/mysql/test_operations.py",
+  "code_patch": "diff --git a/django/db/backends/mysql/base.py b/django/db/backends/mysql/base.py\nindex 2c62182..038e5b8 100644\n--- a/django/db/backends/mysql/base.py\n+++ b/django/db/backends/mysql/base.py\n@@ -192,23 +192,23 @@ class DatabaseWrapper(BaseDatabaseWrapper):\n     validation_class = DatabaseValidation\n \n     def get_connection_params(self):\n-        kwargs = {\n-            'conv': django_conversions,\n-            'charset': 'utf8',\n-        }\n-        settings_dict = self.settings_dict\n-        if settings_dict['USER']:\n-            kwargs['user'] = settings_dict['USER']\n-        if settings_dict['NAME']:\n-            kwargs['db'] = settings_dict['NAME']\n-        if settings_dict['PASSWORD']:\n-            kwargs['passwd'] = settings_dict['PASSWORD']\n-        if settings_dict['HOST'].startswith('/'):\n-            kwargs['unix_socket'] = settings_dict['HOST']\n-        elif settings_dict['HOST']:\n-            kwargs['host'] = settings_dict['HOST']\n-        if settings_dict['PORT']:\n-            kwargs['port'] = int(settings_dict['PORT'])\n+            kwargs = {\n+                'conv': django_conversions,\n+                'charset': 'utf8',\n+            }\n+            settings_dict = self.settings_dict\n+            if settings_dict['USER']:\n+                kwargs['user'] = settings_dict['USER']\n+            if settings_dict['NAME']:\n+                kwargs['database'] = settings_dict['NAME']\n+            if settings_dict['PASSWORD']:\n+                kwargs['password'] = settings_dict['PASSWORD']\n+            if settings_dict['HOST'].startswith('/'):\n+                kwargs['unix_socket'] = settings_dict['HOST']\n+            elif settings_dict['HOST']:\n+                kwargs['host'] = settings_dict['HOST']\n+            if settings_dict['PORT']:\n+                kwargs['port'] = int(settings_dict['PORT'])\n         # We need the number of potentially affected rows after an\n         # \"UPDATE\", not the number of changed rows.\n         kwargs['client_flag'] = CLIENT.FOUND_ROWS\n",
+  "test_patch": "diff --git a/tests/backends/mysql/test_deprecated_mysql_kwargs.py b/tests/backends/mysql/test_deprecated_mysql_kwargs.py\nnew file mode 100644\nindex 0000000..cf754a2\n--- /dev/null\n+++ b/tests/backends/mysql/test_deprecated_mysql_kwargs.py\n@@ -0,0 +1,24 @@\n+import unittest\n+from django.core.exceptions import ImproperlyConfigured\n+from django.db import connection\n+from django.test import SimpleTestCase\n+\n+@unittest.skipUnless(connection.vendor == 'mysql', 'MySQL tests.')\n+class MySQLDeprecatedKwargsTests(SimpleTestCase):\n+    def test_deprecated_db_and_passwd_kwargs(self):\n+        with self.assertRaises(ImproperlyConfigured) as cm:\n+            connection.settings_dict.update({\n+                'NAME': 'test_db',\n+                'USER': 'test_user',\n+                'PASSWORD': 'test_pass',\n+                'HOST': 'localhost',\n+                'PORT': '3306',\n+                'OPTIONS': {\n+                    'db': 'test_db',\n+                    'passwd': 'test_pass',\n+                }\n+            })\n+            connection.get_connection_params()\n+        \n+        self.assertIn(\"db\", str(cm.exception))\n+        self.assertIn(\"passwd\", str(cm.exception))\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1475767,
+  "num_received_chars": 55230,
+  "elapsed_time": 342.28550720214844,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

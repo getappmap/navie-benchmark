@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14309",
+  "edit_test_file": "astropy/io/registry/tests/test_registries.py",
+  "code_patch": "diff --git a/astropy/io/registry/base.py b/astropy/io/registry/base.py\nindex 0ac2a20..fd977ab 100644\n--- a/astropy/io/registry/base.py\n+++ b/astropy/io/registry/base.py\n@@ -307,13 +307,20 @@ class _UnifiedIORegistryBase(metaclass=abc.ABCMeta):\n         valid_formats : list\n             List of matching formats.\n         \"\"\"\n+        # Handle empty args safely\n+        if not args:\n+            args = (None,)  # Add a default value to prevent IndexError\n         valid_formats = []\n         for data_format, data_class in self._identifiers:\n             if self._is_best_match(data_class_required, data_class, self._identifiers):\n-                if self._identifiers[(data_format, data_class)](\n-                    origin, path, fileobj, *args, **kwargs\n-                ):\n-                    valid_formats.append(data_format)\n+                try:\n+                    if self._identifiers[(data_format, data_class)](\n+                        origin, path, fileobj, *args, **kwargs\n+                    ):\n+                        valid_formats.append(data_format)\n+                except IndexError:\n+                    # Skip identifiers that require arguments when args is empty\n+                    continue\n \n         return valid_formats\n \n",
+  "test_patch": "diff --git a/astropy/io/registry/tests/test_identify_format_error.py b/astropy/io/registry/tests/test_identify_format_error.py\nnew file mode 100644\nindex 0000000..1830bbe\n--- /dev/null\n+++ b/astropy/io/registry/tests/test_identify_format_error.py\n@@ -0,0 +1,10 @@\n+import pytest\n+from astropy.io.registry import identify_format\n+from astropy.table import Table\n+\n+def test_identify_format_index_error():\n+    \"\"\"\n+    Test that identify_format raises an IndexError when called with a non-FITS file.\n+    \"\"\"\n+    with pytest.raises(IndexError):\n+        identify_format(\"write\", Table, \"bububu.ecsv\", None, [], {})\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/astropy/io/registry/tests/test_identify_format_error_inverted.py b/astropy/io/registry/tests/test_identify_format_error_inverted.py\nnew file mode 100644\nindex 0000000..ee8ad9f\n--- /dev/null\n+++ b/astropy/io/registry/tests/test_identify_format_error_inverted.py\n@@ -0,0 +1,16 @@\n+import pytest\n+from astropy.io.registry import identify_format\n+from astropy.table import Table\n+\n+def test_identify_format_index_error():\n+    \"\"\"\n+    Test that identify_format raises an IndexError when called with a non-FITS file.\n+    \"\"\"\n+    try:\n+        identify_format(\"write\", Table, \"bububu.ecsv\", None, [], {})\n+    except IndexError:\n+        pytest.fail(\"__BUG__HERE__\")\n+    except Exception as e:\n+        pytest.fail(f\"Unexpected exception raised: {type(e).__name__}\")\n+    else:\n+        pytest.fail(\"Expected IndexError, but no exception was raised\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1450194,
+  "num_received_chars": 77206,
+  "elapsed_time": 495.06201362609863,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
