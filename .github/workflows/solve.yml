@@ -22,6 +22,7 @@ on:
         required: true
         options:
           # Code solvers building synthetic tests
+          - test_files=2 test_status_retry=2 code_files=2 code_status_retry=2
           - test_files=3 test_status_retry=3 code_files=3 code_status_retry=3
       context_tokens:
         description: "LLM token limit to apply to the solver"
