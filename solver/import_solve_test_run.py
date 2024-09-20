@@ -122,7 +122,8 @@ def archive_local_run():
     run_dir = Path("data") / "solve_test_runs" / "local"
 
     def zip_predictions():
-        prediction_file = "predictions.jsonl"
+        prediction_file = Path("predictions.jsonl")
+        prediction_file.touch()
         with zipfile.ZipFile(run_dir / "predictions-0.zip", "w") as z:
             z.write(prediction_file, prediction_file)
 
