@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14053",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/staticfiles/management/commands/collectstatic.py b/django/contrib/staticfiles/management/commands/collectstatic.py\nindex f7e069b..813f437 100644\n--- a/django/contrib/staticfiles/management/commands/collectstatic.py\n+++ b/django/contrib/staticfiles/management/commands/collectstatic.py\n@@ -101,6 +101,7 @@ class Command(BaseCommand):\n             handler = self.copy_file\n \n         found_files = {}\n+        processed_files = set()\n         for finder in get_finders():\n             for path, storage in finder.list(self.ignore_patterns):\n                 # Prefix the relative path if the source storage contains it\n@@ -108,6 +109,10 @@ class Command(BaseCommand):\n                     prefixed_path = os.path.join(storage.prefix, path)\n                 else:\n                     prefixed_path = path\n+                if getattr(storage, 'prefix', None):\n+                    prefixed_path = os.path.join(storage.prefix, path)\n+                else:\n+                    prefixed_path = path\n \n                 if prefixed_path not in found_files:\n                     found_files[prefixed_path] = (storage, path)\n@@ -133,16 +138,22 @@ class Command(BaseCommand):\n                     self.stderr.write()\n                     raise processed\n                 if processed:\n-                    self.log(\"Post-processed '%s' as '%s'\" %\n-                             (original_path, processed_path), level=2)\n-                    self.post_processed_files.append(original_path)\n+                    if original_path not in processed_files:\n+                        self.log(\"Post-processed '%s' as '%s'\" %\n+                                 (original_path, processed_path), level=2)\n+                        self.post_processed_files.append(original_path)\n+                        processed_files.add(original_path)\n+                    else:\n+                        self.log(\"Skipped duplicate post-processing for '%s'\" % original_path, level=2)\n                 else:\n-                    self.log(\"Skipped post-processing '%s'\" % original_path)\n+                    if original_path not in processed_files:\n+                        self.log(\"Skipped post-processing '%s'\" % original_path)\n+                        processed_files.add(original_path)\n \n         return {\n             'modified': self.copied_files + self.symlinked_files,\n             'unmodified': self.unmodified_files,\n-            'post_processed': self.post_processed_files,\n+            'post_processed': list(set(self.post_processed_files)),  # Remove duplicates\n         }\n \n     def handle(self, **options):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2147106,
+  "num_received_chars": 146311,
+  "elapsed_time": 784.6462717056274,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

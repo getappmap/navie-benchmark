@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12858",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/base.py b/django/db/models/base.py\nindex 6c9e9d3..a2c5417 100644\n--- a/django/db/models/base.py\n+++ b/django/db/models/base.py\n@@ -1732,6 +1732,21 @@ class Model(metaclass=ModelBase):\n         fields = _fields\n \n         # Check related fields.\n+        for field in related_fields:\n+            parts = field.split(LOOKUP_SEP)\n+            last_part = parts[-1]\n+            if last_part in valid_lookups:\n+                # If the last part is a valid lookup, remove it for field validation\n+                parts = parts[:-1]\n+            \n+            # Validate all parts of the field\n+            current_cls = cls\n+            for part in parts:\n+                try:\n+                    field = current_cls._meta.get_field(part)\n+                    if hasattr(field, 'remote_field'):\n+                        current_cls = field.remote_field.model\n+                except FieldDoesNotExist:\n         for field in related_fields:\n             _cls = cls\n             fld = None\n@@ -1751,11 +1766,16 @@ class Model(metaclass=ModelBase):\n                         errors.append(\n                             checks.Error(\n                                 \"'ordering' refers to the nonexistent field, \"\n-                                \"related field, or lookup '%s'.\" % field,\n+                                \"related field, or lookup '%s'. Note that the last \"\n+                                \"part of an ordering string can be a lookup (like '__isnull') \"\n+                                \"if it's a valid lookup for the field.\" % field,\n                                 obj=cls,\n                                 id='models.E015',\n                             )\n                         )\n+                    break\n+            else:\n+                # If the loop completed without breaking, the field is valid\n \n         # Skip ordering on pk. This is always a valid order_by field\n         # but is an alias and therefore won't be found by opts.get_field.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2786889,
+  "num_received_chars": 172912,
+  "elapsed_time": 930.1121289730072,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

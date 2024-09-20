@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11734",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex 35f3c5e..98fcca7 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1219,6 +1219,14 @@ class Query(BaseExpression):\n         upper in the code by add_q().\n \n         The 'can_reuse' is a set of reusable joins for multijoins.\n+        \"\"\"\n+        if isinstance(filter_expr, (list, tuple)):\n+            filter_lhs, filter_rhs = filter_expr\n+            if isinstance(filter_rhs, OuterRef):\n+                filter_rhs = self.resolve_outer_ref(filter_rhs, current_negated)\n+        return super().build_filter(filter_expr, branch_negated, current_negated,\n+                                    can_reuse, allow_joins, split_subq,\n+                                    reuse_with_filtered_relation, simple_col)\n \n         If 'reuse_with_filtered_relation' is True, then only joins in can_reuse\n         will be reused.\n@@ -1340,6 +1348,7 @@ class Query(BaseExpression):\n         # rel_a doesn't produce any rows, then the whole condition must fail.\n         # So, demotion is OK.\n         existing_inner = {a for a in self.alias_map if self.alias_map[a].join_type == INNER}\n+        q_object = self.resolve_outer_refs_in_q(q_object)\n         clause, _ = self._add_q(q_object, self.used_aliases)\n         if clause:\n             self.where.add(clause, AND)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3793560,
+  "num_received_chars": 164336,
+  "elapsed_time": 989.0963599681854,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

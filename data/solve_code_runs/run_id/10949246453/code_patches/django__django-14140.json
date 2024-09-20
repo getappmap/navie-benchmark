@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14140",
+  "edit_test_file": "tests/auth_tests/test_basic.py",
+  "code_patch": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex ae0f886..11caf3d 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -85,13 +85,16 @@ class Q(tree.Node):\n         if path.startswith('django.db.models.query_utils'):\n             path = path.replace('django.db.models.query_utils', 'django.db.models')\n         args, kwargs = (), {}\n-        if len(self.children) == 1 and not isinstance(self.children[0], Q):\n-            child = self.children[0]\n-            kwargs = {child[0]: child[1]}\n-        else:\n-            args = tuple(self.children)\n-            if self.connector != self.default:\n-                kwargs = {'_connector': self.connector}\n+        for child in self.children:\n+            if isinstance(child, Q):\n+                args += (child,)\n+            elif isinstance(child, (list, tuple)) and len(child) == 2:\n+                key, value = child\n+                kwargs[key] = value\n+            else:\n+                args += (child,)\n+        if self.connector != self.default:\n+            kwargs['_connector'] = self.connector\n         if self.negated:\n             kwargs['_negated'] = True\n         return path, args, kwargs\n",
+  "test_patch": "diff --git a/tests/auth_tests/test_q_object_deconstruction.py b/tests/auth_tests/test_q_object_deconstruction.py\nnew file mode 100644\nindex 0000000..69b60fd\n--- /dev/null\n+++ b/tests/auth_tests/test_q_object_deconstruction.py\n@@ -0,0 +1,13 @@\n+from django.contrib.auth import get_user_model\n+from django.db.models import Exists, Q\n+from django.test import TestCase\n+\n+\n+class QObjectDeconstructionTestCase(TestCase):\n+    def test_q_object_with_exists_deconstruction(self):\n+        User = get_user_model()\n+        exists_query = Exists(User.objects.filter(username='jim'))\n+        q_object = Q(exists_query)\n+\n+        with self.assertRaises(TypeError):\n+            q_object.deconstruct()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/auth_tests/test_q_object_deconstruction_inverted.py b/tests/auth_tests/test_q_object_deconstruction_inverted.py\nnew file mode 100644\nindex 0000000..5d4f6d5\n--- /dev/null\n+++ b/tests/auth_tests/test_q_object_deconstruction_inverted.py\n@@ -0,0 +1,17 @@\n+from django.contrib.auth import get_user_model\n+from django.db.models import Exists, Q\n+from django.test import TestCase\n+\n+\n+class QObjectDeconstructionTestCase(TestCase):\n+    def test_q_object_with_exists_deconstruction(self):\n+        User = get_user_model()\n+        exists_query = Exists(User.objects.filter(username='jim'))\n+        q_object = Q(exists_query)\n+\n+        try:\n+            q_object.deconstruct()\n+        except TypeError:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        except Exception as e:\n+            self.fail(f\"Unexpected exception raised: {e}\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 647584,
+  "num_received_chars": 29648,
+  "elapsed_time": 218.08636045455933,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 5,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

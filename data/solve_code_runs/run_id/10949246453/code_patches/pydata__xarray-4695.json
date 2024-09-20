@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4695",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex dbac288..f7728a0 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -1403,7 +1403,12 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n         Indexing with a list of names will return a new ``Dataset`` object.\n         \"\"\"\n         if utils.is_dict_like(key):\n-            return self.isel(**cast(Mapping, key))\n+            indexers = self._loc_indexers(key)\n+            dim_indexers = indexers['dim_indexers']\n+            other_kwargs = indexers['other_kwargs']\n+            \n+            # Use dim_indexers for selection and pass other_kwargs to isel\n+            return self.isel(indexers=dim_indexers, **other_kwargs)\n \n         if hashable(key):\n             return self._construct_dataarray(key)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 579220,
+  "num_received_chars": 8897,
+  "elapsed_time": 173.40571641921997,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

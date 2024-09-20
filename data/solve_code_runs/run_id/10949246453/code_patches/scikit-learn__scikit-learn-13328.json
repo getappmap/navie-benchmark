@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-13328",
+  "edit_test_file": "sklearn/linear_model/tests/test_huber.py",
+  "code_patch": "diff --git a/sklearn/linear_model/huber.py b/sklearn/linear_model/huber.py\nindex 65c6864..ec33e1b 100644\n--- a/sklearn/linear_model/huber.py\n+++ b/sklearn/linear_model/huber.py\n@@ -252,6 +252,11 @@ class HuberRegressor(LinearModel, RegressorMixin, BaseEstimator):\n         \"\"\"\n         X, y = check_X_y(\n             X, y, copy=False, accept_sparse=['csr'], y_numeric=True)\n+        \n+        # Convert boolean input to float\n+        if X.dtype == bool:\n+            X = np.asarray(X, dtype=float)\n+        \n         if sample_weight is not None:\n             sample_weight = np.array(sample_weight)\n             check_consistent_length(y, sample_weight)\n",
+  "test_patch": "diff --git a/sklearn/linear_model/tests/test_huber_boolean_input.py b/sklearn/linear_model/tests/test_huber_boolean_input.py\nnew file mode 100644\nindex 0000000..ff07323\n--- /dev/null\n+++ b/sklearn/linear_model/tests/test_huber_boolean_input.py\n@@ -0,0 +1,22 @@\n+import numpy as np\n+import pytest\n+from sklearn.datasets import make_regression\n+from sklearn.linear_model import HuberRegressor\n+\n+def test_huber_regressor_boolean_input():\n+    # Generate random regression data\n+    X, y = make_regression(n_samples=200, n_features=2, noise=4.0, random_state=0)\n+    \n+    # Convert X to boolean\n+    X_bool = X > 0\n+\n+    # Fit HuberRegressor with boolean input\n+    huber = HuberRegressor()\n+    \n+    # Assert that TypeError is raised when fitting with boolean input\n+    with pytest.raises(TypeError):\n+        huber.fit(X_bool, y)\n+\n+    # Verify that fitting works with float input\n+    X_float = X_bool.astype(float)\n+    huber.fit(X_float, y)  # This should not raise an error\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sklearn/linear_model/tests/test_huber_boolean_input_inverted.py b/sklearn/linear_model/tests/test_huber_boolean_input_inverted.py\nnew file mode 100644\nindex 0000000..0157675\n--- /dev/null\n+++ b/sklearn/linear_model/tests/test_huber_boolean_input_inverted.py\n@@ -0,0 +1,32 @@\n+import numpy as np\n+import pytest\n+from sklearn.datasets import make_regression\n+from sklearn.linear_model import HuberRegressor\n+\n+def test_huber_regressor_boolean_input():\n+    # Generate random regression data\n+    X, y = make_regression(n_samples=200, n_features=2, noise=4.0, random_state=0)\n+    \n+    # Convert X to boolean\n+    X_bool = X > 0\n+\n+    # Fit HuberRegressor with boolean input\n+    huber = HuberRegressor()\n+    \n+    # This should now raise a specific error message when the bug is observed\n+    try:\n+        huber.fit(X_bool, y)\n+    except TypeError as e:\n+        if \"The numpy boolean negative, the `-` operator, is not supported\" in str(e):\n+            raise AssertionError(\"__BUG__HERE__\")\n+        else:\n+            pytest.fail(f\"Unexpected TypeError: {str(e)}\")\n+    else:\n+        pytest.fail(\"Expected TypeError was not raised\")\n+\n+    # Verify that fitting works with float input\n+    X_float = X_bool.astype(float)\n+    try:\n+        huber.fit(X_float, y)\n+    except Exception as e:\n+        pytest.fail(f\"Fitting with float input raised an unexpected error: {str(e)}\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1689992,
+  "num_received_chars": 118423,
+  "elapsed_time": 672.5152268409729,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24562",
+  "edit_test_file": "sympy/polys/tests/test_pythonrational.py",
+  "code_patch": "diff --git a/sympy/core/numbers.py b/sympy/core/numbers.py\nindex 52f7ea4..b437eca 100644\n--- a/sympy/core/numbers.py\n+++ b/sympy/core/numbers.py\n@@ -1490,8 +1490,9 @@ class Rational(Number):\n     >>> Rational(1, 2)\n     1/2\n \n-    Rational is unprejudiced in accepting input. If a float is passed, the\n-    underlying value of the binary representation will be returned:\n+    Rational is unprejudiced in accepting input. If a float or a string\n+    representing a decimal is passed, the exact fractional representation\n+    will be returned:\n \n     >>> Rational(.5)\n     1/2\n@@ -1597,6 +1598,16 @@ def __new__(cls, p, q=None, gcd=None):\n                 if isinstance(p, (float, Float)):\n                     return Rational(*_as_integer_ratio(p))\n \n+                if isinstance(p, str):\n+                    try:\n+                        # Handle decimal strings\n+                        if '.' in p:\n+                            from sympy.core.numbers import Float\n+                            p = Float(p)\n+                            return Rational(*_as_integer_ratio(p))\n+                    except ValueError:\n+                        pass\n+\n                 if not isinstance(p, str):\n                     try:\n                         p = sympify(p)\n@@ -1613,6 +1624,11 @@ def __new__(cls, p, q=None, gcd=None):\n                         fq = fractions.Fraction(q)\n                         p = fp/fq\n                     try:\n+                        # Handle decimal strings\n+                        if '.' in p:\n+                            from sympy.core.numbers import Float\n+                            p = Float(p)\n+                            return Rational(*_as_integer_ratio(p))\n                         p = fractions.Fraction(p)\n                     except ValueError:\n                         pass  # error will raise below\n@@ -1633,7 +1649,19 @@ def __new__(cls, p, q=None, gcd=None):\n             p = int(p)\n \n         if not isinstance(q, SYMPY_INTS):\n-            q = Rational(q)\n+            if isinstance(q, str):\n+                try:\n+                    # Handle decimal strings for q\n+                    if '.' in q:\n+                        from sympy.core.numbers import Float\n+                        q = Float(q)\n+                        q = Rational(*_as_integer_ratio(q))\n+                    else:\n+                        q = Rational(q)\n+                except ValueError:\n+                    raise ValueError(f\"Invalid input for q: {q}\")\n+            else:\n+                q = Rational(q)\n             p *= q.q\n             q = q.p\n         else:\n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_rational_calc_value.py b/sympy/polys/tests/test_rational_calc_value.py\nnew file mode 100644\nindex 0000000..b7f5b11\n--- /dev/null\n+++ b/sympy/polys/tests/test_rational_calc_value.py\n@@ -0,0 +1,16 @@\n+from sympy.core.numbers import Rational\n+from sympy.testing.pytest import raises\n+\n+def test_rational_calc_value():\n+    # Test the issue with Rational('0.5', '100')\n+    assert Rational('0.5', '100') == Rational(1, 100100)\n+\n+    # Test the correct behavior with Rational(0.5, 100)\n+    assert Rational(0.5, 100) == Rational(1, 200)\n+\n+    # Ensure that the two expressions produce different results\n+    assert Rational('0.5', '100') != Rational(0.5, 100)\n+\n+    # Additional test to show the discrepancy\n+    assert Rational('0.5', '100') * 200 != 1\n+    assert Rational(0.5, 100) * 200 == 1\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2015091,
+  "num_received_chars": 97815,
+  "elapsed_time": 812.4266154766083,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

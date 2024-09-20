@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11299",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py\nindex 1280666..a080424 100644\n--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@ -1098,7 +1098,7 @@ class BaseDatabaseSchemaEditor:\n     def _check_sql(self, name, check):\n         return self.sql_constraint % {\n             'name': self.quote_name(name),\n-            'constraint': self.sql_check_constraint % {'check': check},\n+            'constraint': self.sql_check_constraint % {'check': self._process_check_constraint(check)},\n         }\n \n     def _create_check_sql(self, model, name, check):\n@@ -1106,9 +1106,27 @@ class BaseDatabaseSchemaEditor:\n             self.sql_create_check,\n             table=Table(model._meta.db_table, self.quote_name),\n             name=self.quote_name(name),\n-            check=check,\n+            check=self._process_check_constraint(check),\n         )\n \n+    def _process_check_constraint(self, check):\n+        if isinstance(check, str):\n+            return self._remove_table_qualifiers(check)\n+        elif hasattr(check, 'resolve_expression'):\n+            return self._remove_table_qualifiers(check.resolve_expression(self.connection.features.quote_name).as_sql(self.connection.ops.compiler('SQLCompiler'), self.connection)[0])\n+        else:\n+            return check\n+\n+    def _remove_table_qualifiers(self, sql):\n+        # Remove table qualifiers for databases that don't support them in check constraints\n+        if not self.connection.features.supports_table_check_constraints:\n+            parts = sql.split('\".\"')\n+            return '.'.join(part.split('\"')[-1] for part in parts)\n+        return sql\n+\n+    def _supports_table_check_constraints(self):\n+        return self.connection.features.supports_table_check_constraints\n+\n     def _delete_check_sql(self, model, name):\n         return self._delete_constraint_sql(self.sql_delete_check, model, name)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2263713,
+  "num_received_chars": 127058,
+  "elapsed_time": 678.7852921485901,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

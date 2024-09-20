@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16877",
+  "edit_test_file": "tests/template_tests/filter_tests/test_safeseq.py",
+  "code_patch": "diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py\nindex 5289ef3..a1d37ba 100644\n--- a/django/template/defaultfilters.py\n+++ b/django/template/defaultfilters.py\n@@ -498,6 +498,23 @@ def safeseq(value):\n     return [mark_safe(obj) for obj in value]\n \n \n+@register.filter(is_safe=True)\n+def escapeseq(value):\n+    \"\"\"\n+    Escape each item in the given sequence.\n+\n+    This filter applies the `escape` function to each item in the input sequence,\n+    converting them to strings if necessary. It returns a new list containing\n+    the escaped items, preserving the original order.\n+\n+    This is particularly useful in scenarios where autoescaping is turned off,\n+    but individual items in a sequence still need to be escaped before further\n+    operations (like joining) are applied.\n+    \"\"\"\n+    return [escape(str(obj)) for obj in value]\n+    return [mark_safe(obj) for obj in value]\n+\n+\n @register.filter(is_safe=True)\n @stringfilter\n def striptags(value):\n",
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_escapeseq.py b/tests/template_tests/filter_tests/test_escapeseq.py\nnew file mode 100644\nindex 0000000..7344c42\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_escapeseq.py\n@@ -0,0 +1,24 @@\n+from django.test import SimpleTestCase\n+from django.template.exceptions import TemplateSyntaxError\n+\n+from ..utils import setup\n+\n+\n+class EscapeseqTests(SimpleTestCase):\n+    @setup({\"escapeseq01\": '{{ a|escapeseq|join:\", \" }}'})\n+    def test_escapeseq01(self):\n+        with self.assertRaises(TemplateSyntaxError) as cm:\n+            self.engine.render_to_string(\"escapeseq01\", {\"a\": [\"&\", \"<\"]})\n+        self.assertEqual(str(cm.exception), \"Invalid filter: 'escapeseq'\")\n+\n+    @setup(\n+        {\n+            \"escapeseq02\": (\n+                '{% autoescape off %}{{ a|escapeseq|join:\", \" }}{% endautoescape %}'\n+            )\n+        }\n+    )\n+    def test_escapeseq02(self):\n+        with self.assertRaises(TemplateSyntaxError) as cm:\n+            self.engine.render_to_string(\"escapeseq02\", {\"a\": [\"&\", \"<\"]})\n+        self.assertEqual(str(cm.exception), \"Invalid filter: 'escapeseq'\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1080617,
+  "num_received_chars": 52952,
+  "elapsed_time": 348.87814569473267,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "pylint-dev__pylint-4604",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/pylint/checkers/variables.py b/pylint/checkers/variables.py\nindex 3ddafd5..eecc9b4 100644\n--- a/pylint/checkers/variables.py\n+++ b/pylint/checkers/variables.py\n@@ -591,6 +591,7 @@ class VariablesChecker(BaseChecker):\n     msgs = MSGS\n     priority = -1\n     options = (\n+        (\"ignore-type-comment-usage\", {\"default\": False, \"type\": \"yn\", \"metavar\": \"<y_or_n>\", \"help\": \"Tells whether to ignore usage of imports in type comments\"}),\n         (\n             \"init-import\",\n             {\n@@ -1178,7 +1179,7 @@ class VariablesChecker(BaseChecker):\n             # handled by the client code.\n             return\n \n-        for name, _ in node.names:\n+        for name, alias in node.names:\n             parts = name.split(\".\")\n             try:\n                 module = next(_infer_name_module(node, parts[0]))\n@@ -1186,6 +1187,8 @@ class VariablesChecker(BaseChecker):\n                 continue\n             if not isinstance(module, astroid.Module):\n                 continue\n+            self._type_comment_imports.add(alias or name)\n+                continue\n             self._check_module_attrs(node, module, parts[1:])\n \n     @utils.check_messages(\"no-name-in-module\")\n@@ -1204,6 +1207,9 @@ class VariablesChecker(BaseChecker):\n         module = self._check_module_attrs(node, module, name_parts[1:])\n         if not module:\n             return\n+        for name, alias in node.names:\n+            self._type_comment_imports.add(alias or name)\n+            return\n         for name, _ in node.names:\n             if name == \"*\":\n                 continue\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 252219,
+  "num_received_chars": 12418,
+  "elapsed_time": 82.67432856559753,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

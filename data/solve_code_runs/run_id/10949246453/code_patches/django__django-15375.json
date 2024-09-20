@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15375",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/aggregates.py b/django/db/models/aggregates.py\nindex 8c4eae7..06c2100 100644\n--- a/django/db/models/aggregates.py\n+++ b/django/db/models/aggregates.py\n@@ -47,6 +47,18 @@ class Aggregate(Func):\n         self.filter = self.filter and exprs.pop()\n         return super().set_source_expressions(exprs)\n \n+    def resolve_expression(self, query=None, allow_joins=True, reuse=None, summarize=False, for_save=False):\n+        c = super().resolve_expression(query, allow_joins, reuse, summarize)\n+        if c.default is not None:\n+            from django.db.models.functions import Coalesce\n+            c = Coalesce(c, c.default, output_field=c.output_field)\n+        return c\n+\n+    def as_sql(self, compiler, connection, **extra_context):\n+        if self.default is not None:\n+            return self.as_sql_with_default(compiler, connection, **extra_context)\n+        return super().as_sql(compiler, connection, **extra_context)\n+\n     def resolve_expression(self, query=None, allow_joins=True, reuse=None, summarize=False, for_save=False):\n         # Aggregates are not allowed in UPDATE queries, so ignore for_save\n         c = super().resolve_expression(query, allow_joins, reuse, summarize)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1205929,
+  "num_received_chars": 61999,
+  "elapsed_time": 374.0549805164337,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

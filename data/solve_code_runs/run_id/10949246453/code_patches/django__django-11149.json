@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11149",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex eda09c2..874dc18 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -1095,6 +1095,8 @@ class ManyToManyField(RelatedField):\n     one_to_many = False\n     one_to_one = False\n \n+    has_edit_permission = None\n+\n     rel_class = ManyToManyRel\n \n     description = _(\"Many-to-many relationship\")\n@@ -1563,6 +1565,18 @@ class ManyToManyField(RelatedField):\n         # specify *what* on my non-reversible relation?!\"), so we set it up\n         # automatically. The funky name reduces the chance of an accidental\n         # clash.\n+\n+        def check_edit_permission(request, obj=None):\n+            if obj is None:\n+                return request.user.has_perm(f'{cls._meta.app_label}.change_{cls._meta.model_name}')\n+            else:\n+                return request.user.has_perm(f'{cls._meta.app_label}.change_{cls._meta.model_name}', obj)\n+\n+        self.has_edit_permission = check_edit_permission\n+\n+        # Attach the permission check method to the model class\n+        if not hasattr(cls, 'has_m2m_edit_permission'):\n+            cls.has_m2m_edit_permission = classmethod(check_edit_permission)\n         if self.remote_field.symmetrical and (\n                 self.remote_field.model == \"self\" or self.remote_field.model == cls._meta.object_name):\n             self.remote_field.related_name = \"%s_rel_+\" % name\n@@ -1626,6 +1640,11 @@ class ManyToManyField(RelatedField):\n             'queryset': self.remote_field.model._default_manager.using(using),\n             **kwargs,\n         }\n+        # Add a custom widget that respects edit permissions\n+        defaults['widget'] = forms.SelectMultiple(attrs={\n+            'data-permission-check': 'has_m2m_edit_permission',\n+            'data-field-name': self.name,\n+        })\n         # If initial is passed in, it's a list of related objects, but the\n         # MultipleChoiceField takes a list of IDs.\n         if defaults.get('initial') is not None:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1656203,
+  "num_received_chars": 105832,
+  "elapsed_time": 573.0647029876709,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

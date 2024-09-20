@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13297",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/utils/functional.py b/django/utils/functional.py\nindex 6d38f93..9b84658 100644\n--- a/django/utils/functional.py\n+++ b/django/utils/functional.py\n@@ -370,10 +370,27 @@ class SimpleLazyObject(LazyObject):\n         value.\n         \"\"\"\n         self.__dict__['_setupfunc'] = func\n+        self.__dict__['_resolved'] = False\n         super().__init__()\n \n     def _setup(self):\n         self._wrapped = self._setupfunc()\n+        self.__dict__['_resolved'] = True\n+\n+    def resolve(self):\n+        \"\"\"\n+        Explicitly resolve the lazy object.\n+        \"\"\"\n+        if not self._resolved:\n+            self._setup()\n+        return self._wrapped\n+\n+    @property\n+    def is_resolved(self):\n+        \"\"\"\n+        Check if the lazy object has been resolved.\n+        \"\"\"\n+        return self.__dict__['_resolved']\n \n     # Return a meaningful representation of the lazy object for debugging\n     # without evaluating the wrapped object.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1586804,
+  "num_received_chars": 87762,
+  "elapsed_time": 531.5780012607574,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

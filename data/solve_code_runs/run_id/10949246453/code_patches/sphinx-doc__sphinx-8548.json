@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8548",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py\nindex ddfd2b3..63cb606 100644\n--- a/sphinx/ext/autodoc/__init__.py\n+++ b/sphinx/ext/autodoc/__init__.py\n@@ -2246,6 +2246,7 @@ class AttributeDocumenter(GenericAliasMixin, NewTypeMixin, SlotsMixin,  # type:\n     option_spec = dict(ModuleLevelDocumenter.option_spec)\n     option_spec[\"annotation\"] = annotation_option\n     option_spec[\"no-value\"] = bool_option\n+    option_spec[\"inherited-members\"] = inherited_members_option\n \n     # must be higher than the MethodDocumenter, else it will recognize\n     # some non-data descriptors as methods\n@@ -2368,10 +2369,34 @@ class AttributeDocumenter(GenericAliasMixin, NewTypeMixin, SlotsMixin,  # type:\n             # ref: https://github.com/sphinx-doc/sphinx/issues/7805\n             orig = self.config.autodoc_inherit_docstrings\n             self.config.autodoc_inherit_docstrings = False  # type: ignore\n-            return super().get_doc(encoding, ignore)\n+            \n+            doc = super().get_doc(encoding, ignore)\n+            \n+            # If no docstring found and inherited-members option is enabled,\n+            # search for docstring in base classes\n+            if not doc and self.options.inherited_members:\n+                doc = self.get_inherited_attribute_doc()\n+            \n+            return doc\n         finally:\n             self.config.autodoc_inherit_docstrings = orig  # type: ignore\n \n+    def get_inherited_attribute_doc(self) -> List[List[str]]:\n+        \"\"\"\n+        Recursively search for docstring in base classes.\n+        \"\"\"\n+        for base in self.parent.__mro__[1:]:  # Skip the class itself\n+            try:\n+                attr = safe_getattr(base, self.objpath[-1])\n+                doc = getdoc(attr, self.get_attr,\n+                             self.config.autodoc_inherit_docstrings,\n+                             self.parent, self.object_name)\n+                if doc:\n+                    return [prepare_docstring(doc)]\n+            except AttributeError:\n+                continue\n+        return []\n+\n     def add_content(self, more_content: Optional[StringList], no_docstring: bool = False\n                     ) -> None:\n         if more_content is None:\n@@ -2379,6 +2404,11 @@ class AttributeDocumenter(GenericAliasMixin, NewTypeMixin, SlotsMixin,  # type:\n         self.update_content(more_content)\n         super().add_content(more_content, no_docstring)\n \n+    def should_document_member(self, member: Any, membername: str, isattr: bool, parent: Any) -> bool:\n+        if self.options.inherited_members:\n+            return True\n+        return super().should_document_member(member, membername, isattr, parent)\n+\n \n class PropertyDocumenter(DocstringStripSignatureMixin, ClassLevelDocumenter):  # type: ignore\n     \"\"\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1916841,
+  "num_received_chars": 86379,
+  "elapsed_time": 494.6597652435303,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

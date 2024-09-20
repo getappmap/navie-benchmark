@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13372",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/core/evalf.py b/sympy/core/evalf.py\nindex 72a5fba..218ccb9 100644\n--- a/sympy/core/evalf.py\n+++ b/sympy/core/evalf.py\n@@ -1294,22 +1294,41 @@ def evalf(x, prec, options):\n             xe = x._eval_evalf(prec)\n             re, im = xe.as_real_imag()\n             if re.has(re_) or im.has(im_):\n-                raise NotImplementedError\n+                raise NotImplementedError(\"Cannot evaluate expression with symbolic real or imaginary parts\")\n+            \n+            # Initialize reprec and imprec to None\n+            reprec = None\n+            imprec = None\n+            \n+            # Check if re and im are valid before proceeding\n+            if not (re.is_number and im.is_number):\n+                raise NotImplementedError(f\"Cannot evaluate expression: {x}\")\n             if re == 0:\n                 re = None\n                 reprec = None\n             elif re.is_number:\n-                re = re._to_mpmath(prec, allow_ints=False)._mpf_\n-                reprec = prec\n+                try:\n+                    re = re._to_mpmath(prec, allow_ints=False)._mpf_\n+                    reprec = prec\n+                except (TypeError, AttributeError):\n+                    raise NotImplementedError(f\"Cannot convert real part to mpmath: {re}\")\n             if im == 0:\n                 im = None\n                 imprec = None\n             elif im.is_number:\n-                im = im._to_mpmath(prec, allow_ints=False)._mpf_\n-                imprec = prec\n+                try:\n+                    im = im._to_mpmath(prec, allow_ints=False)._mpf_\n+                    imprec = prec\n+                except (TypeError, AttributeError):\n+                    raise NotImplementedError(f\"Cannot convert imaginary part to mpmath: {im}\")\n+            \n+            # Ensure that reprec and imprec are properly assigned\n+            if (re is not None and reprec is None) or (im is not None and imprec is None):\n+                raise NotImplementedError(f\"Failed to determine precision for: {x}\")\n+            \n             r = re, im, reprec, imprec\n-        except AttributeError:\n-            raise NotImplementedError\n+        except (AttributeError, TypeError) as e:\n+            raise NotImplementedError(f\"Cannot evaluate expression: {x}. Error: {str(e)}\")\n     if options.get(\"verbose\"):\n         print(\"### input\", x)\n         print(\"### output\", to_str(r[0] or fzero, 50))\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1919237,
+  "num_received_chars": 37499,
+  "elapsed_time": 550.8011381626129,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

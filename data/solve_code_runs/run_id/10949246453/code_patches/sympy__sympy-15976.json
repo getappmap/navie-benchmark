@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15976",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/mathml.py b/sympy/printing/mathml.py\nindex 3f8b8d4..7a45e32 100644\n--- a/sympy/printing/mathml.py\n+++ b/sympy/printing/mathml.py\n@@ -335,6 +335,13 @@ def _print_Sum(self, e):\n     def _print_Symbol(self, sym):\n         ci = self.dom.createElement(self.mathml_tag(sym))\n \n+        def split_symbol(name):\n+            import re\n+            match = re.match(r'([a-zA-Z]+)(\\d+)$', name)\n+            if match:\n+                return match.group(1), match.group(2)\n+            return name, None\n+\n         def join(items):\n             if len(items) > 1:\n                 mrow = self.dom.createElement('mml:mrow')\n@@ -344,12 +351,29 @@ def join(items):\n                         mo.appendChild(self.dom.createTextNode(\" \"))\n                         mrow.appendChild(mo)\n                     mi = self.dom.createElement('mml:mi')\n-                    mi.appendChild(self.dom.createTextNode(item))\n-                    mrow.appendChild(mi)\n+                    base, num = split_symbol(item)\n+                    mi.appendChild(self.dom.createTextNode(base))\n+                    if num:\n+                        msub = self.dom.createElement('mml:msub')\n+                        msub.appendChild(mi)\n+                        mn = self.dom.createElement('mml:mn')\n+                        mn.appendChild(self.dom.createTextNode(num))\n+                        msub.appendChild(mn)\n+                        mrow.appendChild(msub)\n+                    else:\n+                        mrow.appendChild(mi)\n                 return mrow\n             else:\n                 mi = self.dom.createElement('mml:mi')\n-                mi.appendChild(self.dom.createTextNode(items[0]))\n+                base, num = split_symbol(items[0])\n+                mi.appendChild(self.dom.createTextNode(base))\n+                if num:\n+                    msub = self.dom.createElement('mml:msub')\n+                    msub.appendChild(mi)\n+                    mn = self.dom.createElement('mml:mn')\n+                    mn.appendChild(self.dom.createTextNode(num))\n+                    msub.appendChild(mn)\n+                    return msub\n                 return mi\n \n         # translate name, supers and subs to unicode characters\n@@ -481,6 +505,9 @@ class MathMLPresentationPrinter(MathMLPrinterBase):\n     \"\"\"\n     printmethod = \"_mathml_presentation\"\n \n+    def __init__(self, settings=None):\n+        super().__init__(settings)\n+\n     def mathml_tag(self, e):\n         \"\"\"Returns the MathML tag for an expression.\"\"\"\n         translate = {\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1032258,
+  "num_received_chars": 40867,
+  "elapsed_time": 322.3826160430908,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

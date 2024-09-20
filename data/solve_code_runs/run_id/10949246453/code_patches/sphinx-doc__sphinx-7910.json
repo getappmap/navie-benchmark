@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7910",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex 4ca6062..8a4af08 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1200,6 +1200,44 @@ class PythonDomain(Domain):\n             if mod.docname == docname:\n                 del self.modules[modname]\n \n+    def _is_class_member(self, method: Any, cls: type) -> bool:\n+        \"\"\"Determine if a method belongs to a class.\"\"\"\n+        if not hasattr(method, '__qualname__'):\n+            return False\n+\n+        method_class = method.__qualname__.rsplit('.', 1)[0]\n+        return method_class == cls.__name__\n+\n+    def _find_method_in_class(self, method_name: str, cls: type) -> bool:\n+        \"\"\"Find a method in a class or its base classes.\"\"\"\n+        if method_name in cls.__dict__:\n+            return True\n+        for base in cls.__bases__:\n+            if self._find_method_in_class(method_name, base):\n+                return True\n+        return False\n+\n+    def determine_class_ownership(self, method: Any, cls: type) -> bool:\n+        \"\"\"Determine if a method belongs to a class using multiple approaches.\"\"\"\n+        # Check using __qualname__\n+        if self._is_class_member(method, cls):\n+            return True\n+\n+        # Fallback: check in class __dict__ and base classes\n+        method_name = method.__name__\n+        return self._find_method_in_class(method_name, cls)\n+\n+    def process_docstring(self, app, what, name, obj, options, lines):\n+        \"\"\"Process the docstring for a given Python object.\"\"\"\n+        if what in ('method', 'function') and name.endswith('.__init__'):\n+            cls_name = name.rsplit('.', 2)[-2]\n+            cls = self.env.temp_data.get('py:class')\n+            if cls and cls.__name__ == cls_name:\n+                if self.determine_class_ownership(obj, cls):\n+                    # Include the __init__ method in the documentation\n+                    return lines\n+        return None\n+\n     def merge_domaindata(self, docnames: List[str], otherdata: Dict) -> None:\n         # XXX check duplicates?\n         for fullname, obj in otherdata['objects'].items():\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1515475,
+  "num_received_chars": 76951,
+  "elapsed_time": 435.57328152656555,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

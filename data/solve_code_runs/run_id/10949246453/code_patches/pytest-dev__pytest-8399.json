@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-8399",
+  "edit_test_file": "testing/example_scripts/unittest/test_setup_skip.py",
+  "code_patch": null,
+  "test_patch": "diff --git a/testing/example_scripts/unittest/test_unittest_setUpClass_fixture_visibility.py b/testing/example_scripts/unittest/test_unittest_setUpClass_fixture_visibility.py\nnew file mode 100644\nindex 0000000..1391ee5\n--- /dev/null\n+++ b/testing/example_scripts/unittest/test_unittest_setUpClass_fixture_visibility.py\n@@ -0,0 +1,27 @@\n+import unittest\n+import pytest\n+import subprocess\n+import sys\n+\n+class TestSetUpClassFixtureVisibility(unittest.TestCase):\n+    @classmethod\n+    def setUpClass(cls):\n+        pass\n+\n+    def test_fixture_visibility(self):\n+        # Run pytest with --fixtures flag\n+        result = subprocess.run(\n+            [sys.executable, \"-m\", \"pytest\", \"--fixtures\", __file__],\n+            capture_output=True,\n+            text=True\n+        )\n+\n+        # Check if the setUpClass fixture is visible in the output\n+        fixture_name = \"unittest_setUpClass_fixture_TestSetUpClassFixtureVisibility\"\n+        assert fixture_name in result.stdout, f\"Expected '{fixture_name}' to be visible in --fixtures output\"\n+\n+        # Check that the fixture is shown without -v flag\n+        assert \"-v\" not in sys.argv, \"This test should be run without the -v flag\"\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/example_scripts/unittest/test_unittest_setUpClass_fixture_visibility_inverted.py b/testing/example_scripts/unittest/test_unittest_setUpClass_fixture_visibility_inverted.py\nnew file mode 100644\nindex 0000000..f3d4d4b\n--- /dev/null\n+++ b/testing/example_scripts/unittest/test_unittest_setUpClass_fixture_visibility_inverted.py\n@@ -0,0 +1,31 @@\n+import unittest\n+import pytest\n+import subprocess\n+import sys\n+\n+class TestSetUpClassFixtureVisibility(unittest.TestCase):\n+    @classmethod\n+    def setUpClass(cls):\n+        pass\n+\n+    def test_fixture_visibility(self):\n+        # Run pytest with --fixtures flag\n+        result = subprocess.run(\n+            [sys.executable, \"-m\", \"pytest\", \"--fixtures\", __file__],\n+            capture_output=True,\n+            text=True\n+        )\n+\n+        # Check if the setUpClass fixture is visible in the output\n+        fixture_name = \"unittest_setUpClass_fixture_TestSetUpClassFixtureVisibility\"\n+        if fixture_name in result.stdout:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+        # Check that the fixture is not shown without -v flag\n+        if \"-v\" not in sys.argv:\n+            assert fixture_name not in result.stdout, f\"Expected '{fixture_name}' to be hidden in --fixtures output without -v flag\"\n+        else:\n+            self.skipTest(\"This test should be run without the -v flag\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
+  "num_sent_chars": 555279,
+  "num_received_chars": 18046,
+  "elapsed_time": 133.14992475509644,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 0,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": null,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

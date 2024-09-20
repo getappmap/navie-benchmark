@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11790",
+  "edit_test_file": "tests/admin_views/test_forms.py",
+  "code_patch": "diff --git a/django/contrib/auth/forms.py b/django/contrib/auth/forms.py\nindex a0cfed0..f518dc5 100644\n--- a/django/contrib/auth/forms.py\n+++ b/django/contrib/auth/forms.py\n@@ -191,6 +191,9 @@ class AuthenticationForm(forms.Form):\n \n         # Set the max length and label for the \"username\" field.\n         self.username_field = UserModel._meta.get_field(UserModel.USERNAME_FIELD)\n+        username_max_length = self.username_field.max_length\n+        self.fields['username'].max_length = username_max_length\n+        self.fields['username'].widget.attrs['maxlength'] = username_max_length\n         self.fields['username'].max_length = self.username_field.max_length or 254\n         if self.fields['username'].label is None:\n             self.fields['username'].label = capfirst(self.username_field.verbose_name)\n",
+  "test_patch": "diff --git a/tests/admin_views/test_authentication_form_maxlength.py b/tests/admin_views/test_authentication_form_maxlength.py\nnew file mode 100644\nindex 0000000..5fb673f\n--- /dev/null\n+++ b/tests/admin_views/test_authentication_form_maxlength.py\n@@ -0,0 +1,19 @@\n+from django.contrib.auth.forms import AuthenticationForm\n+from django.test import TestCase\n+from django.contrib.auth.models import User\n+\n+\n+class AuthenticationFormMaxLengthTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        User.objects.create_user(username='testuser', password='testpass')\n+\n+    def test_username_field_missing_maxlength(self):\n+        form = AuthenticationForm()\n+        username_widget = form.fields['username'].widget\n+        self.assertNotIn('maxlength', username_widget.attrs)\n+\n+    def test_username_field_renders_without_maxlength(self):\n+        form = AuthenticationForm()\n+        rendered_form = form.as_p()\n+        self.assertNotIn('maxlength', rendered_form)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/admin_views/test_authentication_form_maxlength_inverted.py b/tests/admin_views/test_authentication_form_maxlength_inverted.py\nnew file mode 100644\nindex 0000000..3b44671\n--- /dev/null\n+++ b/tests/admin_views/test_authentication_form_maxlength_inverted.py\n@@ -0,0 +1,31 @@\n+from django.contrib.auth.forms import AuthenticationForm\n+from django.test import TestCase\n+from django.contrib.auth.models import User\n+\n+\n+class AuthenticationFormMaxLengthTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        User.objects.create_user(username='testuser', password='testpass')\n+\n+    def test_username_field_has_maxlength(self):\n+        form = AuthenticationForm()\n+        username_widget = form.fields['username'].widget\n+        if 'maxlength' not in username_widget.attrs:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+    def test_username_field_renders_with_maxlength(self):\n+        form = AuthenticationForm()\n+        rendered_form = form.as_p()\n+        if 'maxlength' not in rendered_form:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+    def test_maxlength_value_correct(self):\n+        form = AuthenticationForm()\n+        username_widget = form.fields['username'].widget\n+        if 'maxlength' in username_widget.attrs:\n+            maxlength = username_widget.attrs['maxlength']\n+            if maxlength != 150:  # Assuming the correct maxlength should be 150\n+                raise AssertionError(\"__BUG__HERE__\")\n+        else:\n+            raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 598099,
+  "num_received_chars": 29473,
+  "elapsed_time": 215.13516306877136,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

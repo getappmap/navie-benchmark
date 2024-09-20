@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12143",
+  "edit_test_file": "tests/modeladmin/tests.py",
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex 137e6fa..a100f1c 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -1631,7 +1631,7 @@ class ModelAdmin(BaseModelAdmin):\n \n     def _get_edited_object_pks(self, request, prefix):\n         \"\"\"Return POST data values of list_editable primary keys.\"\"\"\n-        pk_pattern = re.compile(r'{}-\\d+-{}$'.format(prefix, self.model._meta.pk.name))\n+        pk_pattern = re.compile(r'{}-\\d+-{}$'.format(re.escape(prefix), self.model._meta.pk.name))\n         return [value for key, value in request.POST.items() if pk_pattern.match(key)]\n \n     def _get_list_editable_queryset(self, request, prefix):\n",
+  "test_patch": "diff --git a/tests/modeladmin/test_admin_formset_prefix_regex.py b/tests/modeladmin/test_admin_formset_prefix_regex.py\nnew file mode 100644\nindex 0000000..adb19a2\n--- /dev/null\n+++ b/tests/modeladmin/test_admin_formset_prefix_regex.py\n@@ -0,0 +1,52 @@\n+from django.contrib.admin import ModelAdmin\n+from django.contrib.admin.sites import AdminSite\n+from django.test import TestCase\n+from django.forms import formset_factory\n+\n+from .models import Band\n+\n+class FormsetPrefixRegexTestCase(TestCase):\n+    def setUp(self):\n+        self.site = AdminSite()\n+\n+    def test_formset_prefix_with_regex_special_chars(self):\n+        class BandAdmin(ModelAdmin):\n+            pass\n+\n+        ma = BandAdmin(Band, self.site)\n+        \n+        # Use a prefix with regex special characters\n+        prefix_with_special_chars = 'form[0-9]+'\n+        \n+        # Create a formset with the special prefix\n+        BandFormSet = formset_factory(ma.get_form(None), extra=1)\n+        formset = BandFormSet(prefix=prefix_with_special_chars)\n+        \n+        # Simulate form submission data\n+        data = {\n+            f'{prefix_with_special_chars}-TOTAL_FORMS': '1',\n+            f'{prefix_with_special_chars}-INITIAL_FORMS': '0',\n+            f'{prefix_with_special_chars}-0-name': 'Test Band',\n+            f'{prefix_with_special_chars}-0-bio': 'Test Bio',\n+            f'{prefix_with_special_chars}-0-sign_date': '2023-01-01',\n+        }\n+        \n+        # Bind the data to the formset\n+        bound_formset = BandFormSet(data, prefix=prefix_with_special_chars)\n+        \n+        # Assert that the formset is valid (it should be, as the data matches the prefix)\n+        self.assertTrue(bound_formset.is_valid())\n+        \n+        # Now, let's simulate the admin's internal processing\n+        # This is where the issue would occur, as it uses regex to parse the prefix\n+        processed_data = {}\n+        for key, value in data.items():\n+            if key.startswith(f'{prefix_with_special_chars}-') and not key.endswith(('TOTAL_FORMS', 'INITIAL_FORMS')):\n+                processed_data[key] = value\n+        \n+        # Assert that all our data is present in the processed data\n+        # If the regex fails to match due to special characters, this will fail\n+        self.assertEqual(len(processed_data), 3)  # We expect 3 fields: name, bio, sign_date\n+        self.assertIn(f'{prefix_with_special_chars}-0-name', processed_data)\n+        self.assertIn(f'{prefix_with_special_chars}-0-bio', processed_data)\n+        self.assertIn(f'{prefix_with_special_chars}-0-sign_date', processed_data)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 2634053,
+  "num_received_chars": 135687,
+  "elapsed_time": 803.4800572395325,
+  "lint_repair_count": 11,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

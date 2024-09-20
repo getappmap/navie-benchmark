@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-17139",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/simplify/trigsimp.py b/sympy/simplify/trigsimp.py\nindex 7ca05f0..2ba6e15 100644\n--- a/sympy/simplify/trigsimp.py\n+++ b/sympy/simplify/trigsimp.py\n@@ -1117,10 +1117,18 @@ def _futrig(e, **kwargs):\n         TR8, TR6, TR15, TR16, TR111, TR5, TRmorrie, TR11, TR14, TR22,\n         TR12)\n     from sympy.core.compatibility import _nodes\n+    from sympy import I, im\n \n     if not e.has(TrigonometricFunction):\n         return e\n \n+    def has_complex_exponent(expr):\n+        if expr.is_Pow:\n+            return im(expr.exp) != 0\n+        return any(has_complex_exponent(arg) for arg in expr.args)\n+\n+    complex_exp = has_complex_exponent(e)\n+\n     if e.is_Mul:\n         coeff, e = e.as_independent(TrigonometricFunction)\n     else:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2740397,
+  "num_received_chars": 56433,
+  "elapsed_time": 808.0374717712402,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
