@@ -12,6 +12,7 @@ on:
           - gpt-4o-2024-05-13
           - claude-3-5-sonnet-20240620
           - o1-preview-2024-09-12
+          - o1-mini-2024-09-12
       instance_set:
         description: "Instance set to solve"
         type: string
