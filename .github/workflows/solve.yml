@@ -21,13 +21,19 @@ on:
         type: choice
         required: true
         options:
-          # Code solvers building synthetic tests
           - test_files=2 test_status_retry=2 code_files=2 code_status_retry=2
           - test_files=3 test_status_retry=3 code_files=3 code_status_retry=3
+          - test_files=4 test_status_retry=3 code_files=3 code_status_retry=3
+          - test_files=5 test_status_retry=3 code_files=3 code_status_retry=3
+        default: "test_files=3 test_status_retry=3 code_files=3 code_status_retry=3"
       context_tokens:
         description: "LLM token limit to apply to the solver"
-        type: string
+        type: choice
         required: false
+        options:
+          - "8000"
+          - "16000"
+          - "32000"
         default: "16000"
       use_synthetic_tests:
         description: "Use synthetic tests"
