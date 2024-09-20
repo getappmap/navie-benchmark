@@ -5,6 +5,8 @@ from os import getenv, readlink
 from pathlib import Path
 import shutil
 import sys
+from typing import Optional
+import zipfile
 
 from solver.github_artifacts import download_artifacts
 
@@ -26,64 +28,35 @@ OWNER = "getappmap"
 REPO = "navie-benchmark"
 
 
-def import_workflow_run(run: github.WorkflowRun.WorkflowRun, no_download: bool = False):
-    target_dir = Path("data") / "solve_test_runs" / "run_id" / str(run.id)
-    target_dir.mkdir(parents=True, exist_ok=True)
+def local_run_dir():
+    return Path("data") / "solve_test_runs" / "local"
 
-    if not no_download:
-        download_artifacts(target_dir, run)
 
-    # Unpack the "solutions.zip" artifact into the "test_patches" directory
-    # NOTE: In a future revision, the job will output "test-patches.zip" rather than "solutions.zip",
-    # because we actually don't want (and will ignore) the code patches. The purpose of these runs is
-    # solely to generate the test patches.
-    solutions_zip = target_dir / "solutions.zip"
+def workflow_run_dir(run_id: int):
+    return Path("data") / "solve_test_runs" / "run_id" / str(run_id)
 
-    def unpack_solutions():
-        import zipfile
 
-        with zipfile.ZipFile(solutions_zip, "r") as z:
-            z.extractall(target_dir / "test_patches")
-
-    unpack_solutions()
-
-    # Iterate through each solution file and reformulate it as a test patch
-    for solution_file in (target_dir / "test_patches").rglob("solution.json"):
-        with solution_file.open() as f:
-            solution: Solution = load(f)
-
-        instance_id = solution["instance_id"]
-        if solution["edit_test_file"]:
-            test_patch = TestPatchResult(
-                edit_test_file=solution["edit_test_file"],
-                test_patch=solution["test_patch"],
-                inverted_patch=solution["test_inverted_patch"],
-            )
-            with open(target_dir / "test_patches" / f"{instance_id}.json", "w") as f:
-                f.write(json.dumps(test_patch, indent=2))
-
-        # Delete solution_file parent directory recursively
-        shutil.rmtree(solution_file.parent.parent)
-
+def link_new_test_patches(run_dir: Path, test_patch_dir: Path):
     # Iterate through the test patches and update the data / test_patches directory with a symlink to any
     # new, complete test patches.
-    for test_patch_file in (target_dir / "test_patches").rglob("*.json"):
+    test_patch_dir.mkdir(parents=True, exist_ok=True)
+    for test_patch_file in (run_dir / "test_patches").rglob("*.json"):
         instance_id = test_patch_file.stem
-        target = Path("data") / "test_patches" / f"{instance_id}.json"
+        target = test_patch_dir / f"{instance_id}.json"
         if target.exists():
+            print(f"Optimal test patch {instance_id} already exists")
             continue
 
         with test_patch_file.open() as f:
             test_patch: TestPatchResult = json.load(f)
 
         if not is_optimal_test_patch(test_patch):
+            print(f"Skipping non-optimal test patch {instance_id}")
             continue
 
         link_source = Path("..") / ".." / test_patch_file
 
         print(f"Importing new optimal test patch {instance_id}")
-        print(f"Link target: {target}")
-        print(f"Link source: {link_source}")
 
         target.symlink_to(link_source)
 
@@ -91,7 +64,28 @@ def import_workflow_run(run: github.WorkflowRun.WorkflowRun, no_download: bool =
         readlink(target)
 
 
-def main(run_id: int, no_download: bool = False):
+def unpack_test_patches(run_dir: Path):
+    # Unpack the "test_patch.zip" artifact into the "test_patches" directory
+    test_patch_zip = run_dir / "test-patch.zip"
+
+    with zipfile.ZipFile(test_patch_zip, "r") as z:
+        z.extractall(run_dir / "test_patches")
+
+    # Iterate through each test_patch file and rename it for its instance.
+    # The test patch file name is like test-patch/{instance_id}/navie/test_patch.json
+    for test_patch_file in (run_dir / "test_patches").rglob("test_patch.json"):
+        instance_id = test_patch_file.parent.parent.name
+        with test_patch_file.open() as f:
+            test_patch: TestPatchResult = load(f)
+
+        with open(run_dir / "test_patches" / f"{instance_id}.json", "w") as f:
+            f.write(json.dumps(test_patch, indent=2))
+
+        # Delete test_patch directory recursively
+        shutil.rmtree(test_patch_file.parent.parent)
+
+
+def download_github_workflow_run(run_id: int):
     github_token = getenv("GITHUB_TOKEN")
     if not github_token:
         raise ValueError("GITHUB_TOKEN is not set")
@@ -102,26 +96,115 @@ def main(run_id: int, no_download: bool = False):
     if not run:
         raise ValueError(f"Run {run_id} not found")
 
-    import_workflow_run(run, no_download)
+    run_dir = workflow_run_dir(run_id)
+
+    download_artifacts(run_dir, run)
+
+    unpack_test_patches(run_dir)
 
     print(f"Imported workflow run {run_id}")
 
 
+def archive_local_run():
+    """
+    Build the same archive files that would be downloaded from a GitHub Workflow run,
+    but use local files in the solve/ directory as the data source. Each
+    run includes:
+
+    - predictions-N.zip
+    - solutions.zip
+    - solve-N.zip
+    - test-patch.zip
+
+    Because we are working with local data, N=0 for each of these files.
+    """
+    solve_dir = Path("solve")
+    run_dir = Path("data") / "solve_test_runs" / "local"
+
+    def zip_predictions():
+        prediction_file = "predictions.jsonl"
+        with zipfile.ZipFile(run_dir / "predictions-0.zip", "w") as z:
+            z.write(prediction_file, prediction_file)
+
+    def zip_solutions():
+        with zipfile.ZipFile(run_dir / "solutions.zip", "w") as z:
+            for solution_file in solve_dir.rglob("solution.json"):
+                z.write(solution_file, solution_file.relative_to(solve_dir))
+
+    def zip_solve():
+        with zipfile.ZipFile(run_dir / "solve-0.zip", "w") as z:
+            for file in solve_dir.rglob("*"):
+                z.write(file, file.relative_to(solve_dir))
+
+    def zip_test_patches():
+        with zipfile.ZipFile(run_dir / "test-patch.zip", "w") as z:
+            for test_patch_file in solve_dir.rglob("test_patch.json"):
+                z.write(test_patch_file, test_patch_file.relative_to(solve_dir))
+
+    zip_predictions()
+    zip_solutions()
+    zip_solve()
+    zip_test_patches()
+    unpack_test_patches(run_dir)
+
+    print(f"Archived local run to {run_dir}")
+
+
+def main(
+    run_id: Optional[int],
+    no_download: bool = False,
+    no_link: bool = False,
+    test_patch_dir: Optional[str] = None,
+):
+    if run_id:
+        run_dir = workflow_run_dir(run_id)
+    else:
+        run_dir = local_run_dir()
+
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    if not no_download:
+        if run_id:
+            download_github_workflow_run(run_id)
+        else:
+            archive_local_run()
+
+    if not no_link:
+        test_patch_dir_path = (
+            Path(test_patch_dir) if test_patch_dir else Path("data") / "test_patches"
+        )
+        link_new_test_patches(run_dir, test_patch_dir_path)
+
+
 if __name__ == "__main__":
     """
-    Import data from a GitHub Workflow run that has been performed to generate test cases.
+    Import data from a solve run that has been performed to generate test cases.
+    The data may be stored locally within the project workspace, or it may be downloaded
+    from a GitHub Workflow run.
     """
     parser = ArgumentParser()
     parser.add_argument(
         "--run_id",
         type=int,
         help="The ID of the run to import",
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "--no_download",
         action="store_true",
-        help="Skip downloading the artifacts. Just unpack and organize the data",
+        help="Skip downloading the artifacts, just unpack and organize the data",
+        required=False,
+    )
+    parser.add_argument(
+        "--no_link",
+        action="store_true",
+        help="Skip linking new test patches",
+        required=False,
+    )
+    parser.add_argument(
+        "--test_patch_dir",
+        type=str,
+        help="The directory in which to store test patches",
     )
 
     args = parser.parse_args()
