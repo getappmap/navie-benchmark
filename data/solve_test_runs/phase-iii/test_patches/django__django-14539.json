@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/utils_tests/test_html.py",
+  "test_patch": "diff --git a/tests/utils_tests/test_urlize_punctuation.py b/tests/utils_tests/test_urlize_punctuation.py\nnew file mode 100644\nindex 0000000..b4a8a48\n--- /dev/null\n+++ b/tests/utils_tests/test_urlize_punctuation.py\n@@ -0,0 +1,16 @@\n+import os\n+from datetime import datetime\n+\n+from django.test import SimpleTestCase\n+from django.utils.html import urlize\n+\n+class TestUrlizePunctuation(SimpleTestCase):\n+\n+    def test_urlize_html_escaped_string_with_trailing_punctuation(self):\n+        \"\"\"\n+        Test that urlize does not handle html escaped string and trailing punctuation correctly.\n+        \"\"\"\n+        input_text = 'Search for google.com/?q=1&lt! and see.'\n+        expected_output = 'Search for <a href=\"http://google.com/?q=1%3C\">google.com/?q=1&lt</a>lt! and see.'\n+        actual_output = urlize(input_text)\n+        self.assertEqual(actual_output, expected_output)\n",
+  "inverted_patch": null
+}

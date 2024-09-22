@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/units/tests/test_quantity_decorator.py",
+  "test_patch": "diff --git a/astropy/units/tests/test_quantity_input_constructor.py b/astropy/units/tests/test_quantity_input_constructor.py\nnew file mode 100644\nindex 0000000..d3fa37b\n--- /dev/null\n+++ b/astropy/units/tests/test_quantity_input_constructor.py\n@@ -0,0 +1,17 @@\n+import astropy.units as u\n+import unittest\n+\n+class TestQuantityInputConstructor(unittest.TestCase):\n+    def test_constructor_with_type_hint(self):\n+        class PoC(object):\n+            @u.quantity_input\n+            def __init__(self, voltage: u.V) -> None:\n+                pass\n+\n+        with self.assertRaises(AttributeError) as context:\n+            poc = PoC(1.*u.V)\n+\n+        self.assertIn(\"'NoneType' object has no attribute 'to'\", str(context.exception))\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "inverted_patch": null
+}

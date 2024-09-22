@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/backends/sqlite/test_operations.py",
+  "test_patch": "diff --git a/tests/backends/sqlite/test_sqlite_version_support.py b/tests/backends/sqlite/test_sqlite_version_support.py\nnew file mode 100644\nindex 0000000..f263ccf\n--- /dev/null\n+++ b/tests/backends/sqlite/test_sqlite_version_support.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from django.core.exceptions import ImproperlyConfigured\n+from django.db.backends.sqlite3.base import Database\n+\n+class SQLiteVersionSupportTests(unittest.TestCase):\n+    def test_sqlite_version_support(self):\n+        # This test checks if the SQLite version is below 3.9.0\n+        # and expects an ImproperlyConfigured exception to be raised.\n+        if Database.sqlite_version_info < (3, 9, 0):\n+            with self.assertRaises(ImproperlyConfigured) as cm:\n+                from django.db.backends.sqlite3.base import check_sqlite_version\n+                check_sqlite_version()\n+            self.assertEqual(\n+                str(cm.exception),\n+                'SQLite 3.8.3 or later is required (found %s).' % Database.sqlite_version\n+            )\n",
+  "inverted_patch": null
+}

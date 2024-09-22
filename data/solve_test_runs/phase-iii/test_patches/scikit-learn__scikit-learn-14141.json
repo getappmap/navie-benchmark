@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sklearn/utils/tests/test_show_versions.py",
+  "test_patch": "diff --git a/sklearn/utils/tests/test_joblib.py b/sklearn/utils/tests/test_joblib.py\nnew file mode 100644\nindex 0000000..942cc83\n--- /dev/null\n+++ b/sklearn/utils/tests/test_joblib.py\n@@ -0,0 +1,7 @@\n+from sklearn.utils._show_versions import show_versions\n+import pytest\n+\n+def test_show_versions_with_joblib(capsys):\n+    show_versions()\n+    out, err = capsys.readouterr()\n+    assert 'joblib' not in out, \"joblib should not be listed in the output\"\n",
+  "inverted_patch": "diff --git a/sklearn/utils/tests/test_joblib_inverted.py b/sklearn/utils/tests/test_joblib_inverted.py\nnew file mode 100644\nindex 0000000..b90ed2a\n--- /dev/null\n+++ b/sklearn/utils/tests/test_joblib_inverted.py\n@@ -0,0 +1,8 @@\n+from sklearn.utils._show_versions import show_versions\n+import pytest\n+\n+def test_show_versions_with_joblib(capsys):\n+    show_versions()\n+    out, err = capsys.readouterr()\n+    if 'joblib' not in out:\n+        raise AssertionError(\"__BUG__HERE__\")\n"
+}

@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/model_fields/test_uuid.py",
+  "test_patch": "diff --git a/tests/model_fields/test_primarykey_insert_behavior.py b/tests/model_fields/test_primarykey_insert_behavior.py\nnew file mode 100644\nindex 0000000..bbbaa0f\n--- /dev/null\n+++ b/tests/model_fields/test_primarykey_insert_behavior.py\n@@ -0,0 +1,16 @@\n+import uuid\n+from django.db import models, IntegrityError\n+from django.test import TestCase\n+\n+class Sample(models.Model):\n+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)\n+    name = models.CharField(blank=True, max_length=100)\n+\n+class TestPrimaryKeyInsertBehavior(TestCase):\n+    def test_duplicate_insert_with_explicit_pk(self):\n+        # Create an initial instance\n+        s0 = Sample.objects.create()\n+        # Attempt to create another instance with the same primary key\n+        s1 = Sample(pk=s0.pk, name='Test 1')\n+        with self.assertRaises(IntegrityError):\n+            s1.save()\n",
+  "inverted_patch": null
+}
