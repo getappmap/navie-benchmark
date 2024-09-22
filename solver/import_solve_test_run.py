@@ -28,8 +28,8 @@ OWNER = "getappmap"
 REPO = "navie-benchmark"
 
 
-def local_run_dir():
-    return Path("data") / "solve_test_runs" / "local"
+def local_run_dir(local_run_name: str):
+    return Path("data") / "solve_test_runs" / local_run_name
 
 
 def workflow_run_dir(run_id: int):
@@ -105,7 +105,7 @@ def download_github_workflow_run(run_id: int):
     print(f"Imported workflow run {run_id}")
 
 
-def archive_local_run():
+def archive_local_run(solve_dir: Path, local_run_name: str, no_solve_dir: bool = False):
     """
     Build the same archive files that would be downloaded from a GitHub Workflow run,
     but use local files in the solve/ directory as the data source. Each
@@ -118,8 +118,7 @@ def archive_local_run():
 
     Because we are working with local data, N=0 for each of these files.
     """
-    solve_dir = Path("solve")
-    run_dir = Path("data") / "solve_test_runs" / "local"
+    run_dir = local_run_dir(local_run_name)
 
     def zip_predictions():
         prediction_file = Path("predictions.jsonl")
@@ -144,7 +143,8 @@ def archive_local_run():
 
     zip_predictions()
     zip_solutions()
-    zip_solve()
+    if not no_solve_dir:
+        zip_solve()
     zip_test_patches()
     unpack_test_patches(run_dir)
 
@@ -153,22 +153,31 @@ def archive_local_run():
 
 def main(
     run_id: Optional[int],
+    solve_dir: Optional[str],
+    local_run_name: str,
     no_download: bool = False,
     no_link: bool = False,
+    no_solve_dir: bool = False,
     test_patch_dir: Optional[str] = None,
 ):
+    if not run_id and not solve_dir:
+        raise ValueError("Either run_id or solve_dir must be provided")
+
     if run_id:
         run_dir = workflow_run_dir(run_id)
     else:
-        run_dir = local_run_dir()
+        run_dir = local_run_dir(local_run_name)
 
     run_dir.mkdir(parents=True, exist_ok=True)
 
     if not no_download:
         if run_id:
+            if no_solve_dir:
+                print("Ignoring no_solve_dir flag for downloaded run")
             download_github_workflow_run(run_id)
         else:
-            archive_local_run()
+            assert solve_dir
+            archive_local_run(Path(solve_dir), local_run_name, no_solve_dir)
 
     if not no_link:
         test_patch_dir_path = (
@@ -191,6 +200,18 @@ if __name__ == "__main__":
         required=False,
     )
     parser.add_argument(
+        "--solve_dir",
+        type=str,
+        help="The directory containing the solve results",
+        required=False,
+    )
+    parser.add_argument(
+        "--local_run_name",
+        type=str,
+        help="The name of the local run to archive",
+        default="local",
+    )
+    parser.add_argument(
         "--no_download",
         action="store_true",
         help="Skip downloading the artifacts, just unpack and organize the data",
@@ -200,6 +221,12 @@ if __name__ == "__main__":
         "--no_link",
         action="store_true",
         help="Skip linking new test patches",
+        required=False,
+    )
+    parser.add_argument(
+        "--no_solve_dir",
+        action="store_true",
+        help="Skip including the solve directory in the archive",
         required=False,
     )
     parser.add_argument(
