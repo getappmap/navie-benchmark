@@ -1,4 +1,4 @@
-name: Official workflow - All-in-one
+name: Official solver
 
 on:
   workflow_dispatch:
@@ -16,16 +16,47 @@ on:
         type: string
       context_token_limit:
         description: "Context token limit"
-        type: string
-        required: false
-        default: "32000"
-      runner:
-        description: "Runner type"
-        required: true
-        default: SWE-Bench_Larger
         type: choice
+        required: true
         options:
-          - SWE-Bench_Larger
+          - "8000"
+          - "16000"
+          - "32000"
+          - "64000"
+        default: "8000"
+      context_token_limit_increase:
+        description: "Percent to increase the token limit on each retry"
+        type: choice
+        required: true
+        default: "20"
+        options:
+          - "0"
+          - "10"
+          - "20"
+          - "30"
+          - "40"
+          - "50"
+      temperature_increase:
+        description: "Amount to increase the temperature on each retry"
+        type: choice
+        required: true
+        default: "0.05"
+        options:
+          - "0"
+          - "0.05"
+          - "0.1"
+          - "0.15"
+          - "0.2"
+      test_patch_solve_threshold:
+        description: "Minimum number of test patches to discover, on a single runner, in order to continue solving for tests"
+        type: number
+        required: true
+        default: 2
+      max_test_solve_iterations:
+        description: "Maximum number of iterations to solve for tests"
+        type: number
+        required: true
+        default: 5
       num_runners:
         description: "Number of runners"
         type: number
@@ -51,8 +82,11 @@ jobs:
           echo "llm: ${{ github.event.inputs.llm }}"
           echo "instance_set: ${{ github.event.inputs.instance_set }}"
           echo "context_token_limit: ${{ github.event.inputs.context_token_limit }}"
+          echo "context_token_limit_increase: ${{ github.event.inputs.context_token_limit_increase }}"
+          echo "temperature_increase: ${{ github.event.inputs.temperature_increase }}"
+          echo "test_patch_solve_threshold: ${{ github.event.inputs.test_patch_solve_threshold }}"
+          echo "max_test_solve_iterations: ${{ github.event.inputs.max_test_solve_iterations }}"
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
-          echo "runner: ${{ github.event.inputs.runner }}"
           echo "name: ${{ github.event.inputs.name }}"
 
   build-appmap-js:
@@ -72,12 +106,13 @@ jobs:
           echo "Matrix: $indices"
           echo "matrix=$indices" >> $GITHUB_OUTPUT
 
-  solve_tests:
-    name: Solve synthetic tests
+  solve:
     needs:
       - build-appmap-js
       - prepare-matrix
-    runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
+    runs-on: SWE-Bench_Larger
+    # Run for 24 hours, which is as long as the GH token is valid for.
+    timeout-minutes: 1440
     continue-on-error: true
     strategy:
       matrix:
@@ -130,6 +165,10 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           export APPMAP_COMMAND="node $(pwd)/submodules/appmap-js/packages/cli/built/cli.js"
 
+          git config --global init.defaultBranch main
+          git config --global user.email "actions@example.com"
+          git config --global user.name "GitHub Workflow"
+
           llm=${{ inputs.llm }}
           export APPMAP_NAVIE_MODEL="${llm}"
           if [[ $llm == "gpt-4o"* || $llm == "o1-"* ]]; then
@@ -138,197 +177,47 @@ jobs:
             export ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
           fi
 
-          instance_set=${{ inputs.instance_set }}
-          context_tokens=${{ inputs.context_token_limit }}
+          instance_set="${{ inputs.instance_set }}"
+          context_tokens="${{ inputs.context_token_limit }}"
+          context_token_limit_increase="${{ inputs.context_token_limit_increase }}"
+          temperature=0
+          temperature_increase="${{ inputs.temperature_increase }}"
+          test_patch_solve_threshold="${{ inputs.test_patch_solve_threshold }}"
+          max_test_solve_iterations="${{ inputs.max_test_solve_iterations }}"
+          num_runners="${{ inputs.num_runners }}"
           runner_index="${{ matrix.index }}"
 
-          limits="--test_files=3 --test_status_retry=3 code_files=0 code_status_retry=0"
-
-          # If context_tokens is not empty, prepend it to the limits variable
-          if [ -n "${context_tokens}" ]; then
-            limits="context_tokens=${context_tokens} ${limits}"
-          fi
-
-          echo Removing synthetic tests by deleting data/test_patches
-          rm -rf data/test_patches
-
-          python -m solver.prepare_images \
+          python -m solver.solve_loop \
             --instance_set "${instance_set}" \
-            --num_runners 4 \
+            --context_tokens "${context_tokens}" \
+            --temperature "${temperature}" \
+            --temperature_increase "${temperature_increase}" \
+            --test_patch_solve_threshold "${test_patch_solve_threshold}" \
+            --context_token_limit_increase "${context_token_limit_increase}" \
+            --max_test_solve_iterations "${max_test_solve_iterations}" \
+            --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
 
-            python -m solver.solve \
-            --instance_set "${instance_set}" \
-            --limit "${limits}" \
-            --num_runners 4 \
-            --runner_index "${runner_index}"
-            
-          # Collect optimal patches and predictions.
-          touch predictions.jsonl
-          python -m solver.import_solve_test_run
+      - name: Report predictions
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: predictions-${{ matrix.index }}
+          path: predictions.jsonl
 
-          # Create a file data/instance_sets/optimal.txt and copy the base name of each file in data/test_patches
-          # into it, one per line. Strip the .json extension from each one and sort them.
-          find data/test_patches -type f -exec basename {} \; | sed 's/\.json$//' | sort > data/instance_sets/optimal.txt
-            
-      - name: Report solver logs
+      - name: Report harness logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run_evaluation-${{ matrix.index }}
+          path: logs/run_evaluation
+
+      - name: Report archive
         uses: actions/upload-artifact@v4
         if: always()
         with:
           retention-days: 14
-          name: solve_tests-solve-${{ matrix.index }}
+          name: archive-${{ matrix.index }}
           path: |
-            solve
-            !solve/*/source
-
-      - name: Report test patches
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          retention-days: 14
-          name: solve_tests-test_patches-${{ matrix.index }}
-          path: |
-            data/test_patches
-
-      - name: Report "optimal" instance set
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          retention-days: 14
-          name: solve_tests-optimal_instance_set-${{ matrix.index }}
-          path: |
-            data/instance_sets/optimal.txt
-
-  # solve_code:
-  #   name: Solve code patches
-  #   needs:
-  #     - build-appmap-js
-  #     - prepare-matrix
-  #   runs-on: ${{ inputs.runner || 'SWE-Bench_Larger' }}
-  #   continue-on-error: true
-  #   strategy:
-  #     matrix:
-  #       index: ${{ fromJson(needs['prepare-matrix'].outputs.matrix) }}
-  #   env:
-  #     NUM_RUNNERS: ${{ inputs.num_runners_phase_2 }}
-  #     CONTEXT_TOKENS: ${{ inputs.token_limit_phase_2}}
-  #     LLM: ${{ inputs.llm }}
-  #   defaults:
-  #     run:
-  #       shell: bash -leo pipefail {0}
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #       with:
-  #         submodules: true
-
-  #     - name: Restore artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: artifacts
-      
-  #     - name: Setup Python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: '3.12'
-
-  #     # Restore the appmap-js build
-  #     - name: Restore appmap-js build
-  #       uses: actions/cache/restore@v4
-  #       id: cache-appmap-js
-  #       with:
-  #         fail-on-cache-miss: true
-  #         path: |
-  #           submodules/appmap-js/node_modules
-  #           submodules/appmap-js/packages/*/built
-  #           submodules/appmap-js/packages/*/dist
-  #           submodules/appmap-js/packages/*/node_modules
-  #         key: appmap-js-dist-${{ runner.os }}-${{ hashFiles('.git/modules/submodules/appmap-js/HEAD') }}
-
-  #     - name: Set up Node.js
-  #       if: steps.cache-appmap-js.outputs.cache-hit != 'true'
-  #       uses: actions/setup-node@v3
-
-  #     - name: Login to GitHub Container Registry
-  #       uses: docker/login-action@v3
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Solve instances
-  #       run: |
-  #         pip install virtualenv
-  #         virtualenv venv
-  #         . ./venv/bin/activate
-  #         pip install -e .
-
-  #         export PYTHONPATH=$PYTHONPATH:$(pwd)
-  #         export APPMAP_COMMAND="node $(pwd)/submodules/appmap-js/packages/cli/built/cli.js"
-
-  #         llm="${LLM:-gpt-4o}"
-  #         if [[ $llm == "gpt-4o"* ]]; then
-  #           export APPMAP_NAVIE_MODEL="${llm}"
-  #           export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
-  #         elif [[ $llm == "claude"* ]]; then
-  #           export APPMAP_NAVIE_MODEL="${llm}"
-  #           export ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
-  #         fi
-
-  #         instance_set="${INSTANCE_SET:-smoke}"
-  #         context_tokens="${CONTEXT_TOKENS:-}"
-  #         use_synthetic_tests="${USE_SYNTHETIC_TESTS:-true}"
-  #         limits="--test_files=0 --test_status_retry=0 code_files=3 code_status_retry=3"
-  #         num_runners="${NUM_RUNNERS:-2}"
-  #         runner_index="${{ matrix.index }}"
-
-  #         # If context_tokens is not empty, prepend it to the limits variable
-  #         if [ -n "${context_tokens}" ]; then
-  #           limits="${limits} context_tokens=${context_tokens}"
-  #         fi
-
-  #         # Test patches are restored and unpacked like this:
-  #         # artifacts/solve_test-test_patches-0
-  #         # artifacts/solve_test-test_patches-0/django__django-1.json
-  #         # artifacts/solve_test-test_patches-0/django__django-2.json
-  #         # artifacts/solve_test-test_patches-1
-  #         # artifacts/solve_test-test_patches-1/sympy__sympy-1.json
-  #         # artifacts/solve_test-test_patches-1/sympy__sympy-2.json
-  #         rm -f data/test_patches
-  #         # rsync artifacts/solve_test-test_patches-*/ into data/test_patches
-  #         for dir in artifacts/solve_test-test_patches-*; do
-  #           rsync -a $dir/ data/test_patches/
-  #         done
-
-  #         num_test_patches=$(find data/test_patches -type f | wc -l)
-  #         echo "Number of test patches: $num_test_patches"
-
-  #         # Create a file data/instance_sets/optimal.txt and copy the base name of each file in data/test_patches
-  #         # into it, one per line. Strip the .json extension from each one and sort them.
-  #         find data/test_patches -type f -exec basename {} \; | sed 's/\.json$//' | sort > data/instance_sets/optimal.txt
-
-  #         python -m solver.prepare_images \
-  #           --instance_set optimal \
-  #           --num_runners "${num_runners}" \
-  #           --runner_index "${runner_index}"
-
-  #         python -m solver.solve \
-  #           --instance_set phase_2 \
-  #           $( [ "${limits}" != "default" ] && echo "--limit ${limits}" ) \
-  #           --num_runners "${num_runners}" \
-  #           --runner_index "${runner_index}"
-
-  #     # - name: Upload report
-  #     #   uses: actions/upload-artifact@v4
-  #     #   with:
-  #     #     name: report
-  #     #     path: report.csv
-  #     #     python -m swebench.harness.run_evaluation \
-  #     #       --predictions_path predictions.jsonl \
-  #     #       --run_id "${instance_set}"
-
-  #     #     python -m solver.preserve_optimal_patches \
-  #     #       --predictions_path predictions.jsonl \
-  #     #       --instance_set "${instance_set}"
-
-
+            archive
+            !archive/*/source

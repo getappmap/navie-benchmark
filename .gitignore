@@ -176,6 +176,8 @@ appmap.log
 # Solve
 solve
 predictions.jsonl
+data/solve_test_runs/local
+archive
 
 # Evaluation
 *.validate-*.json

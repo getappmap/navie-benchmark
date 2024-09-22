@@ -87,41 +87,9 @@ jobs:
           echo "runner: ${{ github.event.inputs.runner }}"
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
           echo "name: ${{ github.event.inputs.name }}"
+
   build-appmap-js:
-    runs-on: 'ubuntu-latest'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      # Cache the appmap-js build
-      - name: Cache appmap-js build
-        uses: actions/cache@v4
-        id: cache-appmap-js
-        with:
-          lookup-only: true
-          path: |
-            submodules/appmap-js/node_modules
-            submodules/appmap-js/packages/*/built
-            submodules/appmap-js/packages/*/dist
-            submodules/appmap-js/packages/*/node_modules
-          key: appmap-js-dist-${{ runner.os }}-${{ hashFiles('.git/modules/submodules/appmap-js/HEAD') }}
-
-      - name: Set up Node.js
-        if: steps.cache-appmap-js.outputs.cache-hit != 'true'
-        uses: actions/setup-node@v3
-
-      - name: Build submodules
-        if: steps.cache-appmap-js.outputs.cache-hit != 'true'
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: true
-        run: |
-          cd submodules/appmap-js
-          git checkout -- .
-          yarn
-          yarn build
-          chmod +x packages/cli/built/cli.js
+    uses: ./.github/workflows/build_appmap_js.yml
 
   prepare-matrix:
     runs-on: ubuntu-latest
@@ -204,7 +172,7 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           export APPMAP_COMMAND="node $(pwd)/submodules/appmap-js/packages/cli/built/cli.js"
 
-          git config --global init.defaultBranch swe-bench-2
+          git config --global init.defaultBranch main
           git config --global user.email "actions@example.com"
           git config --global user.name "GitHub Workflow"
 
