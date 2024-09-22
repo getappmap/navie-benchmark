@@ -214,12 +214,6 @@ jobs:
       - solve
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: archive
-          pattern: 'archive-*'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -230,12 +224,23 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: archive
+          pattern: 'archive-*'
+
       - name: Report
         run: |
           pip install virtualenv
           virtualenv venv
           . ./venv/bin/activate
           pip install -e .
+
+          print_archive_dirs_to_depth_3() {
+            find archive -maxdepth 3 -type d -print
+          }
+          print_archive_dirs_to_depth_3
 
           export PYTHONPATH=$PYTHONPATH:$(pwd)
 
