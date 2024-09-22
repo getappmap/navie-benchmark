@@ -279,7 +279,7 @@ def archive_evaluate_logs(archive_dir: Path, instance_set: str) -> None:
     for src_file in Path(".").glob(f"navie_*.{instance_set}.json"):
         shutil.copy(src_file, target_dir / src_file.name)
 
-    print(f"Coping predictions to {target_dir / 'predictions.jsonl'}")
+    print(f"Copying predictions to {target_dir / 'predictions.jsonl'}")
     shutil.copy(predictions_file, target_dir / "predictions.jsonl")
 
     print(f"Resetting the evaluation directory and evaluation file")

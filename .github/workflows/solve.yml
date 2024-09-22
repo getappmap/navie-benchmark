@@ -63,7 +63,7 @@ on:
         required: false
 
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened, labeled]
 
 run-name: ${{ inputs.name || github.event.pull_request.title || github.event.workflow.name }}
 
@@ -108,6 +108,7 @@ jobs:
           echo "matrix=$indices" >> $GITHUB_OUTPUT
 
   solve:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test-solve') || github.event_name == 'workflow_dispatch' }}
     needs:
       - build-appmap-js
       - prepare-matrix

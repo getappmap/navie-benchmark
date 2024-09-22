@@ -15,6 +15,10 @@ from .patch import (
     git_diff,
 )
 
+# Maximum length of observed errors to include in the test case. Beyond this, the error is probably too verbose to
+# be useful. This value preserves all error logs within 3 standard deviations above the observed data.
+OBSERVED_ERROR_LENGTH_LIMIT = 100 * 1000
+
 
 class GenerateTest:
 
@@ -75,6 +79,11 @@ the incorrect output is produced.
                     if not "whitespace" in err.lower()
                 ]
             )
+            if len(observed_errors_str) > OBSERVED_ERROR_LENGTH_LIMIT:
+                observed_errors_str = (
+                    observed_errors_str[:OBSERVED_ERROR_LENGTH_LIMIT] + "..."
+                )
+
             plan.append(
                 f"""## Preventing test execution errors
                 

@@ -40,7 +40,7 @@ on:
         description: "Amount to increase the temperature on each retry"
         type: choice
         required: true
-        default: "0.05"
+        default: "0.1"
         options:
           - "0"
           - "0.05"
@@ -51,16 +51,17 @@ on:
         description: "Minimum number of test patches to discover, on a single runner, in order to continue solving for tests"
         type: number
         required: true
-        default: 2
+        default: 1
       max_test_solve_iterations:
         description: "Maximum number of iterations to solve for tests"
         type: number
         required: true
-        default: 5
+        default: 3
       num_runners:
         description: "Number of runners"
         type: number
         required: true
+        default: 2
       name:
         description: "Assign a name to the workflow run"
         type: string
@@ -198,20 +199,6 @@ jobs:
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
 
-      - name: Report predictions
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: predictions-${{ matrix.index }}
-          path: predictions.jsonl
-
-      - name: Report harness logs
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: run_evaluation-${{ matrix.index }}
-          path: logs/run_evaluation
-
       - name: Report archive
         uses: actions/upload-artifact@v4
         if: always()
@@ -220,4 +207,47 @@ jobs:
           name: archive-${{ matrix.index }}
           path: |
             archive
-            !archive/*/source
+
+
+  report:
+    needs:
+      - solve
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: archive
+          pattern: 'archive-*'
+
+      - name: Report
+        run: |
+          pip install virtualenv
+          virtualenv venv
+          . ./venv/bin/activate
+          pip install -e .
+
+          print_archive_dirs_to_depth_3() {
+            find archive -maxdepth 3 -type d -print
+          }
+          print_archive_dirs_to_depth_3
+
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+
+          python -m solver.report --archive_dir archive
+    
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: report.csv
