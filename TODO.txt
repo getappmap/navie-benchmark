@@ -1,3 +1,17 @@
+## Phase III
+
+    Phase III data is collected here -
+
+    https://docs.google.com/spreadsheets/d/1BJXnulBWL8CA0FTNk82nyBWq_37unpuIk2iT6UlSkoY/edit?gid=437586290#gid=437586290
+
+    In this phase, the solve.yml workflow was used to generate test patches and optimal code solutions.
+    See workflow runs 223-225.
+
+    Subsequently, the instances with no optimal code patches were collected into no_code_patch_<date>_[12].txt
+    datasets. These datesets were re-run with the test patches available.
+
+    Results from the no_code_patch runs replace the instances from 223-225 that were non-optimal.
+
 ## Score and pass rate analysis
 
     Re-try batch 3 with synthetic tests and new solver limits - test_files=0 code_files=6 code_status_retry=3
