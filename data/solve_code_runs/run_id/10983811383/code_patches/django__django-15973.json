@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15973",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 75a3b8b..bd44932 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -4,6 +4,7 @@ from django.db.migrations.state import ModelState\n from django.db.migrations.utils import field_references, resolve_relation\n from django.db.models.options import normalize_together\n from django.utils.functional import cached_property\n+from django.apps import apps\n \n from .fields import AddField, AlterField, FieldOperation, RemoveField, RenameField\n \n@@ -220,6 +221,11 @@ class CreateModel(ModelOperation):\n             and self.name_lower == operation.model_name_lower\n         ):\n             if isinstance(operation, AddField):\n+                # Resolve the through model if it's a string\n+                if isinstance(operation.field.remote_field.through, str):\n+                    operation.field.remote_field.through = apps.get_model(\n+                        operation.field.remote_field.through\n+                    )\n                 return [\n                     CreateModel(\n                         self.name,\n@@ -230,6 +236,11 @@ class CreateModel(ModelOperation):\n                     ),\n                 ]\n             elif isinstance(operation, AlterField):\n+                # Resolve the through model if it's a string\n+                if isinstance(operation.field.remote_field.through, str):\n+                    operation.field.remote_field.through = apps.get_model(\n+                        operation.field.remote_field.through\n+                    )\n                 return [\n                     CreateModel(\n                         self.name,\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2843809,
+  "num_received_chars": 31388,
+  "elapsed_time": 230.67153310775757,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

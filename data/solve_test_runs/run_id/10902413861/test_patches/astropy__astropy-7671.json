@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "astropy/constants/tests/test_prior_version.py",
-  "test_patch": "diff --git a/astropy/constants/tests/test_minversion_failure.py b/astropy/constants/tests/test_minversion_failure.py\nnew file mode 100644\nindex 0000000..a06e733\n--- /dev/null\n+++ b/astropy/constants/tests/test_minversion_failure.py\n@@ -0,0 +1,13 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+from distutils.version import LooseVersion\n+import unittest\n+\n+class TestMinversionFailure(unittest.TestCase):\n+    def test_minversion_failure(self):\n+        with self.assertRaises(TypeError):\n+            # This should raise a TypeError due to the issue with LooseVersion\n+            LooseVersion('1.14.3') >= LooseVersion('1.14dev')\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

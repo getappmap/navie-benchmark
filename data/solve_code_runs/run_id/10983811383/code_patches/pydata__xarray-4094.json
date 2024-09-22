@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4094",
+  "edit_test_file": "xarray/tests/test_computation.py",
+  "code_patch": "diff --git a/xarray/core/dataarray.py b/xarray/core/dataarray.py\nindex b0df874..d87a3c9 100644\n--- a/xarray/core/dataarray.py\n+++ b/xarray/core/dataarray.py\n@@ -1961,7 +1961,12 @@ class DataArray(AbstractArray, DataWithCoords):\n         # pull variables out of datarray\n         data_dict = {}\n         for k in variables:\n-            data_dict[k] = self.sel({variable_dim: k}).squeeze(drop=True)\n+            # Handle single-dimension variables by checking if the dimension is in the index\n+            if variable_dim in self.dims:\n+                data_dict[k] = self.sel({variable_dim: k}).squeeze(drop=True)\n+            else:\n+                # For single-dimension variables, ensure no conflict by using the original dimension\n+                data_dict[k] = self.sel({dim: k}).squeeze(drop=True)\n \n         # unstacked dataset\n         return Dataset(data_dict)\n",
+  "test_patch": "diff --git a/xarray/tests/test_to_unstacked_dataset_single_dim.py b/xarray/tests/test_to_unstacked_dataset_single_dim.py\nnew file mode 100644\nindex 0000000..c3c7d41\n--- /dev/null\n+++ b/xarray/tests/test_to_unstacked_dataset_single_dim.py\n@@ -0,0 +1,14 @@\n+import numpy as np\n+import xarray as xr\n+import pytest\n+\n+def test_to_unstacked_dataset_single_dim():\n+    arr = xr.DataArray(\n+        np.arange(3),\n+        coords=[(\"x\", [0, 1, 2])],\n+    )\n+    data = xr.Dataset({\"a\": arr, \"b\": arr})\n+    stacked = data.to_stacked_array('y', sample_dims=['x'])\n+    \n+    with pytest.raises(xr.MergeError, match=\"conflicting values for variable 'y' on objects to be combined\"):\n+        stacked.to_unstacked_dataset('y')\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_to_unstacked_dataset_single_dim_inverted.py b/xarray/tests/test_to_unstacked_dataset_single_dim_inverted.py\nnew file mode 100644\nindex 0000000..a6e035c\n--- /dev/null\n+++ b/xarray/tests/test_to_unstacked_dataset_single_dim_inverted.py\n@@ -0,0 +1,17 @@\n+import numpy as np\n+import xarray as xr\n+import pytest\n+\n+def test_to_unstacked_dataset_single_dim():\n+    arr = xr.DataArray(\n+        np.arange(3),\n+        coords=[(\"x\", [0, 1, 2])],\n+    )\n+    data = xr.Dataset({\"a\": arr, \"b\": arr})\n+    stacked = data.to_stacked_array('y', sample_dims=['x'])\n+    \n+    # Alter the test to fail when the issue is observed\n+    try:\n+        stacked.to_unstacked_dataset('y')\n+    except xr.MergeError:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 696086,
+  "num_received_chars": 4730,
+  "elapsed_time": 74.70447015762329,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

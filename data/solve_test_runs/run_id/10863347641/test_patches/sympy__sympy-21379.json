@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/core/tests/test_subs.py",
-  "test_patch": "diff --git a/sympy/core/tests/test_polynomial_error.py b/sympy/core/tests/test_polynomial_error.py\nnew file mode 100644\nindex 0000000..ec86a05\n--- /dev/null\n+++ b/sympy/core/tests/test_polynomial_error.py\n@@ -0,0 +1,11 @@\n+from sympy import symbols, exp, sinh, Piecewise\n+from sympy.core.cache import clear_cache\n+from sympy.polys.polyerrors import PolynomialError\n+from sympy.testing.pytest import raises\n+\n+def test_polynomial_error_with_subs():\n+    x, y, z = symbols('x y z', real=True)\n+    clear_cache()\n+    expr = exp(sinh(Piecewise((x, y > x), (y, True)) / z))\n+    with raises(PolynomialError):\n+        expr.subs({1: 1.0})\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "lib/matplotlib/tests/test_backends_interactive.py",
-  "test_patch": "diff --git a/lib/matplotlib/tests/test_subfigures.py b/lib/matplotlib/tests/test_subfigures.py\nnew file mode 100644\nindex 0000000..ba6f9d6\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_subfigures.py\n@@ -0,0 +1,16 @@\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_subfigures_wspace_hspace():\n+    # Create subfigures with wspace and hspace set to 0\n+    figs = plt.figure().subfigures(2, 2, wspace=0, hspace=0)\n+    for fig in figs.flat:\n+        fig.subplots().plot([1, 2])\n+\n+    # Check if the layout is the same regardless of wspace and hspace values\n+    # This is the expected incorrect behavior as described in the issue\n+    for fig in figs.flat:\n+        assert fig.subplotpars.wspace != 0 or fig.subplotpars.hspace != 0\n+\n+if __name__ == \"__main__\":\n+    pytest.main([__file__])\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

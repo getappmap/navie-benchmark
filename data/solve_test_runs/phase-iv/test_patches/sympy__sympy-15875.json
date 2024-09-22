@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/core/tests/test_arit.py",
+  "test_patch": "diff --git a/sympy/core/tests/test_is_zero.py b/sympy/core/tests/test_is_zero.py\nnew file mode 100644\nindex 0000000..d0b5302\n--- /dev/null\n+++ b/sympy/core/tests/test_is_zero.py\n@@ -0,0 +1,7 @@\n+from sympy import I, Add\n+from sympy.simplify import simplify\n+\n+def test_is_zero_on_complex_integer():\n+    e = -2*I + (1 + I)**2\n+    assert e.is_zero is False, \"Expected e.is_zero to be False\"\n+    assert simplify(e).is_zero is True, \"Expected simplify(e).is_zero to be True\"\n",
+  "inverted_patch": "diff --git a/sympy/core/tests/test_is_zero_inverted.py b/sympy/core/tests/test_is_zero_inverted.py\nnew file mode 100644\nindex 0000000..1a444be\n--- /dev/null\n+++ b/sympy/core/tests/test_is_zero_inverted.py\n@@ -0,0 +1,7 @@\n+from sympy import I, Add\n+from sympy.simplify import simplify\n+\n+def test_is_zero_on_complex_integer():\n+    e = -2*I + (1 + I)**2\n+    assert e.is_zero is None, \"__BUG__HERE__\"\n+    assert simplify(e).is_zero is True, \"Expected simplify(e).is_zero to be True\"\n"
+}

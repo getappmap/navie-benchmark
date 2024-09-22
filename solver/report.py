@@ -70,7 +70,17 @@ class Report:
         def collect_solutions() -> dict[str, Solution]:
             solutions: dict[str, Solution] = {}
             solution_first_observed: dict[str, str] = {}
-            for file in self.solve_data_dir.rglob("**/solve_code/**/solution.json"):
+
+            solution_files = list(
+                self.solve_data_dir.rglob("**/solve_code/**/solution.json")
+            )
+            if not solution_files:
+                print(
+                    f"No solution files found in {self.solve_data_dir}/**/solve_code. Using all solution.json files in {self.solve_data_dir}."
+                )
+                solution_files = self.solve_data_dir.rglob("**/solution.json")
+
+            for file in solution_files:
                 solution_data = json.load(open(file))
                 for patch_field in [
                     "code_patch",
@@ -131,8 +141,10 @@ class Report:
                             blank_predictions[prediction["instance_id"]] = prediction
 
             if self.predictions_path and self.predictions_path.exists():
+                print(f"Collecting predictions from {self.predictions_path}")
                 collect_prediction(self.predictions_path)
             else:
+                print(f"Collecting predictions from {self.solve_data_dir}")
                 for file in self.solve_data_dir.rglob(
                     "**/evaluation/predictions.jsonl"
                 ):
@@ -200,16 +212,16 @@ class Report:
             print(
                 f"Instance IDs in one file but not the others: {instance_ids_do_not_contain}"
             )
-            solutions_do_not_contain = set(solutions.keys()) - set(intersection_ids)
+            solutions_do_not_contain = set(instance_ids) - set(solutions.keys())
             print(
                 f"Solutions do not contain the following instance ids: {solutions_do_not_contain}"
             )
-            predictions_do_not_contain = set(predictions.keys()) - set(intersection_ids)
+            predictions_do_not_contain = set(instance_ids) - set(predictions.keys())
             print(
                 f"Predictions do not contain the following instance ids: {predictions_do_not_contain}"
             )
-            evaluation_reports_do_not_contain = set(evaluation_reports.keys()) - set(
-                intersection_ids
+            evaluation_reports_do_not_contain = set(instance_ids) - set(
+                evaluation_reports.keys()
             )
             print(
                 f"Evaluations do not contain the following instance ids: {evaluation_reports_do_not_contain}"

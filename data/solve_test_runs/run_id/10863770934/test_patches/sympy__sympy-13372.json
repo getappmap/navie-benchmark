@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/functions/elementary/tests/test_miscellaneous.py",
-  "test_patch": "diff --git a/sympy/functions/elementary/tests/test_evalf.py b/sympy/functions/elementary/tests/test_evalf.py\nnew file mode 100644\nindex 0000000..a73509c\n--- /dev/null\n+++ b/sympy/functions/elementary/tests/test_evalf.py\n@@ -0,0 +1,9 @@\n+from sympy import Mul, Max, Symbol\n+from sympy.utilities.pytest import raises\n+\n+def test_evalf_unboundlocalerror():\n+    x = Symbol('x')\n+    y = Symbol('y')\n+    expr = Mul(Max(0, y), x, evaluate=False)\n+    with raises(UnboundLocalError):\n+        expr.evalf()\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

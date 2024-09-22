@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/physics/mechanics/tests/test_jointsmethod.py",
-  "test_patch": "diff --git a/sympy/physics/mechanics/tests/test_point2d_evaluate.py b/sympy/physics/mechanics/tests/test_point2d_evaluate.py\nnew file mode 100644\nindex 0000000..ba983cb\n--- /dev/null\n+++ b/sympy/physics/mechanics/tests/test_point2d_evaluate.py\n@@ -0,0 +1,7 @@\n+import sympy as sp\n+from sympy.testing.pytest import raises\n+\n+def test_evaluate_false_with_point2d():\n+    with raises(ValueError):\n+        with sp.evaluate(False):\n+            sp.S('Point2D(Integer(1),Integer(2))')\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

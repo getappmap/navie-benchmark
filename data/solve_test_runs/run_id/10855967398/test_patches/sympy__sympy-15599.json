@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/printing/tests/test_numpy.py",
-  "test_patch": "diff --git a/sympy/printing/tests/test_mod.py b/sympy/printing/tests/test_mod.py\nnew file mode 100644\nindex 0000000..f1da0a8\n--- /dev/null\n+++ b/sympy/printing/tests/test_mod.py\n@@ -0,0 +1,6 @@\n+from sympy import Symbol, Mod\n+\n+def test_mod_issue():\n+    i = Symbol('i', integer=True)\n+    # This test should pass when the issue is observed, i.e., Mod(3*i, 2) is unchanged\n+    assert Mod(3*i, 2) == Mod(3*i, 2)\n\\ No newline at end of file\n",
-  "inverted_patch": "diff --git a/sympy/printing/tests/test_mod_inverted.py b/sympy/printing/tests/test_mod_inverted.py\nnew file mode 100644\nindex 0000000..df82222\n--- /dev/null\n+++ b/sympy/printing/tests/test_mod_inverted.py\n@@ -0,0 +1,6 @@\n+from sympy import Symbol, Mod\n+\n+def test_mod_issue():\n+    i = Symbol('i', integer=True)\n+    # This test should fail when the issue is observed, i.e., Mod(3*i, 2) should reduce to Mod(i, 2)\n+    assert Mod(3*i, 2) == Mod(i, 2), \"__BUG__HERE__\"\n\\ No newline at end of file\n"
-}

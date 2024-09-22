@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11179",
+  "edit_test_file": "tests/signals/tests.py",
+  "code_patch": "diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py\nindex 92fe4af..1d7f133 100644\n--- a/django/db/models/deletion.py\n+++ b/django/db/models/deletion.py\n@@ -316,6 +316,11 @@ class Collector:\n                             sender=model, instance=obj, using=self.using\n                         )\n \n+                # Set PK to None for models without dependencies\n+                if not self.dependencies.get(model._meta.concrete_model):\n+                    for obj in instances:\n+                        setattr(obj, model._meta.pk.attname, None)\n+\n         # update collected instances\n         for instances_for_fieldvalues in self.field_updates.values():\n             for (field, value), instances in instances_for_fieldvalues.items():\n",
+  "test_patch": "diff --git a/tests/signals/test_model_deletion_pks.py b/tests/signals/test_model_deletion_pks.py\nnew file mode 100644\nindex 0000000..69e3a53\n--- /dev/null\n+++ b/tests/signals/test_model_deletion_pks.py\n@@ -0,0 +1,13 @@\n+from django.test import TestCase\n+from .models import Person\n+\n+class ModelDeletionPKsTest(TestCase):\n+    def test_delete_clears_primary_key(self):\n+        # Create a Person instance\n+        person = Person.objects.create(first_name=\"John\", last_name=\"Doe\")\n+        \n+        # Delete the Person instance\n+        person.delete()\n+        \n+        # Check if the primary key is not cleared (issue reproduction)\n+        self.assertIsNotNone(person.pk, \"Primary key should be None after deletion, but it is not.\")\n",
+  "test_inverted_patch": "diff --git a/tests/signals/test_model_deletion_pks_inverted.py b/tests/signals/test_model_deletion_pks_inverted.py\nnew file mode 100644\nindex 0000000..35bca13\n--- /dev/null\n+++ b/tests/signals/test_model_deletion_pks_inverted.py\n@@ -0,0 +1,15 @@\n+from django.test import TestCase\n+from .models import Person\n+\n+class ModelDeletionPKsTest(TestCase):\n+    def test_delete_clears_primary_key(self):\n+        # Create a Person instance\n+        person = Person.objects.create(first_name=\"John\", last_name=\"Doe\")\n+        \n+        # Delete the Person instance\n+        person.delete()\n+        \n+        # Check if the primary key is cleared (issue reproduction)\n+        # This should fail if the bug is present\n+        if person.pk is not None:\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 3073459,
+  "num_received_chars": 32795,
+  "elapsed_time": 315.0187828540802,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

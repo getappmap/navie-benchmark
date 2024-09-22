@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12273",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/base.py b/django/db/models/base.py\nindex 844c01e..e006329 100644\n--- a/django/db/models/base.py\n+++ b/django/db/models/base.py\n@@ -743,6 +743,10 @@ class Model(metaclass=ModelBase):\n             if loaded_fields:\n                 update_fields = frozenset(loaded_fields)\n \n+        # If the primary key is None, ensure that the instance is marked as adding\n+        if self.pk is None:\n+            self._state.adding = True\n+\n         self.save_base(using=using, force_insert=force_insert,\n                        force_update=force_update, update_fields=update_fields)\n     save.alters_data = True\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1300182,
+  "num_received_chars": 16224,
+  "elapsed_time": 126.1635365486145,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

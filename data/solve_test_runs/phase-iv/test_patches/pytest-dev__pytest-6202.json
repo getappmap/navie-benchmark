@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "testing/test_pastebin.py",
+  "test_patch": "diff --git a/testing/test_parametrization_issue.py b/testing/test_parametrization_issue.py\nnew file mode 100644\nindex 0000000..a2343bb\n--- /dev/null\n+++ b/testing/test_parametrization_issue.py\n@@ -0,0 +1,20 @@\n+import pytest\n+\n+def test_parametrization_headline_issue(testdir):\n+    testdir.makepyfile(\n+        \"\"\"\n+        import pytest\n+\n+        @pytest.mark.parametrize(\"a\",[\"..[\"])\n+        def test_boo(a):\n+            assert 0\n+        \"\"\"\n+    )\n+    result = testdir.runpytest(\"-v\")\n+    result.stdout.fnmatch_lines(\n+        [\n+            \"*FAILURES*\",\n+            \"*test_boo[.[]*\",\n+        ]\n+    )\n+    assert result.ret == 1\n",
+  "inverted_patch": null
+}

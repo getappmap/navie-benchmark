@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19954",
+  "edit_test_file": "sympy/combinatorics/tests/test_fp_groups.py",
+  "code_patch": "diff --git a/sympy/combinatorics/perm_groups.py b/sympy/combinatorics/perm_groups.py\nindex de94dda..54103e1 100644\n--- a/sympy/combinatorics/perm_groups.py\n+++ b/sympy/combinatorics/perm_groups.py\n@@ -2198,14 +2198,14 @@ def _number_blocks(blocks):\n                 for i, r in enumerate(rep_blocks):\n                     if len(r) > len(rep) and rep.issubset(r):\n                         # i-th block system is not minimal\n-                        del num_blocks[i], blocks[i]\n-                        to_remove.append(rep_blocks[i])\n+                        to_remove.append(i)\n                     elif len(r) < len(rep) and r.issubset(rep):\n                         # the system being checked is not minimal\n                         minimal = False\n                         break\n                 # remove non-minimal representative blocks\n-                rep_blocks = [r for r in rep_blocks if r not in to_remove]\n+                for i in sorted(to_remove, reverse=True):\n+                    del num_blocks[i], blocks[i], rep_blocks[i]\n \n                 if minimal and num_block not in num_blocks:\n                     blocks.append(block)\n",
+  "test_patch": "diff --git a/sympy/combinatorics/tests/test_sylow_subgroup_issue.py b/sympy/combinatorics/tests/test_sylow_subgroup_issue.py\nnew file mode 100644\nindex 0000000..c06cbdf\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_sylow_subgroup_issue.py\n@@ -0,0 +1,11 @@\n+from sympy.combinatorics.named_groups import DihedralGroup\n+from sympy.testing.pytest import raises\n+\n+def test_sylow_subgroup_index_error():\n+    G = DihedralGroup(18)\n+    with raises(IndexError):\n+        G.sylow_subgroup(p=2)\n+\n+    G = DihedralGroup(50)\n+    with raises(IndexError):\n+        G.sylow_subgroup(p=2)\n",
+  "test_inverted_patch": "diff --git a/sympy/combinatorics/tests/test_sylow_subgroup_issue_inverted.py b/sympy/combinatorics/tests/test_sylow_subgroup_issue_inverted.py\nnew file mode 100644\nindex 0000000..40937d7\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_sylow_subgroup_issue_inverted.py\n@@ -0,0 +1,14 @@\n+from sympy.combinatorics.named_groups import DihedralGroup\n+\n+def test_sylow_subgroup_index_error():\n+    G = DihedralGroup(18)\n+    try:\n+        G.sylow_subgroup(p=2)\n+    except IndexError:\n+        raise AssertionError(\"__BUG__HERE__\")\n+\n+    G = DihedralGroup(50)\n+    try:\n+        G.sylow_subgroup(p=2)\n+    except IndexError:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 2258327,
+  "num_received_chars": 36035,
+  "elapsed_time": 279.3165240287781,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

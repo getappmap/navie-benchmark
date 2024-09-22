@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15278",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/sqlite3/schema.py b/django/db/backends/sqlite3/schema.py\nindex 6752a8e..80fa3e8 100644\n--- a/django/db/backends/sqlite3/schema.py\n+++ b/django/db/backends/sqlite3/schema.py\n@@ -327,7 +327,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):\n         # Fields with default values cannot by handled by ALTER TABLE ADD\n         # COLUMN statement because DROP DEFAULT is not supported in\n         # ALTER TABLE.\n-        if not field.null or self.effective_default(field) is not None:\n+        if not field.null or self.effective_default(field) is not None or field.unique:\n             self._remake_table(model, create_field=field)\n         else:\n             super().add_field(model, field)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1710304,
+  "num_received_chars": 16010,
+  "elapsed_time": 133.50566220283508,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

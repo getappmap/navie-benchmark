@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/core/tests/test_assumptions.py",
-  "test_patch": "diff --git a/sympy/core/tests/test_posify.py b/sympy/core/tests/test_posify.py\nnew file mode 100644\nindex 0000000..8c43f8d\n--- /dev/null\n+++ b/sympy/core/tests/test_posify.py\n@@ -0,0 +1,8 @@\n+from sympy import Symbol, posify\n+\n+def test_posify_ignores_is_finite_assumption():\n+    x = Symbol('x', finite=True)\n+    assert x.is_finite is True\n+\n+    xp, _ = posify(x)\n+    assert xp.is_finite is None\n\\ No newline at end of file\n",
-  "inverted_patch": "diff --git a/sympy/core/tests/test_posify_inverted.py b/sympy/core/tests/test_posify_inverted.py\nnew file mode 100644\nindex 0000000..0d80448\n--- /dev/null\n+++ b/sympy/core/tests/test_posify_inverted.py\n@@ -0,0 +1,9 @@\n+from sympy import Symbol, posify\n+\n+def test_posify_ignores_is_finite_assumption():\n+    x = Symbol('x', finite=True)\n+    assert x.is_finite is True\n+\n+    xp, _ = posify(x)\n+    if xp.is_finite is None:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n"
-}

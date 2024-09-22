@@ -3,9 +3,9 @@ from json import load
 import json
 from os import getenv, readlink
 from pathlib import Path
-import shutil
 import sys
 from typing import Optional
+import zipfile
 
 from solver.github_artifacts import download_artifacts
 
@@ -38,35 +38,30 @@ def import_workflow_run(
     if not no_download:
         download_artifacts(target_dir, run)
 
-    # Unpack the "solutions.zip" artifact into the "code_patches" directory
-    solutions_zip = target_dir / "solutions.zip"
+    # Open each solve-N.zip file and enumerate the solution.json files within.
+    code_patch_dir = target_dir / "code_patches"
+    code_patch_dir.mkdir(parents=True, exist_ok=True)
+    for solve_zip in target_dir.rglob("solve-*.zip"):
+        with zipfile.ZipFile(solve_zip, "r") as z:
+            for solution_file in z.namelist():
+                if not solution_file.endswith("solution.json"):
+                    continue
 
-    def unpack_solutions():
-        import zipfile
+                with z.open(solution_file) as f:
+                    solution: Solution = load(f)
 
-        with zipfile.ZipFile(solutions_zip, "r") as z:
-            z.extractall(target_dir / "code_patches")
-
-    unpack_solutions()
-
-    # Iterate through each solution file and reformulate it as a test patch
-    for solution_file in (target_dir / "code_patches").rglob("solution.json"):
-        with solution_file.open() as f:
-            solution: Solution = load(f)
-
-        instance_id = solution["instance_id"]
-        with open(target_dir / "code_patches" / f"{instance_id}.json", "w") as f:
-            f.write(json.dumps(solution, indent=2))
-
-        # Delete solution_file parent directory recursively
-        shutil.rmtree(solution_file.parent.parent)
+                instance_id = solution["instance_id"]
+                with open(code_patch_dir / f"{instance_id}.json", "w") as f:
+                    f.write(json.dumps(solution, indent=2))
 
     if not no_link:
         # Iterate through the code patches and update the data / code_patches directory with a symlink to any
         # new, complete test patches.
+        code_patch_dir = Path("data") / "code_patches"
+        code_patch_dir.mkdir(parents=True, exist_ok=True)
         for code_patch_file in (target_dir / "code_patches").rglob("*.json"):
             instance_id = code_patch_file.stem
-            target = Path("data") / "code_patches" / f"{instance_id}.json"
+            target = code_patch_dir / f"{instance_id}.json"
             if target.exists():
                 continue
 

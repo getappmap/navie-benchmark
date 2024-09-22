@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/combinatorics/tests/test_named_groups.py",
-  "test_patch": "diff --git a/sympy/combinatorics/tests/test_sylow_subgroups.py b/sympy/combinatorics/tests/test_sylow_subgroups.py\nnew file mode 100644\nindex 0000000..e49de1a\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_sylow_subgroups.py\n@@ -0,0 +1,11 @@\n+from sympy.combinatorics.named_groups import DihedralGroup\n+from sympy.testing.pytest import raises\n+\n+def test_sylow_subgroup_indexerror():\n+    G = DihedralGroup(18)\n+    with raises(IndexError):\n+        G.sylow_subgroup(p=2)\n+\n+    G = DihedralGroup(50)\n+    with raises(IndexError):\n+        G.sylow_subgroup(p=2)\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

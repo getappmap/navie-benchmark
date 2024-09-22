@@ -23,6 +23,7 @@ on:
           # Synthetic test solvers
           - test_files=3 test_status_retry=3 code_files=0
           # Code solvers building synthetic tests
+          - test_files=3 test_status_retry=1 code_files=3 code_status_retry=3
           - test_files=3 test_status_retry=3 code_files=3 code_status_retry=3
           # Code file selection
           - test_files=0 code_files=3 code_status_retry=0
@@ -340,7 +341,10 @@ jobs:
       - name: Report results
         run: |
           . ./venv/bin/activate
-          python -m solver.report
+          python -m solver.report \
+            --predictions_path predictions.jsonl \
+            --solve_data_dir solve \
+            --evaluation_logs_dir logs/run_evaluation
 
       - name: Report solution.json files
         uses: actions/upload-artifact@v4

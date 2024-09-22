@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14369",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/astropy/io/ascii/cds.py b/astropy/io/ascii/cds.py\nindex 7a83fc3..dca6411 100644\n--- a/astropy/io/ascii/cds.py\n+++ b/astropy/io/ascii/cds.py\n@@ -130,7 +130,7 @@ class CdsHeader(core.BaseHeader):\n                 if unit == \"---\":\n                     col.unit = None  # \"---\" is the marker for no unit in CDS/MRT table\n                 else:\n-                    col.unit = Unit(unit, format=\"cds\", parse_strict=\"warn\")\n+                    col.unit = Unit(unit.replace(\" \", \"\"), format=\"cds\", parse_strict=\"warn\")\n                 col.description = (match.group(\"descr\") or \"\").strip()\n                 col.raw_type = match.group(\"format\")\n                 col.type = self.get_col_type(col)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1634699,
+  "num_received_chars": 15627,
+  "elapsed_time": 160.77664589881897,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

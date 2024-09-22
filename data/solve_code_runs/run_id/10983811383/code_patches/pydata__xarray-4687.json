@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4687",
+  "edit_test_file": "xarray/tests/test_computation.py",
+  "code_patch": "diff --git a/xarray/core/computation.py b/xarray/core/computation.py\nindex 9fe93c8..60aee41 100644\n--- a/xarray/core/computation.py\n+++ b/xarray/core/computation.py\n@@ -1727,7 +1727,7 @@ def dot(*arrays, dims=None, **kwargs):\n     return result.transpose(*all_dims, missing_dims=\"ignore\")\n \n \n-def where(cond, x, y):\n+def where(cond, x, y, keep_attrs=None):\n     \"\"\"Return elements from `x` or `y` depending on `cond`.\n \n     Performs xarray-like broadcasting across input arguments.\n@@ -1743,6 +1743,10 @@ def where(cond, x, y):\n         values to choose from where `cond` is True\n     y : scalar, array, Variable, DataArray or Dataset\n         values to choose from where `cond` is False\n+    keep_attrs : bool, optional\n+        If True, attributes from `x` are copied to the result. If False,\n+        attributes are removed. If None (default), attributes are kept\n+        according to the global option `keep_attrs`.\n \n     Returns\n     -------\n@@ -1817,6 +1821,7 @@ def where(cond, x, y):\n         join=\"exact\",\n         dataset_join=\"exact\",\n         dask=\"allowed\",\n+        keep_attrs=keep_attrs,\n     )\n \n \n",
+  "test_patch": "diff --git a/xarray/tests/test_where_preserve_attrs.py b/xarray/tests/test_where_preserve_attrs.py\nnew file mode 100644\nindex 0000000..e14d5a9\n--- /dev/null\n+++ b/xarray/tests/test_where_preserve_attrs.py\n@@ -0,0 +1,19 @@\n+import numpy as np\n+import xarray as xr\n+import unittest\n+\n+class TestWherePreserveAttrs(unittest.TestCase):\n+    def test_where_drops_attributes(self):\n+        # Create a DataArray with attributes\n+        data = xr.DataArray(np.ones([10, 10], dtype=np.int8))\n+        data.attrs[\"attr_1\"] = \"test1\"\n+        data.attrs[\"attr_2\"] = \"test2\"\n+\n+        # Apply xr.where\n+        result = xr.where(data == 1, 5, 0)\n+\n+        # Check that attributes are not preserved\n+        self.assertEqual(result.attrs, {})\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_where_preserve_attrs_inverted.py b/xarray/tests/test_where_preserve_attrs_inverted.py\nnew file mode 100644\nindex 0000000..c4581a6\n--- /dev/null\n+++ b/xarray/tests/test_where_preserve_attrs_inverted.py\n@@ -0,0 +1,20 @@\n+import numpy as np\n+import xarray as xr\n+import unittest\n+\n+class TestWherePreserveAttrs(unittest.TestCase):\n+    def test_where_drops_attributes(self):\n+        # Create a DataArray with attributes\n+        data = xr.DataArray(np.ones([10, 10], dtype=np.int8))\n+        data.attrs[\"attr_1\"] = \"test1\"\n+        data.attrs[\"attr_2\"] = \"test2\"\n+\n+        # Apply xr.where\n+        result = xr.where(data == 1, 5, 0)\n+\n+        # Check that attributes are preserved\n+        if result.attrs != data.attrs:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "num_sent_chars": 1424441,
+  "num_received_chars": 16257,
+  "elapsed_time": 187.97863912582397,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

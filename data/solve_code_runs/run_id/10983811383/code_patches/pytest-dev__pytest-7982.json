@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7982",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/doc/en/example/pythoncollection.rst b/doc/en/example/pythoncollection.rst\nindex c2f0348..a0e0b2f 100644\n--- a/doc/en/example/pythoncollection.rst\n+++ b/doc/en/example/pythoncollection.rst\n@@ -8,6 +8,9 @@ You can easily ignore certain test directories and modules during collection\n by passing the ``--ignore=path`` option on the cli. ``pytest`` allows multiple\n ``--ignore`` options. Example:\n \n+.. note::\n+    Symlinked directories are followed and collected by default. If you wish to exclude them, use the ``--ignore`` option.\n+\n .. code-block:: text\n \n     tests/\n@@ -55,6 +58,9 @@ You can run all of the tests within ``tests/`` *except* for ``tests/foobar/test_\n by invoking ``pytest`` with ``--deselect tests/foobar/test_foobar_01.py::test_a``.\n ``pytest`` allows multiple ``--deselect`` options.\n \n+.. note::\n+    Symlinked directories are included in the collection process. Use ``--deselect`` to exclude specific tests within them.\n+\n Keeping duplicate paths specified from command line\n ----------------------------------------------------\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1165300,
+  "num_received_chars": 6834,
+  "elapsed_time": 88.80744218826294,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "tests/backends/mysql/test_operations.py",
-  "test_patch": "diff --git a/tests/backends/mysql/test_duration_expressions.py b/tests/backends/mysql/test_duration_expressions.py\nnew file mode 100644\nindex 0000000..0b3bae3\n--- /dev/null\n+++ b/tests/backends/mysql/test_duration_expressions.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from django.db import connection, models\n+from django.db.models import F\n+from django.test import TestCase\n+import datetime\n+from decimal import InvalidOperation\n+\n+class Experiment(models.Model):\n+    estimated_time = models.DurationField()\n+\n+class DurationExpressionsTests(TestCase):\n+    @unittest.skipUnless(connection.vendor == 'mysql', 'MySQL tests.')\n+    def test_duration_expressions(self):\n+        delta = datetime.timedelta(days=1)\n+        with self.assertRaises(InvalidOperation):\n+            list(Experiment.objects.annotate(duration=F('estimated_time') + delta))\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

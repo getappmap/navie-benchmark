@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "tests/model_options/test_default_pk.py",
-  "test_patch": "diff --git a/tests/model_options/test_default_auto_field_subclass_check.py b/tests/model_options/test_default_auto_field_subclass_check.py\nnew file mode 100644\nindex 0000000..e754d78\n--- /dev/null\n+++ b/tests/model_options/test_default_auto_field_subclass_check.py\n@@ -0,0 +1,15 @@\n+from django.core.exceptions import ImproperlyConfigured\n+from django.db import models\n+from django.test import SimpleTestCase, override_settings\n+\n+class TestDefaultAutoFieldSubclassCheck(SimpleTestCase):\n+    @override_settings(DEFAULT_AUTO_FIELD='example.core.models.MyBigAutoField')\n+    def test_default_auto_field_subclass_check(self):\n+        msg = (\n+            \"DEFAULT_AUTO_FIELD refers to the module \"\n+            \"'example.core.models.MyBigAutoField' that could not be \"\n+            \"imported.\"\n+        )\n+        with self.assertRaisesMessage(ImproperlyConfigured, msg):\n+            class MyModel(models.Model):\n+                pass\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

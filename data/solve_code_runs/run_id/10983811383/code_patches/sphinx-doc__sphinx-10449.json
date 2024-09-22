@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10449",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/doc/_static/conf.py.txt b/doc/_static/conf.py.txt\nindex 3077d1b..174923b 100644\n--- a/doc/_static/conf.py.txt\n+++ b/doc/_static/conf.py.txt\n@@ -333,6 +333,15 @@ numfig = True\n #language = 'ja'\n \n extensions.append('sphinx.ext.todo')\n+\n+# Ensure return type annotations are not included for classes when autodoc_typehints is set to \"description\"\n+def skip_class_return_type(app, what, name, obj, options, signature, return_annotation):\n+    if what == \"class\":\n+        return signature, None\n+    return signature, return_annotation\n+\n+def setup(app):\n+    app.connect('autodoc-process-signature', skip_class_return_type)\n extensions.append('sphinx.ext.autodoc')\n #extensions.append('sphinx.ext.autosummary')\n extensions.append('sphinx.ext.intersphinx')\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1948064,
+  "num_received_chars": 13485,
+  "elapsed_time": 152.87153148651123,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

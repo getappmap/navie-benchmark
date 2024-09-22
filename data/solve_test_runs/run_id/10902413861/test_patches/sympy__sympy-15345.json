@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/printing/tests/test_mathematica.py",
-  "test_patch": "diff --git a/sympy/printing/tests/test_sympy.py b/sympy/printing/tests/test_sympy.py\nnew file mode 100644\nindex 0000000..4eaff91\n--- /dev/null\n+++ b/sympy/printing/tests/test_sympy.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, Max\n+from sympy.printing.mathematica import mathematica_code as mcode\n+\n+def test_mathematica_code_with_Max():\n+    x = symbols('x')\n+    assert mcode(Max(x, 2)) == \"Max(2, x)\"\n\\ No newline at end of file\n",
-  "inverted_patch": "diff --git a/sympy/printing/tests/test_sympy_inverted.py b/sympy/printing/tests/test_sympy_inverted.py\nnew file mode 100644\nindex 0000000..11d1c87\n--- /dev/null\n+++ b/sympy/printing/tests/test_sympy_inverted.py\n@@ -0,0 +1,9 @@\n+from sympy import symbols, Max\n+from sympy.printing.mathematica import mathematica_code as mcode\n+\n+def test_mathematica_code_with_Max():\n+    x = symbols('x')\n+    result = mcode(Max(x, 2))\n+    expected = \"Max[x, 2]\"\n+    if result != expected:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n"
-}

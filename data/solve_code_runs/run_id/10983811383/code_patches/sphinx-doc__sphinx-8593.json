@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8593",
+  "edit_test_file": "tests/test_util_inventory.py",
+  "code_patch": "diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py\nindex 76265f5..8f243e5 100644\n--- a/sphinx/ext/autodoc/__init__.py\n+++ b/sphinx/ext/autodoc/__init__.py\n@@ -738,6 +738,10 @@ class Documenter:\n             else:\n                 isprivate = membername.startswith('_')\n \n+            # Check for :meta public: in docstring\n+            if 'public' in metadata:\n+                isprivate = False\n+\n             keep = False\n             if safe_getattr(member, '__sphinx_mock__', None) is not None:\n                 # mocked module or object\n",
+  "test_patch": "diff --git a/tests/test_ext_autodoc_meta_public.py b/tests/test_ext_autodoc_meta_public.py\nnew file mode 100644\nindex 0000000..4182381\n--- /dev/null\n+++ b/tests/test_ext_autodoc_meta_public.py\n@@ -0,0 +1,33 @@\n+\"\"\"\n+    test_ext_autodoc_meta_public\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test the autodoc extension for `:meta public:` effect on variables.\n+\n+    :copyright: Copyright 2007-2020 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import pytest\n+from .test_ext_autodoc import do_autodoc\n+\n+@pytest.mark.sphinx('html', testroot='ext-autodoc')\n+def test_meta_public_variable(app):\n+    # Create a mock module with a variable having `:meta public:`\n+    app.env.temp_data['docname'] = 'index'\n+    app.env.ref_context['py:module'] = 'example'\n+    \n+    # Simulate the module content\n+    module_content = \"\"\"\n+    _foo = None  #: :meta public:\n+    \"\"\"\n+    \n+    # Write the module content to a temporary file\n+    with open(app.srcdir / 'example.py', 'w') as f:\n+        f.write(module_content)\n+    \n+    # Run autodoc on the module\n+    actual = do_autodoc(app, 'module', 'example', options={\"members\": None})\n+    \n+    # Check if `_foo` is not shown in the output\n+    assert '.. py:data:: _foo' not in actual\n",
+  "test_inverted_patch": "diff --git a/tests/test_ext_autodoc_meta_public_inverted.py b/tests/test_ext_autodoc_meta_public_inverted.py\nnew file mode 100644\nindex 0000000..374e86b\n--- /dev/null\n+++ b/tests/test_ext_autodoc_meta_public_inverted.py\n@@ -0,0 +1,34 @@\n+\"\"\"\n+    test_ext_autodoc_meta_public\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test the autodoc extension for `:meta public:` effect on variables.\n+\n+    :copyright: Copyright 2007-2020 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import pytest\n+from .test_ext_autodoc import do_autodoc\n+\n+@pytest.mark.sphinx('html', testroot='ext-autodoc')\n+def test_meta_public_variable(app):\n+    # Create a mock module with a variable having `:meta public:`\n+    app.env.temp_data['docname'] = 'index'\n+    app.env.ref_context['py:module'] = 'example'\n+    \n+    # Simulate the module content\n+    module_content = \"\"\"\n+    _foo = None  #: :meta public:\n+    \"\"\"\n+    \n+    # Write the module content to a temporary file\n+    with open(app.srcdir / 'example.py', 'w') as f:\n+        f.write(module_content)\n+    \n+    # Run autodoc on the module\n+    actual = do_autodoc(app, 'module', 'example', options={\"members\": None})\n+    \n+    # Check if `_foo` is shown in the output\n+    if '.. py:data:: _foo' not in actual:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 4092809,
+  "num_received_chars": 53479,
+  "elapsed_time": 412.4135174751282,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

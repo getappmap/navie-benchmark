@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "astropy/utils/tests/test_misc.py",
-  "test_patch": "diff --git a/astropy/utils/tests/test_inherit_docstrings.py b/astropy/utils/tests/test_inherit_docstrings.py\nnew file mode 100644\nindex 0000000..18e5de8\n--- /dev/null\n+++ b/astropy/utils/tests/test_inherit_docstrings.py\n@@ -0,0 +1,21 @@\n+import unittest\n+from astropy.utils import misc\n+\n+class TestInheritDocstrings(unittest.TestCase):\n+    def test_inherit_docstrings_with_property(self):\n+        class Base(metaclass=misc.InheritDocstrings):\n+            @property\n+            def foo(self):\n+                \"\"\"FOO\"\"\"\n+                return \"foo\"\n+\n+        class Subclass(Base):\n+            @property\n+            def foo(self):\n+                return \"subclass foo\"\n+\n+        # The issue is that the docstring is not inherited for properties\n+        self.assertIsNone(Subclass.foo.__doc__)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}
