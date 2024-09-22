@@ -40,7 +40,7 @@ on:
         description: "Amount to increase the temperature on each retry"
         type: choice
         required: true
-        default: "0.05"
+        default: "0.1"
         options:
           - "0"
           - "0.05"
@@ -51,16 +51,17 @@ on:
         description: "Minimum number of test patches to discover, on a single runner, in order to continue solving for tests"
         type: number
         required: true
-        default: 2
+        default: 1
       max_test_solve_iterations:
         description: "Maximum number of iterations to solve for tests"
         type: number
         required: true
-        default: 5
+        default: 3
       num_runners:
         description: "Number of runners"
         type: number
         required: true
+        default: 2
       name:
         description: "Assign a name to the workflow run"
         type: string
