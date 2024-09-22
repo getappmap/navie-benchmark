@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13807",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/sqlite3/introspection.py b/django/db/backends/sqlite3/introspection.py\nindex 1d7ce3f..e655dee 100644\n--- a/django/db/backends/sqlite3/introspection.py\n+++ b/django/db/backends/sqlite3/introspection.py\n@@ -84,7 +84,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n         \"\"\"\n         cursor.execute('PRAGMA table_info(%s)' % self.connection.ops.quote_name(table_name))\n         table_info = cursor.fetchall()\n-        collations = self._get_column_collations(cursor, table_name)\n+        collations = self._get_column_collations(cursor, self.connection.ops.quote_name(table_name))\n         json_columns = set()\n         if self.connection.features.can_introspect_json_field:\n             for line in table_info:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1459339,
+  "num_received_chars": 19644,
+  "elapsed_time": 139.29840564727783,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15382",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex e3fdea6..7752209 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1400,7 +1400,11 @@ class Query(BaseExpression):\n         existing_inner = {a for a in self.alias_map if self.alias_map[a].join_type == INNER}\n         clause, _ = self._add_q(q_object, self.used_aliases)\n         if clause:\n-            self.where.add(clause, AND)\n+            if isinstance(clause, NothingNode) and q_object.negated:\n+                # Handle negated Exists with an empty subquery\n+                self.where.add(ExtraWhere([\"1=1\"], []), AND)\n+            else:\n+                self.where.add(clause, AND)\n         self.demote_joins(existing_inner)\n \n     def build_where(self, filter_expr):\n\ndiff --git a/django/db/models/sql/where.py b/django/db/models/sql/where.py\nindex 50ff13b..a37c704 100644\n--- a/django/db/models/sql/where.py\n+++ b/django/db/models/sql/where.py\n@@ -76,6 +76,10 @@ class WhereNode(tree.Node):\n         else:\n             full_needed, empty_needed = 1, len(self.children)\n \n+        if self.negated and all(isinstance(child, NothingNode) for child in self.children):\n+            # Handle negated Exists with an empty subquery\n+            return '1=1', []\n+\n         for child in self.children:\n             try:\n                 sql, params = compiler.compile(child)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1866925,
+  "num_received_chars": 19162,
+  "elapsed_time": 211.67358255386353,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

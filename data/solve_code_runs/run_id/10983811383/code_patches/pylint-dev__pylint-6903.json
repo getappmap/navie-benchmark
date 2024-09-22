@@ -1,0 +1,20 @@
+{
+  "instance_id": "pylint-dev__pylint-6903",
+  "edit_test_file": "tests/lint/test_pylinter.py",
+  "code_patch": "diff --git a/pylint/lint/run.py b/pylint/lint/run.py\nindex a7e5d55..7a6bf4e 100644\n--- a/pylint/lint/run.py\n+++ b/pylint/lint/run.py\n@@ -52,12 +52,12 @@ def _query_cpu() -> int | None:\n         with open(\"/sys/fs/cgroup/cpu/cpu.cfs_period_us\", encoding=\"utf-8\") as file:\n             cpu_period = int(file.read().rstrip())\n         # Divide quota by period and you should get num of allotted CPU to the container, rounded down if fractional.\n-        avail_cpu = int(cpu_quota / cpu_period)\n+        avail_cpu = max(1, int(cpu_quota / cpu_period))\n     elif Path(\"/sys/fs/cgroup/cpu/cpu.shares\").is_file():\n         with open(\"/sys/fs/cgroup/cpu/cpu.shares\", encoding=\"utf-8\") as file:\n             cpu_shares = int(file.read().rstrip())\n         # For AWS, gives correct value * 1024.\n-        avail_cpu = int(cpu_shares / 1024)\n+        avail_cpu = max(1, int(cpu_shares / 1024))\n     return avail_cpu\n \n \n@@ -76,7 +76,13 @@ def _cpu_count() -> int:\n     else:\n         cpu_count = 1\n     if cpu_share is not None:\n-        return min(cpu_share, cpu_count)\n+        cpu_count = min(cpu_share, cpu_count)\n+    if cpu_count < 1:\n+        warnings.warn(\n+            \"Calculated CPU count is less than 1, defaulting to 1 CPU.\",\n+            UserWarning,\n+        )\n+        cpu_count = 1\n     return cpu_count\n \n \n",
+  "test_patch": "diff --git a/tests/lint/test_run_cpu.py b/tests/lint/test_run_cpu.py\nnew file mode 100644\nindex 0000000..a67b653\n--- /dev/null\n+++ b/tests/lint/test_run_cpu.py\n@@ -0,0 +1,14 @@\n+import unittest\n+from unittest.mock import patch, mock_open\n+from pylint.lint.run import _cpu_count\n+\n+class TestRunCpu(unittest.TestCase):\n+    @patch(\"builtins.open\", new_callable=mock_open, read_data=\"-1\")\n+    @patch(\"pylint.lint.run.Path.is_file\", return_value=True)\n+    def test_cpu_count_zero(self, mock_is_file, mock_open):\n+        with patch(\"pylint.lint.run._query_cpu\", return_value=0):\n+            cpu_count = _cpu_count()\n+            self.assertEqual(cpu_count, 0, \"Expected cpu_count to be 0 due to miscalculation\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/lint/test_run_cpu_inverted.py b/tests/lint/test_run_cpu_inverted.py\nnew file mode 100644\nindex 0000000..f019cd8\n--- /dev/null\n+++ b/tests/lint/test_run_cpu_inverted.py\n@@ -0,0 +1,15 @@\n+import unittest\n+from unittest.mock import patch, mock_open\n+from pylint.lint.run import _cpu_count\n+\n+class TestRunCpu(unittest.TestCase):\n+    @patch(\"builtins.open\", new_callable=mock_open, read_data=\"-1\")\n+    @patch(\"pylint.lint.run.Path.is_file\", return_value=True)\n+    def test_cpu_count_zero(self, mock_is_file, mock_open):\n+        with patch(\"pylint.lint.run._query_cpu\", return_value=0):\n+            cpu_count = _cpu_count()\n+            # Altered the assertion to expect a non-zero value, causing the test to fail if cpu_count is 0\n+            self.assertNotEqual(cpu_count, 0, \"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "num_sent_chars": 624214,
+  "num_received_chars": 11105,
+  "elapsed_time": 106.52574491500854,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

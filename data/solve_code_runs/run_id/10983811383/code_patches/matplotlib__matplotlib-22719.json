@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-22719",
+  "edit_test_file": "lib/matplotlib/tests/test_skew.py",
+  "code_patch": "diff --git a/lib/matplotlib/category.py b/lib/matplotlib/category.py\nindex c823b68..b0bfd91 100644\n--- a/lib/matplotlib/category.py\n+++ b/lib/matplotlib/category.py\n@@ -53,6 +53,9 @@ class StrCategoryConverter(units.ConversionInterface):\n         StrCategoryConverter._validate_unit(unit)\n         # dtype = object preserves numerical pass throughs\n         values = np.atleast_1d(np.array(value, dtype=object))\n+        # Check for empty dataset\n+        if values.size == 0:\n+            return np.array([], dtype=float)\n         # pass through sequence of non binary numbers\n         with _api.suppress_matplotlib_deprecation_warning():\n             is_numlike = all(units.ConversionInterface.is_numlike(v)\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_axis_deprecation_warning.py b/lib/matplotlib/tests/test_axis_deprecation_warning.py\nnew file mode 100644\nindex 0000000..ea6823e\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_axis_deprecation_warning.py\n@@ -0,0 +1,10 @@\n+import matplotlib.pyplot as plt\n+import pytest\n+from matplotlib._api import MatplotlibDeprecationWarning\n+\n+def test_empty_data_deprecation_warning():\n+    fig, ax = plt.subplots()\n+    ax.xaxis.update_units([\"a\", \"b\"])\n+    \n+    with pytest.warns(MatplotlibDeprecationWarning, match=\"Support for passing numbers through unit converters is deprecated since 3.5\"):\n+        ax.plot([], [])\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_axis_deprecation_warning_inverted.py b/lib/matplotlib/tests/test_axis_deprecation_warning_inverted.py\nnew file mode 100644\nindex 0000000..b056f38\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_axis_deprecation_warning_inverted.py\n@@ -0,0 +1,10 @@\n+import matplotlib.pyplot as plt\n+import pytest\n+from matplotlib._api import MatplotlibDeprecationWarning\n+\n+def test_empty_data_deprecation_warning():\n+    fig, ax = plt.subplots()\n+    ax.xaxis.update_units([\"a\", \"b\"])\n+    \n+    with pytest.raises(MatplotlibDeprecationWarning, match=\"__BUG__HERE__\"):\n+        ax.plot([], [])\n",
+  "num_sent_chars": 2725827,
+  "num_received_chars": 54501,
+  "elapsed_time": 444.27692580223083,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

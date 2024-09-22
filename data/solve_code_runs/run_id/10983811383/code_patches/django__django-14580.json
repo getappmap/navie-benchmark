@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14580",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py\nindex 2848adc..eb06690 100644\n--- a/django/db/migrations/autodetector.py\n+++ b/django/db/migrations/autodetector.py\n@@ -255,6 +255,7 @@ class MigrationAutodetector:\n         self.migrations = {}\n         num_ops = sum(len(x) for x in self.generated_operations.values())\n         chop_mode = False\n+        import_needed = False\n         while num_ops:\n             # On every iteration, we step through all the apps and see if there\n             # is a completed set of operations.\n@@ -268,6 +269,11 @@ class MigrationAutodetector:\n                 for operation in list(self.generated_operations[app_label]):\n                     deps_satisfied = True\n                     operation_dependencies = set()\n+                    # Check if the operation requires the models import\n+                    if isinstance(operation, operations.CreateModel) and any(\n+                        isinstance(base, models.Model) for base in operation.bases\n+                    ):\n+                        import_needed = True\n                     for dep in operation._auto_deps:\n                         # Temporarily resolve the swappable dependency to\n                         # prevent circular references. While keeping the\n@@ -328,6 +334,12 @@ class MigrationAutodetector:\n                     raise ValueError(\"Cannot resolve operation dependencies: %r\" % self.generated_operations)\n             num_ops = new_num_ops\n \n+        # Add import statement for models if needed\n+        if import_needed:\n+            for app_label, migrations in self.migrations.items():\n+                for migration in migrations:\n+                    migration.imports.append(\"from django.db import models\")\n+\n     def _sort_migrations(self):\n         \"\"\"\n         Reorder to make things possible. Reordering may be needed so FKs work\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2647483,
+  "num_received_chars": 75287,
+  "elapsed_time": 334.277628660202,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

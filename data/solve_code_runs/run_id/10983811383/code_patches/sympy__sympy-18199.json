@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-18199",
+  "edit_test_file": "sympy/core/tests/test_arit.py",
+  "code_patch": "diff --git a/sympy/ntheory/residue_ntheory.py b/sympy/ntheory/residue_ntheory.py\nindex 9a3052d..91cea02 100644\n--- a/sympy/ntheory/residue_ntheory.py\n+++ b/sympy/ntheory/residue_ntheory.py\n@@ -766,6 +766,8 @@ def nthroot_mod(a, n, p, all_roots=False):\n     >>> nthroot_mod(68, 3, 109)\n     23\n     \"\"\"\n+    if a % p == 0:\n+        return [0] if not all_roots else [0] + _nthroot_mod1(a, n, p, all_roots)\n     from sympy.core.numbers import igcdex\n     a, n, p = as_int(a), as_int(n), as_int(p)\n     if n == 2:\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_nthroot.py b/sympy/core/tests/test_nthroot.py\nnew file mode 100644\nindex 0000000..7aeffbb\n--- /dev/null\n+++ b/sympy/core/tests/test_nthroot.py\n@@ -0,0 +1,8 @@\n+from sympy.ntheory.residue_ntheory import nthroot_mod\n+from sympy.utilities.pytest import raises\n+\n+def test_nthroot_mod_missing_root():\n+    # This test checks if nthroot_mod misses the root x = 0 mod p\n+    # when a % p == 0. The expected root 0 mod 17 is missing.\n+    result = nthroot_mod(17*17, 5, 17, all_roots=True)\n+    assert 0 in result, \"nthroot_mod should include 0 as a root when a % p == 0\"\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_nthroot_inverted.py b/sympy/core/tests/test_nthroot_inverted.py\nnew file mode 100644\nindex 0000000..10e5a90\n--- /dev/null\n+++ b/sympy/core/tests/test_nthroot_inverted.py\n@@ -0,0 +1,8 @@\n+from sympy.ntheory.residue_ntheory import nthroot_mod\n+from sympy.utilities.pytest import raises\n+\n+def test_nthroot_mod_missing_root():\n+    # This test checks if nthroot_mod misses the root x = 0 mod p\n+    # when a % p == 0. The expected root 0 mod 17 is missing.\n+    result = nthroot_mod(17*17, 5, 17, all_roots=True)\n+    assert 0 not in result, \"__BUG__HERE__\"\n",
+  "num_sent_chars": 3483943,
+  "num_received_chars": 36990,
+  "elapsed_time": 595.3684415817261,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-20916",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/pretty/pretty_symbology.py b/sympy/printing/pretty/pretty_symbology.py\nindex 3f7c4a2..006bf17 100644\n--- a/sympy/printing/pretty/pretty_symbology.py\n+++ b/sympy/printing/pretty/pretty_symbology.py\n@@ -182,7 +182,8 @@ def xstr(*args):\n for l in 'in':\n     sup[l] = LSUP(l)\n \n-for gl in ['beta', 'gamma', 'rho', 'phi', 'chi']:\n+# greek subscripts\n+for gl in ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega']:\n     sub[gl] = GSUB(gl)\n \n for d in [str(i) for i in range(10)]:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1304172,
+  "num_received_chars": 9674,
+  "elapsed_time": 129.5753653049469,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

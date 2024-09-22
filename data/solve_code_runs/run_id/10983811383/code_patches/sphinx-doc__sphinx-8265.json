@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8265",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py\nindex d7c5d22..8bc0782 100644\n--- a/sphinx/ext/autodoc/__init__.py\n+++ b/sphinx/ext/autodoc/__init__.py\n@@ -1459,6 +1459,11 @@ class ClassDocumenter(DocstringSignatureMixin, ModuleLevelDocumenter):  # type:\n         if sig is None:\n             return None\n \n+        # Ensure default values like tuples are correctly represented\n+        for param in sig.parameters.values():\n+            if isinstance(param.default, tuple):\n+                param = param.replace(default=f\"({', '.join(map(repr, param.default))})\")\n+\n         return stringify_signature(sig, show_return_annotation=False, **kwargs)\n \n     def format_signature(self, **kwargs: Any) -> str:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1616459,
+  "num_received_chars": 11955,
+  "elapsed_time": 140.2731010913849,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-9288",
+  "edit_test_file": "sklearn/cluster/tests/test_k_means.py",
+  "code_patch": "diff --git a/sklearn/cluster/k_means_.py b/sklearn/cluster/k_means_.py\nindex b7fbdf7..671e40a 100644\n--- a/sklearn/cluster/k_means_.py\n+++ b/sklearn/cluster/k_means_.py\n@@ -626,6 +626,12 @@ def _labels_inertia(X, sample_weight, x_squared_norms, centers,\n \n     Compute the labels and the inertia of the given samples and centers.\n     This will compute the distances in-place.\n+    \n+    # Ensure deterministic order of operations\n+    np.random.seed(self.seed)\n+    order = np.argsort(x_squared_norms)\n+    X = X[order]\n+    sample_weight = sample_weight[order]\n \n     Parameters\n     ----------\n@@ -907,7 +913,8 @@ class KMeans(BaseEstimator, ClusterMixin, TransformerMixin):\n     def __init__(self, n_clusters=8, init='k-means++', n_init=10,\n                  max_iter=300, tol=1e-4, precompute_distances='auto',\n                  verbose=0, random_state=None, copy_x=True,\n-                 n_jobs=None, algorithm='auto'):\n+                 n_jobs=None, algorithm='auto', seed=42):\n+        self.seed = seed\n \n         self.n_clusters = n_clusters\n         self.init = init\n",
+  "test_patch": "diff --git a/sklearn/cluster/tests/test_kmeans_parallel.py b/sklearn/cluster/tests/test_kmeans_parallel.py\nnew file mode 100644\nindex 0000000..6e17de5\n--- /dev/null\n+++ b/sklearn/cluster/tests/test_kmeans_parallel.py\n@@ -0,0 +1,24 @@\n+import numpy as np\n+from sklearn.cluster import KMeans\n+from sklearn.datasets import make_blobs\n+from sklearn.utils.testing import assert_almost_equal\n+\n+def test_kmeans_n_jobs_inertia_difference():\n+    # Generate some data\n+    X, _ = make_blobs(n_samples=10000, centers=10, n_features=2, random_state=2)\n+\n+    # Run KMeans with n_jobs=1\n+    kmeans_single = KMeans(n_clusters=10, random_state=2, n_jobs=1)\n+    kmeans_single.fit(X)\n+    inertia_single = kmeans_single.inertia_\n+\n+    # Run KMeans with n_jobs=2\n+    kmeans_parallel = KMeans(n_clusters=10, random_state=2, n_jobs=2)\n+    kmeans_parallel.fit(X)\n+    inertia_parallel = kmeans_parallel.inertia_\n+\n+    # Assert that the inertia values are not almost equal, indicating a difference\n+    assert inertia_single != inertia_parallel, (\n+        f\"Inertia should differ for n_jobs=1 and n_jobs=2, \"\n+        f\"but got {inertia_single} and {inertia_parallel} respectively.\"\n+    )\n",
+  "test_inverted_patch": "diff --git a/sklearn/cluster/tests/test_kmeans_parallel_inverted.py b/sklearn/cluster/tests/test_kmeans_parallel_inverted.py\nnew file mode 100644\nindex 0000000..dbb45d4\n--- /dev/null\n+++ b/sklearn/cluster/tests/test_kmeans_parallel_inverted.py\n@@ -0,0 +1,22 @@\n+import numpy as np\n+from sklearn.cluster import KMeans\n+from sklearn.datasets import make_blobs\n+\n+def test_kmeans_n_jobs_inertia_difference():\n+    # Generate some data\n+    X, _ = make_blobs(n_samples=10000, centers=10, n_features=2, random_state=2)\n+\n+    # Run KMeans with n_jobs=1\n+    kmeans_single = KMeans(n_clusters=10, random_state=2, n_jobs=1)\n+    kmeans_single.fit(X)\n+    inertia_single = kmeans_single.inertia_\n+\n+    # Run KMeans with n_jobs=2\n+    kmeans_parallel = KMeans(n_clusters=10, random_state=2, n_jobs=2)\n+    kmeans_parallel.fit(X)\n+    inertia_parallel = kmeans_parallel.inertia_\n+\n+    # Assert that the inertia values are almost equal, indicating no difference\n+    # If they are not equal, raise an error with the message \"__BUG__HERE__\"\n+    if inertia_single != inertia_parallel:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 2606735,
+  "num_received_chars": 37398,
+  "elapsed_time": 349.22930788993835,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

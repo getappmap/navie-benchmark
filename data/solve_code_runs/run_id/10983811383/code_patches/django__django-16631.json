@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16631",
+  "edit_test_file": "tests/check_framework/test_security.py",
+  "code_patch": "diff --git a/django/contrib/auth/base_user.py b/django/contrib/auth/base_user.py\nindex 5ee30bf..243b683 100644\n--- a/django/contrib/auth/base_user.py\n+++ b/django/contrib/auth/base_user.py\n@@ -135,12 +135,22 @@ class AbstractBaseUser(models.Model):\n         \"\"\"\n         Return an HMAC of the password field.\n         \"\"\"\n+        from django.conf import settings\n+\n         key_salt = \"django.contrib.auth.models.AbstractBaseUser.get_session_auth_hash\"\n-        return salted_hmac(\n-            key_salt,\n-            self.password,\n-            algorithm=\"sha256\",\n-        ).hexdigest()\n+        secrets = [settings.SECRET_KEY] + getattr(settings, 'SECRET_KEY_FALLBACKS', [])\n+        \n+        for secret in secrets:\n+            try:\n+                return salted_hmac(\n+                    key_salt,\n+                    self.password,\n+                    secret=secret,\n+                    algorithm=\"sha256\",\n+                ).hexdigest()\n+            except Exception:\n+                continue\n+        raise ValueError(\"Unable to generate session auth hash with available secrets.\")\n \n     @classmethod\n     def get_email_field_name(cls):\n",
+  "test_patch": "diff --git a/tests/check_framework/test_secret_key_rotation.py b/tests/check_framework/test_secret_key_rotation.py\nnew file mode 100644\nindex 0000000..bfc3ae3\n--- /dev/null\n+++ b/tests/check_framework/test_secret_key_rotation.py\n@@ -0,0 +1,33 @@\n+from django.conf import settings\n+from django.contrib.auth import get_user_model\n+from django.contrib.auth import login\n+from django.test import RequestFactory, TestCase, override_settings\n+\n+class SecretKeyFallbacksSessionTest(TestCase):\n+    @override_settings(\n+        SECRET_KEY=\"newsecret\",\n+        SECRET_KEY_FALLBACKS=[\"oldsecret\"],\n+    )\n+    def test_secret_key_fallbacks_not_used_for_sessions(self):\n+        \"\"\"\n+        Test that SECRET_KEY_FALLBACKS is not used for session authentication.\n+        \"\"\"\n+        User = get_user_model()\n+        user = User.objects.create_user(\"testuser\", \"test@example.com\", \"testpassword\")\n+        \n+        # Simulate a login with the old secret key\n+        request = RequestFactory().get('/')\n+        request.session = self.client.session\n+        request.user = user\n+        with override_settings(SECRET_KEY=\"oldsecret\"):\n+            login(request, user)\n+        \n+        # Change the secret key to the new one\n+        with override_settings(SECRET_KEY=\"newsecret\"):\n+            # Simulate a request with the new secret key\n+            request = RequestFactory().get('/')\n+            request.session = self.client.session\n+            request.user = user\n+            \n+            # The user should be logged out because the session hash won't match\n+            self.assertNotEqual(request.session.get('_auth_user_id'), str(user.pk))\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 3315039,
+  "num_received_chars": 72542,
+  "elapsed_time": 456.1096875667572,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

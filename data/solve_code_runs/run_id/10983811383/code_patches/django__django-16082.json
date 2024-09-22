@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16082",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/expressions.py b/django/db/models/expressions.py\nindex 5e3c7ca..60ec3d8 100644\n--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@ -533,6 +533,7 @@ _connector_combinations = [\n             Combinable.SUB,\n             Combinable.MUL,\n             Combinable.DIV,\n+            Combinable.MOD,\n         )\n     },\n     # Bitwise operators.\n@@ -546,6 +547,7 @@ _connector_combinations = [\n             Combinable.BITLEFTSHIFT,\n             Combinable.BITRIGHTSHIFT,\n             Combinable.BITXOR,\n+            Combinable.MOD,\n         )\n     },\n     # Numeric with NULL.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1600399,
+  "num_received_chars": 8011,
+  "elapsed_time": 109.6406843662262,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-25960",
+  "edit_test_file": "lib/matplotlib/tests/test_figure.py",
+  "code_patch": "diff --git a/lib/matplotlib/figure.pyi b/lib/matplotlib/figure.pyi\nindex 2b2bd9a..73edbaa 100644\n--- a/lib/matplotlib/figure.pyi\n+++ b/lib/matplotlib/figure.pyi\n@@ -200,6 +200,7 @@ class FigureBase(Artist):\n         height_ratios: ArrayLike | None = ...,\n         **kwargs\n     ) -> np.ndarray: ...\n+    \n     @overload\n     def subfigures(\n         self,\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_subfigures_spacing.py b/lib/matplotlib/tests/test_subfigures_spacing.py\nnew file mode 100644\nindex 0000000..6e7f7aa\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_subfigures_spacing.py\n@@ -0,0 +1,15 @@\n+import matplotlib.pyplot as plt\n+import numpy as np\n+\n+def test_subfigures_wspace_hspace():\n+    # Create a figure with subfigures and set wspace and hspace to 0\n+    figs = plt.figure().subfigures(2, 2, wspace=0, hspace=0)\n+    for fig in figs.flat:\n+        ax = fig.subplots()\n+        ax.plot([1, 2])\n+\n+    # Check the positions of the subfigures to ensure wspace and hspace are not applied\n+    positions = [fig.bbox.bounds for fig in figs.flat]\n+    # Assert that the positions are the same, indicating no spacing\n+    assert np.allclose(positions[0][2], positions[1][2]), \"wspace is not working\"\n+    assert np.allclose(positions[0][3], positions[2][3]), \"hspace is not working\"\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_subfigures_spacing_inverted.py b/lib/matplotlib/tests/test_subfigures_spacing_inverted.py\nnew file mode 100644\nindex 0000000..76f2793\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_subfigures_spacing_inverted.py\n@@ -0,0 +1,20 @@\n+import matplotlib.pyplot as plt\n+import numpy as np\n+import pytest\n+\n+def test_subfigures_wspace_hspace():\n+    # Create a figure with subfigures and set wspace and hspace to 0\n+    figs = plt.figure().subfigures(2, 2, wspace=0, hspace=0)\n+    for fig in figs.flat:\n+        ax = fig.subplots()\n+        ax.plot([1, 2])\n+\n+    # Check the positions of the subfigures to ensure wspace and hspace are not applied\n+    positions = [fig.bbox.bounds for fig in figs.flat]\n+    # Assert that the positions are different, indicating spacing should be applied\n+    assert not np.allclose(positions[0][2], positions[1][2]), \"__BUG__HERE__\"\n+    assert not np.allclose(positions[0][3], positions[2][3]), \"__BUG__HERE__\"\n+\n+# Run the test\n+if __name__ == \"__main__\":\n+    pytest.main([__file__])\n",
+  "num_sent_chars": 3939316,
+  "num_received_chars": 76185,
+  "elapsed_time": 632.8802931308746,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

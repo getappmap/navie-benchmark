@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11141",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/utils/autoreload.py b/django/utils/autoreload.py\nindex d5445e5..d50c0e4 100644\n--- a/django/utils/autoreload.py\n+++ b/django/utils/autoreload.py\n@@ -119,9 +119,6 @@ def iter_modules_and_files(modules, extra_files):\n             # __main__ (usually manage.py) doesn't always have a __spec__ set.\n             # Handle this by falling back to using __file__, resolved below.\n             # See https://docs.python.org/reference/import.html#main-spec\n-            # __file__ may not exists, e.g. when running ipdb debugger.\n-            if hasattr(module, '__file__'):\n-                sys_file_paths.append(module.__file__)\n             continue\n         if getattr(module, '__spec__', None) is None:\n             continue\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2840480,
+  "num_received_chars": 56337,
+  "elapsed_time": 342.0236322879791,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

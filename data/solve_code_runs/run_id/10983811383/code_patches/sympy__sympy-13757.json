@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13757",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/polys/domains/expressiondomain.py b/sympy/polys/domains/expressiondomain.py\nindex b4c572d..d779d4c 100644\n--- a/sympy/polys/domains/expressiondomain.py\n+++ b/sympy/polys/domains/expressiondomain.py\n@@ -83,15 +83,21 @@ def __rsub__(f, g):\n             return f.simplify(f.__class__(g).ex - f.ex)\n \n         def __mul__(f, g):\n+            from sympy.polys.polytools import Poly\n             g = f._to_ex(g)\n \n             if g is not None:\n-                return f.simplify(f.ex*g.ex)\n+                if isinstance(g.ex, Poly):\n+                    return Poly(f.ex * g.ex, *g.ex.gens)\n+                return f.simplify(f.ex * g.ex)\n             else:\n                 return NotImplemented\n \n         def __rmul__(f, g):\n-            return f.simplify(f.__class__(g).ex*f.ex)\n+            from sympy.polys.polytools import Poly\n+            if isinstance(g, Poly):\n+                return Poly(g * f.ex, *g.gens)\n+            return f.simplify(f.__class__(g).ex * f.ex)\n \n         def __pow__(f, n):\n             n = f._to_ex(n)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1970305,
+  "num_received_chars": 11445,
+  "elapsed_time": 146.54182362556458,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

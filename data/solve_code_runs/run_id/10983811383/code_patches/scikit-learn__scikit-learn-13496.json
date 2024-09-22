@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-13496",
+  "edit_test_file": "sklearn/ensemble/tests/test_bagging.py",
+  "code_patch": "diff --git a/sklearn/ensemble/iforest.py b/sklearn/ensemble/iforest.py\nindex 8a1bd36..213df9c 100644\n--- a/sklearn/ensemble/iforest.py\n+++ b/sklearn/ensemble/iforest.py\n@@ -120,6 +120,11 @@ class IsolationForest(BaseBagging, OutlierMixin):\n     verbose : int, optional (default=0)\n         Controls the verbosity of the tree building process.\n \n+    warm_start : bool, optional (default=False)\n+        When set to ``True``, reuse the solution of the previous call to fit\n+        and add more estimators to the ensemble, otherwise, just fit a whole\n+        new forest. This is useful for growing a forest in an incremental\n+        manner.\n \n     Attributes\n     ----------\n@@ -173,7 +178,8 @@ class IsolationForest(BaseBagging, OutlierMixin):\n                  n_jobs=None,\n                  behaviour='old',\n                  random_state=None,\n-                 verbose=0):\n+                 verbose=0,\n+                 warm_start=False):\n         super().__init__(\n             base_estimator=ExtraTreeRegressor(\n                 max_features=1,\n@@ -187,7 +193,8 @@ class IsolationForest(BaseBagging, OutlierMixin):\n             max_features=max_features,\n             n_jobs=n_jobs,\n             random_state=random_state,\n-            verbose=verbose)\n+            verbose=verbose,\n+            warm_start=warm_start)\n \n         self.behaviour = behaviour\n         self.contamination = contamination\n",
+  "test_patch": "diff --git a/sklearn/ensemble/tests/test_isolation_forest_warm_start.py b/sklearn/ensemble/tests/test_isolation_forest_warm_start.py\nnew file mode 100644\nindex 0000000..a1c45bb\n--- /dev/null\n+++ b/sklearn/ensemble/tests/test_isolation_forest_warm_start.py\n@@ -0,0 +1,16 @@\n+import numpy as np\n+from sklearn.ensemble import IsolationForest\n+from sklearn.datasets import make_blobs\n+from sklearn.utils.testing import assert_raises\n+\n+def test_isolation_forest_warm_start():\n+    # Generate synthetic data\n+    X, _ = make_blobs(n_samples=100, centers=1, cluster_std=0.1, random_state=42)\n+\n+    # Initialize IsolationForest without warm_start exposed\n+    iso_forest = IsolationForest(n_estimators=5, random_state=42)\n+    iso_forest.fit(X)\n+\n+    # Attempt to manually set warm_start to True and increment n_estimators\n+    # This should raise a ValueError since warm_start is not exposed\n+    assert_raises(ValueError, iso_forest.set_params, warm_start=True)\n",
+  "test_inverted_patch": "diff --git a/sklearn/ensemble/tests/test_isolation_forest_warm_start_inverted.py b/sklearn/ensemble/tests/test_isolation_forest_warm_start_inverted.py\nnew file mode 100644\nindex 0000000..2e9fb62\n--- /dev/null\n+++ b/sklearn/ensemble/tests/test_isolation_forest_warm_start_inverted.py\n@@ -0,0 +1,19 @@\n+import numpy as np\n+from sklearn.ensemble import IsolationForest\n+from sklearn.datasets import make_blobs\n+import pytest\n+\n+def test_isolation_forest_warm_start():\n+    # Generate synthetic data\n+    X, _ = make_blobs(n_samples=100, centers=1, cluster_std=0.1, random_state=42)\n+\n+    # Initialize IsolationForest without warm_start exposed\n+    iso_forest = IsolationForest(n_estimators=5, random_state=42)\n+    iso_forest.fit(X)\n+\n+    # Attempt to manually set warm_start to True and increment n_estimators\n+    # This should raise a ValueError since warm_start is not exposed\n+    with pytest.raises(ValueError, match=\"__BUG__HERE__\"):\n+        iso_forest.set_params(warm_start=True)\n+        iso_forest.set_params(n_estimators=10)\n+        iso_forest.fit(X)\n",
+  "num_sent_chars": 2971232,
+  "num_received_chars": 66125,
+  "elapsed_time": 467.39160537719727,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-7530",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/management/commands/makemigrations.py b/django/core/management/commands/makemigrations.py\nindex 0b39536..e648880 100644\n--- a/django/core/management/commands/makemigrations.py\n+++ b/django/core/management/commands/makemigrations.py\n@@ -105,7 +105,7 @@ class Command(BaseCommand):\n                     # At least one model must be migrated to the database.\n                     router.allow_migrate(connection.alias, app_label, model_name=model._meta.object_name)\n                     for app_label in consistency_check_labels\n-                    for model in apps.get_models(app_label)\n+                    for model in apps.get_app_config(app_label).get_models()\n             )):\n                 loader.check_consistent_history(connection)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1412404,
+  "num_received_chars": 12977,
+  "elapsed_time": 103.74782371520996,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

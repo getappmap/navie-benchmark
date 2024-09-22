@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14315",
+  "edit_test_file": "tests/backends/base/test_client.py",
+  "code_patch": "diff --git a/django/db/backends/base/client.py b/django/db/backends/base/client.py\nindex 339f1e8..335f7bc 100644\n--- a/django/db/backends/base/client.py\n+++ b/django/db/backends/base/client.py\n@@ -21,6 +21,6 @@ class BaseDatabaseClient:\n \n     def runshell(self, parameters):\n         args, env = self.settings_to_cmd_args_env(self.connection.settings_dict, parameters)\n-        if env:\n+        if env is not None:\n             env = {**os.environ, **env}\n         subprocess.run(args, env=env, check=True)\n",
+  "test_patch": "diff --git a/tests/backends/base/test_runshell_os_environ.py b/tests/backends/base/test_runshell_os_environ.py\nnew file mode 100644\nindex 0000000..716ef4e\n--- /dev/null\n+++ b/tests/backends/base/test_runshell_os_environ.py\n@@ -0,0 +1,23 @@\n+import os\n+import subprocess\n+from unittest import mock\n+from django.db.backends.postgresql.client import DatabaseClient\n+from django.test import SimpleTestCase\n+from django.db import connection\n+\n+class DatabaseClientEnvHandlingTest(SimpleTestCase):\n+    def setUp(self):\n+        self.client = DatabaseClient(connection=connection)\n+\n+    @mock.patch('subprocess.run')\n+    def test_runshell_env_handling(self, mock_run):\n+        # Set a custom environment variable\n+        os.environ['CUSTOM_ENV_VAR'] = 'test_value'\n+\n+        # Mock the settings_to_cmd_args_env to return empty env\n+        with mock.patch.object(self.client, 'settings_to_cmd_args_env', return_value=([], {})):\n+            self.client.runshell([])\n+\n+        # Check if the subprocess.run was called with the correct environment\n+        passed_env = mock_run.call_args[1]['env']\n+        self.assertNotIn('CUSTOM_ENV_VAR', passed_env)\n",
+  "test_inverted_patch": "diff --git a/tests/backends/base/test_runshell_os_environ_inverted.py b/tests/backends/base/test_runshell_os_environ_inverted.py\nnew file mode 100644\nindex 0000000..3d7cf44\n--- /dev/null\n+++ b/tests/backends/base/test_runshell_os_environ_inverted.py\n@@ -0,0 +1,24 @@\n+import os\n+import subprocess\n+from unittest import mock\n+from django.db.backends.postgresql.client import DatabaseClient\n+from django.test import SimpleTestCase\n+from django.db import connection\n+\n+class DatabaseClientEnvHandlingTest(SimpleTestCase):\n+    def setUp(self):\n+        self.client = DatabaseClient(connection=connection)\n+\n+    @mock.patch('subprocess.run')\n+    def test_runshell_env_handling(self, mock_run):\n+        # Set a custom environment variable\n+        os.environ['CUSTOM_ENV_VAR'] = 'test_value'\n+\n+        # Mock the settings_to_cmd_args_env to return empty env\n+        with mock.patch.object(self.client, 'settings_to_cmd_args_env', return_value=([], {})):\n+            self.client.runshell([])\n+\n+        # Check if the subprocess.run was called with the correct environment\n+        passed_env = mock_run.call_args[1]['env']\n+        if 'CUSTOM_ENV_VAR' not in passed_env:\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 1093655,
+  "num_received_chars": 23199,
+  "elapsed_time": 179.10475826263428,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

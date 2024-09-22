@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-22080",
+  "edit_test_file": "sympy/core/tests/test_arit.py",
+  "code_patch": "diff --git a/sympy/utilities/lambdify.py b/sympy/utilities/lambdify.py\nindex 0ed6ce2..e84fcab 100644\n--- a/sympy/utilities/lambdify.py\n+++ b/sympy/utilities/lambdify.py\n@@ -158,6 +158,10 @@ def _import(module, reload=False):\n     for sympyname, translation in translations.items():\n         namespace[sympyname] = namespace[translation]\n \n+    # Ensure Mod is correctly handled when no modules are specified\n+    if 'Mod' not in namespace:\n+        namespace['Mod'] = lambda x, y: x % y\n+\n     # For computing the modulus of a sympy expression we use the builtin abs\n     # function, instead of the previously used fabs function for all\n     # translation modules. This is because the fabs function in the math\n@@ -933,6 +937,8 @@ def _get_namespace(m):\n         return m\n     elif hasattr(m, \"__dict__\"):\n         return m.__dict__\n+    elif m is None:\n+        return {}\n     else:\n         raise TypeError(\"Argument must be either a string, dict or module but it is: %s\" % m)\n \n",
+  "test_patch": "diff --git a/sympy/core/tests/test_lambdify_mod_bug.py b/sympy/core/tests/test_lambdify_mod_bug.py\nnew file mode 100644\nindex 0000000..cb9e723\n--- /dev/null\n+++ b/sympy/core/tests/test_lambdify_mod_bug.py\n@@ -0,0 +1,8 @@\n+from sympy import Mod, lambdify, symbols\n+\n+def test_lambdify_mod_bug():\n+    x, y = symbols('x y')\n+    expr = -Mod(x, y)\n+    g = lambdify([x, y], expr, modules=[])\n+    result = g(3, 7)\n+    assert result == 4, f\"Expected 4, but got {result}\"\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_lambdify_mod_bug_inverted.py b/sympy/core/tests/test_lambdify_mod_bug_inverted.py\nnew file mode 100644\nindex 0000000..d76ab0a\n--- /dev/null\n+++ b/sympy/core/tests/test_lambdify_mod_bug_inverted.py\n@@ -0,0 +1,8 @@\n+from sympy import Mod, lambdify, symbols\n+\n+def test_lambdify_mod_bug():\n+    x, y = symbols('x y')\n+    expr = -Mod(x, y)\n+    g = lambdify([x, y], expr, modules=[])\n+    result = g(3, 7)\n+    assert result == -3, f\"__BUG__HERE__: Expected -3, but got {result}\"\n",
+  "num_sent_chars": 5161480,
+  "num_received_chars": 56242,
+  "elapsed_time": 605.088457107544,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15127",
+  "edit_test_file": "tests/messages_tests/test_fallback.py",
+  "code_patch": "diff --git a/django/contrib/messages/storage/base.py b/django/contrib/messages/storage/base.py\nindex 0142206..8f19fbf 100644\n--- a/django/contrib/messages/storage/base.py\n+++ b/django/contrib/messages/storage/base.py\n@@ -38,7 +38,8 @@ class Message:\n \n     @property\n     def level_tag(self):\n-        return LEVEL_TAGS.get(self.level, '')\n+        current_level_tags = utils.get_level_tags()\n+        return current_level_tags.get(self.level, '')\n \n \n class BaseStorage:\n",
+  "test_patch": "diff --git a/tests/messages_tests/test_override_settings.py b/tests/messages_tests/test_override_settings.py\nnew file mode 100644\nindex 0000000..026ee35\n--- /dev/null\n+++ b/tests/messages_tests/test_override_settings.py\n@@ -0,0 +1,17 @@\n+import unittest\n+from django.test import override_settings\n+from django.contrib.messages import constants\n+from django.contrib.messages.storage.base import Message\n+from django.utils.crypto import get_random_string\n+\n+class OverrideSettingsTestCase(unittest.TestCase):\n+    @override_settings(MESSAGE_TAGS={constants.INFO: 'info', 50: 'critical'})\n+    def test_level_tags_not_updated(self):\n+        # Create a message with a custom level\n+        message = Message(50, 'A critical message')\n+        \n+        # Check if the level_tag is not updated and is an empty string\n+        self.assertEqual(message.level_tag, '', \"LEVEL_TAGS not updated, level_tag should be empty\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/messages_tests/test_override_settings_inverted.py b/tests/messages_tests/test_override_settings_inverted.py\nnew file mode 100644\nindex 0000000..a1e7908\n--- /dev/null\n+++ b/tests/messages_tests/test_override_settings_inverted.py\n@@ -0,0 +1,17 @@\n+import unittest\n+from django.test import override_settings\n+from django.contrib.messages import constants\n+from django.contrib.messages.storage.base import Message\n+\n+class OverrideSettingsTestCase(unittest.TestCase):\n+    @override_settings(MESSAGE_TAGS={constants.INFO: 'info', 50: 'critical'})\n+    def test_level_tags_not_updated(self):\n+        # Create a message with a custom level\n+        message = Message(50, 'A critical message')\n+        \n+        # Check if the level_tag is updated correctly\n+        # This should fail if the bug is present\n+        self.assertNotEqual(message.level_tag, '', \"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 585313,
+  "num_received_chars": 3487,
+  "elapsed_time": 56.766525745391846,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

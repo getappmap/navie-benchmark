@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-1921",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/sessions.py b/requests/sessions.py\nindex a023e4e..9765549 100644\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -44,6 +44,10 @@ def merge_setting(request_setting, session_setting, dict_class=OrderedDict):\n     if request_setting is None:\n         return session_setting\n \n+    # Remove None values from session_setting if it's a dictionary\n+    if isinstance(session_setting, Mapping):\n+        session_setting = {k: v for k, v in session_setting.items() if v is not None}\n+\n     # Bypass if not a dictionary (e.g. verify)\n     if not (\n             isinstance(session_setting, Mapping) and\n@@ -272,6 +276,9 @@ class Session(SessionRedirectMixin):\n         if not isinstance(cookies, cookielib.CookieJar):\n             cookies = cookiejar_from_dict(cookies)\n \n+        # Remove headers with None values\n+        self.headers = {k: v for k, v in self.headers.items() if v is not None}\n+\n         # Merge with session cookies\n         merged_cookies = merge_cookies(\n             merge_cookies(RequestsCookieJar(), self.cookies), cookies)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 730837,
+  "num_received_chars": 8188,
+  "elapsed_time": 88.58985781669617,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

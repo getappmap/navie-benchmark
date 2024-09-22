@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-7229",
+  "edit_test_file": "xarray/tests/test_dataset.py",
+  "code_patch": "diff --git a/xarray/core/variable.py b/xarray/core/variable.py\nindex 2a287e5..3d0f1b2 100644\n--- a/xarray/core/variable.py\n+++ b/xarray/core/variable.py\n@@ -1868,8 +1868,13 @@ class Variable(AbstractArray, NdimSizeLenMixin, VariableArithmetic):\n     def fillna(self, value):\n         return ops.fillna(self, value)\n \n-    def where(self, cond, other=dtypes.NA):\n-        return ops.where_method(self, cond, other)\n+    def where(self, cond, other=dtypes.NA, keep_attrs=False):\n+        result = ops.where_method(self, cond, other)\n+        if keep_attrs:\n+            # Preserve coordinate attributes\n+            coord_attrs = {k: v for k, v in self.attrs.items() if k.startswith('coord_')}\n+            result.attrs.update(coord_attrs)\n+        return result\n \n     def clip(self, min=None, max=None):\n         \"\"\"\n",
+  "test_patch": "diff --git a/xarray/tests/test_where_keep_attrs.py b/xarray/tests/test_where_keep_attrs.py\nnew file mode 100644\nindex 0000000..4e33824\n--- /dev/null\n+++ b/xarray/tests/test_where_keep_attrs.py\n@@ -0,0 +1,13 @@\n+import pytest\n+import xarray as xr\n+\n+def test_where_keep_attrs_overwrites_coordinate_attrs():\n+    ds = xr.tutorial.load_dataset(\"air_temperature\")\n+    result_attrs = xr.where(True, ds.air, ds.air, keep_attrs=True).time.attrs\n+\n+    # The expected attributes should be the original coordinate attributes\n+    expected_attrs = {'standard_name': 'time', 'long_name': 'Time'}\n+\n+    # Assert that the result attributes are not equal to the expected attributes\n+    # This reproduces the issue where coordinate attributes are overwritten\n+    assert result_attrs != expected_attrs\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_where_keep_attrs_inverted.py b/xarray/tests/test_where_keep_attrs_inverted.py\nnew file mode 100644\nindex 0000000..4a23df7\n--- /dev/null\n+++ b/xarray/tests/test_where_keep_attrs_inverted.py\n@@ -0,0 +1,13 @@\n+import pytest\n+import xarray as xr\n+\n+def test_where_keep_attrs_overwrites_coordinate_attrs():\n+    ds = xr.tutorial.load_dataset(\"air_temperature\")\n+    result_attrs = xr.where(True, ds.air, ds.air, keep_attrs=True).time.attrs\n+\n+    # The expected attributes should be the original coordinate attributes\n+    expected_attrs = {'standard_name': 'time', 'long_name': 'Time'}\n+\n+    # Assert that the result attributes are equal to the expected attributes\n+    # This should fail if the bug is present, raising the specified error message\n+    assert result_attrs == expected_attrs, \"__BUG__HERE__\"\n",
+  "num_sent_chars": 5694208,
+  "num_received_chars": 51865,
+  "elapsed_time": 472.59253215789795,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
