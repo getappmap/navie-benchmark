@@ -10,12 +10,14 @@ class TestMainFunction(unittest.TestCase):
     @patch("solver.solve_loop.evaluate")
     @patch("solver.solve_loop.archive_test_logs")
     @patch("solver.solve_loop.archive_code_logs")
+    @patch("solver.solve_loop.archive_evaluate_logs")
     @patch("solver.solve_loop.write_working_set")
     @patch("solver.solve_loop.confirm", return_value=True)
     def test_main_loop(
         self,
         mock_confirm,
         mock_write_working_set,
+        mock_archive_evaluate_logs,
         mock_archive_code_logs,
         mock_archive_test_logs,
         mock_evaluate,
@@ -62,6 +64,7 @@ class TestMainFunction(unittest.TestCase):
         self.assertEqual(mock_evaluate.call_count, 1)
         self.assertEqual(mock_archive_test_logs.call_count, 1)
         self.assertEqual(mock_archive_code_logs.call_count, 1)
+        self.assertEqual(mock_archive_evaluate_logs.call_count, 1)
         self.assertEqual(mock_write_working_set.call_count, 2)
 
 
