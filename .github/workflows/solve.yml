@@ -23,6 +23,7 @@ on:
           # Synthetic test solvers
           - test_files=3 test_status_retry=3 code_files=0
           # Code solvers building synthetic tests
+          - test_files=3 test_status_retry=1 code_files=3 code_status_retry=3
           - test_files=3 test_status_retry=3 code_files=3 code_status_retry=3
           # Code file selection
           - test_files=0 code_files=3 code_status_retry=0
