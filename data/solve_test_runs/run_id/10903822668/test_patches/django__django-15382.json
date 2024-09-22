@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "tests/queries/test_qs_combinators.py",
-  "test_patch": "diff --git a/tests/queries/test_exists_subquery.py b/tests/queries/test_exists_subquery.py\nnew file mode 100644\nindex 0000000..59ade6b\n--- /dev/null\n+++ b/tests/queries/test_exists_subquery.py\n@@ -0,0 +1,10 @@\n+from django.core.exceptions import EmptyResultSet\n+from django.db import models\n+from django.test import TestCase\n+from .models import Number\n+\n+class FilterOnExistsSubqueryTests(TestCase):\n+    def test_filter_on_exists_subquery_with_empty_queryset(self):\n+        qs = Number.objects.filter(~models.Exists(Number.objects.none()), num=1)\n+        with self.assertRaises(EmptyResultSet):\n+            print(qs.query)\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

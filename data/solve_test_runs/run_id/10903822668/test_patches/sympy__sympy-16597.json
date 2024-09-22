@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/sets/tests/test_sets.py",
-  "test_patch": "diff --git a/sympy/sets/tests/test_even_and_finite.py b/sympy/sets/tests/test_even_and_finite.py\nnew file mode 100644\nindex 0000000..26d6416\n--- /dev/null\n+++ b/sympy/sets/tests/test_even_and_finite.py\n@@ -0,0 +1,5 @@\n+from sympy import Symbol\n+\n+def test_even_implies_finite():\n+    m = Symbol('m', even=True)\n+    assert m.is_finite is None\n\\ No newline at end of file\n",
-  "inverted_patch": "diff --git a/sympy/sets/tests/test_even_and_finite_inverted.py b/sympy/sets/tests/test_even_and_finite_inverted.py\nnew file mode 100644\nindex 0000000..0fc83d8\n--- /dev/null\n+++ b/sympy/sets/tests/test_even_and_finite_inverted.py\n@@ -0,0 +1,5 @@\n+from sympy import Symbol\n+\n+def test_even_implies_finite():\n+    m = Symbol('m', even=True)\n+    assert m.is_finite is not None, \"__BUG__HERE__\"\n\\ No newline at end of file\n"
-}

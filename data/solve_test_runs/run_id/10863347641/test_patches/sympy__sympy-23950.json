@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/sets/tests/test_conditionset.py",
-  "test_patch": "diff --git a/sympy/sets/tests/test_booleanissues.py b/sympy/sets/tests/test_booleanissues.py\nnew file mode 100644\nindex 0000000..be0bac5\n--- /dev/null\n+++ b/sympy/sets/tests/test_booleanissues.py\n@@ -0,0 +1,10 @@\n+from sympy.core.symbol import Symbol\n+from sympy.sets.contains import Contains\n+from sympy.core.singleton import S\n+from sympy.testing.pytest import raises\n+\n+def test_contains_as_set_issue():\n+    x = Symbol('x')\n+    contains_expr = Contains(x, S.Reals)\n+    # Attempting to call as_set should raise NotImplementedError\n+    raises(NotImplementedError, lambda: contains_expr.as_set())\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

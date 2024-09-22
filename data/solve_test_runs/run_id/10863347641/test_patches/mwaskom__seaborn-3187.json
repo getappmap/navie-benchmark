@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "tests/test_utils.py",
-  "test_patch": "diff --git a/tests/test_legend_scalars.py b/tests/test_legend_scalars.py\nnew file mode 100644\nindex 0000000..57a28a6\n--- /dev/null\n+++ b/tests/test_legend_scalars.py\n@@ -0,0 +1,26 @@\n+import matplotlib.pyplot as plt\n+import seaborn as sns\n+import seaborn.objects as so\n+import pytest\n+\n+def test_scalarformatter_legend_offset_issue():\n+    # Load the dataset\n+    penguins = sns.load_dataset(\"penguins\")\n+    penguins[\"body_mass_mg\"] = penguins[\"body_mass_g\"] * 1000\n+\n+    # Create the plot\n+    plot = (\n+        so.Plot(\n+            penguins, x=\"bill_length_mm\", y=\"bill_depth_mm\",\n+            color=\"species\", pointsize=\"body_mass_mg\",\n+        )\n+        .add(so.Dot())\n+    )\n+\n+    # Draw the plot\n+    plot.show()\n+\n+    # Check the legend for incorrect formatting\n+    # This is a placeholder assertion to simulate the issue\n+    # Replace with actual checks for the legend's incorrect state\n+    assert True  # Replace with actual condition that reproduces the issue\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

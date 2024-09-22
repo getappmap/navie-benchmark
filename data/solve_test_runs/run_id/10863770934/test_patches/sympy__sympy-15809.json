@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/matrices/expressions/tests/test_matexpr.py",
-  "test_patch": "diff --git a/sympy/matrices/expressions/tests/test_min_max.py b/sympy/matrices/expressions/tests/test_min_max.py\nnew file mode 100644\nindex 0000000..7e24d1c\n--- /dev/null\n+++ b/sympy/matrices/expressions/tests/test_min_max.py\n@@ -0,0 +1,7 @@\n+from sympy import Min, Max\n+from sympy.utilities.pytest import raises\n+\n+def test_zero_argument_min_max():\n+    # Test that Min() and Max() with no arguments raise ValueError\n+    raises(ValueError, lambda: Min())\n+    raises(ValueError, lambda: Max())\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/assumptions/tests/test_sathandlers.py",
-  "test_patch": "diff --git a/sympy/assumptions/tests/test_issue_is_even_finite.py b/sympy/assumptions/tests/test_issue_is_even_finite.py\nnew file mode 100644\nindex 0000000..2494746\n--- /dev/null\n+++ b/sympy/assumptions/tests/test_issue_is_even_finite.py\n@@ -0,0 +1,5 @@\n+from sympy import Symbol\n+\n+def test_is_even_implies_finite():\n+    m = Symbol('m', even=True)\n+    assert m.is_finite is None, \"Expected m.is_finite to be None when m is even\"\n\\ No newline at end of file\n",
-  "inverted_patch": "diff --git a/sympy/assumptions/tests/test_issue_is_even_finite_inverted.py b/sympy/assumptions/tests/test_issue_is_even_finite_inverted.py\nnew file mode 100644\nindex 0000000..44a099b\n--- /dev/null\n+++ b/sympy/assumptions/tests/test_issue_is_even_finite_inverted.py\n@@ -0,0 +1,5 @@\n+from sympy import Symbol\n+\n+def test_is_even_implies_finite():\n+    m = Symbol('m', even=True)\n+    assert m.is_finite is not None, \"__BUG__HERE__\"\n\\ No newline at end of file\n"
-}

@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/core/tests/test_equal.py",
-  "test_patch": "diff --git a/sympy/core/tests/test_cmp_float_bool.py b/sympy/core/tests/test_cmp_float_bool.py\nnew file mode 100644\nindex 0000000..b25b4ce\n--- /dev/null\n+++ b/sympy/core/tests/test_cmp_float_bool.py\n@@ -0,0 +1,6 @@\n+from sympy import S\n+\n+def test_cmp_float_bool_issue():\n+    # Reproduce the issue where S(0.0) == S.false returns True\n+    assert (S(0.0) == S.false) is True\n+    assert (S.false == S(0.0)) is False\n\\ No newline at end of file\n",
-  "inverted_patch": "diff --git a/sympy/core/tests/test_cmp_float_bool_inverted.py b/sympy/core/tests/test_cmp_float_bool_inverted.py\nnew file mode 100644\nindex 0000000..75b37ba\n--- /dev/null\n+++ b/sympy/core/tests/test_cmp_float_bool_inverted.py\n@@ -0,0 +1,7 @@\n+from sympy import S\n+\n+def test_cmp_float_bool_issue():\n+    # Reproduce the issue where S(0.0) == S.false returns True\n+    # Alter the test to fail when the issue is observed\n+    assert (S(0.0) == S.false) is False, \"__BUG__HERE__\"\n+    assert (S.false == S(0.0)) is False\n\\ No newline at end of file\n"
-}

@@ -1,3 +1,23 @@
+## Phase IV
+
+    The workflow official.yml is run to create test patches and preliminary solve results.
+
+    https://docs.google.com/spreadsheets/d/1yGXKz6jJEV30bqfCKg9b7tNFq5Fqkee5S4aesmCfifs/edit?gid=0#gid=0
+
+    284 test patches are available. The initial solve rate at 8,000 tokens was 32.4%.
+
+    The next step is to re-run the solver on all non-optimal instances, with an increased token limit.
+
+    These results will be merged with the initial results (workflow runs 17-22 of official.yml) 
+
+    A straightforward way to do this is to follow the method of Phase III:
+
+    1. Build an instance set of those instances that are not optimally solved in the first phase.
+    2. Collect the optimal test patches from the initial results into data/test_patches.
+    3. Re-solve the non-optimal examples.
+    4. Combine the results with the initial solutions.
+
+
 ## Phase III
 
     Phase III data is collected here -

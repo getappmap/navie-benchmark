@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "testing/test_nose.py",
-  "test_patch": "diff --git a/testing/test_pdb_skipped_teardown_issue.py b/testing/test_pdb_skipped_teardown_issue.py\nnew file mode 100644\nindex 0000000..b7448d0\n--- /dev/null\n+++ b/testing/test_pdb_skipped_teardown_issue.py\n@@ -0,0 +1,16 @@\n+import unittest\n+\n+class TestPdbSkippedTeardownIssue(unittest.TestCase):\n+    def setUp(self):\n+        pass\n+\n+    @unittest.skip(\"hello\")\n+    def test_one(self):\n+        pass\n+\n+    def tearDown(self):\n+        raise NameError(\"xxx\")\n+\n+if __name__ == \"__main__\":\n+    import pytest\n+    pytest.main([\"--pdb\", __file__])\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

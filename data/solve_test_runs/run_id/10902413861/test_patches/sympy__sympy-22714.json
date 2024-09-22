@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "sympy/geometry/tests/test_point.py",
-  "test_patch": "diff --git a/sympy/geometry/tests/test_point2d_evaluate.py b/sympy/geometry/tests/test_point2d_evaluate.py\nnew file mode 100644\nindex 0000000..7608bcd\n--- /dev/null\n+++ b/sympy/geometry/tests/test_point2d_evaluate.py\n@@ -0,0 +1,7 @@\n+from sympy import S, evaluate\n+from sympy.testing.pytest import raises\n+\n+def test_point2d_evaluate_false():\n+    with raises(ValueError):\n+        with evaluate(False):\n+            S('Point2D(Integer(1),Integer(2))')\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}

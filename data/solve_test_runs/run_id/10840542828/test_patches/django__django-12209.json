@@ -1,5 +1,0 @@
-{
-  "edit_test_file": "tests/model_inheritance_regress/tests.py",
-  "test_patch": "diff --git a/tests/model_inheritance_regress/test_model_pk_save_behavior.py b/tests/model_inheritance_regress/test_model_pk_save_behavior.py\nnew file mode 100644\nindex 0000000..2b56c66\n--- /dev/null\n+++ b/tests/model_inheritance_regress/test_model_pk_save_behavior.py\n@@ -0,0 +1,16 @@\n+import uuid\n+from django.db import models, IntegrityError\n+from django.test import TestCase\n+\n+class Sample(models.Model):\n+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)\n+    name = models.CharField(blank=True, max_length=100)\n+\n+class TestModelPKSaveBehavior(TestCase):\n+    def test_explicit_pk_with_default_uuid(self):\n+        # Create an initial instance\n+        s0 = Sample.objects.create()\n+        # Attempt to create a new instance with the same primary key\n+        s1 = Sample(pk=s0.pk, name='Test 1')\n+        with self.assertRaises(IntegrityError):\n+            s1.save()\n\\ No newline at end of file\n",
-  "inverted_patch": null
-}
