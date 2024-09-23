@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11163",
+  "edit_test_file": "tests/forms_tests/tests/test_forms.py",
+  "code_patch": "diff --git a/django/forms/models.py b/django/forms/models.py\nindex d157c29..611f0cc 100644\n--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@ -80,10 +80,12 @@ def model_to_dict(instance, fields=None, exclude=None):\n     \"\"\"\n     opts = instance._meta\n     data = {}\n+    if fields == []:\n+        return data\n     for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):\n         if not getattr(f, 'editable', False):\n             continue\n-        if fields and f.name not in fields:\n+        if fields is not None and f.name not in fields:\n             continue\n         if exclude and f.name in exclude:\n             continue\n",
+  "test_patch": "diff --git a/tests/forms_tests/tests/test_model_utils.py b/tests/forms_tests/tests/test_model_utils.py\nnew file mode 100644\nindex 0000000..2658c07\n--- /dev/null\n+++ b/tests/forms_tests/tests/test_model_utils.py\n@@ -0,0 +1,16 @@\n+# File: tests/forms_tests/tests/test_model_utils.py\n+\n+from django.forms import model_to_dict\n+from django.test import SimpleTestCase\n+from django.db import models\n+\n+class SampleModel(models.Model):\n+    field1 = models.CharField(max_length=100)\n+    field2 = models.IntegerField()\n+\n+class ModelUtilsTestCase(SimpleTestCase):\n+    def test_model_to_dict_empty_fields(self):\n+        instance = SampleModel(field1='test', field2=123)\n+        result = model_to_dict(instance, fields=[])\n+        # The test should pass when the issue is observed, i.e., it should return all fields instead of an empty dict.\n+        self.assertEqual(result, {'id': None, 'field1': 'test', 'field2': 123})\n",
+  "test_inverted_patch": "diff --git a/tests/forms_tests/tests/test_model_utils_inverted.py b/tests/forms_tests/tests/test_model_utils_inverted.py\nnew file mode 100644\nindex 0000000..37b5914\n--- /dev/null\n+++ b/tests/forms_tests/tests/test_model_utils_inverted.py\n@@ -0,0 +1,16 @@\n+# File: tests/forms_tests/tests/test_model_utils.py\n+\n+from django.forms import model_to_dict\n+from django.test import SimpleTestCase\n+from django.db import models\n+\n+class SampleModel(models.Model):\n+    field1 = models.CharField(max_length=100)\n+    field2 = models.IntegerField()\n+\n+class ModelUtilsTestCase(SimpleTestCase):\n+    def test_model_to_dict_empty_fields(self):\n+        instance = SampleModel(field1='test', field2=123)\n+        result = model_to_dict(instance, fields=[])\n+        # The test should fail when the issue is observed, i.e., it should return an empty dict.\n+        self.assertEqual(result, {}, \"__BUG__HERE__\")\n",
+  "num_sent_chars": 706182,
+  "num_received_chars": 4970,
+  "elapsed_time": 49.49918746948242,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

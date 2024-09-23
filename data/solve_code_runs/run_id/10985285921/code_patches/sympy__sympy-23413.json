@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23413",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/normalforms.py b/sympy/matrices/normalforms.py\nindex 7bce95d..177b05e 100644\n--- a/sympy/matrices/normalforms.py\n+++ b/sympy/matrices/normalforms.py\n@@ -124,4 +124,15 @@ def hermite_normal_form(A, *, D=None, check_rank=False):\n     # Accept any of Python int, SymPy Integer, and ZZ itself:\n     if D is not None and not ZZ.of_type(D):\n         D = ZZ(int(D))\n-    return _hnf(A._rep, D=D, check_rank=check_rank).to_Matrix()\n+    \n+    # Ensure the matrix is dense and copy it for manipulation\n+    A_dense = A.to_dense().rep.copy()\n+    \n+    # Adjust rank checking to ensure rows are not prematurely removed\n+    if check_rank:\n+        rank = A.rank()\n+        if rank < A.rows:\n+            raise ValueError(\"Matrix is rank deficient, cannot compute HNF.\")\n+    \n+    # Compute the Hermite Normal Form\n+    return _hnf(A_dense, D=D, check_rank=check_rank).to_Matrix()\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3025940,
+  "num_received_chars": 29930,
+  "elapsed_time": 438.956139087677,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

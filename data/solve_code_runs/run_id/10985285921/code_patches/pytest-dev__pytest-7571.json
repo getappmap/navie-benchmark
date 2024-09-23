@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7571",
+  "edit_test_file": "testing/logging/test_formatter.py",
+  "code_patch": "diff --git a/doc/en/conf.py b/doc/en/conf.py\nindex c631484..e334177 100644\n--- a/doc/en/conf.py\n+++ b/doc/en/conf.py\n@@ -30,6 +30,13 @@ release = \".\".join(version.split(\".\")[:2])\n # If extensions (or modules to document with autodoc) are in another directory,\n # add these directories to sys.path here. If the directory is relative to the\n # documentation root, use os.path.abspath to make it absolute, like shown here.\n+\n+# Note: The `caplog` fixture is designed to restore the original log level\n+# after a test concludes. Any changes made to log levels within tests should\n+# not persist beyond the test's lifecycle. This ensures that log settings are\n+# isolated to each test, maintaining clean test environments and avoiding side\n+# effects. If you observe deviations from this behavior, it may indicate\n+# incorrect usage or a potential bug.\n # sys.path.insert(0, os.path.abspath('.'))\n \n autodoc_member_order = \"bysource\"\n@@ -75,6 +82,13 @@ copyright = \"2015\u20132020, holger krekel and pytest-dev team\"\n # for a list of supported languages.\n # language = None\n \n+# Example usage of `caplog` fixture:\n+# \n+# def test_example(caplog):\n+#     caplog.set_level(logging.INFO)\n+#     # Perform test actions\n+#     # Log level will automatically revert to its original state after the test\n+\n # There are two options for replacing |today|: either, you set today to some\n # non-false value, then it is used:\n # today = ''\n",
+  "test_patch": "diff --git a/testing/logging/test_caplog_restoration.py b/testing/logging/test_caplog_restoration.py\nnew file mode 100644\nindex 0000000..9217598\n--- /dev/null\n+++ b/testing/logging/test_caplog_restoration.py\n@@ -0,0 +1,8 @@\n+import logging\n+\n+def test_foo(caplog):\n+    caplog.set_level(42)\n+\n+def test_bar(caplog):\n+    # This test will pass if the issue is present, i.e., the log level is not restored\n+    assert caplog.handler.level == 42\n",
+  "test_inverted_patch": "diff --git a/testing/logging/test_caplog_restoration_inverted.py b/testing/logging/test_caplog_restoration_inverted.py\nnew file mode 100644\nindex 0000000..6038af8\n--- /dev/null\n+++ b/testing/logging/test_caplog_restoration_inverted.py\n@@ -0,0 +1,10 @@\n+import logging\n+\n+def test_foo(caplog):\n+    caplog.set_level(42)\n+\n+def test_bar(caplog):\n+    # This test should fail if the issue is present, i.e., the log level is not restored\n+    if caplog.handler.level == 42:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    assert caplog.handler.level == logging.NOTSET\n",
+  "num_sent_chars": 3692163,
+  "num_received_chars": 31811,
+  "elapsed_time": 268.6006553173065,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-21596",
+  "edit_test_file": "sympy/sets/tests/test_fancysets.py",
+  "code_patch": "diff --git a/sympy/sets/handlers/intersection.py b/sympy/sets/handlers/intersection.py\nindex c54dc8f..0f3c9ab 100644\n--- a/sympy/sets/handlers/intersection.py\n+++ b/sympy/sets/handlers/intersection.py\n@@ -230,14 +230,16 @@ def intersection_sets(self, other): # noqa:F811\n         return None\n     base_set = self.base_sets[0]\n \n+    # Check if the other set is Reals\n+    if other == S.Reals:\n+        re, im = self.lamda.expr.as_real_imag()\n+        if im != 0:\n+            return S.EmptySet\n+        return imageset(Lambda(self.lamda.variables, re), base_set).intersect(S.Reals)\n+\n     # Intersection between ImageSets with Integers as base set\n     # For {f(n) : n in Integers} & {g(m) : m in Integers} we solve the\n     # diophantine equations f(n)=g(m).\n-    # If the solutions for n are {h(t) : t in Integers} then we return\n-    # {f(h(t)) : t in integers}.\n-    # If the solutions for n are {n_1, n_2, ..., n_k} then we return\n-    # {f(n_i) : 1 <= i <= k}.\n-    if base_set is S.Integers:\n         gm = None\n         if isinstance(other, ImageSet) and other.base_sets == (S.Integers,):\n             gm = other.lamda.expr\n",
+  "test_patch": "diff --git a/sympy/sets/tests/test_imageset_intersection.py b/sympy/sets/tests/test_imageset_intersection.py\nnew file mode 100644\nindex 0000000..6cb28d4\n--- /dev/null\n+++ b/sympy/sets/tests/test_imageset_intersection.py\n@@ -0,0 +1,10 @@\n+# sympy/sets/tests/test_imageset_intersection.py\n+\n+from sympy import S, I, symbols, Lambda, imageset\n+\n+def test_imageset_intersection_with_reals():\n+    n = symbols('n', integer=True)\n+    S1 = imageset(Lambda(n, n + (n - 1)*(n + 1)*I), S.Integers)\n+    \n+    # Check if 2 is incorrectly found in the intersection with Reals\n+    assert (2 in S1.intersect(S.Reals)) == True\n",
+  "test_inverted_patch": "diff --git a/sympy/sets/tests/test_imageset_intersection_inverted.py b/sympy/sets/tests/test_imageset_intersection_inverted.py\nnew file mode 100644\nindex 0000000..102aafb\n--- /dev/null\n+++ b/sympy/sets/tests/test_imageset_intersection_inverted.py\n@@ -0,0 +1,12 @@\n+# sympy/sets/tests/test_imageset_intersection.py\n+\n+from sympy import S, I, symbols, Lambda, imageset\n+\n+def test_imageset_intersection_with_reals():\n+    n = symbols('n', integer=True)\n+    S1 = imageset(Lambda(n, n + (n - 1)*(n + 1)*I), S.Integers)\n+    \n+    # Check if 2 is incorrectly found in the intersection with Reals\n+    # The test should now fail if 2 is found in the intersection\n+    if 2 in S1.intersect(S.Reals):\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 3690780,
+  "num_received_chars": 69048,
+  "elapsed_time": 501.60513257980347,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

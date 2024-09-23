@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15345",
+  "edit_test_file": "sympy/printing/tests/test_mathematica.py",
+  "code_patch": "diff --git a/sympy/printing/mathematica.py b/sympy/printing/mathematica.py\nindex ea7e3a2..cf941f1 100644\n--- a/sympy/printing/mathematica.py\n+++ b/sympy/printing/mathematica.py\n@@ -94,12 +94,15 @@ def _print_list(self, expr):\n     _print_Tuple = _print_list\n \n     def _print_Function(self, expr):\n-        if expr.func.__name__ in self.known_functions:\n-            cond_mfunc = self.known_functions[expr.func.__name__]\n+        func_name = expr.func.__name__\n+        if func_name in self.known_functions:\n+            cond_mfunc = self.known_functions[func_name]\n             for cond, mfunc in cond_mfunc:\n                 if cond(*expr.args):\n                     return \"%s[%s]\" % (mfunc, self.stringify(expr.args, \", \"))\n-        return expr.func.__name__ + \"[%s]\" % self.stringify(expr.args, \", \")\n+        elif func_name == \"Max\":\n+            return \"Max[%s]\" % self.stringify(expr.args, \", \")\n+        return func_name + \"[%s]\" % self.stringify(expr.args, \", \")\n \n     def _print_Integral(self, expr):\n         if len(expr.variables) == 1 and not expr.limits[0][1:]:\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_mathematicacode.py b/sympy/printing/tests/test_mathematicacode.py\nnew file mode 100644\nindex 0000000..1ce3313\n--- /dev/null\n+++ b/sympy/printing/tests/test_mathematicacode.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, Max\n+from sympy.printing.mathematica import mathematica_code\n+\n+def test_mathematica_code_Max_issue():\n+    x = symbols('x')\n+    assert mathematica_code(Max(x, 2)) == 'Max(2, x)'\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_mathematicacode_inverted.py b/sympy/printing/tests/test_mathematicacode_inverted.py\nnew file mode 100644\nindex 0000000..281ea6d\n--- /dev/null\n+++ b/sympy/printing/tests/test_mathematicacode_inverted.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, Max\n+from sympy.printing.mathematica import mathematica_code\n+\n+def test_mathematica_code_Max_issue():\n+    x = symbols('x')\n+    assert mathematica_code(Max(x, 2)) == 'Max[x, 2]', \"__BUG__HERE__\"\n",
+  "num_sent_chars": 1132459,
+  "num_received_chars": 8778,
+  "elapsed_time": 91.01684093475342,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

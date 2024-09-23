@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-7166",
+  "edit_test_file": "astropy/utils/tests/test_misc.py",
+  "code_patch": "diff --git a/astropy/utils/misc.py b/astropy/utils/misc.py\nindex de3fb01..5616e8f 100644\n--- a/astropy/utils/misc.py\n+++ b/astropy/utils/misc.py\n@@ -528,13 +528,16 @@ class InheritDocstrings(type):\n                 not key.startswith('_'))\n \n         for key, val in dct.items():\n-            if (inspect.isfunction(val) and\n+            if ((inspect.isfunction(val) or isinstance(val, property)) and\n                 is_public_member(key) and\n                 val.__doc__ is None):\n                 for base in cls.__mro__[1:]:\n-                    super_method = getattr(base, key, None)\n-                    if super_method is not None:\n-                        val.__doc__ = super_method.__doc__\n+                    super_member = getattr(base, key, None)\n+                    if super_member is not None:\n+                        if isinstance(val, property) and isinstance(super_member, property):\n+                            val.__doc__ = super_member.fget.__doc__\n+                        else:\n+                            val.__doc__ = super_member.__doc__\n                         break\n \n         super().__init__(name, bases, dct)\n",
+  "test_patch": "diff --git a/astropy/utils/tests/test_inheritdocstrings_properties.py b/astropy/utils/tests/test_inheritdocstrings_properties.py\nnew file mode 100644\nindex 0000000..4ac0c40\n--- /dev/null\n+++ b/astropy/utils/tests/test_inheritdocstrings_properties.py\n@@ -0,0 +1,21 @@\n+import unittest\n+from astropy.utils.misc import InheritDocstrings\n+\n+class TestInheritDocstringsProperties(unittest.TestCase):\n+    def test_inherit_docstrings_with_property(self):\n+        class Base(metaclass=InheritDocstrings):\n+            @property\n+            def foo(self):\n+                \"\"\"FOO property\"\"\"\n+                return \"foo\"\n+\n+        class Subclass(Base):\n+            @property\n+            def foo(self):\n+                return \"subclass foo\"\n+\n+        # The issue is that the docstring is not inherited for properties\n+        self.assertIsNone(Subclass.foo.__doc__)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1418124,
+  "num_received_chars": 10231,
+  "elapsed_time": 113.03891253471375,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

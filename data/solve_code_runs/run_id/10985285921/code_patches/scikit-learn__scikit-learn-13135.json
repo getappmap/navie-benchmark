@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-13135",
+  "edit_test_file": "sklearn/preprocessing/tests/test_discretization.py",
+  "code_patch": "diff --git a/sklearn/preprocessing/_discretization.py b/sklearn/preprocessing/_discretization.py\nindex dd969c1..285df06 100644\n--- a/sklearn/preprocessing/_discretization.py\n+++ b/sklearn/preprocessing/_discretization.py\n@@ -172,6 +172,7 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):\n                 # 1D k-means procedure\n                 km = KMeans(n_clusters=n_bins[jj], init=init, n_init=1)\n                 centers = km.fit(column[:, None]).cluster_centers_[:, 0]\n+                centers.sort()  # Ensure centers are sorted\n                 bin_edges[jj] = (centers[1:] + centers[:-1]) * 0.5\n                 bin_edges[jj] = np.r_[col_min, bin_edges[jj], col_max]\n \n@@ -245,6 +246,10 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):\n \n         bin_edges = self.bin_edges_\n         for jj in range(Xt.shape[1]):\n+            # Ensure bin_edges are sorted before using np.digitize\n+            if not np.all(bin_edges[jj][1:] >= bin_edges[jj][:-1]):\n+                bin_edges[jj].sort()\n+\n             # Values which are close to a bin edge are susceptible to numeric\n             # instability. Add eps to X so these values are binned correctly\n             # with respect to their decimal truncation. See documentation of\n",
+  "test_patch": "diff --git a/sklearn/preprocessing/tests/test_kbinsdiscretizer_kmeans_unsorted_bin_edges.py b/sklearn/preprocessing/tests/test_kbinsdiscretizer_kmeans_unsorted_bin_edges.py\nnew file mode 100644\nindex 0000000..c9eecec\n--- /dev/null\n+++ b/sklearn/preprocessing/tests/test_kbinsdiscretizer_kmeans_unsorted_bin_edges.py\n@@ -0,0 +1,10 @@\n+import numpy as np\n+from sklearn.preprocessing import KBinsDiscretizer\n+from sklearn.utils.testing import assert_raises\n+\n+def test_kmeans_unsorted_bin_edges():\n+    X = np.array([0, 0.5, 2, 3, 9, 10]).reshape(-1, 1)\n+\n+    # Expecting ValueError due to unsorted bin_edges when n_bins is set to 5\n+    est = KBinsDiscretizer(n_bins=5, strategy='kmeans', encode='ordinal')\n+    assert_raises(ValueError, est.fit_transform, X)\n",
+  "test_inverted_patch": "diff --git a/sklearn/preprocessing/tests/test_kbinsdiscretizer_kmeans_unsorted_bin_edges_inverted.py b/sklearn/preprocessing/tests/test_kbinsdiscretizer_kmeans_unsorted_bin_edges_inverted.py\nnew file mode 100644\nindex 0000000..427b7dd\n--- /dev/null\n+++ b/sklearn/preprocessing/tests/test_kbinsdiscretizer_kmeans_unsorted_bin_edges_inverted.py\n@@ -0,0 +1,10 @@\n+import numpy as np\n+from sklearn.preprocessing import KBinsDiscretizer\n+from sklearn.utils.testing import assert_raise_message\n+\n+def test_kmeans_unsorted_bin_edges():\n+    X = np.array([0, 0.5, 2, 3, 9, 10]).reshape(-1, 1)\n+\n+    # Expecting ValueError due to unsorted bin_edges when n_bins is set to 5\n+    est = KBinsDiscretizer(n_bins=5, strategy='kmeans', encode='ordinal')\n+    assert_raise_message(ValueError, \"__BUG__HERE__\", est.fit_transform, X)\n",
+  "num_sent_chars": 3201604,
+  "num_received_chars": 29093,
+  "elapsed_time": 264.6503827571869,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

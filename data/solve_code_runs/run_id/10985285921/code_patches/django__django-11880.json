@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11880",
+  "edit_test_file": "tests/forms_tests/tests/test_forms.py",
+  "code_patch": "diff --git a/django/forms/fields.py b/django/forms/fields.py\nindex 03cd8af..4cc3133 100644\n--- a/django/forms/fields.py\n+++ b/django/forms/fields.py\n@@ -200,6 +200,7 @@ class Field:\n         memo[id(self)] = result\n         result.widget = copy.deepcopy(self.widget, memo)\n         result.validators = self.validators[:]\n+        result.error_messages = copy.deepcopy(self.error_messages, memo)\n         return result\n \n \n",
+  "test_patch": "diff --git a/tests/forms_tests/tests/test_formfield_deepcopy.py b/tests/forms_tests/tests/test_formfield_deepcopy.py\nnew file mode 100644\nindex 0000000..6d25d68\n--- /dev/null\n+++ b/tests/forms_tests/tests/test_formfield_deepcopy.py\n@@ -0,0 +1,21 @@\n+import copy\n+from django.forms import CharField, Form\n+from django.test import SimpleTestCase\n+\n+class DeepCopyErrorMessagesTest(SimpleTestCase):\n+    def test_deepcopy_error_messages(self):\n+        class TestForm(Form):\n+            name = CharField(error_messages={'required': 'Name is required.'})\n+\n+        form1 = TestForm()\n+        form2 = copy.deepcopy(form1)\n+\n+        # Modify the error message in form1\n+        form1.fields['name'].error_messages['required'] = 'Name cannot be empty.'\n+\n+        # Check if the error message in form2 is also modified\n+        self.assertEqual(\n+            form2.fields['name'].error_messages['required'],\n+            'Name cannot be empty.',\n+            \"Deepcopy did not create a separate copy of error_messages.\"\n+        )\n",
+  "test_inverted_patch": "diff --git a/tests/forms_tests/tests/test_formfield_deepcopy_inverted.py b/tests/forms_tests/tests/test_formfield_deepcopy_inverted.py\nnew file mode 100644\nindex 0000000..6c0d907\n--- /dev/null\n+++ b/tests/forms_tests/tests/test_formfield_deepcopy_inverted.py\n@@ -0,0 +1,19 @@\n+import copy\n+from django.forms import CharField, Form\n+from django.test import SimpleTestCase\n+\n+class DeepCopyErrorMessagesTest(SimpleTestCase):\n+    def test_deepcopy_error_messages(self):\n+        class TestForm(Form):\n+            name = CharField(error_messages={'required': 'Name is required.'})\n+\n+        form1 = TestForm()\n+        form2 = copy.deepcopy(form1)\n+\n+        # Modify the error message in form1\n+        form1.fields['name'].error_messages['required'] = 'Name cannot be empty.'\n+\n+        # Check if the error message in form2 is also modified\n+        # The test should now fail if the error message in form2 is modified\n+        if form2.fields['name'].error_messages['required'] == 'Name cannot be empty.':\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 722173,
+  "num_received_chars": 3932,
+  "elapsed_time": 47.141684770584106,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

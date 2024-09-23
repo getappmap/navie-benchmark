@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24661",
+  "edit_test_file": "sympy/parsing/tests/test_ast_parser.py",
+  "code_patch": "diff --git a/sympy/parsing/sympy_parser.py b/sympy/parsing/sympy_parser.py\nindex 52711d1..febf770 100644\n--- a/sympy/parsing/sympy_parser.py\n+++ b/sympy/parsing/sympy_parser.py\n@@ -169,7 +169,7 @@ def _inner(tokens: List[TOKEN], local_dict: DICT, global_dict: DICT):\n     return _inner\n \n \n-def _apply_functions(tokens: List[tUnion[TOKEN, ParenthesisGroup]], local_dict: DICT, global_dict: DICT):\n+def _apply_functions(tokens: List[tUnion[TOKEN, ParenthesisGroup]], local_dict: DICT, global_dict: DICT, evaluate=True):\n     \"\"\"Convert a NAME token + ParenthesisGroup into an AppliedFunction.\n \n     Note that ParenthesisGroups, if not applied to any function, are\n@@ -188,6 +188,27 @@ def _apply_functions(tokens: List[tUnion[TOKEN, ParenthesisGroup]], local_dict:\n         elif tok[0] == NAME:\n             symbol = tok\n             result.append(tok)\n+        elif tok[0] == OP and tok[1] in ('<', '<=', '>', '>=', '==', '!=') and not evaluate:\n+            # Handle relational operators when evaluate=False\n+            left = result.pop() if result else None\n+            right = next(tokens, None)\n+            if left and right:\n+                rel_class = {\n+                    '<': 'Lt',\n+                    '<=': 'Le',\n+                    '>': 'Gt',\n+                    '>=': 'Ge',\n+                    '==': 'Eq',\n+                    '!=': 'Ne'\n+                }[tok[1]]\n+                result.append((NAME, rel_class))\n+                result.append((OP, '('))\n+                result.append(left)\n+                result.append((OP, ','))\n+                result.append(right)\n+                result.append((OP, ','))\n+                result.append((NAME, 'evaluate=False'))\n+                result.append((OP, ')'))\n         else:\n             symbol = None\n             result.append(tok)\n",
+  "test_patch": "diff --git a/sympy/parsing/tests/test_parse_expr_relational.py b/sympy/parsing/tests/test_parse_expr_relational.py\nnew file mode 100644\nindex 0000000..cc730ce\n--- /dev/null\n+++ b/sympy/parsing/tests/test_parse_expr_relational.py\n@@ -0,0 +1,7 @@\n+from sympy.parsing.sympy_parser import parse_expr\n+from sympy.core.relational import Lt\n+\n+def test_parse_expr_relational_evaluate_false():\n+    # This test reproduces the issue where evaluate=False is ignored for relationals\n+    result = parse_expr('1 < 2', evaluate=False)\n+    assert result == True  # The issue is that this evaluates to True instead of Lt(1, 2, evaluate=False)\n",
+  "test_inverted_patch": "diff --git a/sympy/parsing/tests/test_parse_expr_relational_inverted.py b/sympy/parsing/tests/test_parse_expr_relational_inverted.py\nnew file mode 100644\nindex 0000000..246a004\n--- /dev/null\n+++ b/sympy/parsing/tests/test_parse_expr_relational_inverted.py\n@@ -0,0 +1,9 @@\n+from sympy.parsing.sympy_parser import parse_expr\n+from sympy.core.relational import Lt\n+\n+def test_parse_expr_relational_evaluate_false():\n+    # This test reproduces the issue where evaluate=False is ignored for relationals\n+    result = parse_expr('1 < 2', evaluate=False)\n+    # The issue is that this evaluates to True instead of Lt(1, 2, evaluate=False)\n+    # Alter the assertion to fail when the bug is observed\n+    assert result == Lt(1, 2, evaluate=False), \"__BUG__HERE__\"\n",
+  "num_sent_chars": 4611793,
+  "num_received_chars": 89036,
+  "elapsed_time": 505.1128089427948,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

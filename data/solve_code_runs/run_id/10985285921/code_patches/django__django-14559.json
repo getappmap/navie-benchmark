@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14559",
+  "edit_test_file": "tests/queries/test_bulk_update.py",
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 387deca..162a3f7 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -563,9 +563,12 @@ class QuerySet:\n                     case_statement = Cast(case_statement, output_field=field)\n                 update_kwargs[field.attname] = case_statement\n             updates.append(([obj.pk for obj in batch_objs], update_kwargs))\n+        total_rows_matched = 0\n         with transaction.atomic(using=self.db, savepoint=False):\n             for pks, update_kwargs in updates:\n-                self.filter(pk__in=pks).update(**update_kwargs)\n+                rows_matched = self.filter(pk__in=pks).update(**update_kwargs)\n+                total_rows_matched += rows_matched\n+        return total_rows_matched\n     bulk_update.alters_data = True\n \n     def get_or_create(self, defaults=None, **kwargs):\n",
+  "test_patch": "diff --git a/tests/queries/test_bulk_update_return_value.py b/tests/queries/test_bulk_update_return_value.py\nnew file mode 100644\nindex 0000000..70e4027\n--- /dev/null\n+++ b/tests/queries/test_bulk_update_return_value.py\n@@ -0,0 +1,18 @@\n+import datetime\n+from django.test import TestCase\n+from .models import Note\n+\n+class BulkUpdateReturnValueTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.notes = [\n+            Note.objects.create(note=str(i), misc=str(i))\n+            for i in range(10)\n+        ]\n+\n+    def test_bulk_update_return_value(self):\n+        for note in self.notes:\n+            note.note = 'updated-%s' % note.id\n+        result = Note.objects.bulk_update(self.notes, ['note'])\n+        # Assert that the return value is None, which is the current issue\n+        self.assertIsNone(result)\n",
+  "test_inverted_patch": "diff --git a/tests/queries/test_bulk_update_return_value_inverted.py b/tests/queries/test_bulk_update_return_value_inverted.py\nnew file mode 100644\nindex 0000000..06b52f8\n--- /dev/null\n+++ b/tests/queries/test_bulk_update_return_value_inverted.py\n@@ -0,0 +1,20 @@\n+import datetime\n+from django.test import TestCase\n+from .models import Note\n+\n+class BulkUpdateReturnValueTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.notes = [\n+            Note.objects.create(note=str(i), misc=str(i))\n+            for i in range(10)\n+        ]\n+\n+    def test_bulk_update_return_value(self):\n+        for note in self.notes:\n+            note.note = 'updated-%s' % note.id\n+        result = Note.objects.bulk_update(self.notes, ['note'])\n+        # Assert that the return value is not None, expecting the number of rows matched\n+        if result is None:\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(result, len(self.notes))\n",
+  "num_sent_chars": 723570,
+  "num_received_chars": 3346,
+  "elapsed_time": 49.36135816574097,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

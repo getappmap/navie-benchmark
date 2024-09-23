@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15741",
+  "edit_test_file": "tests/i18n/tests.py",
+  "code_patch": "diff --git a/django/utils/formats.py b/django/utils/formats.py\nindex 3f38322..bfcd32f 100644\n--- a/django/utils/formats.py\n+++ b/django/utils/formats.py\n@@ -7,7 +7,7 @@ from importlib import import_module\n \n from django.conf import settings\n from django.utils import dateformat, numberformat\n-from django.utils.functional import lazy\n+from django.utils.functional import lazy, Promise\n from django.utils.translation import check_for_language, get_language, to_locale\n \n # format_cache is a mapping from (format_type, lang) to the format string.\n@@ -106,6 +106,8 @@ def get_format(format_type, lang=None, use_l10n=None):\n     If use_l10n is provided and is not None, it forces the value to\n     be localized (or not), overriding the value of settings.USE_L10N.\n     \"\"\"\n+    if isinstance(format_type, Promise):\n+        format_type = str(format_type)\n     if use_l10n is None:\n         try:\n             use_l10n = settings._USE_L10N_INTERNAL\n",
+  "test_patch": "diff --git a/tests/i18n/test_get_format_lazy.py b/tests/i18n/test_get_format_lazy.py\nnew file mode 100644\nindex 0000000..04b07fe\n--- /dev/null\n+++ b/tests/i18n/test_get_format_lazy.py\n@@ -0,0 +1,15 @@\n+import unittest\n+from django.utils.formats import get_format\n+from django.utils.translation import gettext_lazy as _\n+\n+class GetFormatLazyTests(unittest.TestCase):\n+    def test_get_format_with_lazy_string(self):\n+        \"\"\"\n+        Test that get_format raises a TypeError when passed a lazy string.\n+        \"\"\"\n+        lazy_format = _('Y-m-d')\n+        with self.assertRaises(TypeError):\n+            get_format(lazy_format)\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/i18n/test_get_format_lazy_inverted.py b/tests/i18n/test_get_format_lazy_inverted.py\nnew file mode 100644\nindex 0000000..720feda\n--- /dev/null\n+++ b/tests/i18n/test_get_format_lazy_inverted.py\n@@ -0,0 +1,17 @@\n+import unittest\n+from django.utils.formats import get_format\n+from django.utils.translation import gettext_lazy as _\n+\n+class GetFormatLazyTests(unittest.TestCase):\n+    def test_get_format_with_lazy_string(self):\n+        \"\"\"\n+        Test that get_format does not raise a TypeError when passed a lazy string.\n+        \"\"\"\n+        lazy_format = _('Y-m-d')\n+        try:\n+            get_format(lazy_format)\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "num_sent_chars": 683530,
+  "num_received_chars": 9456,
+  "elapsed_time": 64.56514596939087,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

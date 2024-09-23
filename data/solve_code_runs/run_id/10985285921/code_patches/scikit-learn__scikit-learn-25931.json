@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-25931",
+  "edit_test_file": "sklearn/compose/tests/test_column_transformer.py",
+  "code_patch": "diff --git a/sklearn/ensemble/_iforest.py b/sklearn/ensemble/_iforest.py\nindex 4d6c1c3..bded328 100644\n--- a/sklearn/ensemble/_iforest.py\n+++ b/sklearn/ensemble/_iforest.py\n@@ -345,6 +345,8 @@ class IsolationForest(OutlierMixin, BaseBagging):\n             return self\n \n         # else, define offset_ wrt contamination parameter\n+        if hasattr(X, \"columns\"):\n+            self.feature_names_in_ = X.columns.to_numpy()\n         self.offset_ = np.percentile(self.score_samples(X), 100.0 * self.contamination)\n \n         return self\n",
+  "test_patch": "diff --git a/sklearn/compose/tests/test_isolation_forest_feature_names.py b/sklearn/compose/tests/test_isolation_forest_feature_names.py\nnew file mode 100644\nindex 0000000..5b665b6\n--- /dev/null\n+++ b/sklearn/compose/tests/test_isolation_forest_feature_names.py\n@@ -0,0 +1,8 @@\n+import pytest\n+import pandas as pd\n+from sklearn.ensemble import IsolationForest\n+\n+def test_isolation_forest_feature_names_warning():\n+    X = pd.DataFrame({\"a\": [-1.1, 0.3, 0.5, 100]})\n+    with pytest.warns(UserWarning, match=\"X does not have valid feature names, but IsolationForest was fitted with feature names\"):\n+        IsolationForest(random_state=0, contamination=0.05).fit(X)\n",
+  "test_inverted_patch": "diff --git a/sklearn/compose/tests/test_isolation_forest_feature_names_inverted.py b/sklearn/compose/tests/test_isolation_forest_feature_names_inverted.py\nnew file mode 100644\nindex 0000000..2175025\n--- /dev/null\n+++ b/sklearn/compose/tests/test_isolation_forest_feature_names_inverted.py\n@@ -0,0 +1,14 @@\n+import pytest\n+import pandas as pd\n+from sklearn.ensemble import IsolationForest\n+\n+def test_isolation_forest_feature_names_warning():\n+    X = pd.DataFrame({\"a\": [-1.1, 0.3, 0.5, 100]})\n+    try:\n+        with pytest.warns(None) as record:\n+            IsolationForest(random_state=0, contamination=0.05).fit(X)\n+        # Check if the specific warning is present\n+        if any(\"X does not have valid feature names, but IsolationForest was fitted with feature names\" in str(warning.message) for warning in record):\n+            raise AssertionError(\"__BUG__HERE__\")\n+    except AssertionError as e:\n+        raise e\n",
+  "num_sent_chars": 4020699,
+  "num_received_chars": 91962,
+  "elapsed_time": 514.4419333934784,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

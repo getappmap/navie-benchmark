@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12304",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/template/response.py b/django/template/response.py\nindex 30b35b6..ac00060 100644\n--- a/django/template/response.py\n+++ b/django/template/response.py\n@@ -67,6 +67,11 @@ class SimpleTemplateResponse(HttpResponse):\n             return template\n \n     def resolve_context(self, context):\n+        # Check for 'do_not_call_in_templates' attribute and handle accordingly\n+        if isinstance(context, dict):\n+            for key, value in context.items():\n+                if hasattr(value, 'do_not_call_in_templates') and value.do_not_call_in_templates:\n+                    context[key] = value\n         return context\n \n     @property\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1107684,
+  "num_received_chars": 9047,
+  "elapsed_time": 86.43734312057495,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

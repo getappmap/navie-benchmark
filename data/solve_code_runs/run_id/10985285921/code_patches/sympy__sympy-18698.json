@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-18698",
+  "edit_test_file": "sympy/polys/tests/test_polytools.py",
+  "code_patch": "diff --git a/sympy/polys/polytools.py b/sympy/polys/polytools.py\nindex c9e77a9..bba2493 100644\n--- a/sympy/polys/polytools.py\n+++ b/sympy/polys/polytools.py\n@@ -3222,6 +3222,15 @@ def sqf_list(f, all=False):\n         >>> Poly(f).sqf_list()\n         (2, [(Poly(x + 1, x, domain='ZZ'), 2),\n              (Poly(x + 2, x, domain='ZZ'), 3)])\n+        \n+        # Consolidate factors with the same polynomial form\n+        factor_dict = {}\n+        for factor, multiplicity in factors:\n+            if factor in factor_dict:\n+                factor_dict[factor] += multiplicity\n+            else:\n+                factor_dict[factor] = multiplicity\n+        factors = list(factor_dict.items())\n \n         >>> Poly(f).sqf_list(all=True)\n         (2, [(Poly(1, x, domain='ZZ'), 1),\n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_factorconsistency.py b/sympy/polys/tests/test_factorconsistency.py\nnew file mode 100644\nindex 0000000..753b6d8\n--- /dev/null\n+++ b/sympy/polys/tests/test_factorconsistency.py\n@@ -0,0 +1,11 @@\n+# File: sympy/polys/tests/test_factorconsistency.py\n+\n+from sympy import symbols\n+from sympy.polys.polytools import sqf_list\n+\n+def test_sqf_list_inconsistency():\n+    x = symbols('x')\n+    # This test checks for the inconsistency in the output of sqf_list\n+    # The expected incorrect output is being asserted to reproduce the issue\n+    assert sqf_list((x**2 + 1) * (x - 1)**2 * (x - 2)**3 * (x - 3)**3) == \\\n+           (1, [(x**2 + 1, 1), (x - 1, 2), (x - 3, 3), (x - 2, 3)])\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_factorconsistency_inverted.py b/sympy/polys/tests/test_factorconsistency_inverted.py\nnew file mode 100644\nindex 0000000..e3fe968\n--- /dev/null\n+++ b/sympy/polys/tests/test_factorconsistency_inverted.py\n@@ -0,0 +1,13 @@\n+# File: sympy/polys/tests/test_factorconsistency.py\n+\n+from sympy import symbols\n+from sympy.polys.polytools import sqf_list\n+\n+def test_sqf_list_inconsistency():\n+    x = symbols('x')\n+    # This test checks for the inconsistency in the output of sqf_list\n+    # The expected correct output should be asserted to ensure the test fails when the bug is present\n+    expected_output = (1, [(x**2 + 1, 1), (x - 1, 2), (x**2 - 5*x + 6, 3)])\n+    actual_output = sqf_list((x**2 + 1) * (x - 1)**2 * (x - 2)**3 * (x - 3)**3)\n+    if actual_output != expected_output:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 3441229,
+  "num_received_chars": 51586,
+  "elapsed_time": 460.77910256385803,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

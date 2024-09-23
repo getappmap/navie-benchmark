@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-24149",
+  "edit_test_file": "lib/matplotlib/tests/test_axes.py",
+  "code_patch": "diff --git a/lib/matplotlib/cbook/__init__.py b/lib/matplotlib/cbook/__init__.py\nindex 34c6ddb..1fcdee3 100644\n--- a/lib/matplotlib/cbook/__init__.py\n+++ b/lib/matplotlib/cbook/__init__.py\n@@ -1738,7 +1738,7 @@ def _safe_first_finite(obj, *, skip_nonfinite=True):\n                 pass\n             raise RuntimeError(\"matplotlib does not support generators \"\n                                \"as input\")\n-        return next(iter(obj))\n+        return next(iter(obj), np.nan)\n     elif isinstance(obj, np.flatiter):\n         # TODO do the finite filtering on this\n         return obj[0]\n@@ -1746,7 +1746,7 @@ def _safe_first_finite(obj, *, skip_nonfinite=True):\n         raise RuntimeError(\"matplotlib does not \"\n                            \"support generators as input\")\n     else:\n-        return next(val for val in obj if safe_isfinite(val))\n+        return next((val for val in obj if safe_isfinite(val)), np.nan)\n \n \n def sanitize_sequence(data):\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_nan_data_barplot.py b/lib/matplotlib/tests/test_nan_data_barplot.py\nnew file mode 100644\nindex 0000000..c97547d\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_nan_data_barplot.py\n@@ -0,0 +1,10 @@\n+# File: lib/matplotlib/tests/test_nan_data_barplot.py\n+\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_nan_data_barplot():\n+    fig, ax = plt.subplots()\n+    with pytest.raises(StopIteration):\n+        ax.bar([np.nan], [np.nan])\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_nan_data_barplot_inverted.py b/lib/matplotlib/tests/test_nan_data_barplot_inverted.py\nnew file mode 100644\nindex 0000000..9ee5b6f\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_nan_data_barplot_inverted.py\n@@ -0,0 +1,12 @@\n+# File: lib/matplotlib/tests/test_nan_data_barplot.py\n+\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_nan_data_barplot():\n+    fig, ax = plt.subplots()\n+    try:\n+        ax.bar([np.nan], [np.nan])\n+    except StopIteration:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 2236136,
+  "num_received_chars": 26654,
+  "elapsed_time": 397.1972999572754,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

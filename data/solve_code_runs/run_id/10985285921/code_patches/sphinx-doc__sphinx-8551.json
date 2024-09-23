@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8551",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex 79d7e4f..40c53f6 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -87,7 +87,8 @@ def type_to_xref(text: str, env: BuildEnvironment = None) -> addnodes.pending_xr\n \n     if env:\n         kwargs = {'py:module': env.ref_context.get('py:module'),\n-                  'py:class': env.ref_context.get('py:class')}\n+                  'py:class': env.ref_context.get('py:class'),\n+                  'refspecific': True}  # Ensure context-specific resolution\n     else:\n         kwargs = {}\n \n@@ -1242,12 +1243,12 @@ class PythonDomain(Domain):\n         # skip parens\n         if name[-2:] == '()':\n             name = name[:-2]\n-\n+    \n         if not name:\n             return []\n-\n+    \n         matches = []  # type: List[Tuple[str, ObjectEntry]]\n-\n+    \n         newname = None\n         if searchmode == 1:\n             if type is None:\n@@ -1287,6 +1288,9 @@ class PythonDomain(Domain):\n                 newname = modname + '.' + classname + '.' + name\n         if newname is not None:\n             matches.append((newname, self.objects[newname]))\n+        # Prioritize matches within the current module\n+        if modname:\n+            matches = sorted(matches, key=lambda x: x[0].startswith(modname), reverse=True)\n         return matches\n \n     def resolve_xref(self, env: BuildEnvironment, fromdocname: str, builder: Builder,\n@@ -1297,17 +1301,20 @@ class PythonDomain(Domain):\n         searchmode = 1 if node.hasattr('refspecific') else 0\n         matches = self.find_obj(env, modname, clsname, target,\n                                 type, searchmode)\n-\n+    \n         if not matches and type == 'attr':\n             # fallback to meth (for property)\n             matches = self.find_obj(env, modname, clsname, target, 'meth', searchmode)\n-\n+    \n         if not matches:\n             return None\n         elif len(matches) > 1:\n-            logger.warning(__('more than one target found for cross-reference %r: %s'),\n-                           target, ', '.join(match[0] for match in matches),\n-                           type='ref', subtype='python', location=node)\n+            # Prioritize local module matches over others\n+            matches = [m for m in matches if m[0].startswith(modname)]\n+            if len(matches) > 1:\n+                logger.warning(__('more than one target found for cross-reference %r: %s'),\n+                               target, ', '.join(match[0] for match in matches),\n+                               type='ref', subtype='python', location=node)\n         name, obj = matches[0]\n \n         if obj[2] == 'module':\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1272025,
+  "num_received_chars": 15180,
+  "elapsed_time": 103.49885416030884,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

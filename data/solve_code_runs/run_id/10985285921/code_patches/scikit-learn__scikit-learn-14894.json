@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-14894",
+  "edit_test_file": "sklearn/svm/tests/test_sparse.py",
+  "code_patch": "diff --git a/sklearn/svm/base.py b/sklearn/svm/base.py\nindex 64cebe8..57300f5 100644\n--- a/sklearn/svm/base.py\n+++ b/sklearn/svm/base.py\n@@ -280,6 +280,11 @@ class BaseLibSVM(BaseEstimator, metaclass=ABCMeta):\n \n         self._warn_from_fit_status()\n \n+        if self.support_vectors_.shape[0] == 0:\n+            # Handle the case where there are no support vectors\n+            self.dual_coef_ = sp.csr_matrix((0, X.shape[1]))\n+            return\n+\n         if hasattr(self, \"classes_\"):\n             n_class = len(self.classes_) - 1\n         else:  # regression\n",
+  "test_patch": "diff --git a/sklearn/svm/tests/test_sparse_fit_error_handling.py b/sklearn/svm/tests/test_sparse_fit_error_handling.py\nnew file mode 100644\nindex 0000000..8419ff3\n--- /dev/null\n+++ b/sklearn/svm/tests/test_sparse_fit_error_handling.py\n@@ -0,0 +1,22 @@\n+import numpy as np\n+import pytest\n+from scipy import sparse\n+from sklearn.svm import SVR\n+\n+def test_zero_division_error_in_sparse_fit():\n+    # Test to reproduce ZeroDivisionError in _sparse_fit for SVM with empty support_vectors_\n+    x_train = np.array([[0, 1, 0, 0],\n+                        [0, 0, 0, 1],\n+                        [0, 0, 1, 0],\n+                        [0, 0, 0, 1]])\n+    y_train = np.array([0.04, 0.04, 0.10, 0.16])\n+    model = SVR(C=316.227766017, cache_size=200, coef0=0.0, degree=3, epsilon=0.1,\n+                gamma=1.0, kernel='linear', max_iter=15000,\n+                shrinking=True, tol=0.001, verbose=False)\n+    \n+    # Convert to sparse\n+    x_train_sparse = sparse.csr_matrix(x_train)\n+    \n+    # Expect ZeroDivisionError when fitting with sparse data\n+    with pytest.raises(ZeroDivisionError):\n+        model.fit(x_train_sparse, y_train)\n",
+  "test_inverted_patch": "diff --git a/sklearn/svm/tests/test_sparse_fit_error_handling_inverted.py b/sklearn/svm/tests/test_sparse_fit_error_handling_inverted.py\nnew file mode 100644\nindex 0000000..f6e6c09\n--- /dev/null\n+++ b/sklearn/svm/tests/test_sparse_fit_error_handling_inverted.py\n@@ -0,0 +1,25 @@\n+import numpy as np\n+import pytest\n+from scipy import sparse\n+from sklearn.svm import SVR\n+\n+def test_zero_division_error_in_sparse_fit():\n+    # Test to reproduce ZeroDivisionError in _sparse_fit for SVM with empty support_vectors_\n+    x_train = np.array([[0, 1, 0, 0],\n+                        [0, 0, 0, 1],\n+                        [0, 0, 1, 0],\n+                        [0, 0, 0, 1]])\n+    y_train = np.array([0.04, 0.04, 0.10, 0.16])\n+    model = SVR(C=316.227766017, cache_size=200, coef0=0.0, degree=3, epsilon=0.1,\n+                gamma=1.0, kernel='linear', max_iter=15000,\n+                shrinking=True, tol=0.001, verbose=False)\n+    \n+    # Convert to sparse\n+    x_train_sparse = sparse.csr_matrix(x_train)\n+    \n+    # Expect no ZeroDivisionError when fitting with sparse data\n+    # If ZeroDivisionError occurs, raise an AssertionError with the message \"__BUG__HERE__\"\n+    try:\n+        model.fit(x_train_sparse, y_train)\n+    except ZeroDivisionError:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 725080,
+  "num_received_chars": 6568,
+  "elapsed_time": 49.6346275806427,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

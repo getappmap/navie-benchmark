@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11276",
+  "edit_test_file": "tests/template_tests/filter_tests/test_escape.py",
+  "code_patch": "diff --git a/django/utils/html.py b/django/utils/html.py\nindex 9c51997..3e50401 100644\n--- a/django/utils/html.py\n+++ b/django/utils/html.py\n@@ -43,7 +43,8 @@ def escape(text):\n     This may result in double-escaping. If this is a concern, use\n     conditional_escape() instead.\n     \"\"\"\n-    return mark_safe(str(text).translate(_html_escapes))\n+    from html import escape as html_escape\n+    return mark_safe(html_escape(str(text), quote=True))\n \n \n _js_escapes = {\n",
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_html_escape.py b/tests/template_tests/filter_tests/test_html_escape.py\nnew file mode 100644\nindex 0000000..a832038\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_html_escape.py\n@@ -0,0 +1,16 @@\n+from django.test import SimpleTestCase\n+from django.utils.html import escape as django_escape\n+import html\n+\n+class HtmlEscapeTests(SimpleTestCase):\n+    def test_html_escape_difference(self):\n+        # Test to reproduce the issue with django.utils.html.escape()\n+        input_string = \"Jack & Jill's <adventure>\"\n+        django_escaped = django_escape(input_string)\n+        stdlib_escaped = html.escape(input_string)\n+\n+        # The issue is that django_escape uses &#39; for single quotes,\n+        # while html.escape uses &#x27;.\n+        self.assertNotEqual(django_escaped, stdlib_escaped)\n+        self.assertEqual(django_escaped, \"Jack &amp; Jill&#39;s &lt;adventure&gt;\")\n+        self.assertEqual(stdlib_escaped, \"Jack &amp; Jill&#x27;s &lt;adventure&gt;\")\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_html_escape_inverted.py b/tests/template_tests/filter_tests/test_html_escape_inverted.py\nnew file mode 100644\nindex 0000000..ea3eeac\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_html_escape_inverted.py\n@@ -0,0 +1,16 @@\n+from django.test import SimpleTestCase\n+from django.utils.html import escape as django_escape\n+import html\n+\n+class HtmlEscapeTests(SimpleTestCase):\n+    def test_html_escape_difference(self):\n+        # Test to reproduce the issue with django.utils.html.escape()\n+        input_string = \"Jack & Jill's <adventure>\"\n+        django_escaped = django_escape(input_string)\n+        stdlib_escaped = html.escape(input_string)\n+\n+        # The issue is that django_escape uses &#39; for single quotes,\n+        # while html.escape uses &#x27;.\n+        self.assertEqual(django_escaped, stdlib_escaped, \"__BUG__HERE__\")\n+        self.assertEqual(django_escaped, \"Jack &amp; Jill&#39;s &lt;adventure&gt;\")\n+        self.assertEqual(stdlib_escaped, \"Jack &amp; Jill&#x27;s &lt;adventure&gt;\")\n",
+  "num_sent_chars": 3270432,
+  "num_received_chars": 37202,
+  "elapsed_time": 305.1742265224457,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

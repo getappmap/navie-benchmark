@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14089",
+  "edit_test_file": "tests/ordering/tests.py",
+  "code_patch": "diff --git a/django/utils/datastructures.py b/django/utils/datastructures.py\nindex 871b016..0de9bf4 100644\n--- a/django/utils/datastructures.py\n+++ b/django/utils/datastructures.py\n@@ -25,6 +25,9 @@ class OrderedSet:\n     def __iter__(self):\n         return iter(self.dict)\n \n+    def __reversed__(self):\n+        return reversed(list(self.dict))\n+\n     def __contains__(self, item):\n         return item in self.dict\n \n",
+  "test_patch": "diff --git a/tests/ordering/test_orderedset_reverse.py b/tests/ordering/test_orderedset_reverse.py\nnew file mode 100644\nindex 0000000..b95a08d\n--- /dev/null\n+++ b/tests/ordering/test_orderedset_reverse.py\n@@ -0,0 +1,11 @@\n+from django.test import TestCase\n+from django.utils.datastructures import OrderedSet\n+\n+class OrderedSetReverseTests(TestCase):\n+    def test_orderedset_reversed(self):\n+        \"\"\"\n+        Test that calling reversed() on an OrderedSet raises a TypeError.\n+        \"\"\"\n+        ordered_set = OrderedSet([1, 2, 3, 4])\n+        with self.assertRaises(TypeError):\n+            reversed(ordered_set)\n",
+  "test_inverted_patch": "diff --git a/tests/ordering/test_orderedset_reverse_inverted.py b/tests/ordering/test_orderedset_reverse_inverted.py\nnew file mode 100644\nindex 0000000..6adf113\n--- /dev/null\n+++ b/tests/ordering/test_orderedset_reverse_inverted.py\n@@ -0,0 +1,15 @@\n+from django.test import TestCase\n+from django.utils.datastructures import OrderedSet\n+\n+class OrderedSetReverseTests(TestCase):\n+    def test_orderedset_reversed(self):\n+        \"\"\"\n+        Test that calling reversed() on an OrderedSet does not raise a TypeError.\n+        \"\"\"\n+        ordered_set = OrderedSet([1, 2, 3, 4])\n+        try:\n+            reversed_list = list(reversed(ordered_set))\n+            # Check if the reversed list is as expected\n+            self.assertEqual(reversed_list, [4, 3, 2, 1])\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 663375,
+  "num_received_chars": 4014,
+  "elapsed_time": 38.98794436454773,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

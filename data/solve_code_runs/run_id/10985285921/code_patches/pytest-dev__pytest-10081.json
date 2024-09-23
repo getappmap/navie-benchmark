@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-10081",
+  "edit_test_file": "testing/example_scripts/unittest/test_setup_skip_class.py",
+  "code_patch": "diff --git a/doc/en/example/pythoncollection.rst b/doc/en/example/pythoncollection.rst\nindex b9c2386..10e2609 100644\n--- a/doc/en/example/pythoncollection.rst\n+++ b/doc/en/example/pythoncollection.rst\n@@ -55,6 +55,8 @@ You can run all of the tests within ``tests/`` *except* for ``tests/foobar/test_\n by invoking ``pytest`` with ``--deselect tests/foobar/test_foobar_01.py::test_a``.\n ``pytest`` allows multiple ``--deselect`` options.\n \n+Note: When using the `--pdb` option, `unittest.TestCase` classes marked with `unittest.skip` will not execute `setUp` or `tearDown` methods, ensuring that no test-related code is executed for skipped classes.\n+\n Keeping duplicate paths specified from command line\n ----------------------------------------------------\n \n\ndiff --git a/src/_pytest/unittest.py b/src/_pytest/unittest.py\nindex 851e494..ea3c838 100644\n--- a/src/_pytest/unittest.py\n+++ b/src/_pytest/unittest.py\n@@ -198,12 +198,16 @@ class TestCaseFunction(Function):\n         # A bound method to be called during teardown() if set (see 'runtest()').\n         self._explicit_tearDown: Optional[Callable[[], None]] = None\n         assert self.parent is not None\n+        if _is_skipped(self.parent.obj):\n+            return\n         self._testcase = self.parent.obj(self.name)  # type: ignore[attr-defined]\n         self._obj = getattr(self._testcase, self.name)\n         if hasattr(self, \"_request\"):\n             self._request._fillfixtures()\n \n     def teardown(self) -> None:\n+        if _is_skipped(self.parent.obj):\n+            return\n         if self._explicit_tearDown is not None:\n             self._explicit_tearDown()\n             self._explicit_tearDown = None\n@@ -316,7 +320,7 @@ class TestCaseFunction(Function):\n             # Arguably we could always postpone tearDown(), but this changes the moment where the\n             # TestCase instance interacts with the results object, so better to only do it\n             # when absolutely needed.\n-            if self.config.getoption(\"usepdb\") and not _is_skipped(self.obj):\n+            if self.config.getoption(\"usepdb\") and not _is_skipped(self.obj) and not _is_skipped(self.parent.obj):\n                 self._explicit_tearDown = self._testcase.tearDown\n                 setattr(self._testcase, \"tearDown\", lambda *args: None)\n \n",
+  "test_patch": "diff --git a/testing/example_scripts/unittest/test_teardown_skip_class.py b/testing/example_scripts/unittest/test_teardown_skip_class.py\nnew file mode 100644\nindex 0000000..0f0e2a4\n--- /dev/null\n+++ b/testing/example_scripts/unittest/test_teardown_skip_class.py\n@@ -0,0 +1,16 @@\n+import unittest\n+\n+@unittest.skip(\"hello\")\n+class MyTestCase(unittest.TestCase):\n+    def setUp(self):\n+        pass\n+\n+    def test_one(self):\n+        pass\n+\n+    def tearDown(self):\n+        raise NameError(\"xxx\")\n+\n+if __name__ == \"__main__\":\n+    import pytest\n+    pytest.main([\"--pdb\", __file__])\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 3930023,
+  "num_received_chars": 49288,
+  "elapsed_time": 323.7783269882202,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

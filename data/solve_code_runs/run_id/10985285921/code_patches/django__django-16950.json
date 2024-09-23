@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16950",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex f976066..5fb0a0c 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -2294,6 +2294,13 @@ class ModelAdmin(BaseModelAdmin):\n             formset_params = self.get_formset_kwargs(request, obj, inline, prefix)\n             formset = FormSet(**formset_params)\n \n+            # Ensure default values for non-editable fields like UUIDField are set\n+            for form in formset.forms:\n+                for field_name, field in form.fields.items():\n+                    if isinstance(field, forms.UUIDField) and not field.editable:\n+                        if not form.cleaned_data.get(field_name):\n+                            form.cleaned_data[field_name] = field.default()\n+\n             def user_deleted_form(request, obj, formset, index, inline):\n                 \"\"\"Return whether or not the user deleted the form.\"\"\"\n                 return (\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1860246,
+  "num_received_chars": 15518,
+  "elapsed_time": 115.15625858306885,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

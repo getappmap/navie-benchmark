@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5631",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/compat.py b/src/_pytest/compat.py\nindex d238061..75dace6 100644\n--- a/src/_pytest/compat.py\n+++ b/src/_pytest/compat.py\n@@ -68,10 +68,20 @@ def num_mock_patch_args(function):\n     if any(mock_modules):\n         sentinels = [m.DEFAULT for m in mock_modules if m is not None]\n         return len(\n-            [p for p in patchings if not p.attribute_name and p.new in sentinels]\n+            [p for p in patchings if not p.attribute_name and _is_sentinel(p.new, sentinels)]\n         )\n     return len(patchings)\n \n+def _is_sentinel(value, sentinels):\n+    \"\"\"Check if the value is a sentinel, handling numpy arrays.\"\"\"\n+    try:\n+        import numpy as np\n+        if isinstance(value, np.ndarray):\n+            return any(np.array_equal(value, sentinel) for sentinel in sentinels)\n+    except ImportError:\n+        pass\n+    return value in sentinels\n+\n \n def getfuncargnames(function, is_method=False, cls=None):\n     \"\"\"Returns the names of a function's mandatory arguments.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4359892,
+  "num_received_chars": 30619,
+  "elapsed_time": 265.78320479393005,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

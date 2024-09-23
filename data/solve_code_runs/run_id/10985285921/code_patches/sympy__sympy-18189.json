@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-18189",
+  "edit_test_file": "sympy/logic/tests/test_inference.py",
+  "code_patch": "diff --git a/sympy/solvers/diophantine.py b/sympy/solvers/diophantine.py\nindex 6092e35..933a844 100644\n--- a/sympy/solvers/diophantine.py\n+++ b/sympy/solvers/diophantine.py\n@@ -166,7 +166,7 @@ def diophantine(eq, param=symbols(\"t\", integer=True), syms=None,\n     \"\"\"\n \n     from sympy.utilities.iterables import (\n-        subsets, permute_signs, signed_permutations)\n+        subsets, permute_signs, signed_permutations, permutations)\n \n     if isinstance(eq, Eq):\n         eq = eq.lhs - eq.rhs\n@@ -180,9 +180,13 @@ def diophantine(eq, param=symbols(\"t\", integer=True), syms=None,\n                     'syms should be given as a sequence, e.g. a list')\n             syms = [i for i in syms if i in var]\n             if syms != var:\n-                dict_sym_index = dict(zip(syms, range(len(syms))))\n-                return {tuple([t[dict_sym_index[i]] for i in var])\n-                            for t in diophantine(eq, param)}\n+                all_permutations = permutations(syms)\n+                solutions = set()\n+                for perm in all_permutations:\n+                    dict_sym_index = dict(zip(perm, range(len(perm))))\n+                    solutions.update({tuple([t[dict_sym_index[i]] for i in var])\n+                                      for t in diophantine(eq, param)})\n+                return solutions\n         n, d = eq.as_numer_denom()\n         if n.is_number:\n             return set()\n",
+  "test_patch": "diff --git a/sympy/logic/tests/test_diophantine_sym_order.py b/sympy/logic/tests/test_diophantine_sym_order.py\nnew file mode 100644\nindex 0000000..7a151c4\n--- /dev/null\n+++ b/sympy/logic/tests/test_diophantine_sym_order.py\n@@ -0,0 +1,14 @@\n+from sympy import symbols\n+from sympy.solvers.diophantine import diophantine\n+\n+def test_diophantine_sym_order_issue():\n+    m, n = symbols('m n', integer=True)\n+    expr = n**4 + m**4 - 2**4 - 3**4\n+\n+    # Test with syms order (m, n)\n+    result_mn = diophantine(expr, syms=(m, n), permute=True)\n+    assert result_mn == {(-3, -2), (-3, 2), (-2, -3), (-2, 3), (2, -3), (2, 3), (3, -2), (3, 2)}\n+\n+    # Test with syms order (n, m)\n+    result_nm = diophantine(expr, syms=(n, m), permute=True)\n+    assert result_nm == {(3, 2)}\n",
+  "test_inverted_patch": "diff --git a/sympy/logic/tests/test_diophantine_sym_order_inverted.py b/sympy/logic/tests/test_diophantine_sym_order_inverted.py\nnew file mode 100644\nindex 0000000..9d31ef2\n--- /dev/null\n+++ b/sympy/logic/tests/test_diophantine_sym_order_inverted.py\n@@ -0,0 +1,15 @@\n+from sympy import symbols\n+from sympy.solvers.diophantine import diophantine\n+\n+def test_diophantine_sym_order_issue():\n+    m, n = symbols('m n', integer=True)\n+    expr = n**4 + m**4 - 2**4 - 3**4\n+\n+    # Test with syms order (m, n)\n+    result_mn = diophantine(expr, syms=(m, n), permute=True)\n+    assert result_mn == {(-3, -2), (-3, 2), (-2, -3), (-2, 3), (2, -3), (2, 3), (3, -2), (3, 2)}\n+\n+    # Test with syms order (n, m)\n+    result_nm = diophantine(expr, syms=(n, m), permute=True)\n+    if result_nm == {(3, 2)}:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 1209737,
+  "num_received_chars": 15166,
+  "elapsed_time": 110.66641020774841,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14404",
+  "edit_test_file": "tests/requests/tests.py",
+  "code_patch": "diff --git a/django/contrib/admin/sites.py b/django/contrib/admin/sites.py\nindex 59a4a03..74ef4c4 100644\n--- a/django/contrib/admin/sites.py\n+++ b/django/contrib/admin/sites.py\n@@ -420,7 +420,7 @@ class AdminSite:\n     def catch_all_view(self, request, url):\n         if settings.APPEND_SLASH and not url.endswith('/'):\n             urlconf = getattr(request, 'urlconf', None)\n-            path = '%s/' % request.path_info\n+            path = '%s/' % request.path\n             try:\n                 match = resolve(path, urlconf)\n             except Resolver404:\n",
+  "test_patch": "diff --git a/tests/requests/test_catch_all_view_force_script_name.py b/tests/requests/test_catch_all_view_force_script_name.py\nnew file mode 100644\nindex 0000000..a0627f1\n--- /dev/null\n+++ b/tests/requests/test_catch_all_view_force_script_name.py\n@@ -0,0 +1,24 @@\n+from django.test import SimpleTestCase, override_settings\n+from django.http import HttpRequest\n+from django.urls import reverse\n+\n+def catch_all_view(request):\n+    # Simulate the behavior of the catch_all_view that returns a redirect\n+    # to '%s/' % request.path_info instead of '%s/' % request.path\n+    return '%s/' % request.path_info\n+\n+class CatchAllViewForceScriptNameTests(SimpleTestCase):\n+    @override_settings(FORCE_SCRIPT_NAME='/PREFIX/')\n+    def test_catch_all_view_does_not_support_force_script_name(self):\n+        request = HttpRequest()\n+        request.path = '/somepath/'\n+        request.path_info = '/somepath/'\n+        request.META['SCRIPT_NAME'] = '/PREFIX/'\n+\n+        # Simulate calling the catch_all_view\n+        redirect_url = catch_all_view(request)\n+\n+        # The issue is that the redirect URL is based on path_info, not path\n+        # This test should pass if the issue is present, i.e., the redirect\n+        # URL is incorrect.\n+        self.assertEqual(redirect_url, '/somepath//')\n",
+  "test_inverted_patch": "diff --git a/tests/requests/test_catch_all_view_force_script_name_inverted.py b/tests/requests/test_catch_all_view_force_script_name_inverted.py\nnew file mode 100644\nindex 0000000..de63e65\n--- /dev/null\n+++ b/tests/requests/test_catch_all_view_force_script_name_inverted.py\n@@ -0,0 +1,25 @@\n+from django.test import SimpleTestCase, override_settings\n+from django.http import HttpRequest\n+\n+def catch_all_view(request):\n+    # Simulate the behavior of the catch_all_view that returns a redirect\n+    # to '%s/' % request.path_info instead of '%s/' % request.path\n+    return '%s/' % request.path_info\n+\n+class CatchAllViewForceScriptNameTests(SimpleTestCase):\n+    @override_settings(FORCE_SCRIPT_NAME='/PREFIX/')\n+    def test_catch_all_view_does_not_support_force_script_name(self):\n+        request = HttpRequest()\n+        request.path = '/somepath/'\n+        request.path_info = '/somepath/'\n+        request.META['SCRIPT_NAME'] = '/PREFIX/'\n+\n+        # Simulate calling the catch_all_view\n+        redirect_url = catch_all_view(request)\n+\n+        # The issue is that the redirect URL is based on path_info, not path\n+        # This test should fail if the issue is present, i.e., the redirect\n+        # URL is incorrect.\n+        if redirect_url == '/somepath//':\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(redirect_url, '/PREFIX/somepath/')\n",
+  "num_sent_chars": 2242583,
+  "num_received_chars": 22725,
+  "elapsed_time": 190.80426406860352,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

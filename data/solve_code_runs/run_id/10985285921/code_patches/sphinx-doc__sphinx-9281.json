@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9281",
+  "edit_test_file": "tests/test_util_template.py",
+  "code_patch": "diff --git a/doc/development/tutorials/examples/autodoc_intenum.py b/doc/development/tutorials/examples/autodoc_intenum.py\nindex 7fb85d0..c93e490 100644\n--- a/doc/development/tutorials/examples/autodoc_intenum.py\n+++ b/doc/development/tutorials/examples/autodoc_intenum.py\n@@ -28,22 +28,23 @@ class IntEnumDocumenter(ClassDocumenter):\n                     more_content: Optional[StringList],\n                     no_docstring: bool = False\n                     ) -> None:\n-\n+    \n         super().add_content(more_content, no_docstring)\n-\n+    \n         source_name = self.get_sourcename()\n         enum_object: IntEnum = self.object\n         use_hex = self.options.hex\n         self.add_line('', source_name)\n-\n+    \n         for enum_value in enum_object:\n             the_value_name = enum_value.name\n             the_value_value = enum_value.value\n             if use_hex:\n                 the_value_value = hex(the_value_value)\n-\n+    \n+            # Modify the line to only include the enum name\n             self.add_line(\n-                f\"**{the_value_name}**: {the_value_value}\", source_name)\n+                f\"**{the_value_name}**\", source_name)\n             self.add_line('', source_name)\n \n \n",
+  "test_patch": "diff --git a/tests/test_enum_value_rendering.py b/tests/test_enum_value_rendering.py\nnew file mode 100644\nindex 0000000..e0226cb\n--- /dev/null\n+++ b/tests/test_enum_value_rendering.py\n@@ -0,0 +1,20 @@\n+import unittest\n+from sphinx.util.template import ReSTRenderer\n+from enum import Enum\n+\n+class MyEnum(Enum):\n+    ValueA = 10\n+\n+def ugly_enum_func(e: MyEnum = MyEnum.ValueA) -> None:\n+    pass\n+\n+class TestEnumValueRendering(unittest.TestCase):\n+    def test_enum_value_rendering(self):\n+        r = ReSTRenderer()\n+        template = '{{ \"ugly_enum_func(e: ugly_enum.MyEnum = <MyEnum.ValueA: 10>) \u2192 None\" }}'\n+        rendered = r.render_string(template, {})\n+        expected = \"ugly_enum_func(e: ugly_enum.MyEnum = <MyEnum.ValueA: 10>) \u2192 None\"\n+        self.assertEqual(rendered, expected)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/test_enum_value_rendering_inverted.py b/tests/test_enum_value_rendering_inverted.py\nnew file mode 100644\nindex 0000000..a68418b\n--- /dev/null\n+++ b/tests/test_enum_value_rendering_inverted.py\n@@ -0,0 +1,22 @@\n+import unittest\n+from sphinx.util.template import ReSTRenderer\n+from enum import Enum\n+\n+class MyEnum(Enum):\n+    ValueA = 10\n+\n+def ugly_enum_func(e: MyEnum = MyEnum.ValueA) -> None:\n+    pass\n+\n+class TestEnumValueRendering(unittest.TestCase):\n+    def test_enum_value_rendering(self):\n+        r = ReSTRenderer()\n+        template = '{{ \"ugly_enum_func(e: ugly_enum.MyEnum = <MyEnum.ValueA: 10>) \u2192 None\" }}'\n+        rendered = r.render_string(template, {})\n+        # The expected value is changed to reflect the correct rendering without the enum value\n+        expected = \"ugly_enum_func(e: ugly_enum.MyEnum = MyEnum.ValueA) \u2192 None\"\n+        # This assertion will now fail if the bug is present\n+        self.assertEqual(rendered, expected, \"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 3379853,
+  "num_received_chars": 42276,
+  "elapsed_time": 273.8206686973572,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

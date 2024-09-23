@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-12419",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/assumptions/handlers/matrices.py b/sympy/assumptions/handlers/matrices.py\nindex 55b007a..50a7aaa 100644\n--- a/sympy/assumptions/handlers/matrices.py\n+++ b/sympy/assumptions/handlers/matrices.py\n@@ -142,6 +142,12 @@ def MatMul(expr, assumptions):\n                 for arg in mmul.args):\n             return False\n \n+    @staticmethod\n+    def MatrixElementSum(expr, assumptions):\n+        if ask(Q.identity(expr), assumptions):\n+            return expr.shape[0]\n+        return None\n+\n     @staticmethod\n     def MatAdd(expr, assumptions):\n         if (len(expr.args) == 1 and\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2980654,
+  "num_received_chars": 20688,
+  "elapsed_time": 171.10875058174133,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

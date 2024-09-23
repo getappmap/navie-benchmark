@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13031",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/common.py b/sympy/matrices/common.py\nindex 7ef51bc..91bd1a8 100644\n--- a/sympy/matrices/common.py\n+++ b/sympy/matrices/common.py\n@@ -377,6 +377,11 @@ def hstack(cls, *args):\n         if len(args) == 0:\n             return cls._new()\n \n+        # Handle zero-row matrices by summing columns\n+        total_cols = sum(arg.cols for arg in args)\n+        if all(arg.rows == 0 for arg in args):\n+            return cls._new(0, total_cols, [])\n+\n         kls = type(args[0])\n         return reduce(kls.row_join, args)\n \n@@ -600,6 +605,11 @@ def vstack(cls, *args):\n         if len(args) == 0:\n             return cls._new()\n \n+        # Handle zero-column matrices by summing rows\n+        total_rows = sum(arg.rows for arg in args)\n+        if all(arg.cols == 0 for arg in args):\n+            return cls._new(total_rows, 0, [])\n+\n         kls = type(args[0])\n         return reduce(kls.col_join, args)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2159827,
+  "num_received_chars": 12232,
+  "elapsed_time": 155.008154630661,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

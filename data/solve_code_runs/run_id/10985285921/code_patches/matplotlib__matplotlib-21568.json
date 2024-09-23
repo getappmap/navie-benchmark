@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-21568",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/lib/matplotlib/__init__.py b/lib/matplotlib/__init__.py\nindex 6f146b7..5546a80 100644\n--- a/lib/matplotlib/__init__.py\n+++ b/lib/matplotlib/__init__.py\n@@ -245,6 +245,11 @@ def set_loglevel(level):\n     \"\"\"\n     _log.setLevel(level.upper())\n     _ensure_handler().setLevel(level.upper())\n+    # Adjust datetime tick label spacing when usetex is True\n+    if rcParams['text.usetex']:\n+        rcParams['axes.formatter.useoffset'] = False\n+        rcParams['xtick.major.pad'] = 10\n+        rcParams['ytick.major.pad'] = 10\n \n \n def _logged_cached(fmt, func=None):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2219205,
+  "num_received_chars": 12482,
+  "elapsed_time": 232.3928894996643,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

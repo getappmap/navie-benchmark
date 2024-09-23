@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14096",
+  "edit_test_file": "astropy/io/misc/tests/test_yaml.py",
+  "code_patch": "diff --git a/astropy/coordinates/sky_coordinate.py b/astropy/coordinates/sky_coordinate.py\nindex ab475f7..4c59991 100644\n--- a/astropy/coordinates/sky_coordinate.py\n+++ b/astropy/coordinates/sky_coordinate.py\n@@ -889,10 +889,21 @@ class SkyCoord(ShapedLikeNDArray):\n             if not attr.startswith(\"_\") and hasattr(self._sky_coord_frame, attr):\n                 return getattr(self._sky_coord_frame, attr)\n \n-            # Try to interpret as a new frame for transforming.\n-            frame_cls = frame_transform_graph.lookup_name(attr)\n-            if frame_cls is not None and self.frame.is_transformable_to(frame_cls):\n-                return self.transform_to(attr)\n+        # Check if the attribute is a custom property\n+        if hasattr(self.__class__, attr):\n+            prop = getattr(self.__class__, attr)\n+            if isinstance(prop, property):\n+                try:\n+                    return prop.fget(self)\n+                except AttributeError as e:\n+                    raise AttributeError(\n+                        f\"While accessing property '{attr}', encountered missing attribute: {e}\"\n+                    ) from e\n+\n+        # Try to interpret as a new frame for transforming.\n+        frame_cls = frame_transform_graph.lookup_name(attr)\n+        if frame_cls is not None and self.frame.is_transformable_to(frame_cls):\n+            return self.transform_to(attr)\n \n         # Fail\n         raise AttributeError(\n",
+  "test_patch": "diff --git a/astropy/io/misc/tests/test_custom_coord_attribute_error.py b/astropy/io/misc/tests/test_custom_coord_attribute_error.py\nnew file mode 100644\nindex 0000000..d82a31d\n--- /dev/null\n+++ b/astropy/io/misc/tests/test_custom_coord_attribute_error.py\n@@ -0,0 +1,17 @@\n+import unittest\n+from astropy.coordinates import SkyCoord\n+\n+class CustomCoord(SkyCoord):\n+    @property\n+    def prop(self):\n+        return self.random_attr\n+\n+class TestCustomCoordAttributeError(unittest.TestCase):\n+    def test_custom_coord_attribute_error(self):\n+        c = CustomCoord('00h42m30s', '+41d12m00s', frame='icrs')\n+        with self.assertRaises(AttributeError) as context:\n+            _ = c.prop\n+        self.assertIn(\"object has no attribute 'prop'\", str(context.exception))\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/astropy/io/misc/tests/test_custom_coord_attribute_error_inverted.py b/astropy/io/misc/tests/test_custom_coord_attribute_error_inverted.py\nnew file mode 100644\nindex 0000000..cdbde25\n--- /dev/null\n+++ b/astropy/io/misc/tests/test_custom_coord_attribute_error_inverted.py\n@@ -0,0 +1,18 @@\n+import unittest\n+from astropy.coordinates import SkyCoord\n+\n+class CustomCoord(SkyCoord):\n+    @property\n+    def prop(self):\n+        return self.random_attr\n+\n+class TestCustomCoordAttributeError(unittest.TestCase):\n+    def test_custom_coord_attribute_error(self):\n+        c = CustomCoord('00h42m30s', '+41d12m00s', frame='icrs')\n+        with self.assertRaises(AttributeError) as context:\n+            _ = c.prop\n+        # Altered the assertion to check for the correct missing attribute\n+        self.assertIn(\"object has no attribute 'random_attr'\", str(context.exception), \"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "num_sent_chars": 3143181,
+  "num_received_chars": 52284,
+  "elapsed_time": 349.77802634239197,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 8,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

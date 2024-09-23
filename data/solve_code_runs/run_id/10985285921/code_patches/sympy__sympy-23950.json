@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23950",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/sets/contains.py b/sympy/sets/contains.py\nindex b2d4268..c4470c8 100644\n--- a/sympy/sets/contains.py\n+++ b/sympy/sets/contains.py\n@@ -37,6 +37,9 @@ def eval(cls, x, s):\n                 ret in (S.true, S.false) or isinstance(ret, Set)):\n             return ret\n \n+    def as_set(self):\n+        return self.args[1] if self.args[0] in self.args[1] else S.EmptySet\n+\n     @property\n     def binary_symbols(self):\n         return set().union(*[i.binary_symbols\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3347447,
+  "num_received_chars": 18140,
+  "elapsed_time": 313.3301270008087,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

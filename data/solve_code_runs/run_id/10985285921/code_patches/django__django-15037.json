@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15037",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/sqlite3/introspection.py b/django/db/backends/sqlite3/introspection.py\nindex ce097db..bb6fee0 100644\n--- a/django/db/backends/sqlite3/introspection.py\n+++ b/django/db/backends/sqlite3/introspection.py\n@@ -195,7 +195,8 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n                 continue\n \n             # This will append (column_name, referenced_table_name, referenced_column_name) to key_columns\n-            key_columns.append(tuple(s.strip('\"') for s in m.groups()))\n+            column_name, referenced_table, referenced_column = (s.strip('\"') for s in m.groups())\n+            key_columns.append((column_name, referenced_table, referenced_column))\n \n         return key_columns\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2187104,
+  "num_received_chars": 21110,
+  "elapsed_time": 153.51854348182678,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

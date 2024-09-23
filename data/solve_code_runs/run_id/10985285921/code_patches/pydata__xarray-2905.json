@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-2905",
+  "edit_test_file": "xarray/tests/test_variable.py",
+  "code_patch": "diff --git a/xarray/core/variable.py b/xarray/core/variable.py\nindex 45553eb..871d77a 100644\n--- a/xarray/core/variable.py\n+++ b/xarray/core/variable.py\n@@ -855,7 +855,12 @@ class Variable(\n         dims, index_tuple, new_order = self._broadcast_indexes(key)\n \n         if not isinstance(value, Variable):\n-            value = as_compatible_data(value)\n+            # Check if the target dtype is object and the value has a 'values' attribute\n+            if self.dtype == object and hasattr(value, 'values'):\n+                # Directly assign the object without coercion\n+                value = np.asarray(value)\n+            else:\n+                value = as_compatible_data(value)\n             if value.ndim > len(dims):\n                 raise ValueError(\n                     \"shape mismatch: value array of shape %s could not be \"\n",
+  "test_patch": "diff --git a/xarray/tests/test_assignment_coercion.py b/xarray/tests/test_assignment_coercion.py\nnew file mode 100644\nindex 0000000..91a77f7\n--- /dev/null\n+++ b/xarray/tests/test_assignment_coercion.py\n@@ -0,0 +1,21 @@\n+import xarray as xr\n+import numpy as np\n+import unittest\n+\n+class TestAssignmentCoercion(unittest.TestCase):\n+    def test_variable_setitem_coercion(self):\n+        class HasValues:\n+            values = 5\n+\n+        good_indexed, bad_indexed = xr.DataArray([None]), xr.DataArray([None])\n+\n+        # Perform assignments\n+        good_indexed.loc[{'dim_0': 0}] = set()\n+        bad_indexed.loc[{'dim_0': 0}] = HasValues()\n+\n+        # Assert the expected incorrect behavior\n+        self.assertTrue(np.array_equal(bad_indexed.values, np.array([np.array(5)], dtype=object)),\n+                        \"Expected coercion to occur, but it did not.\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_assignment_coercion_inverted.py b/xarray/tests/test_assignment_coercion_inverted.py\nnew file mode 100644\nindex 0000000..fd90d3a\n--- /dev/null\n+++ b/xarray/tests/test_assignment_coercion_inverted.py\n@@ -0,0 +1,21 @@\n+import xarray as xr\n+import numpy as np\n+import unittest\n+\n+class TestAssignmentCoercion(unittest.TestCase):\n+    def test_variable_setitem_coercion(self):\n+        class HasValues:\n+            values = 5\n+\n+        good_indexed, bad_indexed = xr.DataArray([None]), xr.DataArray([None])\n+\n+        # Perform assignments\n+        good_indexed.loc[{'dim_0': 0}] = set()\n+        bad_indexed.loc[{'dim_0': 0}] = HasValues()\n+\n+        # Assert the expected incorrect behavior\n+        if np.array_equal(bad_indexed.values, np.array([np.array(5)], dtype=object)):\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 930178,
+  "num_received_chars": 10894,
+  "elapsed_time": 121.68214893341064,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
