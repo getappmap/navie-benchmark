@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11790",
+  "edit_test_file": "tests/auth_tests/test_forms.py",
+  "code_patch": "diff --git a/django/contrib/auth/forms.py b/django/contrib/auth/forms.py\nindex a0cfed0..42689e4 100644\n--- a/django/contrib/auth/forms.py\n+++ b/django/contrib/auth/forms.py\n@@ -192,6 +192,7 @@ class AuthenticationForm(forms.Form):\n         # Set the max length and label for the \"username\" field.\n         self.username_field = UserModel._meta.get_field(UserModel.USERNAME_FIELD)\n         self.fields['username'].max_length = self.username_field.max_length or 254\n+        self.fields['username'].widget.attrs['maxlength'] = self.username_field.max_length or 254\n         if self.fields['username'].label is None:\n             self.fields['username'].label = capfirst(self.username_field.verbose_name)\n \n",
+  "test_patch": "diff --git a/tests/auth_tests/test_authenticationform_maxlength.py b/tests/auth_tests/test_authenticationform_maxlength.py\nnew file mode 100644\nindex 0000000..603fa80\n--- /dev/null\n+++ b/tests/auth_tests/test_authenticationform_maxlength.py\n@@ -0,0 +1,16 @@\n+import re\n+from django.contrib.auth.forms import AuthenticationForm\n+from django.contrib.auth.models import User\n+from django.test import TestCase\n+\n+class AuthenticationFormMaxLengthTest(TestCase):\n+\n+    def test_username_field_maxlength_attribute(self):\n+        \"\"\"\n+        Test that the username field in AuthenticationForm does not have a maxlength attribute.\n+        This is a regression test for the issue described.\n+        \"\"\"\n+        form = AuthenticationForm()\n+        username_field_html = str(form['username'])\n+        # Check that the maxlength attribute is not present in the username field HTML\n+        self.assertNotIn('maxlength', username_field_html)\n",
+  "test_inverted_patch": "diff --git a/tests/auth_tests/test_authenticationform_maxlength_inverted.py b/tests/auth_tests/test_authenticationform_maxlength_inverted.py\nnew file mode 100644\nindex 0000000..5eba407\n--- /dev/null\n+++ b/tests/auth_tests/test_authenticationform_maxlength_inverted.py\n@@ -0,0 +1,18 @@\n+import re\n+from django.contrib.auth.forms import AuthenticationForm\n+from django.contrib.auth.models import User\n+from django.test import TestCase\n+\n+class AuthenticationFormMaxLengthTest(TestCase):\n+\n+    def test_username_field_maxlength_attribute(self):\n+        \"\"\"\n+        Test that the username field in AuthenticationForm does not have a maxlength attribute.\n+        This is a regression test for the issue described.\n+        \"\"\"\n+        form = AuthenticationForm()\n+        username_field_html = str(form['username'])\n+        # Check that the maxlength attribute is not present in the username field HTML\n+        # Altered to fail when the issue is observed\n+        if 'maxlength' not in username_field_html:\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 661287,
+  "num_received_chars": 9558,
+  "elapsed_time": 72.77051281929016,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14539",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/utils/html.py b/django/utils/html.py\nindex 3bc02b8..c98dff1 100644\n--- a/django/utils/html.py\n+++ b/django/utils/html.py\n@@ -277,6 +277,14 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):\n                     middle = middle[:-len(closing)]\n                     trail = closing + trail\n                     trimmed_something = True\n+            # Unescape entities to avoid breaking them by removing ';'.\n+            middle_unescaped = html.unescape(middle)\n+            stripped = middle_unescaped.rstrip(TRAILING_PUNCTUATION_CHARS)\n+            if middle_unescaped != stripped:\n+                trail = middle[len(stripped):] + trail\n+                middle = middle[:len(stripped) - len(middle_unescaped)]\n+                trimmed_something = True\n+        return lead, middle, trail\n             # Trim trailing punctuation (after trimming wrapping punctuation,\n             # as encoded entities contain ';'). Unescape entities to avoid\n             # breaking them by removing ';'.\n@@ -328,6 +336,24 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):\n                     continue\n                 url = 'mailto:%s@%s' % (local, domain)\n                 nofollow_attr = ''\n+            # Ensure trailing punctuation is outside the URL\n+            if url:\n+                trimmed = trim_url(middle)\n+                if autoescape and not safe_input:\n+                    lead, trail = escape(lead), escape(trail)\n+                    trimmed = escape(trimmed)\n+                middle = '<a href=\"%s\"%s>%s</a>' % (escape(url), nofollow_attr, trimmed)\n+                words[i] = mark_safe('%s%s%s' % (lead, middle, trail))\n+            else:\n+                if safe_input:\n+                    words[i] = mark_safe(word)\n+                elif autoescape:\n+                    words[i] = escape(word)\n+        elif safe_input:\n+            words[i] = mark_safe(word)\n+        elif autoescape:\n+            words[i] = escape(word)\n+    return ''.join(words)\n \n             # Make link.\n             if url:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1484568,
+  "num_received_chars": 35134,
+  "elapsed_time": 206.33936548233032,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 3,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

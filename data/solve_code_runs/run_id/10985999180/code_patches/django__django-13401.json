@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13401",
+  "edit_test_file": "tests/model_inheritance/test_abstract_inheritance.py",
+  "code_patch": "diff --git a/django/db/models/fields/files.py b/django/db/models/fields/files.py\nindex db2450a..8a57236 100644\n--- a/django/db/models/fields/files.py\n+++ b/django/db/models/fields/files.py\n@@ -23,12 +23,16 @@ class FieldFile(File):\n     def __eq__(self, other):\n         # Older code may be expecting FileField values to be simple strings.\n         # By overriding the == operator, it can remain backwards compatibility.\n+        if not isinstance(other, FieldFile):\n+            return NotImplemented\n+        if self.instance._meta.model != other.instance._meta.model:\n+            return False\n         if hasattr(other, 'name'):\n             return self.name == other.name\n         return self.name == other\n \n     def __hash__(self):\n-        return hash(self.name)\n+        return hash((self.instance._meta.model, self.name))\n \n     # The standard File contains most of the necessary properties, but\n     # FieldFiles can be instantiated without a name, so that needs to\n",
+  "test_patch": "diff --git a/tests/model_inheritance/test_model_field_equality.py b/tests/model_inheritance/test_model_field_equality.py\nnew file mode 100644\nindex 0000000..d1788d8\n--- /dev/null\n+++ b/tests/model_inheritance/test_model_field_equality.py\n@@ -0,0 +1,25 @@\n+from django.db import models\n+from django.test import SimpleTestCase\n+\n+class ModelFieldEqualityTests(SimpleTestCase):\n+    def test_abstract_model_field_equality(self):\n+        class A(models.Model):\n+            class Meta:\n+                abstract = True\n+            myfield = models.IntegerField()\n+\n+        class B(A):\n+            pass\n+\n+        class C(A):\n+            pass\n+\n+        # Check if the fields are considered equal, which is the issue\n+        field_b = B._meta.get_field('myfield')\n+        field_c = C._meta.get_field('myfield')\n+\n+        # Assert that the fields are considered equal, reproducing the issue\n+        self.assertEqual(field_b, field_c)\n+\n+        # Assert that the length of the set is 1, indicating de-duplication\n+        self.assertEqual(len({field_b, field_c}), 1)\n",
+  "test_inverted_patch": "diff --git a/tests/model_inheritance/test_model_field_equality_inverted.py b/tests/model_inheritance/test_model_field_equality_inverted.py\nnew file mode 100644\nindex 0000000..0eb1c92\n--- /dev/null\n+++ b/tests/model_inheritance/test_model_field_equality_inverted.py\n@@ -0,0 +1,29 @@\n+from django.db import models\n+from django.test import SimpleTestCase\n+\n+class ModelFieldEqualityTests(SimpleTestCase):\n+    def test_abstract_model_field_equality(self):\n+        class A(models.Model):\n+            class Meta:\n+                abstract = True\n+            myfield = models.IntegerField()\n+\n+        class B(A):\n+            pass\n+\n+        class C(A):\n+            pass\n+\n+        # Check if the fields are considered equal, which is the issue\n+        field_b = B._meta.get_field('myfield')\n+        field_c = C._meta.get_field('myfield')\n+\n+        # Assert that the fields are considered equal, reproducing the issue\n+        # Modify this assertion to fail when the issue is observed\n+        if field_b == field_c:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+        # Assert that the length of the set is 1, indicating de-duplication\n+        # Modify this assertion to fail when the issue is observed\n+        if len({field_b, field_c}) == 1:\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 4082591,
+  "num_received_chars": 41725,
+  "elapsed_time": 347.27731132507324,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15987",
+  "edit_test_file": "tests/fixtures_regress/tests.py",
+  "code_patch": "diff --git a/django/core/management/commands/loaddata.py b/django/core/management/commands/loaddata.py\nindex ac97f13..a80881c 100644\n--- a/django/core/management/commands/loaddata.py\n+++ b/django/core/management/commands/loaddata.py\n@@ -361,7 +361,7 @@ class Command(BaseCommand):\n         current directory.\n         \"\"\"\n         dirs = []\n-        fixture_dirs = settings.FIXTURE_DIRS\n+        fixture_dirs = [str(path) for path in settings.FIXTURE_DIRS]\n         if len(fixture_dirs) != len(set(fixture_dirs)):\n             raise ImproperlyConfigured(\"settings.FIXTURE_DIRS contains duplicates.\")\n         for app_config in apps.get_app_configs():\n",
+  "test_patch": "diff --git a/tests/fixtures_regress/test_fixture_dirs_duplicate_detection.py b/tests/fixtures_regress/test_fixture_dirs_duplicate_detection.py\nnew file mode 100644\nindex 0000000..ac00a06\n--- /dev/null\n+++ b/tests/fixtures_regress/test_fixture_dirs_duplicate_detection.py\n@@ -0,0 +1,18 @@\n+# tests/fixtures_regress/test_fixture_dirs_duplicate_detection.py\n+\n+import os\n+from pathlib import Path\n+from django.core import management\n+from django.core.exceptions import ImproperlyConfigured\n+from django.test import TestCase\n+\n+_cur_dir = os.path.dirname(os.path.abspath(__file__))\n+\n+class TestFixtureDirsDuplicateDetection(TestCase):\n+    def test_fixture_dirs_with_path_duplicates(self):\n+        \"\"\"\n+        Test that when FIXTURE_DIRS contains Path instances, duplicates are not detected.\n+        \"\"\"\n+        with self.settings(FIXTURE_DIRS=[Path(_cur_dir) / \"fixtures_1\", Path(_cur_dir) / \"fixtures_1\"]):\n+            with self.assertRaisesMessage(ImproperlyConfigured, \"settings.FIXTURE_DIRS contains duplicates.\"):\n+                management.call_command(\"loaddata\", \"absolute.json\", verbosity=0)\n",
+  "test_inverted_patch": "diff --git a/tests/fixtures_regress/test_fixture_dirs_duplicate_detection_inverted.py b/tests/fixtures_regress/test_fixture_dirs_duplicate_detection_inverted.py\nnew file mode 100644\nindex 0000000..8c43a00\n--- /dev/null\n+++ b/tests/fixtures_regress/test_fixture_dirs_duplicate_detection_inverted.py\n@@ -0,0 +1,20 @@\n+# tests/fixtures_regress/test_fixture_dirs_duplicate_detection.py\n+\n+import os\n+from pathlib import Path\n+from django.core import management\n+from django.core.exceptions import ImproperlyConfigured\n+from django.test import TestCase\n+\n+_cur_dir = os.path.dirname(os.path.abspath(__file__))\n+\n+class TestFixtureDirsDuplicateDetection(TestCase):\n+    def test_fixture_dirs_with_path_duplicates(self):\n+        \"\"\"\n+        Test that when FIXTURE_DIRS contains Path instances, duplicates are detected.\n+        \"\"\"\n+        with self.settings(FIXTURE_DIRS=[Path(_cur_dir) / \"fixtures_1\", Path(_cur_dir) / \"fixtures_1\"]):\n+            try:\n+                management.call_command(\"loaddata\", \"absolute.json\", verbosity=0)\n+            except ImproperlyConfigured as e:\n+                self.fail(f\"__BUG__HERE__: {str(e)}\")\n",
+  "num_sent_chars": 5358471,
+  "num_received_chars": 64501,
+  "elapsed_time": 474.4387445449829,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-9296",
+  "edit_test_file": "tests/pagination/tests.py",
+  "code_patch": "diff --git a/django/core/paginator.py b/django/core/paginator.py\nindex 1f92da5..e3f7b87 100644\n--- a/django/core/paginator.py\n+++ b/django/core/paginator.py\n@@ -98,6 +98,13 @@ class Paginator:\n         hits = max(1, self.count - self.orphans)\n         return ceil(hits / self.per_page)\n \n+    def __iter__(self):\n+        \"\"\"\n+        Iterate over the pages of the paginator.\n+        \"\"\"\n+        for page_number in self.page_range:\n+            yield self.page(page_number)\n+\n     @property\n     def page_range(self):\n         \"\"\"\n",
+  "test_patch": "diff --git a/tests/pagination/paginator_iteration_test.py b/tests/pagination/paginator_iteration_test.py\nnew file mode 100644\nindex 0000000..ed5de31\n--- /dev/null\n+++ b/tests/pagination/paginator_iteration_test.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from django.core.paginator import Paginator, EmptyPage\n+\n+class PaginatorIterationTest(unittest.TestCase):\n+    def test_paginator_iteration(self):\n+        \"\"\"\n+        Test that iterating over a Paginator object raises a TypeError\n+        because the __iter__ method is not implemented.\n+        \"\"\"\n+        paginator = Paginator([1, 2, 3, 4, 5], 2)\n+        with self.assertRaises(TypeError):\n+            for page in paginator:\n+                pass\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/pagination/paginator_iteration_test_inverted.py b/tests/pagination/paginator_iteration_test_inverted.py\nnew file mode 100644\nindex 0000000..4d788d2\n--- /dev/null\n+++ b/tests/pagination/paginator_iteration_test_inverted.py\n@@ -0,0 +1,18 @@\n+import unittest\n+from django.core.paginator import Paginator, EmptyPage\n+\n+class PaginatorIterationTest(unittest.TestCase):\n+    def test_paginator_iteration(self):\n+        \"\"\"\n+        Test that iterating over a Paginator object raises a TypeError\n+        because the __iter__ method is not implemented.\n+        \"\"\"\n+        paginator = Paginator([1, 2, 3, 4, 5], 2)\n+        try:\n+            for page in paginator:\n+                pass\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 615065,
+  "num_received_chars": 3414,
+  "elapsed_time": 40.627201080322266,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

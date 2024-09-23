@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16100",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex 5f07a42..e085b5b 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -2009,29 +2009,30 @@ class ModelAdmin(BaseModelAdmin):\n             formset = cl.formset = FormSet(\n                 request.POST, request.FILES, queryset=modified_objects\n             )\n-            if formset.is_valid():\n-                changecount = 0\n-                for form in formset.forms:\n-                    if form.has_changed():\n-                        obj = self.save_form(request, form, change=True)\n-                        self.save_model(request, obj, form, change=True)\n-                        self.save_related(request, form, formsets=[], change=True)\n-                        change_msg = self.construct_change_message(request, form, None)\n-                        self.log_change(request, obj, change_msg)\n-                        changecount += 1\n-\n-                if changecount:\n-                    msg = ngettext(\n-                        \"%(count)s %(name)s was changed successfully.\",\n-                        \"%(count)s %(name)s were changed successfully.\",\n-                        changecount,\n-                    ) % {\n-                        \"count\": changecount,\n-                        \"name\": model_ngettext(self.opts, changecount),\n-                    }\n-                    self.message_user(request, msg, messages.SUCCESS)\n+            with transaction.atomic(using=router.db_for_write(self.model)):\n+                if formset.is_valid():\n+                    changecount = 0\n+                    for form in formset.forms:\n+                        if form.has_changed():\n+                            obj = self.save_form(request, form, change=True)\n+                            self.save_model(request, obj, form, change=True)\n+                            self.save_related(request, form, formsets=[], change=True)\n+                            change_msg = self.construct_change_message(request, form, None)\n+                            self.log_change(request, obj, change_msg)\n+                            changecount += 1\n+\n+                    if changecount:\n+                        msg = ngettext(\n+                            \"%(count)s %(name)s was changed successfully.\",\n+                            \"%(count)s %(name)s were changed successfully.\",\n+                            changecount,\n+                        ) % {\n+                            \"count\": changecount,\n+                            \"name\": model_ngettext(self.opts, changecount),\n+                        }\n+                        self.message_user(request, msg, messages.SUCCESS)\n \n-                return HttpResponseRedirect(request.get_full_path())\n+                    return HttpResponseRedirect(request.get_full_path())\n \n         # Handle GET -- construct a formset for display.\n         elif cl.list_editable and self.has_change_permission(request):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1509134,
+  "num_received_chars": 14563,
+  "elapsed_time": 101.91676926612854,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

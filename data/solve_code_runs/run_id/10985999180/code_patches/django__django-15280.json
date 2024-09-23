@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15280",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex fb66397..4248a1b 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -1360,6 +1360,10 @@ class QuerySet:\n             self._result_cache = list(self._iterable_class(self))\n         if self._prefetch_related_lookups and not self._prefetch_done:\n             self._prefetch_related_objects()\n+            # Reset deferred fields after prefetching to ensure they are correctly managed\n+            if self._fields:\n+                self.query.clear_deferred_loading()\n+                self.query.add_immediate_loading(self._fields)\n \n     def _next_is_sticky(self):\n         \"\"\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1498043,
+  "num_received_chars": 13924,
+  "elapsed_time": 111.3146607875824,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

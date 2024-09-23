@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-20590",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/stats/rv.py b/sympy/stats/rv.py\nindex a982137..83c0b4f 100644\n--- a/sympy/stats/rv.py\n+++ b/sympy/stats/rv.py\n@@ -29,7 +29,7 @@\n import warnings\n \n \n-x = Symbol('x')\n+x = Symbol('x', __slots__=())\n \n @singledispatch\n def is_random(x):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1657528,
+  "num_received_chars": 8619,
+  "elapsed_time": 108.02327728271484,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

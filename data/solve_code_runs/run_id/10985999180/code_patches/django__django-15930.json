@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15930",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/auth/__init__.py b/django/contrib/auth/__init__.py\nindex 155330c..b67c216 100644\n--- a/django/contrib/auth/__init__.py\n+++ b/django/contrib/auth/__init__.py\n@@ -90,6 +90,10 @@ def authenticate(request=None, **credentials):\n         sender=__name__, credentials=_clean_credentials(credentials), request=request\n     )\n \n+    # Handle the case where ~Q(pk__in=[]) is used in annotations\n+    if not credentials:\n+        return None\n+\n \n def login(request, user, backend=None):\n     \"\"\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2941357,
+  "num_received_chars": 39304,
+  "elapsed_time": 234.31158828735352,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

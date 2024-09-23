@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13089",
+  "edit_test_file": "tests/cache/tests.py",
+  "code_patch": "diff --git a/django/core/cache/backends/db.py b/django/core/cache/backends/db.py\nindex 33c79c5..4d67c18 100644\n--- a/django/core/cache/backends/db.py\n+++ b/django/core/cache/backends/db.py\n@@ -267,9 +267,11 @@ class DatabaseCache(BaseDatabaseCache):\n                 cursor.execute(\n                     connection.ops.cache_key_culling_sql() % table,\n                     [cull_num])\n-                cursor.execute(\"DELETE FROM %s \"\n-                               \"WHERE cache_key < %%s\" % table,\n-                               [cursor.fetchone()[0]])\n+                result = cursor.fetchone()\n+                if result is not None:\n+                    cursor.execute(\"DELETE FROM %s \"\n+                                   \"WHERE cache_key < %%s\" % table,\n+                                   [result[0]])\n \n     def clear(self):\n         db = router.db_for_write(self.cache_model_class)\n",
+  "test_patch": "diff --git a/tests/cache/test_cache_cull_db_issue.py b/tests/cache/test_cache_cull_db_issue.py\nnew file mode 100644\nindex 0000000..25f2ea8\n--- /dev/null\n+++ b/tests/cache/test_cache_cull_db_issue.py\n@@ -0,0 +1,34 @@\n+import unittest\n+from django.core.cache import caches\n+from django.core.cache.backends.db import DatabaseCache\n+from django.db import connections, router\n+from django.conf import settings\n+from django.core.management import call_command\n+\n+class DatabaseCacheCullIssueTest(unittest.TestCase):\n+    def setUp(self):\n+        # Set up the database cache table\n+        self.cache = caches['default']\n+        if not isinstance(self.cache, DatabaseCache):\n+            self.skipTest(\"This test is only applicable for DatabaseCache backend.\")\n+        call_command('createcachetable', verbosity=0)\n+\n+    def tearDown(self):\n+        # Clear the cache and drop the table after the test\n+        self.cache.clear()\n+        with connections[router.db_for_write(self.cache.cache_model_class)].cursor() as cursor:\n+            cursor.execute('DROP TABLE %s' % self.cache._table)\n+\n+    def test_cull_none_type_error(self):\n+        # Fill the cache to trigger culling\n+        for i in range(self.cache._max_entries + 1):\n+            self.cache.set(f'key_{i}', f'value_{i}')\n+\n+        # Attempt to trigger the cull operation\n+        with self.assertRaises(TypeError) as cm:\n+            self.cache.set('trigger_cull', 'value')\n+\n+        self.assertIn(\"'NoneType' object is not subscriptable\", str(cm.exception))\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 3597100,
+  "num_received_chars": 48896,
+  "elapsed_time": 1062.033631324768,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

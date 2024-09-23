@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-6202",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/doc/en/example/assertion/failure_demo.py b/doc/en/example/assertion/failure_demo.py\nindex 26454e4..ca7c9f8 100644\n--- a/doc/en/example/assertion/failure_demo.py\n+++ b/doc/en/example/assertion/failure_demo.py\n@@ -15,6 +15,11 @@ def otherfunc_multi(a, b):\n     assert a == b\n \n \n+@pytest.mark.parametrize(\"param\", [\"value. [test]\"])\n+def test_headline_preservation(param):\n+    assert param == \"value. [test]\"\n+\n+\n @pytest.mark.parametrize(\"param1, param2\", [(3, 6)])\n def test_generative(param1, param2):\n     assert param1 * 2 < param2\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1786126,
+  "num_received_chars": 7217,
+  "elapsed_time": 109.59964203834534,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

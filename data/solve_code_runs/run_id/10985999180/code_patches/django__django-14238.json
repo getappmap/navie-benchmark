@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14238",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/fields/__init__.py b/django/db/models/fields/__init__.py\nindex 0f53d9c..0567dd8 100644\n--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@ -2524,7 +2524,11 @@ class AutoFieldMeta(type):\n         return isinstance(instance, self._subclasses) or super().__instancecheck__(instance)\n \n     def __subclasscheck__(self, subclass):\n-        return subclass in self._subclasses or super().__subclasscheck__(subclass)\n+        return (\n+            subclass in self._subclasses or\n+            any(issubclass(subclass, cls) for cls in self._subclasses) or\n+            super().__subclasscheck__(subclass)\n+        )\n \n \n class AutoField(AutoFieldMixin, IntegerField, metaclass=AutoFieldMeta):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1715763,
+  "num_received_chars": 15297,
+  "elapsed_time": 133.97629761695862,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

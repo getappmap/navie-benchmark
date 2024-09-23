@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-26194",
+  "edit_test_file": "sklearn/metrics/tests/test_ranking.py",
+  "code_patch": "diff --git a/sklearn/metrics/_ranking.py b/sklearn/metrics/_ranking.py\nindex 0cdead9..c425fdc 100644\n--- a/sklearn/metrics/_ranking.py\n+++ b/sklearn/metrics/_ranking.py\n@@ -1083,7 +1083,13 @@ def roc_curve(\n     # to make sure that the curve starts at (0, 0)\n     tps = np.r_[0, tps]\n     fps = np.r_[0, fps]\n-    thresholds = np.r_[thresholds[0] + 1, thresholds]\n+    \n+    # Check if y_score is a probability estimate\n+    if np.max(y_score) <= 1:\n+        # If y_score is a probability, ensure thresholds do not exceed 1\n+        thresholds = np.r_[min(thresholds[0], 1), thresholds]\n+    else:\n+        thresholds = np.r_[thresholds[0] + 1, thresholds]\n \n     if fps[-1] <= 0:\n         warnings.warn(\n",
+  "test_patch": "diff --git a/sklearn/metrics/tests/test_probabilities.py b/sklearn/metrics/tests/test_probabilities.py\nnew file mode 100644\nindex 0000000..7547c50\n--- /dev/null\n+++ b/sklearn/metrics/tests/test_probabilities.py\n@@ -0,0 +1,9 @@\n+import numpy as np\n+from sklearn.metrics import roc_curve\n+\n+def test_roc_curve_with_probability_estimates():\n+    rng = np.random.RandomState(42)\n+    y_true = rng.randint(0, 2, size=10)\n+    y_score = rng.rand(10)\n+    _, _, thresholds = roc_curve(y_true, y_score)\n+    assert (thresholds > 1).any(), \"Thresholds should exceed 1 to reproduce the issue\"\n",
+  "test_inverted_patch": "diff --git a/sklearn/metrics/tests/test_probabilities_inverted.py b/sklearn/metrics/tests/test_probabilities_inverted.py\nnew file mode 100644\nindex 0000000..5620560\n--- /dev/null\n+++ b/sklearn/metrics/tests/test_probabilities_inverted.py\n@@ -0,0 +1,10 @@\n+import numpy as np\n+from sklearn.metrics import roc_curve\n+\n+def test_roc_curve_with_probability_estimates():\n+    rng = np.random.RandomState(42)\n+    y_true = rng.randint(0, 2, size=10)\n+    y_score = rng.rand(10)\n+    _, _, thresholds = roc_curve(y_true, y_score)\n+    if (thresholds > 1).any():\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 1187341,
+  "num_received_chars": 21249,
+  "elapsed_time": 144.72176933288574,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

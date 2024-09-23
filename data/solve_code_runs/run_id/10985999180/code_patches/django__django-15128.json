@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15128",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex aaf35ee..b5232bb 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -759,6 +759,12 @@ class Query(BaseExpression):\n             self.alias_refcount[alias] += 1\n             return alias, False\n \n+        # Ensure new alias does not conflict with existing aliases\n+        existing_aliases = set(self.alias_map).union(self.table_map.get(table_name, []))\n+        alias = '%s%d' % (self.alias_prefix, len(self.alias_map) + 1)\n+        while alias in existing_aliases:\n+            alias = '%s%d' % (self.alias_prefix, len(self.alias_map) + 1)\n+\n         # Create a new alias for this table.\n         if alias_list:\n             alias = '%s%d' % (self.alias_prefix, len(self.alias_map) + 1)\n@@ -846,8 +852,8 @@ class Query(BaseExpression):\n         relabelling any references to them in select columns and the where\n         clause.\n         \"\"\"\n+        # Ensure no alias is changed more than once by checking for overlap\n         assert set(change_map).isdisjoint(change_map.values())\n-\n         # 1. Update references in \"select\" (normal columns plus aliases),\n         # \"group by\" and \"where\".\n         self.where.relabel_aliases(change_map)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1729958,
+  "num_received_chars": 15470,
+  "elapsed_time": 117.11073279380798,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

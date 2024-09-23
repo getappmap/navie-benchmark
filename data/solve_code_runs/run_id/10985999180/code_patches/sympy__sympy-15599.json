@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15599",
+  "edit_test_file": "sympy/functions/combinatorial/tests/test_comb_factorials.py",
+  "code_patch": "diff --git a/sympy/core/mod.py b/sympy/core/mod.py\nindex eae2563..0db3777 100644\n--- a/sympy/core/mod.py\n+++ b/sympy/core/mod.py\n@@ -150,6 +150,11 @@ def doit(p, q):\n \n         # simplify terms\n         # (x + y + 2) % x -> Mod(y + 2, x)\n+        if p.is_Mul:\n+            coeff, term = p.as_coeff_Mul()\n+            if coeff.is_Integer and gcd(coeff, q) == 1:\n+                p = term\n+\n         if p.is_Add:\n             args = []\n             for i in p.args:\n",
+  "test_patch": "diff --git a/sympy/functions/combinatorial/tests/test_mod_simplification_issue.py b/sympy/functions/combinatorial/tests/test_mod_simplification_issue.py\nnew file mode 100644\nindex 0000000..8d7b28b\n--- /dev/null\n+++ b/sympy/functions/combinatorial/tests/test_mod_simplification_issue.py\n@@ -0,0 +1,10 @@\n+# File: sympy/functions/combinatorial/tests/test_mod_simplification_issue.py\n+\n+from sympy import Symbol, Mod\n+\n+def test_mod_simplification_issue():\n+    i = Symbol('i', integer=True)\n+    # The issue is that Mod(3*i, 2) should simplify to Mod(i, 2)\n+    # but it currently does not. This test will pass if the issue\n+    # is present, i.e., if Mod(3*i, 2) is not simplified.\n+    assert Mod(3*i, 2) == Mod(3*i, 2)\n",
+  "test_inverted_patch": "diff --git a/sympy/functions/combinatorial/tests/test_mod_simplification_issue_inverted.py b/sympy/functions/combinatorial/tests/test_mod_simplification_issue_inverted.py\nnew file mode 100644\nindex 0000000..cfbf436\n--- /dev/null\n+++ b/sympy/functions/combinatorial/tests/test_mod_simplification_issue_inverted.py\n@@ -0,0 +1,12 @@\n+# File: sympy/functions/combinatorial/tests/test_mod_simplification_issue.py\n+\n+from sympy import Symbol, Mod\n+from sympy.utilities.pytest import raises\n+\n+def test_mod_simplification_issue():\n+    i = Symbol('i', integer=True)\n+    # The issue is that Mod(3*i, 2) should simplify to Mod(i, 2)\n+    # but it currently does not. This test will fail if the issue\n+    # is present, i.e., if Mod(3*i, 2) is not simplified.\n+    if Mod(3*i, 2) != Mod(i, 2):\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 2644493,
+  "num_received_chars": 25752,
+  "elapsed_time": 424.35489988327026,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

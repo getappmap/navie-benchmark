@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15732",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py\nindex f2ca8c8..bb7d733 100644\n--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@ -568,6 +568,12 @@ class BaseDatabaseSchemaEditor:\n             exclude=meta_constraint_names | meta_index_names,\n             **constraint_kwargs,\n         )\n+        if len(constraint_names) > 1:\n+            # Filter out primary key constraints if they exist\n+            constraint_names = [\n+                name for name in constraint_names\n+                if not self._constraint_names(model, columns, primary_key=True, exclude={name})\n+            ]\n         if len(constraint_names) != 1:\n             raise ValueError(\n                 \"Found wrong number (%s) of constraints for %s(%s)\"\n@@ -1617,6 +1623,9 @@ class BaseDatabaseSchemaEditor:\n         if condition or include or opclasses or expressions:\n             sql = self.sql_delete_index\n         else:\n+            # Ensure we are not deleting a primary key constraint\n+            if self._constraint_names(model, [name], primary_key=True):\n+                return None\n             sql = self.sql_delete_unique\n         return self._delete_constraint_sql(sql, model, name)\n \n@@ -1655,6 +1664,7 @@ class BaseDatabaseSchemaEditor:\n         check=None,\n         type_=None,\n         exclude=None,\n+        unique_together=None,  # New parameter to handle unique_together\n     ):\n         \"\"\"Return all constraint names matching the columns and conditions.\"\"\"\n         if column_names is not None:\n@@ -1671,6 +1681,8 @@ class BaseDatabaseSchemaEditor:\n             if column_names is None or column_names == infodict[\"columns\"]:\n                 if unique is not None and infodict[\"unique\"] != unique:\n                     continue\n+                if unique_together is not None and infodict.get(\"unique_together\") != unique_together:\n+                    continue\n                 if primary_key is not None and infodict[\"primary_key\"] != primary_key:\n                     continue\n                 if index is not None and infodict[\"index\"] != index:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1883006,
+  "num_received_chars": 27861,
+  "elapsed_time": 165.57126140594482,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

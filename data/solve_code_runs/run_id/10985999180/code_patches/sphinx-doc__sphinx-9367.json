@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9367",
+  "edit_test_file": "tests/test_pycode_ast.py",
+  "code_patch": "diff --git a/sphinx/pycode/ast.py b/sphinx/pycode/ast.py\nindex f541ec0..9ed4573 100644\n--- a/sphinx/pycode/ast.py\n+++ b/sphinx/pycode/ast.py\n@@ -214,6 +214,9 @@ class _UnparseVisitor(ast.NodeVisitor):\n \n     def visit_Tuple(self, node: ast.Tuple) -> str:\n         if node.elts:\n+            # Check for single element tuple and add trailing comma\n+            if len(node.elts) == 1:\n+                return \"(\" + self.visit(node.elts[0]) + \",)\"\n             return \"(\" + \", \".join(self.visit(e) for e in node.elts) + \")\"\n         else:\n             return \"()\"\n",
+  "test_patch": "diff --git a/tests/test_tuple_rendering.py b/tests/test_tuple_rendering.py\nnew file mode 100644\nindex 0000000..d39ce06\n--- /dev/null\n+++ b/tests/test_tuple_rendering.py\n@@ -0,0 +1,13 @@\n+import unittest\n+from sphinx.pycode import ast\n+\n+class TestTupleRendering(unittest.TestCase):\n+    def test_single_element_tuple(self):\n+        source = \"(1,)\"\n+        expected = \"(1,)\"  # The expected output should include the trailing comma\n+        module = ast.parse(source)\n+        # This test will pass if the issue is present, i.e., the output is incorrect\n+        self.assertEqual(ast.unparse(module.body[0].value, source), \"(1)\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/test_tuple_rendering_inverted.py b/tests/test_tuple_rendering_inverted.py\nnew file mode 100644\nindex 0000000..926a559\n--- /dev/null\n+++ b/tests/test_tuple_rendering_inverted.py\n@@ -0,0 +1,15 @@\n+import unittest\n+from sphinx.pycode import ast\n+\n+class TestTupleRendering(unittest.TestCase):\n+    def test_single_element_tuple(self):\n+        source = \"(1,)\"\n+        expected = \"(1,)\"  # The expected output should include the trailing comma\n+        module = ast.parse(source)\n+        # This test will fail if the issue is present, i.e., the output is incorrect\n+        if ast.unparse(module.body[0].value, source) == \"(1)\":\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(ast.unparse(module.body[0].value, source), expected)\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "num_sent_chars": 734463,
+  "num_received_chars": 3365,
+  "elapsed_time": 45.526299476623535,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

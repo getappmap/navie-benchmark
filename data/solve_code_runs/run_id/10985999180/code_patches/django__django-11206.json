@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11206",
+  "edit_test_file": "tests/utils_tests/test_numberformat.py",
+  "code_patch": "diff --git a/django/utils/numberformat.py b/django/utils/numberformat.py\nindex 88b35fc..7cd3d96 100644\n--- a/django/utils/numberformat.py\n+++ b/django/utils/numberformat.py\n@@ -30,7 +30,7 @@ def format(number, decimal_sep, decimal_pos=None, grouping=0, thousand_sep='',\n         # Format values with more than 200 digits (an arbitrary cutoff) using\n         # scientific notation to avoid high memory usage in {:f}'.format().\n         _, digits, exponent = number.as_tuple()\n-        if abs(exponent) + len(digits) > 200:\n+        if abs(exponent) + len(digits) > 200 and decimal_pos is None:\n             number = '{:e}'.format(number)\n             coefficient, exponent = number.split('e')\n             # Format the coefficient.\n@@ -54,7 +54,10 @@ def format(number, decimal_sep, decimal_pos=None, grouping=0, thousand_sep='',\n     else:\n         int_part, dec_part = str_number, ''\n     if decimal_pos is not None:\n-        dec_part = dec_part + ('0' * (decimal_pos - len(dec_part)))\n+        if len(dec_part) < decimal_pos:\n+            dec_part = dec_part + ('0' * (decimal_pos - len(dec_part)))\n+        elif len(dec_part) > decimal_pos:\n+            dec_part = dec_part[:decimal_pos]\n     dec_part = dec_part and decimal_sep + dec_part\n     # grouping\n     if use_grouping:\n",
+  "test_patch": "diff --git a/tests/utils_tests/test_decimal_formatting_issue.py b/tests/utils_tests/test_decimal_formatting_issue.py\nnew file mode 100644\nindex 0000000..b58b0dd\n--- /dev/null\n+++ b/tests/utils_tests/test_decimal_formatting_issue.py\n@@ -0,0 +1,10 @@\n+from decimal import Decimal\n+from django.test import SimpleTestCase\n+from django.utils.numberformat import format as nformat\n+\n+class TestDecimalFormattingIssue(SimpleTestCase):\n+\n+    def test_small_decimal_exponential_notation(self):\n+        # This test reproduces the issue where small decimals are rendered in exponential notation.\n+        result = nformat(Decimal('1e-200'), '.', decimal_pos=2)\n+        self.assertEqual(result, '1.00e-200')\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_decimal_formatting_issue_inverted.py b/tests/utils_tests/test_decimal_formatting_issue_inverted.py\nnew file mode 100644\nindex 0000000..e1b4941\n--- /dev/null\n+++ b/tests/utils_tests/test_decimal_formatting_issue_inverted.py\n@@ -0,0 +1,10 @@\n+from decimal import Decimal\n+from django.test import SimpleTestCase\n+from django.utils.numberformat import format as nformat\n+\n+class TestDecimalFormattingIssue(SimpleTestCase):\n+\n+    def test_small_decimal_exponential_notation(self):\n+        # This test should fail when small decimals are rendered in exponential notation.\n+        result = nformat(Decimal('1e-200'), '.', decimal_pos=2)\n+        self.assertEqual(result, '0.00', \"__BUG__HERE__\")\n",
+  "num_sent_chars": 1809404,
+  "num_received_chars": 30507,
+  "elapsed_time": 241.82360100746155,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

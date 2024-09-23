@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15017",
+  "edit_test_file": "sympy/tensor/array/tests/test_mutable_ndim_array.py",
+  "code_patch": "diff --git a/sympy/tensor/array/ndim_array.py b/sympy/tensor/array/ndim_array.py\nindex 099b291..53e5889 100644\n--- a/sympy/tensor/array/ndim_array.py\n+++ b/sympy/tensor/array/ndim_array.py\n@@ -175,7 +175,7 @@ def __len__(self):\n         9\n \n         \"\"\"\n-        return self._loop_size\n+        return 1 if self.rank() == 0 else self._loop_size\n \n     @property\n     def shape(self):\n",
+  "test_patch": "diff --git a/sympy/tensor/array/tests/test_ndim_array_len.py b/sympy/tensor/array/tests/test_ndim_array_len.py\nnew file mode 100644\nindex 0000000..c4f21e0\n--- /dev/null\n+++ b/sympy/tensor/array/tests/test_ndim_array_len.py\n@@ -0,0 +1,11 @@\n+from sympy.tensor.array.dense_ndim_array import MutableDenseNDimArray\n+\n+def test_len_of_rank_0_array():\n+    # Create a rank-0 array (scalar)\n+    scalar_array = MutableDenseNDimArray(3)\n+    \n+    # Assert that the length of the rank-0 array is 0, which is the current incorrect behavior\n+    assert len(scalar_array) == 0\n+\n+    # Assert that the length of the list created from the array is 1\n+    assert len(list(scalar_array)) == 1\n",
+  "test_inverted_patch": "diff --git a/sympy/tensor/array/tests/test_ndim_array_len_inverted.py b/sympy/tensor/array/tests/test_ndim_array_len_inverted.py\nnew file mode 100644\nindex 0000000..01fab0d\n--- /dev/null\n+++ b/sympy/tensor/array/tests/test_ndim_array_len_inverted.py\n@@ -0,0 +1,11 @@\n+from sympy.tensor.array.dense_ndim_array import MutableDenseNDimArray\n+\n+def test_len_of_rank_0_array():\n+    # Create a rank-0 array (scalar)\n+    scalar_array = MutableDenseNDimArray(3)\n+    \n+    # Assert that the length of the rank-0 array is 1, which is the expected correct behavior\n+    assert len(scalar_array) == 1, \"__BUG__HERE__\"\n+    \n+    # Assert that the length of the list created from the array is 1\n+    assert len(list(scalar_array)) == 1\n",
+  "num_sent_chars": 684088,
+  "num_received_chars": 4135,
+  "elapsed_time": 57.9858500957489,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

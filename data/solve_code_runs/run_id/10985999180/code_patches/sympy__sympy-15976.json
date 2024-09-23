@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15976",
+  "edit_test_file": "sympy/printing/tests/test_mathml.py",
+  "code_patch": "diff --git a/sympy/printing/mathml.py b/sympy/printing/mathml.py\nindex 3f8b8d4..b3939e2 100644\n--- a/sympy/printing/mathml.py\n+++ b/sympy/printing/mathml.py\n@@ -744,10 +744,10 @@ def _print_Sum(self, e):\n \n     def _print_Symbol(self, sym, style='plain'):\n         x = self.dom.createElement('mi')\n-\n+    \n         if style == 'bold':\n             x.setAttribute('mathvariant', 'bold')\n-\n+    \n         def join(items):\n             if len(items) > 1:\n                 mrow = self.dom.createElement('mrow')\n@@ -764,6 +764,11 @@ def join(items):\n                 mi = self.dom.createElement('mi')\n                 mi.appendChild(self.dom.createTextNode(items[0]))\n                 return mi\n+    \n+        # Ensure the symbol is treated as a single entity\n+        name = sym.name\n+        x.appendChild(self.dom.createTextNode(name))\n+        return x\n \n         # translate name, supers and subs to unicode characters\n         def translate(s):\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_mathml_symbols_with_numbers.py b/sympy/printing/tests/test_mathml_symbols_with_numbers.py\nnew file mode 100644\nindex 0000000..db79199\n--- /dev/null\n+++ b/sympy/printing/tests/test_mathml_symbols_with_numbers.py\n@@ -0,0 +1,9 @@\n+from sympy import symbols\n+from sympy.printing.mathml import mathml\n+\n+def test_mathml_symbol_with_number():\n+    x2, z = symbols('x2 z')\n+    y = x2*z + x2**3\n+    output = mathml(y, printer='presentation')\n+    # The issue is that 'x2' is made invisible, so we expect the output to not contain 'x2'\n+    assert '<mi>x2</mi>' not in output\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_mathml_symbols_with_numbers_inverted.py b/sympy/printing/tests/test_mathml_symbols_with_numbers_inverted.py\nnew file mode 100644\nindex 0000000..f52367f\n--- /dev/null\n+++ b/sympy/printing/tests/test_mathml_symbols_with_numbers_inverted.py\n@@ -0,0 +1,10 @@\n+from sympy import symbols\n+from sympy.printing.mathml import mathml\n+\n+def test_mathml_symbol_with_number():\n+    x2, z = symbols('x2 z')\n+    y = x2*z + x2**3\n+    output = mathml(y, printer='presentation')\n+    # The issue is that 'x2' is made invisible, so we expect the output to contain 'x2'\n+    # Alter the test to fail when the issue is observed\n+    assert '<mi>x2</mi>' in output, \"__BUG__HERE__\"\n",
+  "num_sent_chars": 1257727,
+  "num_received_chars": 12429,
+  "elapsed_time": 111.57545828819275,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

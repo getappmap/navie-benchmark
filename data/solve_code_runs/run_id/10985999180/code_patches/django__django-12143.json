@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12143",
+  "edit_test_file": "tests/modeladmin/tests.py",
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex 137e6fa..a100f1c 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -1631,7 +1631,7 @@ class ModelAdmin(BaseModelAdmin):\n \n     def _get_edited_object_pks(self, request, prefix):\n         \"\"\"Return POST data values of list_editable primary keys.\"\"\"\n-        pk_pattern = re.compile(r'{}-\\d+-{}$'.format(prefix, self.model._meta.pk.name))\n+        pk_pattern = re.compile(r'{}-\\d+-{}$'.format(re.escape(prefix), self.model._meta.pk.name))\n         return [value for key, value in request.POST.items() if pk_pattern.match(key)]\n \n     def _get_list_editable_queryset(self, request, prefix):\n",
+  "test_patch": "diff --git a/tests/modeladmin/test_regex_escape_in_admin_prefix.py b/tests/modeladmin/test_regex_escape_in_admin_prefix.py\nnew file mode 100644\nindex 0000000..a4d9433\n--- /dev/null\n+++ b/tests/modeladmin/test_regex_escape_in_admin_prefix.py\n@@ -0,0 +1,46 @@\n+from django.test import TestCase\n+from django.contrib.admin.options import ModelAdmin\n+from django.contrib.admin.sites import AdminSite\n+from django.forms import modelformset_factory\n+from django.core.exceptions import ValidationError\n+from .models import Band, Concert\n+\n+class MockRequest:\n+    pass\n+\n+class MockSuperUser:\n+    def has_perm(self, perm):\n+        return True\n+\n+class RegexEscapeInAdminPrefixTest(TestCase):\n+    def setUp(self):\n+        self.band = Band.objects.create(name='The Doors', bio='', sign_date='1965-01-01')\n+        self.site = AdminSite()\n+        self.request = MockRequest()\n+        self.request.user = MockSuperUser()\n+\n+    def test_regex_escape_in_formset_prefix(self):\n+        class ConcertAdmin(ModelAdmin):\n+            model = Concert\n+\n+            def get_formset(self, request, obj=None, **kwargs):\n+                FormSet = modelformset_factory(self.model, fields='__all__', extra=0)\n+                return FormSet\n+\n+        ma = ConcertAdmin(Concert, self.site)\n+        formset = ma.get_formset(self.request, self.band, prefix='special*chars')\n+\n+        # Simulate a POST request with a formset prefix containing regex special characters\n+        post_data = {\n+            'special*chars-0-id': '1',\n+            'special*chars-0-main_band': str(self.band.id),\n+            'special*chars-0-opening_band': str(self.band.id),\n+            'special*chars-0-day': '1',\n+            'special*chars-0-transport': '1',\n+            'special*chars-0-DELETE': '',\n+        }\n+        formset = formset(data=post_data)\n+\n+        # Expect a ValidationError due to the unescaped regex special characters in the prefix\n+        with self.assertRaises(ValidationError):\n+            formset.is_valid()\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4715426,
+  "num_received_chars": 55959,
+  "elapsed_time": 402.74183797836304,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-25479",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/lib/matplotlib/cm.py b/lib/matplotlib/cm.py\nindex 38158db..86b3c23 100644\n--- a/lib/matplotlib/cm.py\n+++ b/lib/matplotlib/cm.py\n@@ -119,6 +119,7 @@ class ColormapRegistry(Mapping):\n \n         name : str, optional\n             The name for the colormap. If not given, ``cmap.name`` is used.\n+            This name will also be set as the colormap's internal name.\n \n         force : bool, default: False\n             If False, a ValueError is raised if trying to overwrite an already\n@@ -128,6 +129,7 @@ class ColormapRegistry(Mapping):\n         _api.check_isinstance(colors.Colormap, cmap=cmap)\n \n         name = name or cmap.name\n+        cmap.name = name  # Ensure the colormap's internal name matches the registered name\n         if name in self:\n             if not force:\n                 # don't allow registering an already existing cmap\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2280754,
+  "num_received_chars": 15012,
+  "elapsed_time": 179.08796501159668,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

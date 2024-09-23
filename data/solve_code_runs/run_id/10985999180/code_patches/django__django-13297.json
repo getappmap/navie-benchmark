@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13297",
+  "edit_test_file": "tests/generic_views/test_base.py",
+  "code_patch": "diff --git a/django/utils/functional.py b/django/utils/functional.py\nindex 6d38f93..77666a6 100644\n--- a/django/utils/functional.py\n+++ b/django/utils/functional.py\n@@ -154,8 +154,7 @@ def lazy(func, *resultclasses):\n                 return func(*self.__args, **self.__kw)\n \n         def __str__(self):\n-            # object defines __str__(), so __prepare_class__() won't overload\n-            # a __str__() method from the proxied class.\n+            # Automatically resolve to string when accessed in a string context\n             return str(self.__cast())\n \n         def __eq__(self, other):\n",
+  "test_patch": "diff --git a/tests/generic_views/test_context_data_lazyobject.py b/tests/generic_views/test_context_data_lazyobject.py\nnew file mode 100644\nindex 0000000..ad6b2c7\n--- /dev/null\n+++ b/tests/generic_views/test_context_data_lazyobject.py\n@@ -0,0 +1,42 @@\n+import unittest\n+from django.test import RequestFactory\n+from django.urls import path\n+from django.shortcuts import get_object_or_404\n+from django.views.generic import TemplateView\n+from django.http import Http404\n+from django.utils.functional import SimpleLazyObject\n+from django.db import models\n+\n+# Mock Account model\n+class Account(models.Model):\n+    slug = models.SlugField()\n+\n+# Mock get_object_or_404 to simulate the behavior\n+def mock_get_object_or_404(model, slug):\n+    if isinstance(slug, SimpleLazyObject):\n+        raise TypeError(\"Error binding parameter 0 - probably unsupported type\")\n+    return model(slug=slug)\n+\n+# OfferView class as described in the issue\n+class OfferView(TemplateView):\n+    template_name = \"offers/offer.html\"\n+\n+    def get_context_data(self, **kwargs):\n+        offer_slug = kwargs.get(\"offer_slug\", \"\")\n+        offer = mock_get_object_or_404(Account, slug=offer_slug)\n+        return {\"offer\": offer, \"offer_slug\": offer_slug}\n+\n+# Test case to reproduce the issue\n+class TestOfferView(unittest.TestCase):\n+    def setUp(self):\n+        self.factory = RequestFactory()\n+\n+    def test_offer_view_with_lazy_object(self):\n+        request = self.factory.get('/offers/test-slug/')\n+        view = OfferView.as_view()\n+        with self.assertRaises(TypeError) as context:\n+            view(request, offer_slug=SimpleLazyObject(lambda: \"test-slug\"))\n+        self.assertIn(\"Error binding parameter 0 - probably unsupported type\", str(context.exception))\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 3386205,
+  "num_received_chars": 71369,
+  "elapsed_time": 422.622047662735,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

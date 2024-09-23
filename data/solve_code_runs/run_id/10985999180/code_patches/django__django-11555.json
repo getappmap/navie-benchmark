@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11555",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py\nindex eaccc96..272333f 100644\n--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@ -698,13 +698,17 @@ class SQLCompiler:\n         return result, params\n \n     def find_ordering_name(self, name, opts, alias=None, default_order='ASC',\n-                           already_seen=None):\n+                               already_seen=None):\n         \"\"\"\n         Return the table alias (the name might be ambiguous, the alias will\n         not be) and column name for ordering by the given 'name' parameter.\n         The 'name' is of the form 'field1__field2__...__fieldN'.\n         \"\"\"\n-        name, order = get_order_dir(name, default_order)\n+        if isinstance(name, OrderBy):\n+            order = 'DESC' if name.descending else 'ASC'\n+            name = name.expression.name\n+        else:\n+            name, order = get_order_dir(name, default_order)\n         descending = order == 'DESC'\n         pieces = name.split(LOOKUP_SEP)\n         field, targets, alias, joins, path, opts, transform_function = self._setup_joins(pieces, opts, alias)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2388862,
+  "num_received_chars": 35706,
+  "elapsed_time": 238.07393312454224,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

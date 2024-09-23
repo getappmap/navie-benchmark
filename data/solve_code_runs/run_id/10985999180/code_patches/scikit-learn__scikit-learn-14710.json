@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-14710",
+  "edit_test_file": "sklearn/ensemble/_hist_gradient_boosting/tests/test_gradient_boosting.py",
+  "code_patch": "diff --git a/sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py b/sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py\nindex ad6a5a8..ca01aad 100644\n--- a/sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py\n+++ b/sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py\n@@ -426,13 +426,18 @@ class BaseHistGradientBoosting(BaseEstimator, ABC):\n \n         Scores are computed on validation data or on training data.\n         \"\"\"\n+        # Decode y_small_train to original class labels if necessary\n+        y_small_train_decoded = self.classes_[y_small_train]\n+\n         self.train_score_.append(\n-            self.scorer_(self, X_binned_small_train, y_small_train)\n+            self.scorer_(self, X_binned_small_train, y_small_train_decoded)\n         )\n \n         if self._use_validation_data:\n+            # Decode y_val to original class labels if necessary\n+            y_val_decoded = self.classes_[y_val]\n             self.validation_score_.append(\n-                self.scorer_(self, X_binned_val, y_val)\n+                self.scorer_(self, X_binned_val, y_val_decoded)\n             )\n             return self._should_stop(self.validation_score_)\n         else:\n",
+  "test_patch": "diff --git a/sklearn/ensemble/_hist_gradient_boosting/tests/test_early_stopping_string_target.py b/sklearn/ensemble/_hist_gradient_boosting/tests/test_early_stopping_string_target.py\nnew file mode 100644\nindex 0000000..33e3165\n--- /dev/null\n+++ b/sklearn/ensemble/_hist_gradient_boosting/tests/test_early_stopping_string_target.py\n@@ -0,0 +1,15 @@\n+import numpy as np\n+import pytest\n+from sklearn.experimental import enable_hist_gradient_boosting\n+from sklearn.ensemble import HistGradientBoostingClassifier\n+\n+def test_early_stopping_with_string_target():\n+    # Test to reproduce the issue where HistGradientBoostingClassifier\n+    # does not work with string target when early stopping is turned on.\n+\n+    X = np.random.randn(100, 10)\n+    y = np.array(['x'] * 50 + ['y'] * 50, dtype=object)\n+    gbrt = HistGradientBoostingClassifier(n_iter_no_change=10)\n+\n+    with pytest.raises(TypeError, match=\"<' not supported between instances of 'str' and 'float'\"):\n+        gbrt.fit(X, y)\n",
+  "test_inverted_patch": "diff --git a/sklearn/ensemble/_hist_gradient_boosting/tests/test_early_stopping_string_target_inverted.py b/sklearn/ensemble/_hist_gradient_boosting/tests/test_early_stopping_string_target_inverted.py\nnew file mode 100644\nindex 0000000..2336f63\n--- /dev/null\n+++ b/sklearn/ensemble/_hist_gradient_boosting/tests/test_early_stopping_string_target_inverted.py\n@@ -0,0 +1,16 @@\n+import numpy as np\n+import pytest\n+from sklearn.experimental import enable_hist_gradient_boosting\n+from sklearn.ensemble import HistGradientBoostingClassifier\n+\n+def test_early_stopping_with_string_target():\n+    # Test to reproduce the issue where HistGradientBoostingClassifier\n+    # does not work with string target when early stopping is turned on.\n+\n+    X = np.random.randn(100, 10)\n+    y = np.array(['x'] * 50 + ['y'] * 50, dtype=object)\n+    gbrt = HistGradientBoostingClassifier(n_iter_no_change=10)\n+\n+    # Alter the test to fail when the issue is observed\n+    with pytest.raises(Exception, match=\"__BUG__HERE__\"):\n+        gbrt.fit(X, y)\n",
+  "num_sent_chars": 1908879,
+  "num_received_chars": 33958,
+  "elapsed_time": 447.81642842292786,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

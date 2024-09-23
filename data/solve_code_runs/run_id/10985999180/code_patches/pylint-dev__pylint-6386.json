@@ -1,0 +1,20 @@
+{
+  "instance_id": "pylint-dev__pylint-6386",
+  "edit_test_file": "tests/config/test_argparse_config.py",
+  "code_patch": "diff --git a/pylint/lint/base_options.py b/pylint/lint/base_options.py\nindex c793cc8..e3c287d 100644\n--- a/pylint/lint/base_options.py\n+++ b/pylint/lint/base_options.py\n@@ -538,7 +538,7 @@ def _make_run_options(self: Run) -> Options:\n         (\n             \"verbose\",\n             {\n-                \"action\": _DoNothingAction,\n+                \"action\": \"store_true\",\n                 \"kwargs\": {},\n                 \"short\": \"v\",\n                 \"help\": \"In verbose mode, extra non-checker-related info \"\n",
+  "test_patch": "diff --git a/tests/config/test_verbose_option.py b/tests/config/test_verbose_option.py\nnew file mode 100644\nindex 0000000..de80642\n--- /dev/null\n+++ b/tests/config/test_verbose_option.py\n@@ -0,0 +1,9 @@\n+import pytest\n+from pylint.lint import Run\n+from pylint.config.exceptions import UnrecognizedArgumentAction\n+\n+def test_short_verbose_option_expects_argument():\n+    \"\"\"Test that the short verbose option '-v' expects an argument.\"\"\"\n+    with pytest.raises(SystemExit) as ex:\n+        Run([\"mytest.py\", \"-v\"])\n+    assert ex.value.code == 2\n",
+  "test_inverted_patch": "diff --git a/tests/config/test_verbose_option_inverted.py b/tests/config/test_verbose_option_inverted.py\nnew file mode 100644\nindex 0000000..8df8876\n--- /dev/null\n+++ b/tests/config/test_verbose_option_inverted.py\n@@ -0,0 +1,9 @@\n+import pytest\n+from pylint.lint import Run\n+from pylint.config.exceptions import UnrecognizedArgumentAction\n+\n+def test_short_verbose_option_expects_argument():\n+    \"\"\"Test that the short verbose option '-v' expects an argument.\"\"\"\n+    with pytest.raises(SystemExit) as ex:\n+        Run([\"mytest.py\", \"-v\"])\n+    assert ex.value.code != 2, \"__BUG__HERE__\"\n",
+  "num_sent_chars": 559875,
+  "num_received_chars": 4970,
+  "elapsed_time": 45.222283363342285,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

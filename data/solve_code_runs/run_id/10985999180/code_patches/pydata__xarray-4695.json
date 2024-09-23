@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4695",
+  "edit_test_file": "xarray/tests/test_units.py",
+  "code_patch": "diff --git a/xarray/core/dataarray.py b/xarray/core/dataarray.py\nindex 32b24ef..265e02a 100644\n--- a/xarray/core/dataarray.py\n+++ b/xarray/core/dataarray.py\n@@ -196,6 +196,8 @@ class _LocIndexer:\n             # expand the indexer so we can handle Ellipsis\n             labels = indexing.expanded_indexer(key, self.data_array.ndim)\n             key = dict(zip(self.data_array.dims, labels))\n+        # Ensure dimension names do not conflict with method names\n+        key = {k: v for k, v in key.items() if k not in [\"method\", \"pad\", \"ffill\", \"bfill\", \"nearest\"]}\n         return self.data_array.sel(**key)\n \n     def __setitem__(self, key, value) -> None:\n@@ -203,6 +205,8 @@ class _LocIndexer:\n             # expand the indexer so we can handle Ellipsis\n             labels = indexing.expanded_indexer(key, self.data_array.ndim)\n             key = dict(zip(self.data_array.dims, labels))\n+        # Ensure dimension names do not conflict with method names\n+        key = {k: v for k, v in key.items() if k not in [\"method\", \"pad\", \"ffill\", \"bfill\", \"nearest\"]}\n \n         pos_indexers, _ = remap_label_indexers(self.data_array, key)\n         self.data_array[pos_indexers] = value\n",
+  "test_patch": "diff --git a/xarray/tests/test_indexing_error.py b/xarray/tests/test_indexing_error.py\nnew file mode 100644\nindex 0000000..3640df4\n--- /dev/null\n+++ b/xarray/tests/test_indexing_error.py\n@@ -0,0 +1,21 @@\n+import unittest\n+import numpy as np\n+import xarray as xr\n+\n+class TestIndexingError(unittest.TestCase):\n+    def test_dimension_name_method_error(self):\n+        empty = np.zeros((2, 2))\n+        D1 = xr.DataArray(empty, dims=['dim1', 'dim2'], coords={'dim1': ['x', 'y'], 'dim2': ['a', 'b']})\n+        D2 = xr.DataArray(empty, dims=['dim1', 'method'], coords={'dim1': ['x', 'y'], 'method': ['a', 'b']})\n+\n+        # This should work without any issues\n+        self.assertIsNotNone(D1.loc[dict(dim1='x', dim2='a')])\n+\n+        # This should raise a ValueError due to the dimension being named 'method'\n+        with self.assertRaises(ValueError) as context:\n+            D2.loc[dict(dim1='x', method='a')]\n+\n+        self.assertIn(\"Invalid fill method\", str(context.exception))\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_indexing_error_inverted.py b/xarray/tests/test_indexing_error_inverted.py\nnew file mode 100644\nindex 0000000..25168f5\n--- /dev/null\n+++ b/xarray/tests/test_indexing_error_inverted.py\n@@ -0,0 +1,22 @@\n+import unittest\n+import numpy as np\n+import xarray as xr\n+\n+class TestIndexingError(unittest.TestCase):\n+    def test_dimension_name_method_error(self):\n+        empty = np.zeros((2, 2))\n+        D1 = xr.DataArray(empty, dims=['dim1', 'dim2'], coords={'dim1': ['x', 'y'], 'dim2': ['a', 'b']})\n+        D2 = xr.DataArray(empty, dims=['dim1', 'method'], coords={'dim1': ['x', 'y'], 'method': ['a', 'b']})\n+\n+        # This should work without any issues\n+        self.assertIsNotNone(D1.loc[dict(dim1='x', dim2='a')])\n+\n+        # This should raise a ValueError due to the dimension being named 'method'\n+        with self.assertRaises(ValueError) as context:\n+            D2.loc[dict(dim1='x', method='a')]\n+\n+        # Alter the test to fail when the bug is observed\n+        self.assertIn(\"__BUG__HERE__\", str(context.exception), \"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 3918622,
+  "num_received_chars": 44534,
+  "elapsed_time": 807.1908323764801,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

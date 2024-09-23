@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-10051",
+  "edit_test_file": "testing/test_recwarn.py",
+  "code_patch": "diff --git a/src/_pytest/logging.py b/src/_pytest/logging.py\nindex a4f4214..13b61e3 100644\n--- a/src/_pytest/logging.py\n+++ b/src/_pytest/logging.py\n@@ -441,6 +441,7 @@ class LogCaptureFixture:\n     def clear(self) -> None:\n         \"\"\"Reset the list of log records and the captured log text.\"\"\"\n         self.handler.reset()\n+        self._item.stash[caplog_records_key].clear()\n \n     def set_level(self, level: Union[int, str], logger: Optional[str] = None) -> None:\n         \"\"\"Set the level of a logger for the duration of a test.\n",
+  "test_patch": "diff --git a/testing/test_caplog_consistency.py b/testing/test_caplog_consistency.py\nnew file mode 100644\nindex 0000000..973a8a7\n--- /dev/null\n+++ b/testing/test_caplog_consistency.py\n@@ -0,0 +1,13 @@\n+import logging\n+import pytest\n+\n+def test_caplog_get_records_and_clear_conflict(caplog) -> None:\n+    def verify_consistency() -> None:\n+        assert caplog.get_records(\"call\") == caplog.records\n+\n+    verify_consistency()\n+    logging.warning(\"test\")\n+    verify_consistency()\n+    caplog.clear()\n+    with pytest.raises(AssertionError):\n+        verify_consistency()  # This should fail due to the issue\n",
+  "test_inverted_patch": "diff --git a/testing/test_caplog_consistency_inverted.py b/testing/test_caplog_consistency_inverted.py\nnew file mode 100644\nindex 0000000..61228e1\n--- /dev/null\n+++ b/testing/test_caplog_consistency_inverted.py\n@@ -0,0 +1,12 @@\n+import logging\n+import pytest\n+\n+def test_caplog_get_records_and_clear_conflict(caplog) -> None:\n+    def verify_consistency() -> None:\n+        assert caplog.get_records(\"call\") == caplog.records, \"__BUG__HERE__\"\n+\n+    verify_consistency()\n+    logging.warning(\"test\")\n+    verify_consistency()\n+    caplog.clear()\n+    verify_consistency()  # This should now fail with \"__BUG__HERE__\"\n",
+  "num_sent_chars": 480294,
+  "num_received_chars": 7357,
+  "elapsed_time": 44.76844835281372,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

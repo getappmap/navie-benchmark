@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7521",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/capture.py b/src/_pytest/capture.py\nindex 3f9c60f..99dbaf8 100644\n--- a/src/_pytest/capture.py\n+++ b/src/_pytest/capture.py\n@@ -793,8 +793,9 @@ class CaptureFixture:\n         captured_out, captured_err = self._captured_out, self._captured_err\n         if self._capture is not None:\n             out, err = self._capture.readouterr()\n-            captured_out += out\n-            captured_err += err\n+            # Ensure carriage returns are preserved in the captured output\n+            captured_out += out.replace('\\n', '\\r\\n').replace('\\r\\r\\n', '\\r')\n+            captured_err += err.replace('\\n', '\\r\\n').replace('\\r\\r\\n', '\\r')\n         self._captured_out = self.captureclass.EMPTY_BUFFER\n         self._captured_err = self.captureclass.EMPTY_BUFFER\n         return CaptureResult(captured_out, captured_err)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1250971,
+  "num_received_chars": 6245,
+  "elapsed_time": 66.36462450027466,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

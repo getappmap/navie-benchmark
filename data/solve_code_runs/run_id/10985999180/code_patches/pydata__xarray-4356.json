@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4356",
+  "edit_test_file": "xarray/tests/test_duck_array_ops.py",
+  "code_patch": "diff --git a/xarray/core/rolling.py b/xarray/core/rolling.py\nindex a595f9d..8acfb84 100644\n--- a/xarray/core/rolling.py\n+++ b/xarray/core/rolling.py\n@@ -359,6 +359,9 @@ class DataArrayRolling(Rolling):\n             .construct(rolling_dim, fill_value=False)\n             .sum(dim=list(rolling_dim.values()), skipna=False)\n         )\n+        # Adjust counts for multi-dimensional reductions\n+        if len(self.dim) > 1:\n+            counts = counts.prod(dim=self.dim)\n         return counts\n \n     def _bottleneck_reduce(self, func, **kwargs):\n@@ -372,22 +375,24 @@ class DataArrayRolling(Rolling):\n         else:\n             min_count = self.min_periods\n \n-        axis = self.obj.get_axis_num(self.dim[0])\n+        axis = tuple(self.obj.get_axis_num(d) for d in self.dim)\n \n         padded = self.obj.variable\n-        if self.center[0]:\n+        if any(self.center):\n             if isinstance(padded.data, dask_array_type):\n                 # Workaround to make the padded chunk size is larger than\n                 # self.window-1\n-                shift = -(self.window[0] + 1) // 2\n-                offset = (self.window[0] - 1) // 2\n-                valid = (slice(None),) * axis + (\n-                    slice(offset, offset + self.obj.shape[axis]),\n+                shift = [-(w + 1) // 2 for w in self.window]\n+                offset = [(w - 1) // 2 for w in self.window]\n+                valid = tuple(\n+                    slice(o, o + self.obj.shape[a]) for o, a in zip(offset, axis)\n                 )\n             else:\n-                shift = (-self.window[0] // 2) + 1\n-                valid = (slice(None),) * axis + (slice(-shift, None),)\n-            padded = padded.pad({self.dim[0]: (0, -shift)}, mode=\"constant\")\n+                shift = [(-w // 2) + 1 for w in self.window]\n+                valid = tuple(slice(-s, None) for s in shift)\n+            padded = padded.pad(\n+                {d: (0, -s) for d, s in zip(self.dim, shift)}, mode=\"constant\"\n+            )\n \n         if isinstance(padded.data, dask_array_type):\n             raise AssertionError(\"should not be reachable\")\n",
+  "test_patch": "diff --git a/xarray/tests/test_nanops.py b/xarray/tests/test_nanops.py\nnew file mode 100644\nindex 0000000..0391ecf\n--- /dev/null\n+++ b/xarray/tests/test_nanops.py\n@@ -0,0 +1,7 @@\n+import pytest\n+import xarray as xr\n+\n+def test_sum_min_count_multiple_dimensions():\n+    da = xr.DataArray([[1.0, 2, 3], [4, 5, 6]])\n+    with pytest.raises(ValueError, match=\"min_count is not available for reduction with more than one dimensions\"):\n+        da.sum([\"dim_0\", \"dim_1\"], min_count=1)\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_nanops_inverted.py b/xarray/tests/test_nanops_inverted.py\nnew file mode 100644\nindex 0000000..31a783d\n--- /dev/null\n+++ b/xarray/tests/test_nanops_inverted.py\n@@ -0,0 +1,7 @@\n+import pytest\n+import xarray as xr\n+\n+def test_sum_min_count_multiple_dimensions():\n+    da = xr.DataArray([[1.0, 2, 3], [4, 5, 6]])\n+    with pytest.raises(ValueError, match=\"__BUG__HERE__\"):\n+        da.sum([\"dim_0\", \"dim_1\"], min_count=1)\n",
+  "num_sent_chars": 3216545,
+  "num_received_chars": 56600,
+  "elapsed_time": 519.9967143535614,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11951",
+  "edit_test_file": "tests/bulk_create/tests.py",
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 794e0fa..68c6d55 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -471,6 +471,8 @@ class QuerySet:\n         fields = opts.concrete_fields\n         objs = list(objs)\n         self._populate_pk_values(objs)\n+        max_batch_size = connection.ops.bulk_batch_size(fields, objs)\n+        batch_size = min(batch_size, max_batch_size) if batch_size else max_batch_size\n         with transaction.atomic(using=self.db, savepoint=False):\n             objs_with_pk, objs_without_pk = partition(lambda o: o.pk is None, objs)\n             if objs_with_pk:\n",
+  "test_patch": "diff --git a/tests/bulk_create/test_bulk_create_batch_size.py b/tests/bulk_create/test_bulk_create_batch_size.py\nnew file mode 100644\nindex 0000000..17ddacb\n--- /dev/null\n+++ b/tests/bulk_create/test_bulk_create_batch_size.py\n@@ -0,0 +1,20 @@\n+from django.db import connections\n+from django.test import TestCase\n+from .models import TwoFields\n+\n+class BulkCreateBatchSizeTest(TestCase):\n+    def test_batch_size_override(self):\n+        # Create a large number of objects to trigger the batch size logic\n+        objs = [TwoFields(f1=i, f2=i) for i in range(0, 1000)]\n+        \n+        # Calculate the maximum batch size based on the database's capabilities\n+        max_batch_size = connections['default'].ops.bulk_batch_size(['f1', 'f2'], objs)\n+        \n+        # Use a batch size larger than the calculated maximum to reproduce the issue\n+        batch_size = max_batch_size + 1\n+        \n+        # Perform bulk_create with the specified batch size\n+        TwoFields.objects.bulk_create(objs, batch_size=batch_size)\n+        \n+        # Assert that all objects were created, indicating that the batch size override occurred\n+        self.assertEqual(TwoFields.objects.count(), len(objs))\n",
+  "test_inverted_patch": "diff --git a/tests/bulk_create/test_bulk_create_batch_size_inverted.py b/tests/bulk_create/test_bulk_create_batch_size_inverted.py\nnew file mode 100644\nindex 0000000..220fcfd\n--- /dev/null\n+++ b/tests/bulk_create/test_bulk_create_batch_size_inverted.py\n@@ -0,0 +1,21 @@\n+from django.db import connections\n+from django.test import TestCase\n+from .models import TwoFields\n+\n+class BulkCreateBatchSizeTest(TestCase):\n+    def test_batch_size_override(self):\n+        # Create a large number of objects to trigger the batch size logic\n+        objs = [TwoFields(f1=i, f2=i) for i in range(0, 1000)]\n+        \n+        # Calculate the maximum batch size based on the database's capabilities\n+        max_batch_size = connections['default'].ops.bulk_batch_size(['f1', 'f2'], objs)\n+        \n+        # Use a batch size larger than the calculated maximum to reproduce the issue\n+        batch_size = max_batch_size + 1\n+        \n+        # Perform bulk_create with the specified batch size\n+        TwoFields.objects.bulk_create(objs, batch_size=batch_size)\n+        \n+        # Assert that the batch size override did not occur, expecting a failure\n+        if TwoFields.objects.count() == len(objs):\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 3482380,
+  "num_received_chars": 67638,
+  "elapsed_time": 399.02954959869385,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

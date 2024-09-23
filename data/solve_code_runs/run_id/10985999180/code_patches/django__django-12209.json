@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12209",
+  "edit_test_file": "tests/basic/tests.py",
+  "code_patch": "diff --git a/django/db/models/base.py b/django/db/models/base.py\nindex e3b14a4..3f1edab 100644\n--- a/django/db/models/base.py\n+++ b/django/db/models/base.py\n@@ -847,14 +847,13 @@ class Model(metaclass=ModelBase):\n         if not pk_set and (force_update or update_fields):\n             raise ValueError(\"Cannot force an update in save() with no primary key.\")\n         updated = False\n-        # Skip an UPDATE when adding an instance and primary key has a default.\n-        if (\n-            not force_insert and\n-            self._state.adding and\n-            self._meta.pk.default and\n-            self._meta.pk.default is not NOT_PROVIDED\n-        ):\n-            force_insert = True\n+        # Adjust logic to handle explicit PK with default in line with Django 2.2 behavior.\n+        if pk_set and not force_insert:\n+            # Check if the PK already exists in the database.\n+            if cls._base_manager.using(using).filter(pk=pk_val).exists():\n+                force_insert = False\n+            else:\n+                force_insert = True\n         # If possible, try an UPDATE. If that doesn't update anything, do an INSERT.\n         if pk_set and not force_insert:\n             base_qs = cls._base_manager.using(using)\n",
+  "test_patch": "diff --git a/tests/basic/test_model_instance_pk_behavior.py b/tests/basic/test_model_instance_pk_behavior.py\nnew file mode 100644\nindex 0000000..a6ff505\n--- /dev/null\n+++ b/tests/basic/test_model_instance_pk_behavior.py\n@@ -0,0 +1,19 @@\n+import uuid\n+from django.db import models, IntegrityError\n+from django.test import TestCase\n+\n+class Sample(models.Model):\n+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)\n+    name = models.CharField(blank=True, max_length=100)\n+\n+class ModelInstancePKBehaviorTest(TestCase):\n+    def test_duplicate_insert_with_explicit_pk(self):\n+        # Create an initial Sample instance\n+        s0 = Sample.objects.create()\n+        \n+        # Attempt to create a new Sample instance with the same primary key\n+        s1 = Sample(pk=s0.pk, name='Test 1')\n+        \n+        # Expect an IntegrityError due to duplicate primary key insertion\n+        with self.assertRaises(IntegrityError):\n+            s1.save()\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 3948416,
+  "num_received_chars": 65668,
+  "elapsed_time": 402.1564450263977,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

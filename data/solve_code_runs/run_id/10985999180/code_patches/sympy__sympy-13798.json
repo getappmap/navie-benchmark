@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13798",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/printer.py b/sympy/printing/printer.py\nindex b0fa790..6b75907 100644\n--- a/sympy/printing/printer.py\n+++ b/sympy/printing/printer.py\n@@ -230,8 +230,9 @@ def order(self):\n         else:\n             raise AttributeError(\"No order defined.\")\n \n-    def doprint(self, expr):\n+    def doprint(self, expr, mul_symbol=None):\n         \"\"\"Returns printer's representation for expr (as a string)\"\"\"\n+        self._settings['mul_symbol'] = mul_symbol or self._settings.get('mul_symbol', '*')\n         return self._str(self._print(expr))\n \n     def _print(self, expr, *args, **kwargs):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1956696,
+  "num_received_chars": 10319,
+  "elapsed_time": 121.15029430389404,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
