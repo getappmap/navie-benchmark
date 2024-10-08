@@ -179,6 +179,9 @@ predictions.jsonl
 data/solve_test_runs/local
 archive
 
+# Navie
+.navie/issues
+
 # Evaluation
 *.validate-*.json
 *.smoke.json
