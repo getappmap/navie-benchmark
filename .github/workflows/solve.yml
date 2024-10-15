@@ -193,6 +193,7 @@ jobs:
           elif [[ $llm == "claude"* ]]; then
             export ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
           elif [[ $llm == gemini* ]]; then
+            export APPMAP_NAVIE_MINI_MODEL="${llm}"
             export GOOGLE_WEB_CREDENTIALS='${{ secrets.GOOGLE_WEB_CREDENTIALS}}'
           else
             echo "Unknown LLM model: $llm"
