@@ -11,6 +11,8 @@ on:
           - gpt-4o-2024-08-06
           - gpt-4o-2024-05-13
           - claude-3-5-sonnet-20240620
+          - claude-3-5-sonnet-20241022
+          - gemini-1.5-pro-002
       instance_set:
         description: "Instance set to solve"
         type: string

@@ -1,0 +1,9 @@
+steps:
+  - name: Update solve.yml
+    prompt: |
+      Search for mentions of: "claude-3.5-sonnet"
+      Add the following new entry: "claude-3-5-sonnet-20241022"
+  - name: Update official.yml
+    prompt: |
+      Search for mentions of: "claude-3.5-sonnet"
+      Add the following new entry: "claude-3-5-sonnet-20241022"
