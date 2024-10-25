@@ -224,7 +224,6 @@ class ImageStore:
             if not self.docker_client.images.list(name=name)
         }
         if not unavailable_images:
-            print(f"All {image_type} images are already present locally.")
             return []
 
         print(
