@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from solver.workflow.patch import Patch
-from solver.workflow.generate_test import GenerateTest
+from solver.workflow.generate_test import GenerateTest, strip_filename_comment
 from solver.workflow.work_dir import WorkDir
 
 
@@ -84,6 +84,39 @@ class TestGenerateTest(unittest.TestCase):
         inverted_code = self.generator.invert("Original test code", 1)
         self.assertEqual(inverted_code, "Inverted test code")
         editor_instance_mock.test.assert_called_once()
+
+
+class TestStripFilenameComment(unittest.TestCase):
+    CODE = """import pytest
+
+def test_nested_compound_model_separability():
+    # Define the compound model
+    cm = models.Linear1D(10) & models.Linear1D(5)"""
+
+    def test_strip_comment(self):
+        content = f"""<!-- file: test_compound_separability.py -->
+{TestStripFilenameComment.CODE}"""
+
+        stripped_content = strip_filename_comment(content)
+        self.assertEqual(stripped_content, TestStripFilenameComment.CODE)
+
+    def test_strip_comment_no_comment(self):
+        stripped_content = strip_filename_comment(TestStripFilenameComment.CODE)
+        self.assertEqual(stripped_content, TestStripFilenameComment.CODE)
+
+    def test_strip_comment_whitespace(self):
+        comment = "<!-- file: test_compound_separability.py --> "
+        content = f"""{comment}
+{TestStripFilenameComment.CODE}"""
+        stripped_content = strip_filename_comment(content)
+        self.assertEqual(stripped_content, TestStripFilenameComment.CODE)
+
+    def test_strip_multiple_filename_comments(self):
+        content = f"""<!-- file: file_1.py -->
+<!-- file: file_2.py -->
+{TestStripFilenameComment.CODE}"""
+        stripped_content = strip_filename_comment(content)
+        self.assertEqual(stripped_content, TestStripFilenameComment.CODE)
 
 
 if __name__ == "__main__":

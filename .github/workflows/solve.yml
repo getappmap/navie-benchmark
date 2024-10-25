@@ -8,6 +8,7 @@ on:
         type: choice
         required: true
         options:
+          - gemini-1.5-pro-002
           - gpt-4o-2024-08-06
           - gpt-4o-2024-05-13
           - claude-3-5-sonnet-20240620
@@ -189,8 +190,11 @@ jobs:
           export APPMAP_NAVIE_MODEL="${llm}"
           if [[ $llm == "gpt-"* || $llm == "o1-"* ]]; then
             export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
-          elif [[ $llm == "claude-"* ]]; then
+          elif [[ $llm == "claude"* ]]; then
             export ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
+          elif [[ $llm == gemini* ]]; then
+            export APPMAP_NAVIE_MINI_MODEL="${llm}"
+            export GOOGLE_WEB_CREDENTIALS='${{ secrets.GOOGLE_WEB_CREDENTIALS}}'
           else
             echo "Unknown LLM model: $llm"
             exit 1

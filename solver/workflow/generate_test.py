@@ -1,6 +1,7 @@
 from os import path
 import os
 from pathlib import Path
+import re
 from subprocess import run
 from typing import Callable, Optional
 
@@ -18,6 +19,22 @@ from .patch import (
 # Maximum length of observed errors to include in the test case. Beyond this, the error is probably too verbose to
 # be useful. This value preserves all error logs within 3 standard deviations above the observed data.
 OBSERVED_ERROR_LENGTH_LIMIT = 100 * 1000
+
+
+def strip_filename_comment(content: str) -> str:
+    lines = content.splitlines()
+    if not lines:
+        return content
+
+    first_line = lines[0]
+    while re.match(r"^<!--.*-->$", first_line.strip()):
+        lines = lines[1:]
+        if not lines:
+            break
+
+        first_line = lines[0]
+
+    return "\n".join(lines)
 
 
 class GenerateTest:
@@ -217,6 +234,8 @@ test will only ever run against the specified Python version.
     # Apply code changes to the files in the current directory and return a patch.
     def apply(self, test_file_name: Path, code: str) -> Optional[Patch]:
         content = extract_fenced_content(code)
+        content = [strip_filename_comment(content_item) for content_item in content]
+
         if not content:
             self.log("generate-test", "No changes detected")
             return None
