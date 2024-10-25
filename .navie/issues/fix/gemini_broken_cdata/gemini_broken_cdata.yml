@@ -1,0 +1,23 @@
+description: |
+  Update navie-editor to pick up the following change:
+
+  fix: Fix Gemini broken CDATA delimiters
+  Gemini tends to close CDATA section with fences. This seems to
+  happen only right before closing tag, which allow unambigous
+  replacement of those fences.
+
+  ---
+
+  diff --git a/submodules/navie-editor b/submodules/navie-editor
+  index fe7cd8a..142edcd 160000
+  --- a/submodules/navie-editor
+  +++ b/submodules/navie-editor
+  @@ -1 +1 @@
+  -Subproject commit fe7cd8a9c01993a684c2c0325d19f19683183b99
+  +Subproject commit 142edcdb667a660ae899b8ef6cd2c0cb9c8f4512
+code: |
+  cd submodules/navie-editor
+  git pull
+  cd -
+  git add submodules/navie-editor
+  git commit -m "fix: Gemini broken CDATA delimeters"
