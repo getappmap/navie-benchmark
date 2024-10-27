@@ -47,7 +47,8 @@ Do not include line numbers or any location within the file. Just the file path.
         return None
 
     log(
-        "choose-code-file", f"Recommended code files to modify: {", ".join([ str(file) for file in code_files])}"
+        "choose-code-file",
+        f"Recommended code files to modify: {", ".join([ str(file) for file in code_files])}",
     )
     return code_files
 
@@ -83,6 +84,17 @@ def extract_file_paths(files_to_modify_str: str) -> Optional[List[Path]]:
                 return file_name_relative
         return file_name
 
+    def remove_extra_line_content(file_name: str) -> str | None:
+        """
+        There may be other content in the line, such as a bullet point or a numeric list prefix.
+        """
+        tokens = file_name.split()
+        tokens = [token for token in tokens if len(token.split(".")) > 1]
+        if len(tokens) == 0:
+            return None
+
+        return max(tokens, key=len)
+
     def remove_line_range(file_name: str) -> str:
         """
         The path may be generated with line numbers, like path/to/file.py:1-10
@@ -96,6 +108,8 @@ def extract_file_paths(files_to_modify_str: str) -> Optional[List[Path]]:
     def make_path(file_name: str) -> Path:
         return Path(file_name)
 
+    files_to_modify = [remove_extra_line_content(file) for file in files_to_modify]
+    files_to_modify = [file for file in files_to_modify if file]
     files_to_modify = [resolve_file_path(file) for file in files_to_modify]
     files_to_modify = [remove_line_range(file) for file in files_to_modify]
     files_to_modify = [file for file in files_to_modify if os.path.exists(file)]

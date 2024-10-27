@@ -99,6 +99,49 @@ class TestAskForTestFiles(unittest.TestCase):
 
     @patch("solver.workflow.choose_test_file.Editor")
     @patch("solver.workflow.choose_test_file.os.path.exists")
+    def test_extract_files_from_mixed_content(self, exists_mock, Editor_mock):
+        mixed_content_response = """
+Based on the context, I'll identify the most relevant test files related to ordering issues with model inheritance and Meta.ordering expressions.
+
+1. tests/ordering/tests.py
+This is the most relevant test file as it contains tests specifically for ordering behavior, including tests for F() expressions in ordering and inheritance scenarios. It contains test cases for Meta.ordering and order_by() behavior.
+
+2. tests/invalid_models_tests/test_models.py
+This file contains tests for validation of model ordering configurations, including tests for invalid ordering expressions and inheritance-related ordering issues.
+
+3. tests/queries/tests.py
+This file contains many tests related to query ordering behavior, including tests for ordering with inheritance and expressions.
+
+I ranked them in this order because:
+
+1. tests/ordering/tests.py is specifically focused on ordering behavior and contains the most relevant tests for this issue
+2. tests/invalid_models_tests/test_models.py tests validation of ordering configurations which is relevant to Meta.ordering issues
+3. tests/queries/tests.py contains general query tests including ordering tests, but is less focused on the specific inheritance + Meta.ordering scenario
+"""
+        exists_mock.side_effect = lambda x: x.endswith(".py")
+        editor_instance_mock = Editor_mock.return_value
+        editor_instance_mock.search.return_value = mixed_content_response
+
+        results = ask_for_test_files(
+            self.log_mock,
+            self.work_dir,
+            self.trajectory_file,
+            self.issue_content,
+            3,
+            set(),
+            1,
+        )
+        self.assertEqual(
+            results,
+            [
+                Path("tests/ordering/tests.py"),
+                Path("tests/invalid_models_tests/test_models.py"),
+                Path("tests/queries/tests.py"),
+            ],
+        )
+
+    @patch("solver.workflow.choose_test_file.Editor")
+    @patch("solver.workflow.choose_test_file.os.path.exists")
     def test_resolve_absolute_to_relative_path(self, exists_mock, Editor_mock):
         exists_mock.side_effect = lambda x: x == "work/directory/test_file.py"
         editor_instance_mock = Editor_mock.return_value
