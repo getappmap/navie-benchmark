@@ -240,6 +240,12 @@ test will only ever run against the specified Python version.
             self.log("generate-test", "No changes detected")
             return None
 
+        if test_file_name.is_dir():
+            self.log(
+                "generate-test", f"Test file name is a directory: {test_file_name}"
+            )
+            return None
+
         all_content = "\n".join(content)
 
         test_dir = path.dirname(test_file_name)
