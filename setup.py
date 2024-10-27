@@ -33,6 +33,7 @@ setuptools.setup(
         'datasets',
         'docker',
         'flake8',
+        'flake8-pyproject',
         'ghapi',
         'GitPython',
         'pre-commit',

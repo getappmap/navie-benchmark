@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Callable, List, Optional
 
 from .linter import Linter
@@ -32,7 +31,11 @@ def lint_repair(
         lint_errors.sort()
 
         distinct_lint_errors = list(set(lint_errors))
-        patch = generator(generate_attempt, distinct_lint_errors)
+        try:
+            patch = generator(generate_attempt, distinct_lint_errors)
+        except Exception as e:
+            log(log_label, f"Error generating patch: {e}")
+            patch = None
 
         generate_attempt += 1
 
