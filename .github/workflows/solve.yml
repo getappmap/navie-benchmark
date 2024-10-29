@@ -235,7 +235,7 @@ jobs:
           python -m solver.solve \
             --instance_set "${instance_set}" \
             $( [ "${limits}" != "default" ] && echo "--limit ${limits}" ) \
-            $( [ "${observe_synthetic_tests}" == "true" ] && echo "--observe_synthetic_tests" ) \
+            $( [ "${observe_synthetic_tests}" == "true" ] && echo "--observe_tests" ) \
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
 
