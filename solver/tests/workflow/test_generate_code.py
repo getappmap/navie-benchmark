@@ -1,11 +1,11 @@
 import unittest
 from unittest.mock import ANY, MagicMock, patch
-from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from solver.workflow.patch import Patch
 from solver.workflow.generate_code import GenerateCode
 from solver.workflow.work_dir import WorkDir
+from solver.workflow.is_test_file import test_regexp_patterns
 
 
 class TestGenerateCode(unittest.TestCase):
@@ -60,7 +60,7 @@ class TestGenerateCode(unittest.TestCase):
             editor_instance_mock.generate.assert_called_once_with(
                 plan=ANY,
                 prompt=ANY,
-                options="/noprojectinfo /noclassify /exclude=\\btests?\\b|\\btesting\\b|\\btest_|_test\\b",
+                options=f"/noprojectinfo /noclassify /exclude={"|".join(test_regexp_patterns)}",
             )
 
             # Test apply method

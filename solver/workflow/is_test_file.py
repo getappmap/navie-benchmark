@@ -17,6 +17,14 @@ test_regular_expressions = [
     re.compile(fnmatch.translate(pattern)) for pattern in test_glob_patterns
 ]
 
+test_regexp_patterns = [
+    r"\btesting\b",
+    r"\btests\b",
+    r"\btest\b",
+    r"\btest_.*\.py",
+    r"\b.*_test\.py",
+]
+
 
 def is_test_file(file):
     if not file.endswith(".py"):
