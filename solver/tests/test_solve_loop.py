@@ -41,7 +41,7 @@ class TestMainFunction(unittest.TestCase):
             "temperature": 0.0,
             "temperature_increase": 0.1,
             "test_patch_solve_threshold": 1,
-            "use_synthetic_tests": False,
+            "use_synthetic_tests": True,
             "num_runners": None,
             "runner_index": None,
             "min_test_solve_iterations": 1,
