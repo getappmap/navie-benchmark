@@ -153,9 +153,8 @@ def generate_and_validate_code(
     def collect_errors(work_dir: WorkDir, run_test_result: RunTestResult):
         if run_test_result.test_status == TestStatus.ERROR:
             if run_test_result.test_output:
-                test_errors.update(
-                    summarize_test_errors(work_dir, run_test_result.test_output)
-                )
+                errors = summarize_test_errors(work_dir, run_test_result.test_output)
+                test_errors.add(errors)
 
     def generate_patch(attempt: int) -> List[CodePatchResult]:
         for listener in context.solve_listeners:
