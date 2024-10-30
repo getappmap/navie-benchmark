@@ -92,7 +92,9 @@ def test_solver(
         )
 
         # Collect optimal test patches
-        subprocess.run(["python", "-m", "solver.import_solve_test_run"])
+        subprocess.run(
+            ["python", "-m", "solver.import_solve_test_run", "--solve_dir", "solve"]
+        )
 
         subprocess.run(
             [
