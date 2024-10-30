@@ -93,6 +93,7 @@ def extract_file_paths(files_to_modify_str: str) -> Optional[List[Path]]:
         if len(tokens) == 0:
             return None
 
+        tokens = [token.lstrip("`").rstrip("`") for token in tokens]
         return max(tokens, key=len)
 
     def remove_line_range(file_name: str) -> str:

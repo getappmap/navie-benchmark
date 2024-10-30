@@ -109,7 +109,7 @@ This is the most relevant test file as it contains tests specifically for orderi
 2. tests/invalid_models_tests/test_models.py
 This file contains tests for validation of model ordering configurations, including tests for invalid ordering expressions and inheritance-related ordering issues.
 
-3. tests/queries/tests.py
+3. `tests/queries/tests.py` (backticks added for clarity)
 This file contains many tests related to query ordering behavior, including tests for ordering with inheritance and expressions.
 
 I ranked them in this order because:
