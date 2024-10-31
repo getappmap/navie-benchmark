@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/utils/tests/test_misc.py",
+  "test_patch": "diff --git a/astropy/utils/tests/test_property_inheritance.py b/astropy/utils/tests/test_property_inheritance.py\nnew file mode 100644\nindex 0000000..bcd6979\n--- /dev/null\n+++ b/astropy/utils/tests/test_property_inheritance.py\n@@ -0,0 +1,24 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+from ..misc import InheritDocstrings\n+\n+\n+def test_property_docstring_not_inherited():\n+    \"\"\"\n+    Test that property docstrings are not inherited when using InheritDocstrings\n+    metaclass due to inspect.isfunction returning False for properties.\n+    \"\"\"\n+    class Base(metaclass=InheritDocstrings):\n+        @property\n+        def value(self):\n+            \"\"\"Base property docstring.\"\"\"\n+            return 1\n+\n+    class Subclass(Base):\n+        @property \n+        def value(self):\n+            return 2\n+\n+    # The issue is that the docstring is not inherited\n+    # This assertion passes when the bug is present\n+    assert Subclass.value.__doc__ is None\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}
