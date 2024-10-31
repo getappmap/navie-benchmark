@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "testing/code/test_code.py",
+  "test_patch": "diff --git a/testing/code/test_expression_compile_literals.py b/testing/code/test_expression_compile_literals.py\nnew file mode 100644\nindex 0000000..755d6c4\n--- /dev/null\n+++ b/testing/code/test_expression_compile_literals.py\n@@ -0,0 +1,14 @@\n+import unittest\n+import sys\n+from _pytest.mark.expression import Expression\n+\n+class TestExpressionCompileLiterals(unittest.TestCase):\n+    def test_compile_literal_false_crashes_debug_python(self):\n+        # Only run on Python 3.8+ debug builds\n+        if not (sys.version_info >= (3, 8) and hasattr(sys, 'gettotalrefcount')):\n+            self.skipTest(\"Test only applicable to Python 3.8+ debug builds\")\n+            \n+        # This should trigger the assertion error in compile.c\n+        # when running on debug Python builds\n+        with self.assertRaises(SystemError):\n+            Expression.compile(\"False\")\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}
