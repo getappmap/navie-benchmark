@@ -1,3 +1,13 @@
+## Phase V
+
+    Incorporating claude-3-5-sonnet-20241022, which is a powerful new model.
+
+    Imported synthetic tests from two verified_33_1 runs:
+    - 11581073902
+    - 11544990082
+
+    Adding about 40 new synthetic tests (just for the first 33 pct set!)
+
 ## Phase IV
 
     The workflow official.yml is run to create test patches and preliminary solve results.
