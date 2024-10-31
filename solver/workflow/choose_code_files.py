@@ -5,6 +5,7 @@ from typing import List, Optional
 from navie.editor import Editor
 from navie.fences import extract_fenced_content
 
+from solver.workflow.is_test_file import test_regexp_patterns
 from solver.workflow.work_dir import WorkDir
 
 
@@ -35,7 +36,7 @@ Output the results as one file path on each line, and nothing else.
 
 Do not include line numbers or any location within the file. Just the file path.
 """,
-        options=f"/noprojectinfo /noformat /noclassify /exclude=test /noterms /include=py /tokenlimit={token_limit}",
+        options=f"/noprojectinfo /noformat /noclassify /exclude={"|".join(test_regexp_patterns)} /noterms /include=py /tokenlimit={token_limit}",
         extension="txt",
     )
 

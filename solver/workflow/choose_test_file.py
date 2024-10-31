@@ -5,6 +5,7 @@ from typing import Callable, List, Optional
 from navie.editor import Editor
 from solver.workflow.choose_code_files import extract_file_paths
 from solver.workflow.work_dir import WorkDir
+from solver.workflow.is_test_file import test_regexp_patterns
 
 
 def ask_for_test_files(
@@ -54,7 +55,7 @@ Do not include line numbers or any location within the file. Just the file path.
     ).search(
         issue_content,
         prompt="\n\n".join(prompt),
-        options=f"/noprojectinfo /noformat /noclassify /include=test /noterms /tokenlimit={token_limit}",
+        options=f"/noprojectinfo /noformat /noclassify /include={"|".join(test_regexp_patterns)} /noterms /tokenlimit={token_limit}",
         extension="txt",
     )
 

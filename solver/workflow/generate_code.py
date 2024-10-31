@@ -7,7 +7,8 @@ import traceback
 from navie.editor import Editor
 from navie.format_instructions import xml_format_instructions
 from navie.extract_changes import extract_changes
-from solver.workflow.is_test_file import is_non_test_file
+
+from solver.workflow.is_test_file import is_non_test_file, test_regexp_patterns
 from solver.workflow.work_dir import WorkDir
 
 from .patch import (
@@ -110,7 +111,7 @@ No testing suggestions or code changes are needed. These will be handled in a se
         return editor.generate(
             plan="\n\n".join(plan),
             prompt="\n\n".join(prompt),
-            options=r"/noprojectinfo /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
+            options=f"/noprojectinfo /noclassify /exclude={"|".join(test_regexp_patterns)}",
         )
 
     # Apply code changes to the files in the current directory and return a patch.

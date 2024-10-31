@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from navie.editor import Editor
+from solver.workflow.is_test_file import test_regexp_patterns
 
 from .work_dir import WorkDir
 
@@ -42,7 +43,7 @@ class GeneratePlan:
             self.issue(edit_code_file),
             context=context_str,
             context_format="xml",
-            options=r"/noprojectinfo /noclassify /exclude=\btests?\b|\btesting\b|\btest_|_test\b",
+            options=f"/noprojectinfo /noclassify /exclude={"|".join(test_regexp_patterns)}",
         )
 
     def issue(self, edit_code_file: Path) -> str:

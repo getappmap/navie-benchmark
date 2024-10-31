@@ -4,6 +4,7 @@ from unittest.mock import ANY, MagicMock, patch
 from pathlib import Path
 from solver.workflow.choose_test_file import ask_for_test_files, choose_test_files
 from solver.workflow.work_dir import WorkDir
+from solver.workflow.is_test_file import test_regexp_patterns
 
 
 class TestAskForTestFiles(unittest.TestCase):
@@ -243,7 +244,7 @@ I ranked them in this order because:
         editor_instance_mock.search.assert_called_once_with(
             self.issue_content,
             prompt=ANY,
-            options="/noprojectinfo /noformat /noclassify /include=test /noterms /tokenlimit=3000",
+            options=f"/noprojectinfo /noformat /noclassify /include={"|".join(test_regexp_patterns)} /noterms /tokenlimit=3000",
             extension="txt",
         )
 
