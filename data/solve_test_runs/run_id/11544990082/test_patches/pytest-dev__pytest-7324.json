@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "testing/code/test_code.py",
+  "test_patch": "diff --git a/testing/code/test_expression_compile_literals.py b/testing/code/test_expression_compile_literals.py\nnew file mode 100644\nindex 0000000..d9937c1\n--- /dev/null\n+++ b/testing/code/test_expression_compile_literals.py\n@@ -0,0 +1,16 @@\n+import sys\n+import pytest\n+from _pytest.mark.expression import Expression\n+\n+def test_compile_boolean_literal_crash():\n+    \"\"\"Test that compiling boolean literals crashes the interpreter on debug builds.\"\"\"\n+    # Only run this test on Python 3.8+ debug builds\n+    if not sys.flags.debug or sys.version_info < (3, 8):\n+        pytest.skip(\"Test requires Python 3.8+ debug build\")\n+\n+    # This should trigger the assertion failure in compiler_nameop\n+    with pytest.raises(SystemExit) as excinfo:\n+        Expression.compile(\"False\")\n+        \n+    # The process should have crashed with a non-zero exit code\n+    assert excinfo.value.code != 0\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}
