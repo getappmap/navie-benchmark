@@ -80,13 +80,6 @@ def extract_file_paths(files_to_modify_str: str) -> Optional[List[Path]]:
     if len(files_to_modify) == 0:
         files_to_modify.extend(files_to_modify_str.split("\n"))
 
-    def resolve_file_path(file_name):
-        if not os.path.exists(file_name):
-            file_name_relative = file_name.lstrip("/")
-            if os.path.exists(file_name_relative):
-                return file_name_relative
-        return file_name
-
     def remove_extra_line_content(file_name: str) -> str | None:
         """
         There may be other content in the line, such as a bullet point or a numeric list prefix.
@@ -131,3 +124,11 @@ def extract_file_paths(files_to_modify_str: str) -> Optional[List[Path]]:
             unique_files.add(file)
 
     return [make_path(file) for file in result]
+
+
+def resolve_file_path(file_name):
+    if not os.path.exists(file_name):
+        file_name_relative = file_name.lstrip("/")
+        if os.path.exists(file_name_relative):
+            return file_name_relative
+    return file_name
