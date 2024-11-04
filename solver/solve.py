@@ -25,6 +25,7 @@ from solver.workflow.workflow_limits import WorkflowLimits
 from solver.harness.image_store import ImageStore
 from solver.predictions_file import PredictionsFile
 from solver.cli import (
+    BenchmarkArgumentParser,
     configure_clean_option,
     configure_limits,
     configure_runner_index,
@@ -47,6 +48,7 @@ def main(
     runner_index: Optional[int] = None,
     test_patch_dir: Optional[str] = None,
     observe_tests: bool = False,
+    choose_code_files_only: bool = False,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -118,6 +120,8 @@ def main(
         if test_patch_dir:
             solve_args.append("--test_patch_dir")
             solve_args.append(test_patch_dir)
+        if choose_code_files_only:
+            solve_args.append("--choose_code_files_only")
 
         print(f"[solve] ({instance_id}) {' '.join(solve_args)}")
 
@@ -156,7 +160,7 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
+    parser = BenchmarkArgumentParser()
     parser.add_argument(
         "--instance_ids",
         nargs="+",
@@ -183,6 +187,7 @@ if __name__ == "__main__":
     configure_runner_index(parser)
     configure_clean_option(parser)
     configure_limits(parser)
+    parser.add_choose_code_files_only()
 
     args = parser.parse_args()
 

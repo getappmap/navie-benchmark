@@ -57,6 +57,11 @@ on:
         type: boolean
         required: false
         default: false
+      choose_code_files_only:
+        description: "Choose code files only"
+        type: boolean
+        required: false
+        default: false
       runner:
         description: "Runner type"
         required: true
@@ -97,6 +102,7 @@ jobs:
           echo "context_tokens: ${{ github.event.inputs.context_tokens }}"
           echo "use_synthetic_tests: ${{ github.event.inputs.use_synthetic_tests }}"
           echo "observe_synthetic_tests: ${{ github.event.inputs.observe_synthetic_tests }}"
+          echo "choose_code_files_only: ${{ github.event.inputs.choose_code_files_only }}"
           echo "runner: ${{ github.event.inputs.runner }}"
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
           echo "name: ${{ github.event.inputs.name }}"
@@ -138,6 +144,7 @@ jobs:
       LLM: ${{ inputs.llm }}
       USE_SYNTHETIC_TESTS: ${{ inputs.use_synthetic_tests }}
       OBSERVE_SYNTHETIC_TESTS: ${{ inputs.observe_synthetic_tests }}
+      CHOOSE_CODE_FILES_ONLY: ${{ inputs.choose_code_files_only }}
     defaults:
       run:
         shell: bash -leo pipefail {0}
@@ -208,6 +215,7 @@ jobs:
           context_tokens="${CONTEXT_TOKENS:-}"
           use_synthetic_tests="${USE_SYNTHETIC_TESTS:-true}"
           observe_synthetic_tests="${OBSERVE_SYNTHETIC_TESTS:-false}"
+          choose_code_files_only="${CHOOSE_CODE_FILES_ONLY:-false}"
           limits="${LIMITS:-default}"
           num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
@@ -240,11 +248,15 @@ jobs:
             --instance_set "${instance_set}" \
             $( [ "${limits}" != "default" ] && echo "--limit ${limits}" ) \
             $( [ "${observe_synthetic_tests}" == "true" ] && echo "--observe_tests" ) \
+            $( [ "${choose_code_files_only}" == "true" ] && echo "--choose_code_files_only" ) \
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
 
           touch predictions.jsonl
 
+      - name: Run evaluation
+        if: inputs.choose_code_files_only == 'false'
+        run: |
           python -m swebench.harness.run_evaluation \
             --predictions_path predictions.jsonl \
             --run_id "${instance_set}"

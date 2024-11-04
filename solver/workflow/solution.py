@@ -8,6 +8,7 @@ class Solution(TypedDict):
     instance_id: str
     edit_test_file: Optional[Path]
     code_patch: Optional[Patch]
+    code_files: Optional[list[Path]]
     test_patch: Optional[Patch]
     test_inverted_patch: Optional[Patch]
     num_sent_chars: int

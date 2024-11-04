@@ -1,3 +1,4 @@
+import code
 import json
 from typing import Optional, List
 from pathlib import Path
@@ -27,6 +28,7 @@ class SolutionListener(SolveListener):
         self.test_patch: Optional[Patch] = None
         self.test_inverted_patch: Optional[Patch] = None
         self.code_patch: Optional[Patch] = None
+        self.code_files: Optional[List[Path]] = None
         self.pass_to_pass: bool = False
         self.pass_to_fail: bool = False
         self.fail_to_pass: bool = False
@@ -68,6 +70,7 @@ class SolutionListener(SolveListener):
             instance_id=self.instance_id,
             edit_test_file=self.edit_test_file,
             code_patch=self.code_patch,
+            code_files=self.code_files,
             test_patch=self.test_patch,
             test_inverted_patch=self.test_inverted_patch,
             num_sent_chars=num_sent_chars,
@@ -145,6 +148,9 @@ class SolutionListener(SolveListener):
         self.observe_test_status = status
         self.observe_appmap_files = appmap_files
         self.observe_test_context = context
+
+    def on_code_files(self, files: List[Path]):
+        self.code_files = files
 
     def on_code_patch(
         self,
