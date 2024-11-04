@@ -1,4 +1,3 @@
-from argparse import ArgumentParser
 from json import dumps
 import json
 from os import chdir, getenv
@@ -36,6 +35,7 @@ from solver.predictions_file import PredictionsFile
 
 from solver.solve import DATASET_NAME
 from solver.cli import (
+    BenchmarkArgumentParser,
     apply_limits,
     apply_clean_option,
     build_limits,
@@ -111,6 +111,8 @@ def report_solution(
     predictions.add_prediction("model_test_patch", solution["test_patch"])
     predictions.add_prediction("model_inverted_patch", solution["test_inverted_patch"])
     predictions.add_prediction("model_edit_test_file", solution["edit_test_file"])
+    if solution["code_files"]:
+        predictions.add_prediction("model_code_files", solution["code_files"])
 
     PredictionsFile.add_prediction(predictions_file, predictions.as_dict())
 
@@ -146,6 +148,7 @@ def main(
     predictions_file: str,
     test_patch_dir: str,
     observe_tests: bool,
+    choose_code_files_only: bool,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -340,7 +343,12 @@ def main(
             if observe_tests:
                 solver.observe_test()
 
-            if limits_obj.code_files_limit == 0:
+            if choose_code_files_only:
+                code_files = solver.choose_code_files()
+                logger_fn("info", "solve", f"Chose code files: {code_files}")
+                if code_files:
+                    solution_listener.on_code_files(code_files)
+            elif limits_obj.code_files_limit == 0:
                 logger_fn(
                     "info",
                     "solve",
@@ -367,7 +375,7 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
+    parser = BenchmarkArgumentParser()
     parser.add_argument(
         "--instance_id", type=str, help="Instance ID to run", required=True
     )
@@ -387,6 +395,8 @@ if __name__ == "__main__":
         action="store_true",
         help="Observe synthetic tests to collect AppMap data",
     )
+
+    parser.add_choose_code_files_only()
 
     configure_limits(parser)
     configure_clean_option(parser)

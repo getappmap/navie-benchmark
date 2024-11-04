@@ -59,7 +59,7 @@ class Report:
     def __init__(
         self,
         solve_data_dir: Path,
-        evaluation_logs_dir: Path,
+        evaluation_logs_dir: Optional[Path],
         predictions_path: Optional[Path],
     ):
         self.solve_data_dir = solve_data_dir
@@ -91,6 +91,9 @@ class Report:
                         solution_data[patch_field] = list_patch_files(
                             solution_data[patch_field]
                         )
+                if solution_data["code_files"]:
+                    solution_data["code_patch"] = " ".join(solution_data["code_files"])
+                    del solution_data["code_files"]
                 assert "instance_id" in solution_data
                 solution = Solution(**solution_data)
                 if solution["instance_id"] in solutions.keys():
@@ -164,6 +167,13 @@ class Report:
             evaluation_reports: dict[str, EvaluationReport] = {}
             submitted_count = 0
             resolved_count = 0
+            if not self.evaluation_logs_dir:
+                return evaluation_reports, submitted_count, resolved_count
+            if not self.evaluation_logs_dir.exists():
+                print(
+                    f"WARNING Evaluation logs directory does not exist: {self.evaluation_logs_dir}"
+                )
+                return evaluation_reports, submitted_count, resolved_count
             for root, dirs, files in os.walk(self.evaluation_logs_dir):
                 for file in files:
                     if file == "report.json":
@@ -229,6 +239,7 @@ class Report:
 
         instance_ids.sort()
         combined_data: list[dict] = []
+        match_count = 0
         for instance_id in intersection_ids:
             solution = solutions.get(instance_id)
             prediction = predictions.get(instance_id)
@@ -244,6 +255,15 @@ class Report:
             if evaluation_report:
                 row.update(evaluation_report)
 
+            matching_files = set(row["gold_patch"].split(" ")) & set(
+                row["code_patch"].split(" ")
+            )
+
+            any_files_match = len(matching_files) > 0
+            if any_files_match:
+                match_count += 1
+            row["code_files_match"] = any_files_match
+
             if "model_patch" in row:
                 del row["model_patch"]
             combined_data.append(row)
@@ -252,6 +272,7 @@ class Report:
         print(f"Total instances:     {len(predictions)}")
         print(f"Instances submitted: {submitted_count}")
         print(f"Instances resolved:  {resolved_count}")
+        print(f"Instances matched:   {match_count}")
 
         report_file = Path(report_path)
         with report_file.open("w") as f:
@@ -305,6 +326,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    evaluation_logs_dir = None
     if args.archive_dir:
         if args.solve_data_dir or args.evaluation_logs_dir or args.predictions_path:
             print(
@@ -316,18 +338,15 @@ if __name__ == "__main__":
         evaluation_logs_dir = Path(args.archive_dir)
         predictions_path = None
     else:
-        if (
-            not args.solve_data_dir
-            or not args.evaluation_logs_dir
-            or not args.predictions_path
-        ):
+        if not args.solve_data_dir or not args.predictions_path:
             print(
-                "If --archive_dir is not specified, --solve_data_dir, --evaluation_logs_dir, and --predictions_path must be specified"
+                "If --archive_dir is not specified, --solve_data_dir, and --predictions_path must be specified"
             )
             sys.exit(1)
 
         solve_data_dir = Path(args.solve_data_dir)
-        evaluation_logs_dir = Path(args.evaluation_logs_dir)
+        if args.evaluation_logs_dir:
+            evaluation_logs_dir = Path(args.evaluation_logs_dir)
         predictions_path = Path(args.predictions_path)
 
     report_path = Path(args.report_path)

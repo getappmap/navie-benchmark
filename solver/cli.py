@@ -53,6 +53,16 @@ def build_limits(instance_id: str, limits: dict) -> WorkflowLimits:
     return limits_obj
 
 
+class BenchmarkArgumentParser(ArgumentParser):
+    def add_choose_code_files_only(self):
+        self.add_argument(
+            "--choose_code_files_only",
+            action="store_true",
+            help="Only choose code files to patch",
+            default=False,
+        )
+
+
 def configure_clean_option(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--clean_work_dir",

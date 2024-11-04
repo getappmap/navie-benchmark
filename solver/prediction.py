@@ -20,8 +20,11 @@ class Prediction:
     def as_dict(self):
         return self.prediction_data
 
-    def add_prediction(self, key: str, value: Union[str, Patch, Path, None]):
-        self.prediction_data[key] = str(value) if value else None
+    def add_prediction(self, key: str, value: Union[str, Patch, Path, None, list]):
+        if isinstance(value, list):
+            self.prediction_data[key] = [str(v) for v in value]
+        else:
+            self.prediction_data[key] = str(value) if value else None
 
     @staticmethod
     def build_predictions(instance: SWEbenchInstance, llm: str):
