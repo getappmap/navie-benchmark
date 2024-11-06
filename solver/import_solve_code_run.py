@@ -54,9 +54,24 @@ def import_workflow_run(
                 with open(code_patch_dir / f"{instance_id}.json", "w") as f:
                     f.write(json.dumps(solution, indent=2))
 
+    # Open each evaluation file and enumerate the instance ids that are resolved
+    resolved_instances = set()
+    for eval_file in target_dir.rglob("run_evaluation-*.zip"):
+        with zipfile.ZipFile(eval_file, "r") as z:
+            for eval_file in z.namelist():
+                if not eval_file.endswith("report.json"):
+                    continue
+
+                report = json.loads(z.read(eval_file))
+                for instance_id, report_data in report.items():
+                    result = report_data["resolved"]
+                    if result:
+                        print(f"Instance {instance_id} is resolved")
+                        resolved_instances.add(instance_id)
+
     if not no_link:
         # Iterate through the code patches and update the data / code_patches directory with a symlink to any
-        # new, complete test patches.
+        # code patches that are a solution.
         code_patch_dir = Path("data") / "code_patches"
         code_patch_dir.mkdir(parents=True, exist_ok=True)
         for code_patch_file in (target_dir / "code_patches").rglob("*.json"):
@@ -65,10 +80,8 @@ def import_workflow_run(
             if target.exists():
                 continue
 
-            with code_patch_file.open() as f:
-                solution: Solution = load(f)
-
-            if not meets_score_threshold(solution["code_patch_score"]):
+            if instance_id not in resolved_instances:
+                print(f"Skipping non-resolved instance {instance_id}")
                 continue
 
             link_source = Path("..") / ".." / code_patch_file
