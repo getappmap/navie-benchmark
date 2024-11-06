@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14376",
+  "edit_test_file": "tests/backends/mysql/test_features.py",
+  "code_patch": "diff --git a/django/db/backends/mysql/base.py b/django/db/backends/mysql/base.py\nindex 2c62182..8b28a60 100644\n--- a/django/db/backends/mysql/base.py\n+++ b/django/db/backends/mysql/base.py\n@@ -200,9 +200,9 @@ class DatabaseWrapper(BaseDatabaseWrapper):\n         if settings_dict['USER']:\n             kwargs['user'] = settings_dict['USER']\n         if settings_dict['NAME']:\n-            kwargs['db'] = settings_dict['NAME']\n+            kwargs['database'] = settings_dict['NAME']\n         if settings_dict['PASSWORD']:\n-            kwargs['passwd'] = settings_dict['PASSWORD']\n+            kwargs['password'] = settings_dict['PASSWORD']\n         if settings_dict['HOST'].startswith('/'):\n             kwargs['unix_socket'] = settings_dict['HOST']\n         elif settings_dict['HOST']:\n",
+  "test_patch": "diff --git a/tests/backends/mysql/test_connection_kwargs.py b/tests/backends/mysql/test_connection_kwargs.py\nnew file mode 100644\nindex 0000000..af073c9\n--- /dev/null\n+++ b/tests/backends/mysql/test_connection_kwargs.py\n@@ -0,0 +1,41 @@\n+from unittest import mock, skipUnless\n+\n+from django.db import connection\n+from django.test import TestCase\n+\n+\n+@skipUnless(connection.vendor == 'mysql', 'MySQL tests')\n+class MySQLConnectionTest(TestCase):\n+    \"\"\"Test MySQL database connection parameters.\"\"\"\n+\n+    def test_deprecated_kwargs(self):\n+        \"\"\"\n+        The MySQL backend uses deprecated 'db' and 'passwd' kwargs instead of\n+        'database' and 'password'.\n+        \"\"\"\n+        settings_dict = {\n+            'ENGINE': 'django.db.backends.mysql',\n+            'NAME': 'dbname',\n+            'USER': 'user',\n+            'PASSWORD': 'pass',\n+            'HOST': 'localhost',\n+            'PORT': '3306',\n+            'OPTIONS': {},\n+        }\n+\n+        # Mock the MySQLdb.connect() function to check what kwargs it receives\n+        with mock.patch('django.db.backends.mysql.base.Database') as mock_db:\n+            from django.db.backends.mysql.base import DatabaseWrapper\n+            db = DatabaseWrapper(settings_dict)\n+            db.get_new_connection({})\n+\n+            # Check that the deprecated kwargs are used\n+            connection_params = mock_db.connect.call_args[1]\n+            self.assertIn('db', connection_params)\n+            self.assertIn('passwd', connection_params)\n+            self.assertNotIn('database', connection_params) \n+            self.assertNotIn('password', connection_params)\n+\n+            # Verify the values are passed correctly\n+            self.assertEqual(connection_params['db'], 'dbname')\n+            self.assertEqual(connection_params['passwd'], 'pass')\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 5558460,
+  "num_received_chars": 72814,
+  "elapsed_time": 960.6139652729034,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

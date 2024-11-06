@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-22456",
+  "edit_test_file": "sympy/codegen/tests/test_ast.py",
+  "code_patch": "diff --git a/sympy/codegen/ast.py b/sympy/codegen/ast.py\nindex a02714b..1e98a58 100644\n--- a/sympy/codegen/ast.py\n+++ b/sympy/codegen/ast.py\n@@ -883,7 +883,7 @@ class String(Token):\n     ========\n \n     >>> from sympy.codegen.ast import String\n-    >>> f = String('foo')\n+    >>> f = String('foo')  # Positional argument\n     >>> f\n     foo\n     >>> str(f)\n@@ -895,14 +895,25 @@ class String(Token):\n \n     \"\"\"\n     __slots__ = ('text',)\n-    not_in_args = ['text']\n     is_Atom = True\n \n-    @classmethod\n-    def _construct_text(cls, text):\n+    def __new__(cls, text=None, **kwargs):\n+        if text is None and 'text' in kwargs:\n+            text = kwargs.pop('text')\n         if not isinstance(text, str):\n             raise TypeError(\"Argument text is not a string type.\")\n-        return text\n+        obj = Token.__new__(cls, text)\n+        obj.text = text\n+        return obj\n+\n+    @property\n+    def args(self):\n+        return (self.text,)\n+\n+    def kwargs(self, **kwargs):\n+        kw = {'text': self.text}\n+        kw.update(kwargs)\n+        return kw\n \n     def _sympystr(self, printer, *args, **kwargs):\n         return self.text\n",
+  "test_patch": "diff --git a/sympy/codegen/tests/test_string_invariance.py b/sympy/codegen/tests/test_string_invariance.py\nnew file mode 100644\nindex 0000000..c102290\n--- /dev/null\n+++ b/sympy/codegen/tests/test_string_invariance.py\n@@ -0,0 +1,12 @@\n+from sympy.codegen.ast import String\n+from sympy.testing.pytest import raises\n+\n+def test_string_argument_invariance():\n+    \"\"\"Test that String objects don't support standard argument invariance\"\"\"\n+    s = String('test')\n+    \n+    # This should fail since String doesn't support argument invariance with args\n+    raises(TypeError, lambda: s.func(*s.args))\n+    \n+    # But this works since String uses kwargs() instead\n+    assert s.func(**s.kwargs()) == s\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/codegen/tests/test_string_invariance_inverted.py b/sympy/codegen/tests/test_string_invariance_inverted.py\nnew file mode 100644\nindex 0000000..b304743\n--- /dev/null\n+++ b/sympy/codegen/tests/test_string_invariance_inverted.py\n@@ -0,0 +1,16 @@\n+from sympy.codegen.ast import String\n+\n+def test_string_argument_invariance():\n+    \"\"\"Test that String objects support standard argument invariance\"\"\"\n+    s = String('test')\n+    \n+    # String should support standard argument invariance like other Basic subclasses\n+    try:\n+        result = s.func(*s.args)\n+        if result != s:\n+            raise AssertionError(\"__BUG__HERE__\")\n+    except TypeError:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # This additional check verifies the kwargs approach still works\n+    assert s.func(**s.kwargs()) == s\n\\ No newline at end of file\n",
+  "num_sent_chars": 4218880,
+  "num_received_chars": 76417,
+  "elapsed_time": 844.9240455627441,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

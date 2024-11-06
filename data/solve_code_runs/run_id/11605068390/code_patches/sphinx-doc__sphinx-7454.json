@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7454",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/autodoc/typehints.py b/sphinx/ext/autodoc/typehints.py\nindex f917dbd..4c47824 100644\n--- a/sphinx/ext/autodoc/typehints.py\n+++ b/sphinx/ext/autodoc/typehints.py\n@@ -34,6 +34,8 @@ def record_typehints(app: Sphinx, objtype: str, name: str, obj: Any,\n                     annotation[param.name] = typing.stringify(param.annotation)\n             if sig.return_annotation is not sig.empty:\n                 annotation['return'] = typing.stringify(sig.return_annotation)\n+            elif sig.return_annotation is None:  # Handle explicit None return annotation\n+                annotation['return'] = 'None'\n     except (TypeError, ValueError):\n         pass\n \n@@ -41,7 +43,7 @@ def record_typehints(app: Sphinx, objtype: str, name: str, obj: Any,\n def merge_typehints(app: Sphinx, domain: str, objtype: str, contentnode: Element) -> None:\n     if domain != 'py':\n         return\n-    if app.config.autodoc_typehints != 'description':\n+    if app.config.autodoc_typehints == 'none':\n         return\n     if objtype == 'class' and app.config.autoclass_content not in ('init', 'both'):\n         return\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4157479,
+  "num_received_chars": 41725,
+  "elapsed_time": 631.2137382030487,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

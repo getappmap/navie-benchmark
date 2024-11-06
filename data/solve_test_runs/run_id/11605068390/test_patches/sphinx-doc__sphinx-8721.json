@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "tests/test_build_epub.py",
+  "test_patch": "diff --git a/tests/test_viewcode_epub.py b/tests/test_viewcode_epub.py\nnew file mode 100644\nindex 0000000..3946fdf\n--- /dev/null\n+++ b/tests/test_viewcode_epub.py\n@@ -0,0 +1,20 @@\n+\"\"\"\n+    test_viewcode_epub\n+    ~~~~~~~~~~~~~~~~~\n+\n+    Test the viewcode extension with epub builder.\n+\"\"\"\n+\n+import pytest\n+\n+\n+@pytest.mark.sphinx('epub', testroot='basic', confoverrides={\n+    'extensions': ['sphinx.ext.viewcode'],\n+    'viewcode_enable_epub': False\n+})\n+def test_viewcode_enable_epub_false(app):\n+    \"\"\"Test that _modules directory is not created when viewcode_enable_epub=False.\"\"\"\n+    app.build()\n+\n+    # Check that _modules directory does not exist when viewcode_enable_epub is False\n+    assert not (app.outdir / '_modules').exists()\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

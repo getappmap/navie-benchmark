@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13821",
+  "edit_test_file": "tests/backends/sqlite/test_introspection.py",
+  "code_patch": "diff --git a/django/db/backends/sqlite3/base.py b/django/db/backends/sqlite3/base.py\nindex ab4ea70..dcff553 100644\n--- a/django/db/backends/sqlite3/base.py\n+++ b/django/db/backends/sqlite3/base.py\n@@ -64,8 +64,8 @@ def list_aggregate(function):\n \n \n def check_sqlite_version():\n-    if Database.sqlite_version_info < (3, 8, 3):\n-        raise ImproperlyConfigured('SQLite 3.8.3 or later is required (found %s).' % Database.sqlite_version)\n+    if Database.sqlite_version_info < (3, 9, 0):\n+        raise ImproperlyConfigured('SQLite 3.9.0 or later is required (found %s).' % Database.sqlite_version)\n \n \n check_sqlite_version()\n",
+  "test_patch": "diff --git a/tests/backends/sqlite/test_sqlite_version_compatibility.py b/tests/backends/sqlite/test_sqlite_version_compatibility.py\nnew file mode 100644\nindex 0000000..593ae15\n--- /dev/null\n+++ b/tests/backends/sqlite/test_sqlite_version_compatibility.py\n@@ -0,0 +1,53 @@\n+import unittest\n+\n+from django.db import connection\n+from django.test import TestCase\n+\n+\n+@unittest.skipUnless(connection.vendor == 'sqlite', 'SQLite tests')\n+class SQLiteVersionCompatibilityTests(TestCase):\n+    def test_sqlite_version_compatibility(self):\n+        \"\"\"\n+        Test that older SQLite versions (< 3.9.0) don't support JSON1 extension\n+        and indexes on expressions.\n+        \"\"\"\n+        from sqlite3 import sqlite_version_info\n+\n+        # Create a test table with a JSON column\n+        with connection.cursor() as cursor:\n+            # Try to create a table with a CHECK constraint using json_valid()\n+            # This should fail on SQLite < 3.9.0\n+            try:\n+                cursor.execute('''\n+                    CREATE TABLE test_json (\n+                        id integer PRIMARY KEY,\n+                        data text CHECK (json_valid(data))\n+                    )\n+                ''')\n+                has_json_support = True\n+            except Exception:\n+                has_json_support = False\n+            finally:\n+                cursor.execute('DROP TABLE IF EXISTS test_json')\n+\n+            # Try to create an index on an expression\n+            # This should fail on SQLite < 3.9.0\n+            try:\n+                cursor.execute('CREATE TABLE test_index (name text)')\n+                cursor.execute('CREATE INDEX test_upper_idx ON test_index (upper(name))')\n+                has_expression_index_support = True\n+            except Exception:\n+                has_expression_index_support = False\n+            finally:\n+                cursor.execute('DROP TABLE IF EXISTS test_index')\n+\n+        if sqlite_version_info < (3, 9, 0):\n+            self.assertFalse(has_json_support, \n+                \"SQLite < 3.9.0 should not support JSON1 extension\")\n+            self.assertFalse(has_expression_index_support,\n+                \"SQLite < 3.9.0 should not support indexes on expressions\")\n+        else:\n+            self.assertTrue(has_json_support,\n+                \"SQLite >= 3.9.0 should support JSON1 extension\")\n+            self.assertTrue(has_expression_index_support, \n+                \"SQLite >= 3.9.0 should support indexes on expressions\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 5878932,
+  "num_received_chars": 98706,
+  "elapsed_time": 1292.1040923595428,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19346",
+  "edit_test_file": "sympy/printing/tests/test_python.py",
+  "code_patch": "diff --git a/sympy/printing/repr.py b/sympy/printing/repr.py\nindex c936a69..8abd075 100644\n--- a/sympy/printing/repr.py\n+++ b/sympy/printing/repr.py\n@@ -12,6 +12,7 @@\n from sympy.core.function import AppliedUndef\n from sympy.core.mul import Mul\n from mpmath.libmp import repr_dps, to_str as mlib_to_str\n+from sympy.utilities import default_sort_key\n \n from .printer import Printer\n \n@@ -144,6 +145,21 @@ def _print_EmptySequence(self, expr):\n     def _print_list(self, expr):\n         return \"[%s]\" % self.reprify(expr, \", \")\n \n+    def _print_dict(self, d):\n+        items = sorted(d.items(), key=lambda x: default_sort_key(x[0]))\n+        items = [\"%s: %s\" % (self._print(k), self._print(v)) for k, v in items]\n+        return \"{%s}\" % \", \".join(items)\n+\n+    def _print_Dict(self, expr):\n+        return self._print_dict(expr)\n+\n+    def _print_set(self, s):\n+        items = sorted(s, key=default_sort_key)\n+        items = [self._print(item) for item in items]\n+        if not items:\n+            return \"set()\"\n+        return \"{%s}\" % \", \".join(items)\n+\n     def _print_MatrixBase(self, expr):\n         # special case for some empty matrices\n         if (expr.rows == 0) ^ (expr.cols == 0):\n",
+  "test_patch": "diff --git a/sympy/printing/tests/test_srepr.py b/sympy/printing/tests/test_srepr.py\nnew file mode 100644\nindex 0000000..a97585d\n--- /dev/null\n+++ b/sympy/printing/tests/test_srepr.py\n@@ -0,0 +1,12 @@\n+from sympy import srepr, Symbol\n+\n+def test_srepr_dict_and_set():\n+    x, y = Symbol('x'), Symbol('y')\n+    \n+    # Test for dict\n+    dict_repr = srepr({x: y})\n+    assert dict_repr == \"{x: y}\", f\"Expected '{{x: y}}', but got {dict_repr}\"\n+    \n+    # Test for set\n+    set_repr = srepr({x, y})\n+    assert set_repr == \"{x, y}\", f\"Expected '{{x, y}}', but got {set_repr}\"\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_srepr_inverted.py b/sympy/printing/tests/test_srepr_inverted.py\nnew file mode 100644\nindex 0000000..40daa9b\n--- /dev/null\n+++ b/sympy/printing/tests/test_srepr_inverted.py\n@@ -0,0 +1,12 @@\n+from sympy import srepr, Symbol\n+\n+def test_srepr_dict_and_set():\n+    x, y = Symbol('x'), Symbol('y')\n+    \n+    # Test for dict\n+    dict_repr = srepr({x: y})\n+    assert dict_repr != \"{x: y}\", \"__BUG__HERE__\"\n+    \n+    # Test for set\n+    set_repr = srepr({x, y})\n+    assert set_repr != \"{x, y}\", \"__BUG__HERE__\"\n",
+  "num_sent_chars": 1037052,
+  "num_received_chars": 9586,
+  "elapsed_time": 621.8348979949951,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

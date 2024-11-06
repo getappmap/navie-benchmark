@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23824",
+  "edit_test_file": "sympy/physics/hep/tests/test_gamma_matrices.py",
+  "code_patch": "diff --git a/sympy/physics/hep/gamma_matrices.py b/sympy/physics/hep/gamma_matrices.py\nindex 23284e4..f48e61b 100644\n--- a/sympy/physics/hep/gamma_matrices.py\n+++ b/sympy/physics/hep/gamma_matrices.py\n@@ -692,9 +692,9 @@ def kahane_simplify(expression):\n     # power of two factor, as described in Kahane's paper:\n     resulting_coeff *= 2**(number_of_contractions)\n \n-    # If `first_dum_pos` is not zero, it means that there are trailing free gamma\n+    # If `first_dum_pos` is not zero, it means that there are leading free gamma\n     # matrices in front of `expression`, so multiply by them:\n-    for i in range(0, first_dum_pos):\n+    for i in range(first_dum_pos-1, -1, -1):\n         [ri.insert(0, free_pos[i]) for ri in resulting_indices]\n \n     resulting_expr = S.Zero\n",
+  "test_patch": "diff --git a/sympy/physics/hep/tests/test_kahane_leading_gamma_order.py b/sympy/physics/hep/tests/test_kahane_leading_gamma_order.py\nnew file mode 100644\nindex 0000000..476670e\n--- /dev/null\n+++ b/sympy/physics/hep/tests/test_kahane_leading_gamma_order.py\n@@ -0,0 +1,21 @@\n+from sympy.physics.hep.gamma_matrices import GammaMatrix as G, LorentzIndex\n+from sympy.physics.hep.gamma_matrices import kahane_simplify\n+from sympy.tensor.tensor import tensor_indices\n+\n+def test_kahane_leading_gamma_order():\n+    # Set up test indices\n+    mu, nu, rho, sigma = tensor_indices(\"mu, nu, rho, sigma\", LorentzIndex)\n+    \n+    # Test case where contracted matrices appear after uncontracted ones\n+    t = G(rho)*G(sigma)*G(mu)*G(-mu)\n+    r = kahane_simplify(t)\n+    \n+    # This assertion verifies the incorrect behavior where the order is reversed\n+    # The actual output is 4*G(sigma)*G(rho) when it should be 4*G(rho)*G(sigma)\n+    assert r.equals(4*G(sigma)*G(rho))\n+    \n+    # Test case where contracted matrices appear before uncontracted ones\n+    # This case works correctly and serves as a control\n+    t2 = G(mu)*G(-mu)*G(rho)*G(sigma)\n+    r2 = kahane_simplify(t2)\n+    assert r2.equals(4*G(rho)*G(sigma))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/physics/hep/tests/test_kahane_leading_gamma_order_inverted.py b/sympy/physics/hep/tests/test_kahane_leading_gamma_order_inverted.py\nnew file mode 100644\nindex 0000000..32d2599\n--- /dev/null\n+++ b/sympy/physics/hep/tests/test_kahane_leading_gamma_order_inverted.py\n@@ -0,0 +1,24 @@\n+from sympy.physics.hep.gamma_matrices import GammaMatrix as G, LorentzIndex\n+from sympy.physics.hep.gamma_matrices import kahane_simplify\n+from sympy.tensor.tensor import tensor_indices\n+\n+def test_kahane_leading_gamma_order():\n+    # Set up test indices\n+    mu, nu, rho, sigma = tensor_indices(\"mu, nu, rho, sigma\", LorentzIndex)\n+    \n+    # Test case where contracted matrices appear after uncontracted ones\n+    t = G(rho)*G(sigma)*G(mu)*G(-mu)\n+    r = kahane_simplify(t)\n+    \n+    # This should fail when the bug is present (incorrect order)\n+    if r.equals(4*G(sigma)*G(rho)):\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # The correct result should be 4*G(rho)*G(sigma)\n+    assert r.equals(4*G(rho)*G(sigma))\n+    \n+    # Test case where contracted matrices appear before uncontracted ones\n+    # This case works correctly and serves as a control\n+    t2 = G(mu)*G(-mu)*G(rho)*G(sigma)\n+    r2 = kahane_simplify(t2)\n+    assert r2.equals(4*G(rho)*G(sigma))\n\\ No newline at end of file\n",
+  "num_sent_chars": 2058121,
+  "num_received_chars": 19530,
+  "elapsed_time": 376.3582491874695,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

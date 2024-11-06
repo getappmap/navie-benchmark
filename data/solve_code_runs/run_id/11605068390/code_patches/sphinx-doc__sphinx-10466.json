@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10466",
+  "edit_test_file": "tests/test_util_docutils.py",
+  "code_patch": "diff --git a/sphinx/builders/gettext.py b/sphinx/builders/gettext.py\nindex e8bc547..bf295fa 100644\n--- a/sphinx/builders/gettext.py\n+++ b/sphinx/builders/gettext.py\n@@ -29,10 +29,15 @@ logger = logging.getLogger(__name__)\n \n \n class Message:\n-    \"\"\"An entry of translatable message.\"\"\"\n+    \"\"\"An entry of translatable message.\n+    \n+    The locations list is automatically deduplicated while preserving order.\n+    \"\"\"\n     def __init__(self, text: str, locations: List[Tuple[str, int]], uuids: List[str]):\n         self.text = text\n-        self.locations = locations\n+        # Deduplicate locations while preserving order\n+        seen = set()\n+        self.locations = [x for x in locations if not (x in seen or seen.add(x))]\n         self.uuids = uuids\n \n \n",
+  "test_patch": "diff --git a/tests/test_bug_duplicate_locations.py b/tests/test_bug_duplicate_locations.py\nnew file mode 100644\nindex 0000000..3717f15\n--- /dev/null\n+++ b/tests/test_bug_duplicate_locations.py\n@@ -0,0 +1,24 @@\n+import unittest\n+from sphinx.builders.gettext import Message, Catalog, MsgOrigin\n+\n+class TestDuplicateLocations(unittest.TestCase):\n+    def test_duplicate_locations(self):\n+        catalog = Catalog()\n+        origin1 = MsgOrigin('manual/modeling/hair.rst', 0)\n+        origin2 = MsgOrigin('manual/modeling/hair.rst', 0)\n+        origin3 = MsgOrigin('manual/modeling/hair.rst', 0)\n+        \n+        catalog.add(\"Type\", origin1)\n+        catalog.add(\"Type\", origin2)\n+        catalog.add(\"Type\", origin3)\n+\n+        messages = list(catalog)\n+        self.assertEqual(len(messages), 1)\n+        message = messages[0]\n+        \n+        # Check if the locations are duplicated\n+        self.assertEqual(len(message.locations), 3)\n+        self.assertEqual(message.locations.count(('manual/modeling/hair.rst', 0)), 3)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/test_bug_duplicate_locations_inverted.py b/tests/test_bug_duplicate_locations_inverted.py\nnew file mode 100644\nindex 0000000..766e841\n--- /dev/null\n+++ b/tests/test_bug_duplicate_locations_inverted.py\n@@ -0,0 +1,25 @@\n+import unittest\n+from sphinx.builders.gettext import Message, Catalog, MsgOrigin\n+\n+class TestDuplicateLocations(unittest.TestCase):\n+    def test_duplicate_locations(self):\n+        catalog = Catalog()\n+        origin1 = MsgOrigin('manual/modeling/hair.rst', 0)\n+        origin2 = MsgOrigin('manual/modeling/hair.rst', 0)\n+        origin3 = MsgOrigin('manual/modeling/hair.rst', 0)\n+        \n+        catalog.add(\"Type\", origin1)\n+        catalog.add(\"Type\", origin2)\n+        catalog.add(\"Type\", origin3)\n+\n+        messages = list(catalog)\n+        self.assertEqual(len(messages), 1)\n+        message = messages[0]\n+        \n+        # Check if the locations are duplicated\n+        # This assertion should now fail if the bug is present\n+        if len(message.locations) != 1 or message.locations.count(('manual/modeling/hair.rst', 0)) != 1:\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 789785,
+  "num_received_chars": 6274,
+  "elapsed_time": 97.07344269752502,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

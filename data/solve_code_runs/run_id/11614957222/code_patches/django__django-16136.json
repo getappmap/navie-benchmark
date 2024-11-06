@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16136",
+  "edit_test_file": "tests/decorators/tests.py",
+  "code_patch": "diff --git a/django/views/generic/base.py b/django/views/generic/base.py\nindex db1842e..c6657dc 100644\n--- a/django/views/generic/base.py\n+++ b/django/views/generic/base.py\n@@ -148,7 +148,13 @@ class View:\n             request.path,\n             extra={\"status_code\": 405, \"request\": request},\n         )\n-        return HttpResponseNotAllowed(self._allowed_methods())\n+        response = HttpResponseNotAllowed(self._allowed_methods())\n+        if self.view_is_async:\n+            async def func():\n+                return response\n+            return func()\n+        else:\n+            return response\n \n     def options(self, request, *args, **kwargs):\n         \"\"\"Handle responding to requests for the OPTIONS HTTP verb.\"\"\"\n",
+  "test_patch": "diff --git a/tests/decorators/test_demo_view_get_request.py b/tests/decorators/test_demo_view_get_request.py\nnew file mode 100644\nindex 0000000..c1ef674\n--- /dev/null\n+++ b/tests/decorators/test_demo_view_get_request.py\n@@ -0,0 +1,28 @@\n+from django.test import SimpleTestCase\n+from django.http import HttpResponseNotAllowed\n+from django.urls import path\n+from django.views import View\n+from django.http import HttpResponse\n+from django.test import override_settings\n+\n+# Define the Demo view as described in the issue\n+class Demo(View):\n+    \"\"\"This basic view supports only POST requests\"\"\"\n+    async def post(self, request):\n+        return HttpResponse(\"ok\")\n+\n+# Define the URL pattern for the Demo view\n+urlpatterns = [\n+    path(\"demo\", Demo.as_view()),\n+]\n+\n+@override_settings(ROOT_URLCONF=__name__)\n+class DemoViewGetRequestTest(SimpleTestCase):\n+    def test_get_request_raises_type_error(self):\n+        \"\"\"\n+        Test that a GET request to the Demo view raises a TypeError\n+        due to HttpResponseNotAllowed being used in an 'await' expression.\n+        \"\"\"\n+        with self.assertRaises(TypeError) as cm:\n+            self.client.get(\"/demo\")\n+        self.assertIn(\"object HttpResponseNotAllowed can't be used in 'await' expression\", str(cm.exception))\n",
+  "test_inverted_patch": "diff --git a/tests/decorators/test_demo_view_get_request_inverted.py b/tests/decorators/test_demo_view_get_request_inverted.py\nnew file mode 100644\nindex 0000000..0e5b6bb\n--- /dev/null\n+++ b/tests/decorators/test_demo_view_get_request_inverted.py\n@@ -0,0 +1,28 @@\n+from django.test import SimpleTestCase\n+from django.http import HttpResponseNotAllowed\n+from django.urls import path\n+from django.views import View\n+from django.http import HttpResponse\n+from django.test import override_settings\n+\n+# Define the Demo view as described in the issue\n+class Demo(View):\n+    \"\"\"This basic view supports only POST requests\"\"\"\n+    async def post(self, request):\n+        return HttpResponse(\"ok\")\n+\n+# Define the URL pattern for the Demo view\n+urlpatterns = [\n+    path(\"demo\", Demo.as_view()),\n+]\n+\n+@override_settings(ROOT_URLCONF=__name__)\n+class DemoViewGetRequestTest(SimpleTestCase):\n+    def test_get_request_raises_type_error(self):\n+        \"\"\"\n+        Test that a GET request to the Demo view raises a TypeError\n+        due to HttpResponseNotAllowed being used in an 'await' expression.\n+        \"\"\"\n+        with self.assertRaises(TypeError) as cm:\n+            self.client.get(\"/demo\")\n+        self.assertIn(\"__BUG__HERE__\", str(cm.exception))\n",
+  "num_sent_chars": 2908805,
+  "num_received_chars": 60826,
+  "elapsed_time": 680.9660325050354,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

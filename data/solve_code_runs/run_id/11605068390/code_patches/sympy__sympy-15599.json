@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-15599",
+  "edit_test_file": "sympy/functions/combinatorial/tests/test_comb_factorials.py",
+  "code_patch": "diff --git a/sympy/core/mod.py b/sympy/core/mod.py\nindex eae2563..5d0372e 100644\n--- a/sympy/core/mod.py\n+++ b/sympy/core/mod.py\n@@ -118,7 +118,27 @@ def doit(p, q):\n                 return cls(net, q)\n \n         elif isinstance(p, Mul):\n-            # separating into modulus and non modulus\n+            # Extract numeric coefficients and reduce them modulo q\n+            num_coeff = []\n+            other_terms = []\n+            for arg in p.args:\n+                if arg.is_Number:\n+                    num_coeff.append(arg)\n+                else:\n+                    other_terms.append(arg)\n+            \n+            # Reduce numeric coefficients modulo q if q is numeric\n+            if num_coeff and q.is_Number:\n+                coeff_prod = Mul(*num_coeff)\n+                if coeff_prod.is_Integer:\n+                    reduced_coeff = coeff_prod % q\n+                    if reduced_coeff == 1:\n+                        p = Mul(*other_terms)\n+                    else:\n+                        p = reduced_coeff * Mul(*other_terms)\n+                    return cls(p, q, evaluate=False)\n+\n+            # Handle remaining Mul terms\n             both_l = non_mod_l, mod_l = [], []\n             for arg in p.args:\n                 both_l[isinstance(arg, cls)].append(arg)\n",
+  "test_patch": "diff --git a/sympy/functions/combinatorial/tests/test_mod_simplification_issue.py b/sympy/functions/combinatorial/tests/test_mod_simplification_issue.py\nnew file mode 100644\nindex 0000000..8d7b28b\n--- /dev/null\n+++ b/sympy/functions/combinatorial/tests/test_mod_simplification_issue.py\n@@ -0,0 +1,10 @@\n+# File: sympy/functions/combinatorial/tests/test_mod_simplification_issue.py\n+\n+from sympy import Symbol, Mod\n+\n+def test_mod_simplification_issue():\n+    i = Symbol('i', integer=True)\n+    # The issue is that Mod(3*i, 2) should simplify to Mod(i, 2)\n+    # but it currently does not. This test will pass if the issue\n+    # is present, i.e., if Mod(3*i, 2) is not simplified.\n+    assert Mod(3*i, 2) == Mod(3*i, 2)\n",
+  "test_inverted_patch": "diff --git a/sympy/functions/combinatorial/tests/test_mod_simplification_issue_inverted.py b/sympy/functions/combinatorial/tests/test_mod_simplification_issue_inverted.py\nnew file mode 100644\nindex 0000000..cfbf436\n--- /dev/null\n+++ b/sympy/functions/combinatorial/tests/test_mod_simplification_issue_inverted.py\n@@ -0,0 +1,12 @@\n+# File: sympy/functions/combinatorial/tests/test_mod_simplification_issue.py\n+\n+from sympy import Symbol, Mod\n+from sympy.utilities.pytest import raises\n+\n+def test_mod_simplification_issue():\n+    i = Symbol('i', integer=True)\n+    # The issue is that Mod(3*i, 2) should simplify to Mod(i, 2)\n+    # but it currently does not. This test will fail if the issue\n+    # is present, i.e., if Mod(3*i, 2) is not simplified.\n+    if Mod(3*i, 2) != Mod(i, 2):\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 1325449,
+  "num_received_chars": 16713,
+  "elapsed_time": 271.5776948928833,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

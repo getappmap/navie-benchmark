@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15930",
+  "edit_test_file": "tests/admin_changelist/tests.py",
+  "code_patch": "diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py\nindex cfac22a..d9bda13 100644\n--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@ -295,8 +295,8 @@ class SQLCompiler:\n                     col, \"empty_result_set_value\", NotImplemented\n                 )\n                 if empty_result_set_value is NotImplemented:\n-                    # Select a predicate that's always False.\n-                    sql, params = \"0\", ()\n+                    # Select a predicate that's always False, unless this is a negated When condition\n+                    sql, params = (\"1=1\", ()) if getattr(col, \"negated\", False) else (\"0\", ())\n                 else:\n                     sql, params = self.compile(Value(empty_result_set_value))\n             else:\n",
+  "test_patch": "diff --git a/tests/admin_changelist/test_case_empty_q_negation.py b/tests/admin_changelist/test_case_empty_q_negation.py\nnew file mode 100644\nindex 0000000..f3974c7\n--- /dev/null\n+++ b/tests/admin_changelist/test_case_empty_q_negation.py\n@@ -0,0 +1,20 @@\n+from django.contrib.auth.models import User\n+from django.db.models import BooleanField, Case, Q, Value, When\n+from django.test import TestCase\n+\n+\n+class CaseEmptyQNegationTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        User.objects.create_user(username='testuser', password='testpass')\n+\n+    def test_case_with_negated_empty_q(self):\n+        \"\"\"Using Case() with ~Q(pk__in=[]) should not generate invalid SQL.\"\"\"\n+        with self.assertRaisesMessage(Exception, 'near \"THEN\": syntax error'):\n+            list(User.objects.annotate(\n+                _a=Case(\n+                    When(~Q(pk__in=[]), then=Value(True)),\n+                    default=Value(False),\n+                    output_field=BooleanField(),\n+                )\n+            ).order_by('-_a').values('pk'))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/admin_changelist/test_case_empty_q_negation_inverted.py b/tests/admin_changelist/test_case_empty_q_negation_inverted.py\nnew file mode 100644\nindex 0000000..3eaa70e\n--- /dev/null\n+++ b/tests/admin_changelist/test_case_empty_q_negation_inverted.py\n@@ -0,0 +1,29 @@\n+from django.contrib.auth.models import User\n+from django.db.models import BooleanField, Case, Q, Value, When\n+from django.test import TestCase\n+\n+\n+class CaseEmptyQNegationTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        User.objects.create_user(username='testuser', password='testpass')\n+\n+    def test_case_with_negated_empty_q(self):\n+        \"\"\"Using Case() with ~Q(pk__in=[]) should not generate invalid SQL.\"\"\"\n+        try:\n+            result = list(User.objects.annotate(\n+                _a=Case(\n+                    When(~Q(pk__in=[]), then=Value(True)),\n+                    default=Value(False),\n+                    output_field=BooleanField(),\n+                )\n+            ).order_by('-_a').values('pk'))\n+        except Exception as e:\n+            if 'near \"THEN\": syntax error' in str(e):\n+                raise AssertionError(\"__BUG__HERE__\") from e\n+            raise  # Re-raise if it's a different exception\n+\n+        # If we get here, the query executed successfully\n+        # Verify that all users are annotated with True since ~Q(pk__in=[]) matches all\n+        self.assertTrue(all(item['_a'] for item in result), \n+            \"All users should be annotated with True when using ~Q(pk__in=[])\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1480041,
+  "num_received_chars": 17416,
+  "elapsed_time": 234.3282492160797,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-6028",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/auth.py b/requests/auth.py\nindex eeface3..d726a08 100644\n--- a/requests/auth.py\n+++ b/requests/auth.py\n@@ -101,7 +101,13 @@ class HTTPProxyAuth(HTTPBasicAuth):\n     \"\"\"Attaches HTTP Proxy Authentication to a given Request object.\"\"\"\n \n     def __call__(self, r):\n-        r.headers['Proxy-Authorization'] = _basic_auth_str(self.username, self.password)\n+        # Ensure username and password are properly encoded before creating header\n+        username = to_native_string(self.username)\n+        password = to_native_string(self.password)\n+        \n+        # Generate authorization header with properly encoded credentials\n+        auth_str = _basic_auth_str(username, password)\n+        r.headers['Proxy-Authorization'] = to_native_string(auth_str)\n         return r\n \n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4051693,
+  "num_received_chars": 33584,
+  "elapsed_time": 486.05824303627014,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-7166",
+  "edit_test_file": "astropy/utils/tests/test_misc.py",
+  "code_patch": "diff --git a/astropy/utils/misc.py b/astropy/utils/misc.py\nindex de3fb01..1656c28 100644\n--- a/astropy/utils/misc.py\n+++ b/astropy/utils/misc.py\n@@ -528,13 +528,20 @@ class InheritDocstrings(type):\n                 not key.startswith('_'))\n \n         for key, val in dct.items():\n-            if (inspect.isfunction(val) and\n-                is_public_member(key) and\n+            if not is_public_member(key):\n+                continue\n+\n+            if ((inspect.isfunction(val) or isinstance(val, property)) and\n                 val.__doc__ is None):\n                 for base in cls.__mro__[1:]:\n-                    super_method = getattr(base, key, None)\n-                    if super_method is not None:\n-                        val.__doc__ = super_method.__doc__\n+                    super_member = getattr(base, key, None)\n+                    if super_member is not None:\n+                        # For properties, need to get the docstring from the property\n+                        # object itself, not the underlying function\n+                        if isinstance(val, property):\n+                            val.__doc__ = super_member.__doc__\n+                        else:\n+                            val.__doc__ = super_member.__doc__\n                         break\n \n         super().__init__(name, bases, dct)\n",
+  "test_patch": "diff --git a/astropy/utils/tests/test_property_inheritance.py b/astropy/utils/tests/test_property_inheritance.py\nnew file mode 100644\nindex 0000000..561cf40\n--- /dev/null\n+++ b/astropy/utils/tests/test_property_inheritance.py\n@@ -0,0 +1,23 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+from ..misc import InheritDocstrings\n+\n+\n+def test_property_docstring_not_inherited():\n+    \"\"\"\n+    Test that property docstrings are not inherited when using InheritDocstrings metaclass.\n+    \"\"\"\n+    class Base(metaclass=InheritDocstrings):\n+        @property\n+        def value(self):\n+            \"\"\"This is the docstring that should be inherited.\"\"\"\n+            return 42\n+\n+    class Subclass(Base):\n+        @property\n+        def value(self):\n+            return 43\n+\n+    # The subclass property should have no docstring since InheritDocstrings\n+    # doesn't handle properties correctly\n+    assert Subclass.value.__doc__ is None\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4252770,
+  "num_received_chars": 67802,
+  "elapsed_time": 1193.0711784362793,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

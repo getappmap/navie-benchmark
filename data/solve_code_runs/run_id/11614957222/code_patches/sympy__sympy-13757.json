@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13757",
+  "edit_test_file": "sympy/polys/tests/test_polymatrix.py",
+  "code_patch": "diff --git a/sympy/polys/polytools.py b/sympy/polys/polytools.py\nindex d5ac051..201bf7d 100644\n--- a/sympy/polys/polytools.py\n+++ b/sympy/polys/polytools.py\n@@ -4051,8 +4051,8 @@ def __mul__(f, g):\n     def __rmul__(f, g):\n         if not g.is_Poly:\n             try:\n-                g = f.__class__(g, *f.gens)\n-            except PolynomialError:\n+                g = f.__class__(g, *f.gens, domain=f.get_domain())\n+            except (PolynomialError, DomainError, CoercionFailed):\n                 return g*f.as_expr()\n \n         return g.mul(f)\n",
+  "test_patch": "diff --git a/sympy/polys/tests/test_poly_multiplication.py b/sympy/polys/tests/test_poly_multiplication.py\nnew file mode 100644\nindex 0000000..7779cc8\n--- /dev/null\n+++ b/sympy/polys/tests/test_poly_multiplication.py\n@@ -0,0 +1,12 @@\n+from sympy import Poly, S\n+from sympy.abc import x\n+\n+def test_poly_multiplication_evaluation():\n+    # Test that Poly multiplication evaluates differently based on order\n+    assert Poly(x)*x == Poly(x**2, x, domain='ZZ')  # Evaluates correctly\n+    assert x*Poly(x) == x*Poly(x, x, domain='ZZ')  # Does not evaluate\n+    \n+    # Test numeric multiplication \n+    assert -2*Poly(x) == Poly(-2*x, x, domain='ZZ')  # Evaluates correctly\n+    assert Poly(x)*S(-2) == Poly(-2*x, x, domain='ZZ')  # Evaluates correctly\n+    assert S(-2)*Poly(x) == S(-2)*Poly(x, x, domain='ZZ')  # Does not evaluate\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_poly_multiplication_inverted.py b/sympy/polys/tests/test_poly_multiplication_inverted.py\nnew file mode 100644\nindex 0000000..f175e43\n--- /dev/null\n+++ b/sympy/polys/tests/test_poly_multiplication_inverted.py\n@@ -0,0 +1,22 @@\n+from sympy import Poly, S\n+from sympy.abc import x\n+\n+def test_poly_multiplication_evaluation():\n+    # Test that Poly multiplication evaluates differently based on order\n+    assert Poly(x)*x == Poly(x**2, x, domain='ZZ')  # Evaluates correctly\n+    \n+    # This should evaluate to Poly(x**2, x, domain='ZZ') but doesn't due to the bug\n+    result = x*Poly(x)\n+    expected = Poly(x**2, x, domain='ZZ')\n+    if result != expected:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Test numeric multiplication \n+    assert -2*Poly(x) == Poly(-2*x, x, domain='ZZ')  # Evaluates correctly\n+    assert Poly(x)*S(-2) == Poly(-2*x, x, domain='ZZ')  # Evaluates correctly\n+    \n+    # This should evaluate to Poly(-2*x, x, domain='ZZ') but doesn't due to the bug\n+    result = S(-2)*Poly(x)\n+    expected = Poly(-2*x, x, domain='ZZ')\n+    if result != expected:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 3692791,
+  "num_received_chars": 53617,
+  "elapsed_time": 658.3425374031067,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

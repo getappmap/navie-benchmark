@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15161",
+  "edit_test_file": "tests/expressions/tests.py",
+  "code_patch": "diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py\nindex 9c58f38..3da9660 100644\n--- a/django/db/migrations/serializer.py\n+++ b/django/db/migrations/serializer.py\n@@ -93,12 +93,29 @@ class DeconstructableSerializer(BaseSerializer):\n     @staticmethod\n     def _serialize_path(path):\n         module, name = path.rsplit(\".\", 1)\n+        \n+        # Handle django.db.models.expressions paths\n+        if module.startswith(\"django.db.models.expressions\"):\n+            # Check if this expression is available directly from django.db.models\n+            try:\n+                from django.db import models\n+                if hasattr(models, name):\n+                    # Verify it's the same object\n+                    models_obj = getattr(models, name)\n+                    original_obj = getattr(__import__(module, fromlist=[name]), name)\n+                    if models_obj == original_obj:\n+                        return \"models.%s\" % name, {\"from django.db import models\"}\n+            except (ImportError, AttributeError):\n+                pass\n+        \n+        # Handle regular django.db.models paths\n         if module == \"django.db.models\":\n             imports = {\"from django.db import models\"}\n             name = \"models.%s\" % name\n         else:\n             imports = {\"import %s\" % module}\n             name = path\n+            \n         return name, imports\n \n     def serialize(self):\n",
+  "test_patch": "diff --git a/tests/expressions/test_expression_deconstruct.py b/tests/expressions/test_expression_deconstruct.py\nnew file mode 100644\nindex 0000000..0f52055\n--- /dev/null\n+++ b/tests/expressions/test_expression_deconstruct.py\n@@ -0,0 +1,13 @@\n+from django.db.models import F\n+from django.test import SimpleTestCase\n+\n+class ExpressionDeconstructPathTests(SimpleTestCase):\n+    def test_f_expression_deconstruct_path(self):\n+        \"\"\"\n+        Test that F() expression uses full path in deconstruct() rather than \n+        simplified path.\n+        \"\"\"\n+        f = F('field_name')\n+        path, args, kwargs = f.deconstruct()\n+        # The test will pass when the issue exists (simplified path)\n+        self.assertEqual(path, 'django.db.models.F')\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/expressions/test_expression_deconstruct_inverted.py b/tests/expressions/test_expression_deconstruct_inverted.py\nnew file mode 100644\nindex 0000000..897c2d5\n--- /dev/null\n+++ b/tests/expressions/test_expression_deconstruct_inverted.py\n@@ -0,0 +1,19 @@\n+from django.db.models import F\n+from django.test import SimpleTestCase\n+\n+\n+class ExpressionDeconstructPathTests(SimpleTestCase):\n+    def test_f_expression_deconstruct_path(self):\n+        \"\"\"\n+        Test that F() expression uses full path in deconstruct() rather than \n+        simplified path. The test should fail if simplified path is used.\n+        \"\"\"\n+        f = F('field_name')\n+        path, args, kwargs = f.deconstruct()\n+        \n+        # The test should fail when simplified path (django.db.models.F) is used\n+        if path == 'django.db.models.F':\n+            raise AssertionError('__BUG__HERE__')\n+            \n+        # The expected full path should be used\n+        self.assertEqual(path, 'django.db.models.expressions.F')\n\\ No newline at end of file\n",
+  "num_sent_chars": 4737807,
+  "num_received_chars": 56654,
+  "elapsed_time": 733.7197992801666,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

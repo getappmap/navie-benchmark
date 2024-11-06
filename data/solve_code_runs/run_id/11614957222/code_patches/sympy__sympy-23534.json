@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23534",
+  "edit_test_file": "sympy/utilities/tests/test_lambdify.py",
+  "code_patch": "diff --git a/sympy/core/symbol.py b/sympy/core/symbol.py\nindex f4a555c..83ae0b2 100644\n--- a/sympy/core/symbol.py\n+++ b/sympy/core/symbol.py\n@@ -791,7 +791,8 @@ def literal(s):\n         return tuple(result)\n     else:\n         for name in names:\n-            result.append(symbols(name, **args))\n+            # Pass through cls parameter during recursion\n+            result.append(symbols(name, cls=cls, **args))\n \n         return type(names)(result)\n \n",
+  "test_patch": "diff --git a/sympy/utilities/tests/test_symbol_function_parentheses.py b/sympy/utilities/tests/test_symbol_function_parentheses.py\nnew file mode 100644\nindex 0000000..0977291\n--- /dev/null\n+++ b/sympy/utilities/tests/test_symbol_function_parentheses.py\n@@ -0,0 +1,22 @@\n+from sympy.testing.pytest import raises\n+from sympy.core.symbol import Symbol\n+from sympy.core.function import Function\n+from sympy import symbols\n+\n+def test_symbols_function_extra_parentheses():\n+    # Using extra parentheses when creating function symbols\n+    q, u = symbols(('q:2', 'u:2'), cls=Function)\n+    \n+    # Test that q[0] is incorrectly a Symbol instead of a Function\n+    assert isinstance(q[0], Symbol)\n+    assert not isinstance(q[0], Function)\n+    \n+    # Test that q[1] is also incorrectly a Symbol\n+    assert isinstance(q[1], Symbol)\n+    assert not isinstance(q[1], Function)\n+    \n+    # Test that u[0] and u[1] are also incorrectly Symbols\n+    assert isinstance(u[0], Symbol)\n+    assert isinstance(u[1], Symbol)\n+    assert not isinstance(u[0], Function)\n+    assert not isinstance(u[1], Function)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/utilities/tests/test_symbol_function_parentheses_inverted.py b/sympy/utilities/tests/test_symbol_function_parentheses_inverted.py\nnew file mode 100644\nindex 0000000..bf67a93\n--- /dev/null\n+++ b/sympy/utilities/tests/test_symbol_function_parentheses_inverted.py\n@@ -0,0 +1,24 @@\n+from sympy.testing.pytest import raises\n+from sympy.core.symbol import Symbol\n+from sympy.core.function import Function\n+from sympy import symbols\n+\n+def test_symbols_function_extra_parentheses():\n+    # Using extra parentheses when creating function symbols\n+    q, u = symbols(('q:2', 'u:2'), cls=Function)\n+    \n+    # Test that q[0] should be a Function but is incorrectly a Symbol\n+    if isinstance(q[0], Symbol) and not isinstance(q[0], Function):\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Test that q[1] should be a Function but is incorrectly a Symbol\n+    if isinstance(q[1], Symbol) and not isinstance(q[1], Function):\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Test that u[0] should be a Function but is incorrectly a Symbol\n+    if isinstance(u[0], Symbol) and not isinstance(u[0], Function):\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Test that u[1] should be a Function but is incorrectly a Symbol\n+    if isinstance(u[1], Symbol) and not isinstance(u[1], Function):\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 770214,
+  "num_received_chars": 5792,
+  "elapsed_time": 151.72869443893433,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

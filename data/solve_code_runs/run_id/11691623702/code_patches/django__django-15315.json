@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15315",
+  "edit_test_file": "tests/basic/tests.py",
+  "code_patch": "diff --git a/django/core/exceptions.py b/django/core/exceptions.py\nindex 673d004..c10bae5 100644\n--- a/django/core/exceptions.py\n+++ b/django/core/exceptions.py\n@@ -197,10 +197,11 @@ class ValidationError(Exception):\n \n     def __hash__(self):\n         if hasattr(self, 'message'):\n+            params = make_hashable(self.params) if self.params else None\n             return hash((\n                 self.message,\n                 self.code,\n-                make_hashable(self.params),\n+                params,\n             ))\n         if hasattr(self, 'error_dict'):\n             return hash(make_hashable(self.error_dict))\n",
+  "test_patch": "diff --git a/tests/basic/test_field_hash_immutable.py b/tests/basic/test_field_hash_immutable.py\nnew file mode 100644\nindex 0000000..54d5adf\n--- /dev/null\n+++ b/tests/basic/test_field_hash_immutable.py\n@@ -0,0 +1,14 @@\n+from django.db import models\n+from django.test import TestCase\n+\n+class FieldHashImmutableTest(TestCase):\n+    def test_field_hash_immutable(self):\n+        f = models.CharField(max_length=200)\n+        d = {f: 1}\n+        \n+        class Book(models.Model):\n+            title = f\n+        \n+        # The test should pass if the AssertionError is raised, indicating the issue.\n+        with self.assertRaises(AssertionError):\n+            assert f in d\n",
+  "test_inverted_patch": "diff --git a/tests/basic/test_field_hash_immutable_inverted.py b/tests/basic/test_field_hash_immutable_inverted.py\nnew file mode 100644\nindex 0000000..2c94aab\n--- /dev/null\n+++ b/tests/basic/test_field_hash_immutable_inverted.py\n@@ -0,0 +1,14 @@\n+from django.db import models\n+from django.test import TestCase\n+\n+class FieldHashImmutableTest(TestCase):\n+    def test_field_hash_immutable(self):\n+        f = models.CharField(max_length=200)\n+        d = {f: 1}\n+        \n+        class Book(models.Model):\n+            title = f\n+        \n+        # The test should fail if the AssertionError is not raised, indicating the issue.\n+        if f in d:\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 4744461,
+  "num_received_chars": 44360,
+  "elapsed_time": 1121.3162214756012,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

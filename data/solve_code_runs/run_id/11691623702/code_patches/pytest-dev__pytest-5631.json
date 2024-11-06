@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5631",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/compat.py b/src/_pytest/compat.py\nindex d238061..661585a 100644\n--- a/src/_pytest/compat.py\n+++ b/src/_pytest/compat.py\n@@ -67,8 +67,21 @@ def num_mock_patch_args(function):\n     mock_modules = [sys.modules.get(\"mock\"), sys.modules.get(\"unittest.mock\")]\n     if any(mock_modules):\n         sentinels = [m.DEFAULT for m in mock_modules if m is not None]\n+        \n+        def _is_default_sentinel(value, sentinels):\n+            \"\"\"Safe comparison that handles numpy arrays.\"\"\"\n+            for sentinel in sentinels:\n+                # Use identity comparison first\n+                if value is sentinel:\n+                    return True\n+                # Only do equality comparison if value is not a numpy array\n+                if not hasattr(value, \"shape\"):\n+                    if value == sentinel:\n+                        return True\n+            return False\n+        \n         return len(\n-            [p for p in patchings if not p.attribute_name and p.new in sentinels]\n+            [p for p in patchings if not p.attribute_name and _is_default_sentinel(p.new, sentinels)]\n         )\n     return len(patchings)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3986059,
+  "num_received_chars": 35883,
+  "elapsed_time": 717.8786964416504,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

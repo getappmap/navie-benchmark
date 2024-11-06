@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/utils/tests/test_misc.py",
+  "test_patch": "diff --git a/astropy/utils/tests/test_property_inheritance.py b/astropy/utils/tests/test_property_inheritance.py\nnew file mode 100644\nindex 0000000..561cf40\n--- /dev/null\n+++ b/astropy/utils/tests/test_property_inheritance.py\n@@ -0,0 +1,23 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+from ..misc import InheritDocstrings\n+\n+\n+def test_property_docstring_not_inherited():\n+    \"\"\"\n+    Test that property docstrings are not inherited when using InheritDocstrings metaclass.\n+    \"\"\"\n+    class Base(metaclass=InheritDocstrings):\n+        @property\n+        def value(self):\n+            \"\"\"This is the docstring that should be inherited.\"\"\"\n+            return 42\n+\n+    class Subclass(Base):\n+        @property\n+        def value(self):\n+            return 43\n+\n+    # The subclass property should have no docstring since InheritDocstrings\n+    # doesn't handle properties correctly\n+    assert Subclass.value.__doc__ is None\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

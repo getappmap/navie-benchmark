@@ -1,0 +1,20 @@
+{
+  "instance_id": "pallets__flask-5014",
+  "edit_test_file": "tests/test_blueprints.py",
+  "code_patch": "diff --git a/src/flask/app.py b/src/flask/app.py\nindex 3bbe1bb..c2d1240 100644\n--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -1007,6 +1007,14 @@ class Flask(Scaffold):\n \n         .. versionadded:: 0.7\n         \"\"\"\n+        # Validate blueprint name is not empty\n+        if not blueprint.name:\n+            raise ValueError(\"Blueprint name cannot be empty.\")\n+\n+        # Validate name override in options is not empty if provided\n+        if \"name\" in options and not options[\"name\"]:\n+            raise ValueError(\"Blueprint registration name cannot be empty.\")\n+\n         blueprint.register(self, options)\n \n     def iter_blueprints(self) -> t.ValuesView[\"Blueprint\"]:\n",
+  "test_patch": "diff --git a/tests/test_blueprint_validation.py b/tests/test_blueprint_validation.py\nnew file mode 100644\nindex 0000000..86b0b3e\n--- /dev/null\n+++ b/tests/test_blueprint_validation.py\n@@ -0,0 +1,22 @@\n+import pytest\n+import flask\n+\n+def test_empty_blueprint_name(app, client):\n+    \"\"\"Test that a Blueprint can be created with an empty name.\n+    This should raise a ValueError but currently doesn't.\"\"\"\n+    \n+    # Create a blueprint with an empty name\n+    bp = flask.Blueprint(\"\", __name__)\n+\n+    # Define a simple route\n+    @bp.route(\"/test\")\n+    def test():\n+        return \"test\"\n+\n+    # Register the blueprint - this should work but ideally shouldn't\n+    app.register_blueprint(bp)\n+\n+    # The route should be accessible, demonstrating that empty names are accepted\n+    response = client.get(\"/test\")\n+    assert response.status_code == 200\n+    assert response.data == b\"test\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_blueprint_validation_inverted.py b/tests/test_blueprint_validation_inverted.py\nnew file mode 100644\nindex 0000000..3081454\n--- /dev/null\n+++ b/tests/test_blueprint_validation_inverted.py\n@@ -0,0 +1,24 @@\n+import pytest\n+import flask\n+\n+def test_empty_blueprint_name(app, client):\n+    \"\"\"Test that a Blueprint cannot be created with an empty name.\n+    It should raise a ValueError when attempting to use an empty name.\"\"\"\n+    \n+    # Create a blueprint with an empty name\n+    bp = flask.Blueprint(\"\", __name__)\n+\n+    # Define a simple route\n+    @bp.route(\"/test\")\n+    def test():\n+        return \"test\"\n+\n+    # Register the blueprint - this should raise ValueError\n+    try:\n+        app.register_blueprint(bp)\n+    except ValueError:\n+        # This is the expected behavior - blueprint with empty name should raise ValueError\n+        return\n+\n+    # If we get here, it means the empty name was accepted, which is a bug\n+    raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 4741697,
+  "num_received_chars": 60480,
+  "elapsed_time": 737.5910375118256,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

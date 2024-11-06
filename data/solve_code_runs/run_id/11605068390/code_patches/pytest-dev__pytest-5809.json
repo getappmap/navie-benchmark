@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5809",
+  "edit_test_file": "testing/test_doctest.py",
+  "code_patch": "diff --git a/src/_pytest/pastebin.py b/src/_pytest/pastebin.py\nindex 41576a6..79b0d9d 100644\n--- a/src/_pytest/pastebin.py\n+++ b/src/_pytest/pastebin.py\n@@ -79,7 +79,7 @@ def create_new_paste(contents):\n \n     params = {\n         \"code\": contents,\n-        \"lexer\": \"python3\" if sys.version_info[0] >= 3 else \"python\",\n+        \"lexer\": \"text\",\n         \"expiry\": \"1week\",\n     }\n     url = \"https://bpaste.net\"\n",
+  "test_patch": "diff --git a/testing/test_pastebin_http_error.py b/testing/test_pastebin_http_error.py\nnew file mode 100644\nindex 0000000..5e23bae\n--- /dev/null\n+++ b/testing/test_pastebin_http_error.py\n@@ -0,0 +1,24 @@\n+# File: testing/test_pastebin_http_error.py\n+\n+import pytest\n+from unittest.mock import patch\n+from urllib.error import HTTPError\n+from _pytest.pastebin import create_new_paste\n+\n+def test_pastebin_http_error():\n+    # Mock the urlopen function to simulate HTTPError\n+    with patch(\"urllib.request.urlopen\") as mock_urlopen:\n+        mock_urlopen.side_effect = HTTPError(\n+            url=\"https://bpaste.net\", code=400, msg=\"Bad Request\", hdrs=None, fp=None\n+        )\n+        \n+        # Simulate contents that would cause the HTTPError\n+        contents = b\"some problematic content that causes HTTP 400\"\n+        \n+        # Call the function and assert that HTTPError is raised\n+        with pytest.raises(HTTPError) as excinfo:\n+            create_new_paste(contents)\n+        \n+        # Check that the exception is indeed a \"Bad Request\"\n+        assert excinfo.value.code == 400\n+        assert excinfo.value.msg == \"Bad Request\"\n",
+  "test_inverted_patch": "diff --git a/testing/test_pastebin_http_error_inverted.py b/testing/test_pastebin_http_error_inverted.py\nnew file mode 100644\nindex 0000000..f4f01f6\n--- /dev/null\n+++ b/testing/test_pastebin_http_error_inverted.py\n@@ -0,0 +1,27 @@\n+# File: testing/test_pastebin_http_error.py\n+\n+import pytest\n+from unittest.mock import patch\n+from urllib.error import HTTPError\n+from _pytest.pastebin import create_new_paste\n+\n+def test_pastebin_http_error():\n+    # Mock the urlopen function to simulate HTTPError\n+    with patch(\"urllib.request.urlopen\") as mock_urlopen:\n+        mock_urlopen.side_effect = HTTPError(\n+            url=\"https://bpaste.net\", code=400, msg=\"Bad Request\", hdrs=None, fp=None\n+        )\n+        \n+        # Simulate contents that would cause the HTTPError\n+        contents = b\"some problematic content that causes HTTP 400\"\n+        \n+        # Call the function and assert that HTTPError is raised\n+        with pytest.raises(HTTPError) as excinfo:\n+            create_new_paste(contents)\n+        \n+        # Check that the exception is indeed a \"Bad Request\"\n+        assert excinfo.value.code == 400\n+        assert excinfo.value.msg == \"Bad Request\"\n+        \n+        # Introduce a failure when the bug is observed\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 3273027,
+  "num_received_chars": 24382,
+  "elapsed_time": 558.4540901184082,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

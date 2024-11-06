@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-17630",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/dense.py b/sympy/matrices/dense.py\nindex 1844475..8069441 100644\n--- a/sympy/matrices/dense.py\n+++ b/sympy/matrices/dense.py\n@@ -172,7 +172,7 @@ def _eval_extract(self, rowsList, colsList):\n                          list(mat[i] for i in indices), copy=False)\n \n     def _eval_matrix_mul(self, other):\n-        from sympy import Add\n+        from sympy import Add, ZeroMatrix\n         # cache attributes for faster access\n         self_cols = self.cols\n         other_rows, other_cols = other.rows, other.cols\n@@ -195,7 +195,8 @@ def _eval_matrix_mul(self, other):\n                 col_indices = range(col, other_len, other_cols)\n                 vec = (mat[a]*other_mat[b] for a,b in zip(row_indices, col_indices))\n                 try:\n-                    new_mat[i] = Add(*vec)\n+                    result = Add(*vec)\n+                    new_mat[i] = result if not result.is_zero else ZeroMatrix(1, 1)\n                 except (TypeError, SympifyError):\n                     # Block matrices don't work with `sum` or `Add` (ISSUE #11599)\n                     # They don't work with `sum` because `sum` tries to add `0`\n@@ -203,11 +204,23 @@ def _eval_matrix_mul(self, other):\n                     # a matrix, which raises a TypeError. Fall back to a\n                     # block-matrix-safe way to multiply if the `sum` fails.\n                     vec = (mat[a]*other_mat[b] for a,b in zip(row_indices, col_indices))\n-                    new_mat[i] = reduce(lambda a,b: a + b, vec)\n+                    result = reduce(lambda a,b: a + b, vec)\n+                    # Ensure zero results maintain matrix form\n+                    if result.is_zero:\n+                        new_mat[i] = ZeroMatrix(1, 1)\n+                    else:\n+                        new_mat[i] = result\n         return classof(self, other)._new(new_mat_rows, new_mat_cols, new_mat, copy=False)\n \n     def _eval_matrix_mul_elementwise(self, other):\n-        mat = [a*b for a,b in zip(self._mat, other._mat)]\n+        from sympy import ZeroMatrix\n+        mat = []\n+        for a, b in zip(self._mat, other._mat):\n+            result = a * b\n+            if result.is_zero:\n+                mat.append(ZeroMatrix(1, 1))\n+            else:\n+                mat.append(result)\n         return classof(self, other)._new(self.rows, self.cols, mat, copy=False)\n \n     def _eval_inverse(self, **kwargs):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 6048491,
+  "num_received_chars": 90098,
+  "elapsed_time": 1317.9510810375214,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

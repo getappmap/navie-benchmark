@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-14141",
+  "edit_test_file": "sklearn/utils/tests/test_show_versions.py",
+  "code_patch": "diff --git a/sklearn/utils/_show_versions.py b/sklearn/utils/_show_versions.py\nindex e5d3141..ecba9ec 100644\n--- a/sklearn/utils/_show_versions.py\n+++ b/sklearn/utils/_show_versions.py\n@@ -48,6 +48,7 @@ def _get_deps_info():\n         \"Cython\",\n         \"pandas\",\n         \"matplotlib\",\n+        \"joblib\",\n     ]\n \n     def get_version(module):\n",
+  "test_patch": "diff --git a/sklearn/utils/tests/test_joblib.py b/sklearn/utils/tests/test_joblib.py\nnew file mode 100644\nindex 0000000..942cc83\n--- /dev/null\n+++ b/sklearn/utils/tests/test_joblib.py\n@@ -0,0 +1,7 @@\n+from sklearn.utils._show_versions import show_versions\n+import pytest\n+\n+def test_show_versions_with_joblib(capsys):\n+    show_versions()\n+    out, err = capsys.readouterr()\n+    assert 'joblib' not in out, \"joblib should not be listed in the output\"\n",
+  "test_inverted_patch": "diff --git a/sklearn/utils/tests/test_joblib_inverted.py b/sklearn/utils/tests/test_joblib_inverted.py\nnew file mode 100644\nindex 0000000..b90ed2a\n--- /dev/null\n+++ b/sklearn/utils/tests/test_joblib_inverted.py\n@@ -0,0 +1,8 @@\n+from sklearn.utils._show_versions import show_versions\n+import pytest\n+\n+def test_show_versions_with_joblib(capsys):\n+    show_versions()\n+    out, err = capsys.readouterr()\n+    if 'joblib' not in out:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 595101,
+  "num_received_chars": 4665,
+  "elapsed_time": 72.33922100067139,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13031",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/common.py b/sympy/matrices/common.py\nindex 7ef51bc..c62b212 100644\n--- a/sympy/matrices/common.py\n+++ b/sympy/matrices/common.py\n@@ -363,7 +363,8 @@ def get_diag_blocks(self):\n     @classmethod\n     def hstack(cls, *args):\n         \"\"\"Return a matrix formed by joining args horizontally (i.e.\n-        by repeated application of row_join).\n+        by repeated application of row_join). For empty matrices (zero rows),\n+        the columns are summed correctly.\n \n         Examples\n         ========\n@@ -378,6 +379,16 @@ def hstack(cls, *args):\n             return cls._new()\n \n         kls = type(args[0])\n+\n+        # Special handling for matrices with zero rows\n+        if args[0].rows == 0:\n+            total_cols = sum(m.cols for m in args)\n+            # Ensure all matrices have zero rows\n+            if not all(m.rows == 0 for m in args):\n+                raise ShapeError(\"Matrices being stacked must have same number of rows.\")\n+            return kls._new(0, total_cols, [])\n+\n+        # Normal case - use row_join for non-empty matrices\n         return reduce(kls.row_join, args)\n \n     def reshape(self, rows, cols):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1818305,
+  "num_received_chars": 13206,
+  "elapsed_time": 408.0390832424164,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

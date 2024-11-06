@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19040",
+  "edit_test_file": "sympy/core/tests/test_exprtools.py",
+  "code_patch": "diff --git a/sympy/polys/polytools.py b/sympy/polys/polytools.py\nindex 68b69d1..6855caa 100644\n--- a/sympy/polys/polytools.py\n+++ b/sympy/polys/polytools.py\n@@ -5959,6 +5959,15 @@ def _symbolic_factor(expr, opt, method):\n     if isinstance(expr, Expr):\n         if hasattr(expr,'_eval_factor'):\n             return expr._eval_factor()\n+            \n+        # Handle multivariate factorization with extensions\n+        if opt.get('multivariate') and opt.get('extension') is not None:\n+            # Ensure we preserve all variables during factorization\n+            expr = together(expr, fraction=opt['fraction'])\n+            coeff, factors = _symbolic_factor_list(expr, opt, method)\n+            # Preserve all factors when working with extensions\n+            return _keep_coeff(coeff, _factors_product(factors))\n+            \n         coeff, factors = _symbolic_factor_list(together(expr, fraction=opt['fraction']), opt, method)\n         return _keep_coeff(coeff, _factors_product(factors))\n     elif hasattr(expr, 'args'):\n@@ -6016,9 +6025,18 @@ def _generic_factor_list(expr, gens, args, method):\n def _generic_factor(expr, gens, args, method):\n     \"\"\"Helper function for :func:`sqf` and :func:`factor`. \"\"\"\n     fraction = args.pop('fraction', True)\n+    extension = args.pop('extension', None)\n     options.allowed_flags(args, [])\n     opt = options.build_options(gens, args)\n     opt['fraction'] = fraction\n+    \n+    # Handle extension field factorization\n+    if extension is not None:\n+        opt['extension'] = extension\n+        # Ensure multivariate handling is preserved with extensions\n+        if len(gens) > 1 or (isinstance(expr, Basic) and len(expr.free_symbols) > 1):\n+            opt['multivariate'] = True\n+    \n     return _symbolic_factor(sympify(expr), opt, method)\n \n \n",
+  "test_patch": "diff --git a/sympy/core/tests/test_factor_extension_issue.py b/sympy/core/tests/test_factor_extension_issue.py\nnew file mode 100644\nindex 0000000..2ee7735\n--- /dev/null\n+++ b/sympy/core/tests/test_factor_extension_issue.py\n@@ -0,0 +1,6 @@\n+from sympy import symbols, I, expand, factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    assert factor(z, extension=[I]) == x - 1\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_factor_extension_issue_inverted.py b/sympy/core/tests/test_factor_extension_issue_inverted.py\nnew file mode 100644\nindex 0000000..da96bf7\n--- /dev/null\n+++ b/sympy/core/tests/test_factor_extension_issue_inverted.py\n@@ -0,0 +1,7 @@\n+from sympy import symbols, I, expand, factor\n+\n+def test_factor_with_extension_drops_factor():\n+    x, y = symbols('x y')\n+    z = expand((x - 1) * (y - 1))\n+    # The test should now fail if the factor of y-1 is dropped\n+    assert factor(z, extension=[I]) == (x - 1) * (y - 1), \"__BUG__HERE__\"\n",
+  "num_sent_chars": 1801256,
+  "num_received_chars": 25102,
+  "elapsed_time": 351.0856912136078,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

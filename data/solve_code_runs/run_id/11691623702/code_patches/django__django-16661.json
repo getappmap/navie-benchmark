@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16661",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex 5240b07..e4225fe 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -465,8 +465,8 @@ class BaseModelAdmin(metaclass=forms.MediaDefiningClass):\n             # model anyways. For example, if you filter on employee__department__id,\n             # then the id value would be found already from employee__department_id.\n             if not prev_field or (\n-                prev_field.is_relation\n-                and field not in prev_field.path_infos[-1].target_fields\n+                prev_field.is_relation and field not in prev_field.path_infos[-1].target_fields\n+                and not (prev_field.one_to_one and prev_field.primary_key and not getattr(prev_field, 'parent_link', False))\n             ):\n                 relation_parts.append(part)\n             if not getattr(field, \"path_infos\", None):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3821324,
+  "num_received_chars": 38978,
+  "elapsed_time": 648.9072542190552,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

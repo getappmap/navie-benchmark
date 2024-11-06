@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15973",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 75a3b8b..7e68968 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -90,8 +90,31 @@ class CreateModel(ModelOperation):\n             )\n         )\n \n+    def _resolve_through_model(self, through, apps):\n+        \"\"\"\n+        Helper method to resolve a through model reference.\n+        Returns the resolved model class or None if resolution fails.\n+        \"\"\"\n+        if isinstance(through, str):\n+            try:\n+                if \".\" in through:\n+                    app_label, model_name = through.split(\".\", 1)\n+                    return apps.get_model(app_label, model_name)\n+                return apps.get_model(self.app_label, through)\n+            except LookupError:\n+                return None\n+        return through\n+\n     def database_forwards(self, app_label, schema_editor, from_state, to_state):\n         model = to_state.apps.get_model(app_label, self.name)\n+        # Resolve any string references to through models before creating the model\n+        for name, field in model._meta.local_many_to_many:\n+            if hasattr(field, 'remote_field') and hasattr(field.remote_field, 'through'):\n+                if isinstance(field.remote_field.through, str):\n+                    resolved_through = self._resolve_through_model(field.remote_field.through, to_state.apps)\n+                    if resolved_through is not None:\n+                        field.remote_field.through = resolved_through\n+\n         if self.allow_migrate_model(schema_editor.connection.alias, model):\n             schema_editor.create_model(model)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4929064,
+  "num_received_chars": 81116,
+  "elapsed_time": 927.6891503334045,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

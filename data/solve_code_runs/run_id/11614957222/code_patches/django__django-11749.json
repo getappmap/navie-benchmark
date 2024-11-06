@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11749",
+  "edit_test_file": "tests/template_tests/test_parser.py",
+  "code_patch": "diff --git a/django/core/management/__init__.py b/django/core/management/__init__.py\nindex 5f2e647..3ceefd3 100644\n--- a/django/core/management/__init__.py\n+++ b/django/core/management/__init__.py\n@@ -132,9 +132,19 @@ def call_command(command_name, *args, **options):\n     parser_actions = list(get_actions(parser))\n     # Any required arguments which are passed in via **options must be passed\n     # to parse_args().\n+    # Check for required arguments in mutually exclusive groups\n+    required_group_args = []\n+    for action in parser_actions:\n+        if hasattr(action, 'container') and isinstance(action.container, _SubParsersAction):\n+            continue\n+        for group in parser._mutually_exclusive_groups:\n+            if action in group._group_actions and group.required and action.dest in options:\n+                required_group_args.append(action)\n+                break\n+\n     parse_args += [\n         '{}={}'.format(min(opt.option_strings), arg_options[opt.dest])\n-        for opt in parser_actions if opt.required and opt.dest in options\n+        for opt in parser_actions if (opt.required or opt in required_group_args) and opt.dest in options\n     ]\n     defaults = parser.parse_args(args=parse_args)\n     defaults = dict(defaults._get_kwargs(), **arg_options)\n",
+  "test_patch": "diff --git a/tests/template_tests/test_command_kwargs.py b/tests/template_tests/test_command_kwargs.py\nnew file mode 100644\nindex 0000000..19aeff5\n--- /dev/null\n+++ b/tests/template_tests/test_command_kwargs.py\n@@ -0,0 +1,18 @@\n+from django.core.management import CommandError, call_command\n+from django.core.management.base import BaseCommand\n+from django.test import SimpleTestCase\n+from io import StringIO\n+\n+class MyCommand(BaseCommand):\n+    def add_arguments(self, parser):\n+        shop = parser.add_mutually_exclusive_group(required=True)\n+        shop.add_argument('--shop-id', nargs='?', type=int, default=None, dest='shop_id')\n+        shop.add_argument('--shop', nargs='?', type=str, default=None, dest='shop_name')\n+\n+    def handle(self, *args, **options):\n+        pass\n+\n+class CommandKwargsTest(SimpleTestCase):\n+    def test_call_command_with_mutually_exclusive_group_in_kwargs(self):\n+        with self.assertRaisesMessage(CommandError, \"Error: one of the arguments --shop-id --shop is required\"):\n+            call_command(MyCommand(), shop_id=1)\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/test_command_kwargs_inverted.py b/tests/template_tests/test_command_kwargs_inverted.py\nnew file mode 100644\nindex 0000000..1396750\n--- /dev/null\n+++ b/tests/template_tests/test_command_kwargs_inverted.py\n@@ -0,0 +1,19 @@\n+from django.core.management import CommandError, call_command\n+from django.core.management.base import BaseCommand\n+from django.test import SimpleTestCase\n+from io import StringIO\n+\n+class MyCommand(BaseCommand):\n+    def add_arguments(self, parser):\n+        shop = parser.add_mutually_exclusive_group(required=True)\n+        shop.add_argument('--shop-id', nargs='?', type=int, default=None, dest='shop_id')\n+        shop.add_argument('--shop', nargs='?', type=str, default=None, dest='shop_name')\n+\n+    def handle(self, *args, **options):\n+        pass\n+\n+class CommandKwargsTest(SimpleTestCase):\n+    def test_call_command_with_mutually_exclusive_group_in_kwargs(self):\n+        # Altered the test to fail when the issue is observed\n+        with self.assertRaisesMessage(CommandError, \"__BUG__HERE__\"):\n+            call_command(MyCommand(), shop_id=1)\n",
+  "num_sent_chars": 3844781,
+  "num_received_chars": 55270,
+  "elapsed_time": 578.760377407074,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

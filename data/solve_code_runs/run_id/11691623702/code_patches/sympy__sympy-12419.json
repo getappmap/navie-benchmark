@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-12419",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/expressions/matmul.py b/sympy/matrices/expressions/matmul.py\nindex 79f3035..56d8706 100644\n--- a/sympy/matrices/expressions/matmul.py\n+++ b/sympy/matrices/expressions/matmul.py\n@@ -276,9 +276,19 @@ def refine_MatMul(expr, assumptions):\n     last = exprargs[0]\n     for arg in exprargs[1:]:\n         if arg == last.T and ask(Q.orthogonal(arg), assumptions):\n-            last = Identity(arg.shape[0])\n+            # Create Identity matrix with proper dimension and ensure it maintains\n+            # its properties for summation operations\n+            n = arg.shape[0]\n+            last = Identity(n)\n+            # Set dimension explicitly to ensure proper summation behavior\n+            last.rows = n\n+            last.cols = n\n         elif arg == last.conjugate() and ask(Q.unitary(arg), assumptions):\n-            last = Identity(arg.shape[0])\n+            # Similar handling for unitary case\n+            n = arg.shape[0]\n+            last = Identity(n)\n+            last.rows = n\n+            last.cols = n\n         else:\n             newargs.append(last)\n             last = arg\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4552609,
+  "num_received_chars": 43509,
+  "elapsed_time": 583.4973378181458,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

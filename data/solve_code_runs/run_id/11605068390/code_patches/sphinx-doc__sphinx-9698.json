@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9698",
+  "edit_test_file": "tests/test_domain_std.py",
+  "code_patch": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaa..1a3bd60 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -796,7 +796,7 @@ class PyMethod(PyObject):\n         if 'classmethod' in self.options:\n             return _('%s() (%s class method)') % (methname, clsname)\n         elif 'property' in self.options:\n-            return _('%s() (%s property)') % (methname, clsname)\n+            return _('%s (%s property)') % (methname, clsname)\n         elif 'staticmethod' in self.options:\n             return _('%s() (%s static method)') % (methname, clsname)\n         else:\n",
+  "test_patch": "diff --git a/tests/test_domain_py_property_index.py b/tests/test_domain_py_property_index.py\nnew file mode 100644\nindex 0000000..40658a2\n--- /dev/null\n+++ b/tests/test_domain_py_property_index.py\n@@ -0,0 +1,35 @@\n+\"\"\"\n+    test_domain_py_property_index\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test the Python domain property index entries.\n+\n+    :copyright: Copyright 2007-2021 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+from unittest import mock\n+\n+from sphinx.testing import restructuredtext\n+\n+\n+def test_property_index_entries(app):\n+    text = \"\"\"\n+    .. py:method:: Foo.bar\n+       :property:\n+\n+    .. py:property:: Foo.baz\n+    \"\"\"\n+    doctree = restructuredtext.parse(app, text)\n+    \n+    # Get all index entries from the document\n+    index_entries = []\n+    for node in doctree.traverse():\n+        if node.__class__.__name__ == 'index':\n+            for entry in node['entries']:\n+                index_entries.append(entry)\n+\n+    # Check the index entries for both properties\n+    # The issue is that bar() has parentheses when it shouldn't\n+    assert ('single', 'bar() (Foo property)', 'Foo.bar', '', None) in index_entries\n+    assert ('single', 'baz (Foo property)', 'Foo.baz', '', None) in index_entries\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_domain_py_property_index_inverted.py b/tests/test_domain_py_property_index_inverted.py\nnew file mode 100644\nindex 0000000..3497516\n--- /dev/null\n+++ b/tests/test_domain_py_property_index_inverted.py\n@@ -0,0 +1,39 @@\n+\"\"\"\n+    test_domain_py_property_index\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test the Python domain property index entries.\n+\n+    :copyright: Copyright 2007-2021 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+from unittest import mock\n+\n+from sphinx.testing import restructuredtext\n+\n+\n+def test_property_index_entries(app):\n+    text = \"\"\"\n+    .. py:method:: Foo.bar\n+       :property:\n+\n+    .. py:property:: Foo.baz\n+    \"\"\"\n+    doctree = restructuredtext.parse(app, text)\n+    \n+    # Get all index entries from the document\n+    index_entries = []\n+    for node in doctree.traverse():\n+        if node.__class__.__name__ == 'index':\n+            for entry in node['entries']:\n+                index_entries.append(entry)\n+\n+    # Check the index entries for both properties\n+    # The bar property should NOT have parentheses in its index entry\n+    bar_entry = ('single', 'bar() (Foo property)', 'Foo.bar', '', None)\n+    if bar_entry in index_entries:\n+        raise AssertionError(\"__BUG__HERE__: Property 'bar' should not have parentheses in its index entry\")\n+\n+    # The baz property entry should be correct (without parentheses)\n+    assert ('single', 'baz (Foo property)', 'Foo.baz', '', None) in index_entries\n\\ No newline at end of file\n",
+  "num_sent_chars": 760623,
+  "num_received_chars": 6708,
+  "elapsed_time": 89.76347923278809,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-19637",
+  "edit_test_file": "sympy/core/tests/test_basic.py",
+  "code_patch": "diff --git a/sympy/core/sympify.py b/sympy/core/sympify.py\nindex a3f1ce2..33f7108 100644\n--- a/sympy/core/sympify.py\n+++ b/sympy/core/sympify.py\n@@ -469,6 +469,7 @@ def kernS(s):\n     from random import choice\n     from sympy.core.symbol import Symbol\n     hit = False\n+    kern = '_'  # Initialize kern with default value\n     quoted = '\"' in s or \"'\" in s\n     if '(' in s and not quoted:\n         if s.count('(') != s.count(\")\"):\n@@ -509,7 +510,6 @@ def kernS(s):\n             i = j + 2  # the first char after 2nd )\n         if ' ' in s:\n             # get a unique kern\n-            kern = '_'\n             while kern in s:\n                 kern += choice(string.ascii_letters + string.digits)\n             s = s.replace(' ', kern)\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_kerns_parsing.py b/sympy/core/tests/test_kerns_parsing.py\nnew file mode 100644\nindex 0000000..632a85a\n--- /dev/null\n+++ b/sympy/core/tests/test_kerns_parsing.py\n@@ -0,0 +1,11 @@\n+\"\"\"Test cases for kernS parsing functionality.\"\"\"\n+\n+from sympy.core.sympify import kernS\n+from sympy.testing.pytest import raises\n+\n+def test_kern_reference_error():\n+    \"\"\"Test that kernS raises UnboundLocalError when kern is referenced before assignment.\"\"\"\n+    text = \"(2*x)/(x-1)\"\n+    # The kernS function attempts to check if 'kern' is in 's' before 'kern' is defined\n+    # This should raise an UnboundLocalError\n+    raises(UnboundLocalError, lambda: kernS(text))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_kerns_parsing_inverted.py b/sympy/core/tests/test_kerns_parsing_inverted.py\nnew file mode 100644\nindex 0000000..f89d707\n--- /dev/null\n+++ b/sympy/core/tests/test_kerns_parsing_inverted.py\n@@ -0,0 +1,17 @@\n+\"\"\"Test cases for kernS parsing functionality.\"\"\"\n+\n+from sympy.core.sympify import kernS\n+\n+def test_kern_reference_error():\n+    \"\"\"Test that kernS raises UnboundLocalError when kern is referenced before assignment.\"\"\"\n+    text = \"(2*x)/(x-1)\"\n+    \n+    try:\n+        result = kernS(text)\n+        # If we get here, the bug is not present (kern was properly defined)\n+        # So the test should pass\n+        assert True\n+    except UnboundLocalError as e:\n+        # If we get here, the bug is present (kern was referenced before assignment)\n+        # So we should fail the test with a specific message\n+        raise AssertionError(\"__BUG__HERE__\") from e\n\\ No newline at end of file\n",
+  "num_sent_chars": 3683808,
+  "num_received_chars": 53930,
+  "elapsed_time": 677.1012334823608,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

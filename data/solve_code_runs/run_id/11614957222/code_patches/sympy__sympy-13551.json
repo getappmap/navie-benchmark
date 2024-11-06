@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13551",
+  "edit_test_file": "sympy/concrete/tests/test_products.py",
+  "code_patch": "diff --git a/sympy/functions/combinatorial/numbers.py b/sympy/functions/combinatorial/numbers.py\nindex 9e2800d..8bfe5a0 100644\n--- a/sympy/functions/combinatorial/numbers.py\n+++ b/sympy/functions/combinatorial/numbers.py\n@@ -32,7 +32,9 @@ def _product(a, b):\n         p *= k\n     return p\n \n-\n+def _eval_power_product(n, k):\n+    \"\"\"Helper function to evaluate products involving n + 1/2^k\"\"\"\n+    return (2**(n) + 1) * (2**(n-k) + 1) // (2**k)\n \n # Dummy symbol used for computing polynomial sequences\n _sym = Symbol('x')\n",
+  "test_patch": "diff --git a/sympy/concrete/tests/test_q_pochhammer.py b/sympy/concrete/tests/test_q_pochhammer.py\nnew file mode 100644\nindex 0000000..fc02ce3\n--- /dev/null\n+++ b/sympy/concrete/tests/test_q_pochhammer.py\n@@ -0,0 +1,8 @@\n+from sympy import Product, simplify\n+from sympy.abc import n, k\n+\n+def test_product_issue():\n+    # Reproduce the issue with Product(n + 1 / 2**k, [k, 0, n-1])\n+    p = Product(n + 1 / 2**k, (k, 0, n-1)).doit()\n+    # The expected incorrect output for n=2 is 9/2\n+    assert p.subs(n, 2) == 9/2\n",
+  "test_inverted_patch": "diff --git a/sympy/concrete/tests/test_q_pochhammer_inverted.py b/sympy/concrete/tests/test_q_pochhammer_inverted.py\nnew file mode 100644\nindex 0000000..ea3c824\n--- /dev/null\n+++ b/sympy/concrete/tests/test_q_pochhammer_inverted.py\n@@ -0,0 +1,9 @@\n+from sympy import Product, simplify\n+from sympy.abc import n, k\n+\n+def test_product_issue():\n+    # Reproduce the issue with Product(n + 1 / 2**k, [k, 0, n-1])\n+    p = Product(n + 1 / 2**k, (k, 0, n-1)).doit()\n+    # The expected correct output for n=2 is 15/2\n+    # The test should fail if the incorrect output 9/2 is observed\n+    assert p.subs(n, 2) == 15/2, \"__BUG__HERE__\"\n",
+  "num_sent_chars": 6768604,
+  "num_received_chars": 110814,
+  "elapsed_time": 2151.460348367691,
+  "lint_repair_count": 14,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

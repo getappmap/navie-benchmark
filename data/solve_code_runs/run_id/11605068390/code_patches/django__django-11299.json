@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11299",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/sqlite3/schema.py b/django/db/backends/sqlite3/schema.py\nindex b1c91db..e3a4b2d 100644\n--- a/django/db/backends/sqlite3/schema.py\n+++ b/django/db/backends/sqlite3/schema.py\n@@ -16,6 +16,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):\n     sql_create_inline_fk = \"REFERENCES %(to_table)s (%(to_column)s) DEFERRABLE INITIALLY DEFERRED\"\n     sql_create_unique = \"CREATE UNIQUE INDEX %(name)s ON %(table)s (%(columns)s)\"\n     sql_delete_unique = \"DROP INDEX %(name)s\"\n+    strip_table_from_check_constraints = True\n \n     def __enter__(self):\n         # Some SQLite schema alterations need foreign key constraints to be\n@@ -141,7 +142,8 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):\n         Shortcut to transform a model from old_model into new_model\n \n         This follows the correct procedure to perform non-rename or column\n-        addition operations based on SQLite's documentation\n+        addition operations based on SQLite's documentation. For CHECK constraints,\n+        column names are unqualified to avoid referencing the old table name.\n \n         https://www.sqlite.org/lang_altertable.html#caution\n \n@@ -233,7 +235,14 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):\n                 if delete_field.name not in index.fields\n             ]\n \n-        constraints = list(model._meta.constraints)\n+        constraints = []\n+        for constraint in model._meta.constraints:\n+            # Clone the constraint to avoid modifying the original\n+            constraint = copy.deepcopy(constraint)\n+            # For check constraints, ensure column references are unqualified\n+            if hasattr(constraint, 'check') and constraint.check:\n+                constraint.check.unqualify_columns = True\n+            constraints.append(constraint)\n \n         # Provide isolated instances of the fields to the new model body so\n         # that the existing model's internals aren't interfered with when\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3705994,
+  "num_received_chars": 49574,
+  "elapsed_time": 575.4806575775146,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-16450",
+  "edit_test_file": "sympy/core/tests/test_assumptions.py",
+  "code_patch": "diff --git a/sympy/simplify/simplify.py b/sympy/simplify/simplify.py\nindex c6b511f..b1ed487 100644\n--- a/sympy/simplify/simplify.py\n+++ b/sympy/simplify/simplify.py\n@@ -251,8 +251,21 @@ def posify(eq):\n             eq[i] = e.subs(reps)\n         return f(eq), {r: s for s, r in reps.items()}\n \n-    reps = {s: Dummy(s.name, positive=True)\n-                 for s in eq.free_symbols if s.is_positive is None}\n+    reps = {}\n+    for s in eq.free_symbols:\n+        if s.is_positive is None:\n+            # Collect core assumptions to preserve\n+            assumptions = {'positive': True}  # Always set positive=True\n+            for key in ['finite', 'integer', 'rational', 'prime', 'even', 'odd']:\n+                # Get the assumption value using the is_* properties\n+                value = getattr(s, 'is_' + key)\n+                if value is not None:  # Only preserve if explicitly True/False\n+                    assumptions[key] = value\n+                    \n+            # Create new Dummy with preserved assumptions\n+            new_s = Dummy(s.name, **assumptions)\n+            reps[s] = new_s\n+            \n     eq = eq.subs(reps)\n     return eq, {r: s for s, r in reps.items()}\n \n",
+  "test_patch": "diff --git a/sympy/core/tests/test_posify_assumptions.py b/sympy/core/tests/test_posify_assumptions.py\nnew file mode 100644\nindex 0000000..fc55e53\n--- /dev/null\n+++ b/sympy/core/tests/test_posify_assumptions.py\n@@ -0,0 +1,9 @@\n+from sympy import Symbol\n+from sympy.simplify.simplify import posify\n+\n+def test_posify_ignores_is_finite():\n+    x = Symbol('x', finite=True)\n+    assert x.is_finite is True\n+\n+    xp, _ = posify(x)\n+    assert xp.is_finite is None  # This should reproduce the issue where is_finite becomes None\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_posify_assumptions_inverted.py b/sympy/core/tests/test_posify_assumptions_inverted.py\nnew file mode 100644\nindex 0000000..61e8935\n--- /dev/null\n+++ b/sympy/core/tests/test_posify_assumptions_inverted.py\n@@ -0,0 +1,10 @@\n+from sympy import Symbol\n+from sympy.simplify.simplify import posify\n+\n+def test_posify_ignores_is_finite():\n+    x = Symbol('x', finite=True)\n+    assert x.is_finite is True\n+\n+    xp, _ = posify(x)\n+    if xp.is_finite is None:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 766387,
+  "num_received_chars": 6616,
+  "elapsed_time": 207.90353298187256,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

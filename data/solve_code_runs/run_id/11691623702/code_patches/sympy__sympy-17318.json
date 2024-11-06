@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-17318",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/simplify/sqrtdenest.py b/sympy/simplify/sqrtdenest.py\nindex f0b7653..2bc8dbf 100644\n--- a/sympy/simplify/sqrtdenest.py\n+++ b/sympy/simplify/sqrtdenest.py\n@@ -157,7 +157,10 @@ def _sqrt_match(p):\n     elif p.is_Add:\n         pargs = sorted(p.args, key=default_sort_key)\n         if all((x**2).is_Rational for x in pargs):\n-            r, b, a = split_surds(p)\n+            split_result = split_surds(p)\n+            if split_result is None:\n+                return []\n+            r, b, a = split_result\n             res = a, b, r\n             return list(res)\n         # to make the process canonical, the argument is included in the tuple\n@@ -330,7 +333,7 @@ def _sqrtdenest1(expr, denester=True):\n     if a.is_Atom:\n         return expr\n     val = _sqrt_match(a)\n-    if not val:\n+    if not val or val == []:\n         return expr\n \n     a, b, r = val\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3888241,
+  "num_received_chars": 28711,
+  "elapsed_time": 823.2447485923767,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

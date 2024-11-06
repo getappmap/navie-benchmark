@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-6992",
+  "edit_test_file": "xarray/tests/test_dataset.py",
+  "code_patch": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex 620f32f..91f6e48 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -365,7 +365,9 @@ class DataVariables(Mapping[Any, \"DataArray\"]):\n         )\n \n     def __len__(self) -> int:\n-        return len(self._dataset._variables) - len(self._dataset._coord_names)\n+        # Only count coordinate names that exist in variables\n+        existing_coords = {k for k in self._dataset._coord_names if k in self._dataset._variables}\n+        return len(self._dataset._variables) - len(existing_coords)\n \n     def __contains__(self, key: Hashable) -> bool:\n         return key in self._dataset._variables and key not in self._dataset._coord_names\n",
+  "test_patch": "diff --git a/xarray/tests/test_coord_variables.py b/xarray/tests/test_coord_variables.py\nnew file mode 100644\nindex 0000000..a0bb230\n--- /dev/null\n+++ b/xarray/tests/test_coord_variables.py\n@@ -0,0 +1,19 @@\n+import pytest\n+import xarray as xr\n+\n+\n+def test_coord_names_more_than_variables():\n+    \"\"\"Test that verifies the issue where _coord_names can be larger than _variables\n+    after set_index and reset_index operations.\n+    \"\"\"\n+    # Create initial dataset with coordinates\n+    ds = xr.Dataset(coords={\"a\": (\"x\", [1, 2, 3]), \"b\": (\"x\", [\"a\", \"b\", \"c\"])})\n+    \n+    # Perform operations that trigger the issue\n+    ds = ds.set_index(z=[\"a\", \"b\"])\n+    ds = ds.reset_index(\"z\", drop=True)\n+\n+    # Verify that we have more coord_names than variables\n+    # This should raise a ValueError when trying to get len() of DataVariables\n+    with pytest.raises(ValueError, match=r\"__len__\\(\\) should return >= 0\"):\n+        len(ds.data_vars)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_coord_variables_inverted.py b/xarray/tests/test_coord_variables_inverted.py\nnew file mode 100644\nindex 0000000..44135a2\n--- /dev/null\n+++ b/xarray/tests/test_coord_variables_inverted.py\n@@ -0,0 +1,20 @@\n+import pytest\n+import xarray as xr\n+\n+def test_coord_names_more_than_variables():\n+    \"\"\"Test that verifies the issue where _coord_names can be larger than _variables\n+    after set_index and reset_index operations.\n+    \"\"\"\n+    # Create initial dataset with coordinates\n+    ds = xr.Dataset(coords={\"a\": (\"x\", [1, 2, 3]), \"b\": (\"x\", [\"a\", \"b\", \"c\"])})\n+    \n+    # Perform operations that trigger the issue\n+    ds = ds.set_index(z=[\"a\", \"b\"])\n+    ds = ds.reset_index(\"z\", drop=True)\n+\n+    # This should fail when the bug is present\n+    if len(ds._coord_names) > len(ds._variables):\n+        raise ValueError(\"__BUG__HERE__\")\n+\n+    # If we get here, the test passes because coord_names is not larger than variables\n+    assert len(ds._coord_names) <= len(ds._variables)\n\\ No newline at end of file\n",
+  "num_sent_chars": 5223467,
+  "num_received_chars": 47772,
+  "elapsed_time": 1514.5033211708069,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14752",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/views/autocomplete.py b/django/contrib/admin/views/autocomplete.py\nindex 3903e4c..a37daef 100644\n--- a/django/contrib/admin/views/autocomplete.py\n+++ b/django/contrib/admin/views/autocomplete.py\n@@ -9,6 +9,22 @@ class AutocompleteJsonView(BaseListView):\n     paginate_by = 20\n     admin_site = None\n \n+    def serialize_result(self, obj, to_field_name):\n+        \"\"\"\n+        Convert the provided object into a dict for the JSON response.\n+        \n+        Args:\n+            obj: The model instance to serialize\n+            to_field_name: The name of the field to use as the object id\n+            \n+        Returns:\n+            dict with 'id' and 'text' keys\n+        \"\"\"\n+        return {\n+            'id': str(getattr(obj, to_field_name)),\n+            'text': str(obj),\n+        }\n+\n     def get(self, request, *args, **kwargs):\n         \"\"\"\n         Return a JsonResponse with search results of the form:\n@@ -26,7 +42,7 @@ class AutocompleteJsonView(BaseListView):\n         context = self.get_context_data()\n         return JsonResponse({\n             'results': [\n-                {'id': str(getattr(obj, to_field_name)), 'text': str(obj)}\n+                self.serialize_result(obj, to_field_name)\n                 for obj in context['object_list']\n             ],\n             'pagination': {'more': context['page_obj'].has_next()},\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 7153170,
+  "num_received_chars": 111727,
+  "elapsed_time": 1397.625194311142,
+  "lint_repair_count": 11,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

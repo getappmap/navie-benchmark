@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-12155",
+  "edit_test_file": "tests/admin_docs/test_utils.py",
+  "code_patch": "diff --git a/django/contrib/admindocs/utils.py b/django/contrib/admindocs/utils.py\nindex 4c0e7e2..aeec9fa 100644\n--- a/django/contrib/admindocs/utils.py\n+++ b/django/contrib/admindocs/utils.py\n@@ -34,7 +34,7 @@ def trim_docstring(docstring):\n         return ''\n     # Convert tabs to spaces and split into lines\n     lines = docstring.expandtabs().splitlines()\n-    indent = min(len(line) - len(line.lstrip()) for line in lines if line.lstrip())\n+    indent = min(len(line) - len(line.lstrip()) for line in lines[1:] if line.lstrip())\n     trimmed = [lines[0].lstrip()] + [line[indent:].rstrip() for line in lines[1:]]\n     return \"\\n\".join(trimmed).strip()\n \n",
+  "test_patch": "diff --git a/tests/admin_docs/test_docstring_indentation.py b/tests/admin_docs/test_docstring_indentation.py\nnew file mode 100644\nindex 0000000..991a6f3\n--- /dev/null\n+++ b/tests/admin_docs/test_docstring_indentation.py\n@@ -0,0 +1,21 @@\n+import unittest\n+\n+from django.contrib.admindocs.utils import docutils_is_available, parse_rst\n+from django.test import SimpleTestCase\n+\n+\n+@unittest.skipUnless(docutils_is_available, \"no docutils installed.\")\n+class TestDocstringIndentation(SimpleTestCase):\n+    \"\"\"This docstring starts on first line.\n+    It should cause docutils to raise an error when processed\n+    because there is no empty first line.\n+    \"\"\"\n+\n+    def test_docstring_no_empty_first_line(self):\n+        \"\"\"This docstring starts on first line.\n+        It should trigger a docutils error when processed.\n+        \"\"\"\n+        title = self.__doc__\n+        with self.assertRaises(Exception):\n+            # This should raise an error since the docstring starts on first line\n+            parse_rst(title, 'model', 'model:test')\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 6102257,
+  "num_received_chars": 61378,
+  "elapsed_time": 1118.9906554222107,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

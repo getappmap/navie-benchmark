@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-18211",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/solvers/solveset.py b/sympy/solvers/solveset.py\nindex 445be3e..857dce7 100644\n--- a/sympy/solvers/solveset.py\n+++ b/sympy/solvers/solveset.py\n@@ -540,9 +540,8 @@ def _solve_trig(f, symbol, domain):\n     else:\n         sol = sol1\n     if sol is None:\n-        raise NotImplementedError(filldedent('''\n-            Solution to this kind of trigonometric equations\n-            is yet to be implemented'''))\n+        # Return ConditionSet for unsolvable equations\n+        return ConditionSet(symbol, Eq(f, 0), domain)\n     return sol\n \n \n@@ -567,11 +566,11 @@ def _solve_trig1(f, symbol, domain):\n \n     solns = solveset_complex(g, y) - solveset_complex(h, y)\n     if isinstance(solns, ConditionSet):\n-        raise NotImplementedError\n+        return ConditionSet(symbol, Eq(f_original, 0), domain)\n \n     if isinstance(solns, FiniteSet):\n         if any(isinstance(s, RootOf) for s in solns):\n-            raise NotImplementedError\n+            return ConditionSet(symbol, Eq(f_original, 0), domain)\n         result = Union(*[inverter(cov, s, symbol)[1] for s in solns])\n         # avoid spurious intersections with C in solution set\n         if domain is S.Complexes:\n@@ -600,9 +599,9 @@ def _solve_trig2(f, symbol, domain):\n             poly_ar = Poly(ar, symbol)\n \n         except ValueError:\n-            raise ValueError(\"give up, we can't solve if this is not a polynomial in x\")\n+            return ConditionSet(symbol, Eq(f_original, 0), domain)\n         if poly_ar.degree() > 1:  # degree >1 still bad\n-            raise ValueError(\"degree of variable inside polynomial should not exceed one\")\n+            return ConditionSet(symbol, Eq(f_original, 0), domain)\n         if poly_ar.degree() == 0:  # degree 0, don't care\n             continue\n         c = poly_ar.all_coeffs()[0]   # got the coefficient of 'symbol'\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4696668,
+  "num_received_chars": 37006,
+  "elapsed_time": 961.3057923316956,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

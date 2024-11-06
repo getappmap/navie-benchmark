@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-23262",
+  "edit_test_file": "sympy/core/tests/test_containers.py",
+  "code_patch": "diff --git a/sympy/utilities/lambdify.py b/sympy/utilities/lambdify.py\nindex da67263..185fd52 100644\n--- a/sympy/utilities/lambdify.py\n+++ b/sympy/utilities/lambdify.py\n@@ -961,7 +961,10 @@ def _recursive_to_string(doprint, arg):\n             left, right = \"()\"\n         else:\n             raise NotImplementedError(\"unhandled type: %s, %s\" % (type(arg), arg))\n-        return left +', '.join(_recursive_to_string(doprint, e) for e in arg) + right\n+        contents = ', '.join(_recursive_to_string(doprint, e) for e in arg)\n+        if isinstance(arg, tuple) and len(arg) == 1:\n+            contents += ','  # Add trailing comma for single-element tuples\n+        return left + contents + right\n     elif isinstance(arg, str):\n         return arg\n     else:\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_codeprinter.py b/sympy/core/tests/test_codeprinter.py\nnew file mode 100644\nindex 0000000..7a483bb\n--- /dev/null\n+++ b/sympy/core/tests/test_codeprinter.py\n@@ -0,0 +1,9 @@\n+import inspect\n+from sympy import lambdify\n+\n+def test_python_code_printer_tuple_single_element():\n+    # Generate the source code for a lambdified function returning a single-element tuple\n+    source_code = inspect.getsource(lambdify([], tuple([1])))\n+    \n+    # Check if the generated source code is missing the comma for a single-element tuple\n+    assert source_code == 'def _lambdifygenerated():\\n    return (1)\\n'\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_codeprinter_inverted.py b/sympy/core/tests/test_codeprinter_inverted.py\nnew file mode 100644\nindex 0000000..d99f522\n--- /dev/null\n+++ b/sympy/core/tests/test_codeprinter_inverted.py\n@@ -0,0 +1,11 @@\n+import inspect\n+from sympy import lambdify\n+\n+def test_python_code_printer_tuple_single_element():\n+    # Generate the source code for a lambdified function returning a single-element tuple\n+    source_code = inspect.getsource(lambdify([], tuple([1])))\n+    \n+    # Check if the generated source code is missing the comma for a single-element tuple\n+    # The test should now fail if the bug is present, raising the specified error message\n+    if source_code == 'def _lambdifygenerated():\\n    return (1)\\n':\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 756444,
+  "num_received_chars": 6818,
+  "elapsed_time": 105.42815375328064,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

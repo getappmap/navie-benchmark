@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-20859",
+  "edit_test_file": "lib/matplotlib/tests/test_figure.py",
+  "code_patch": "diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py\nindex f1a6711..2d40d0b 100644\n--- a/lib/matplotlib/figure.py\n+++ b/lib/matplotlib/figure.py\n@@ -940,7 +940,7 @@ default: %(va)s\n     @docstring.dedent_interpd\n     def legend(self, *args, **kwargs):\n         \"\"\"\n-        Place a legend on the figure.\n+        Place a legend on the figure or subfigure.\n \n         Call signatures::\n \n@@ -1063,10 +1063,21 @@ default: %(va)s\n             # kwargs['loc'] = extra_args[0]\n             # extra_args = extra_args[1:]\n             pass\n+\n+        # Set the bbox transform to transSubfigure by default\n         transform = kwargs.pop('bbox_transform', self.transSubfigure)\n-        # explicitly set the bbox transform if the user hasn't.\n-        l = mlegend.Legend(self, handles, labels, *extra_args,\n-                           bbox_transform=transform, **kwargs)\n+\n+        # Create a proxy Figure instance if this is a SubFigure to satisfy\n+        # the Legend class type checking\n+        if not isinstance(self, Figure):\n+            proxy_figure = self.figure\n+            l = mlegend.Legend(proxy_figure, handles, labels, *extra_args,\n+                             bbox_transform=transform, **kwargs)\n+            l.set_figure(self)  # Reset to actual parent\n+        else:\n+            l = mlegend.Legend(self, handles, labels, *extra_args,\n+                             bbox_transform=transform, **kwargs)\n+\n         self.legends.append(l)\n         l._remove_method = self.legends.remove\n         self.stale = True\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_subfigure_legend.py b/lib/matplotlib/tests/test_subfigure_legend.py\nnew file mode 100644\nindex 0000000..4a0192c\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_subfigure_legend.py\n@@ -0,0 +1,12 @@\n+import pytest\n+import matplotlib.pyplot as plt\n+from matplotlib.figure import Figure\n+\n+def test_subfigure_legend():\n+    fig = plt.figure()\n+    subfig = fig.subfigures()\n+    ax = subfig.subplots()\n+    ax.plot([0, 1, 2], [0, 1, 2], label=\"test\")\n+    \n+    with pytest.raises(TypeError, match=\"Legend needs either Axes or Figure as parent\"):\n+        subfig.legend()\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_subfigure_legend_inverted.py b/lib/matplotlib/tests/test_subfigure_legend_inverted.py\nnew file mode 100644\nindex 0000000..149c94c\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_subfigure_legend_inverted.py\n@@ -0,0 +1,15 @@\n+import pytest\n+import matplotlib.pyplot as plt\n+from matplotlib.figure import Figure\n+\n+def test_subfigure_legend():\n+    fig = plt.figure()\n+    subfig = fig.subfigures()\n+    ax = subfig.subplots()\n+    ax.plot([0, 1, 2], [0, 1, 2], label=\"test\")\n+    \n+    try:\n+        subfig.legend()\n+    except TypeError as e:\n+        if str(e) == \"Legend needs either Axes or Figure as parent\":\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 4992582,
+  "num_received_chars": 73462,
+  "elapsed_time": 1058.2696294784546,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

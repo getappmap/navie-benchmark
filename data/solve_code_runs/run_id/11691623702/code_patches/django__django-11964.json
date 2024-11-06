@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11964",
+  "edit_test_file": "tests/model_enums/tests.py",
+  "code_patch": "diff --git a/django/db/models/enums.py b/django/db/models/enums.py\nindex bbe362a..ec0cc6c 100644\n--- a/django/db/models/enums.py\n+++ b/django/db/models/enums.py\n@@ -60,7 +60,8 @@ class ChoicesMeta(enum.EnumMeta):\n \n class Choices(enum.Enum, metaclass=ChoicesMeta):\n     \"\"\"Class for creating enumerated choices.\"\"\"\n-    pass\n+    def __str__(self):\n+        return str(self.value)\n \n \n class IntegerChoices(int, Choices):\n",
+  "test_patch": "diff --git a/tests/model_enums/test_enum_field_values.py b/tests/model_enums/test_enum_field_values.py\nnew file mode 100644\nindex 0000000..ab33a86\n--- /dev/null\n+++ b/tests/model_enums/test_enum_field_values.py\n@@ -0,0 +1,31 @@\n+from django.db import models\n+from django.test import SimpleTestCase\n+from django.utils.translation import gettext_lazy as _\n+\n+\n+class Event(models.TextChoices):\n+    FESTIVAL = 'festival', _('Festival')\n+    CONFERENCE = 'conference', _('Conference')\n+    WORKSHOP = 'workshop', _('Workshop')\n+\n+\n+class EventModel(models.Model):\n+    name = models.CharField(max_length=20, choices=Event.choices)\n+\n+\n+class EnumFieldValueTest(SimpleTestCase):\n+    \"\"\"\n+    Test that TextChoices field values have consistent types between creation and retrieval.\n+    \"\"\"\n+    def test_enum_field_value_type_inconsistency(self):\n+        \"\"\"\n+        Test that demonstrates the inconsistency in field value types between\n+        creation and retrieval.\n+        \"\"\"\n+        # Create an instance with an enum value\n+        event = EventModel(name=Event.FESTIVAL)\n+        \n+        # The field value should be a string, but it's actually an enum value\n+        self.assertIsInstance(event.name, Event)\n+        self.assertEqual(str(event.name), 'Event.FESTIVAL')  # Shows incorrect string representation\n+        self.assertNotEqual(str(event.name), 'festival')  # Should be 'festival' but isn't\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/model_enums/test_enum_field_values_inverted.py b/tests/model_enums/test_enum_field_values_inverted.py\nnew file mode 100644\nindex 0000000..20f7b59\n--- /dev/null\n+++ b/tests/model_enums/test_enum_field_values_inverted.py\n@@ -0,0 +1,34 @@\n+from django.db import models\n+from django.test import SimpleTestCase\n+from django.utils.translation import gettext_lazy as _\n+\n+\n+class Event(models.TextChoices):\n+    FESTIVAL = 'festival', _('Festival')\n+    CONFERENCE = 'conference', _('Conference')\n+    WORKSHOP = 'workshop', _('Workshop')\n+\n+\n+class EventModel(models.Model):\n+    name = models.CharField(max_length=20, choices=Event.choices)\n+\n+\n+class EnumFieldValueTest(SimpleTestCase):\n+    \"\"\"\n+    Test that TextChoices field values have consistent types between creation and retrieval.\n+    \"\"\"\n+    def test_enum_field_value_type_inconsistency(self):\n+        \"\"\"\n+        Test that demonstrates the inconsistency in field value types between\n+        creation and retrieval.\n+        \"\"\"\n+        # Create an instance with an enum value\n+        event = EventModel(name=Event.FESTIVAL)\n+        \n+        # The field value should be a string, not an enum value\n+        if isinstance(event.name, Event):\n+            raise AssertionError(\"__BUG__HERE__\")\n+        \n+        # Verify the string representation is correct\n+        self.assertEqual(str(event.name), 'festival')\n+        self.assertIsInstance(event.name, str)\n\\ No newline at end of file\n",
+  "num_sent_chars": 1328248,
+  "num_received_chars": 12771,
+  "elapsed_time": 195.1649305820465,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

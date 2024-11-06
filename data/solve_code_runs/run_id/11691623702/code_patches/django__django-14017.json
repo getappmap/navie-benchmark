@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14017",
+  "edit_test_file": "tests/queries/test_q.py",
+  "code_patch": "diff --git a/django/db/models/expressions.py b/django/db/models/expressions.py\nindex ffc3a7f..f649270 100644\n--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@ -1160,6 +1160,11 @@ class Exists(Subquery):\n         clone.negated = not self.negated\n         return clone\n \n+    def __rand__(self, other):\n+        if getattr(other, 'conditional', False):\n+            return Q(other) & Q(self)\n+        raise NotImplementedError(\"Use .bitand() and .bitor() for bitwise logical operations.\")\n+\n     def as_sql(self, compiler, connection, template=None, **extra_context):\n         query = self.query.exists(using=connection.alias)\n         sql, params = super().as_sql(\n",
+  "test_patch": "diff --git a/tests/queries/test_q_exists_commutativity.py b/tests/queries/test_q_exists_commutativity.py\nnew file mode 100644\nindex 0000000..3df900e\n--- /dev/null\n+++ b/tests/queries/test_q_exists_commutativity.py\n@@ -0,0 +1,12 @@\n+from django.db.models import Exists, Q\n+from django.test import SimpleTestCase\n+from django.contrib.contenttypes.models import ContentType\n+\n+class QExistsCommutativityTests(SimpleTestCase):\n+    def test_q_and_exists_raises_type_error(self):\n+        # Create a dummy queryset using ContentType as a stand-in for Product\n+        queryset = ContentType.objects.all()\n+        exists_expression = Exists(queryset)\n+        \n+        with self.assertRaises(TypeError):\n+            Q() & exists_expression\n",
+  "test_inverted_patch": "diff --git a/tests/queries/test_q_exists_commutativity_inverted.py b/tests/queries/test_q_exists_commutativity_inverted.py\nnew file mode 100644\nindex 0000000..89a9fea\n--- /dev/null\n+++ b/tests/queries/test_q_exists_commutativity_inverted.py\n@@ -0,0 +1,14 @@\n+from django.db.models import Exists, Q\n+from django.test import SimpleTestCase\n+from django.contrib.contenttypes.models import ContentType\n+\n+class QExistsCommutativityTests(SimpleTestCase):\n+    def test_q_and_exists_raises_type_error(self):\n+        # Create a dummy queryset using ContentType as a stand-in for Product\n+        queryset = ContentType.objects.all()\n+        exists_expression = Exists(queryset)\n+        \n+        try:\n+            Q() & exists_expression\n+        except TypeError:\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 4997494,
+  "num_received_chars": 56780,
+  "elapsed_time": 676.4029257297516,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

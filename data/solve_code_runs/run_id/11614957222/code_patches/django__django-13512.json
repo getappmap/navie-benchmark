@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13512",
+  "edit_test_file": "tests/forms_tests/field_tests/test_jsonfield.py",
+  "code_patch": "diff --git a/django/core/serializers/json.py b/django/core/serializers/json.py\nindex 886e8f8..049db18 100644\n--- a/django/core/serializers/json.py\n+++ b/django/core/serializers/json.py\n@@ -29,7 +29,8 @@ class Serializer(PythonSerializer):\n             # Prevent trailing spaces\n             self.json_kwargs['separators'] = (',', ': ')\n         self.json_kwargs.setdefault('cls', DjangoJSONEncoder)\n-        self.json_kwargs.setdefault('ensure_ascii', False)\n+        # Always preserve Unicode characters by default\n+        self.json_kwargs['ensure_ascii'] = self.json_kwargs.get('ensure_ascii', False)\n \n     def start_serialization(self):\n         self._init_options()\n",
+  "test_patch": "diff --git a/tests/forms_tests/field_tests/test_unicode_jsonfield.py b/tests/forms_tests/field_tests/test_unicode_jsonfield.py\nnew file mode 100644\nindex 0000000..52c7663\n--- /dev/null\n+++ b/tests/forms_tests/field_tests/test_unicode_jsonfield.py\n@@ -0,0 +1,12 @@\n+import json\n+from django.forms import JSONField\n+from django.test import SimpleTestCase\n+\n+class UnicodeJSONFieldTest(SimpleTestCase):\n+    def test_unicode_jsonfield_display(self):\n+        field = JSONField()\n+        chinese_text = '\u4e2d\u56fd'\n+        # Simulate the JSONField behavior in Django admin\n+        json_encoded = json.dumps(chinese_text)\n+        # The issue is that it appears in ASCII characters\n+        self.assertEqual(json_encoded, '\"\\\\u4e2d\\\\u56fd\"')\n",
+  "test_inverted_patch": "diff --git a/tests/forms_tests/field_tests/test_unicode_jsonfield_inverted.py b/tests/forms_tests/field_tests/test_unicode_jsonfield_inverted.py\nnew file mode 100644\nindex 0000000..f676a44\n--- /dev/null\n+++ b/tests/forms_tests/field_tests/test_unicode_jsonfield_inverted.py\n@@ -0,0 +1,15 @@\n+import json\n+from django.forms import JSONField\n+from django.test import SimpleTestCase\n+\n+class UnicodeJSONFieldTest(SimpleTestCase):\n+    def test_unicode_jsonfield_display(self):\n+        field = JSONField()\n+        chinese_text = '\u4e2d\u56fd'\n+        # Simulate the JSONField behavior in Django admin\n+        json_encoded = json.dumps(chinese_text)\n+        # The issue is that it appears in ASCII characters\n+        # Change the assertion to expect the correct display of unicode characters\n+        if json_encoded == '\"\\\\u4e2d\\\\u56fd\"':\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(json_encoded, '\"\u4e2d\u56fd\"')\n",
+  "num_sent_chars": 3287483,
+  "num_received_chars": 40864,
+  "elapsed_time": 509.6700556278229,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

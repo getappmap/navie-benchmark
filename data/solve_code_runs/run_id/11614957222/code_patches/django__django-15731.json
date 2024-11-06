@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-15731",
+  "edit_test_file": "tests/utils_tests/test_inspect.py",
+  "code_patch": "diff --git a/django/db/models/manager.py b/django/db/models/manager.py\nindex e37e56c..d8c93af 100644\n--- a/django/db/models/manager.py\n+++ b/django/db/models/manager.py\n@@ -1,5 +1,6 @@\n import copy\n import inspect\n+from functools import wraps\n from importlib import import_module\n \n from django.db import router\n@@ -81,10 +82,11 @@ class BaseManager:\n     @classmethod\n     def _get_queryset_methods(cls, queryset_class):\n         def create_method(name, method):\n+            @wraps(method)\n             def manager_method(self, *args, **kwargs):\n                 return getattr(self.get_queryset(), name)(*args, **kwargs)\n \n-            manager_method.__name__ = method.__name__\n+            return manager_method\n             manager_method.__doc__ = method.__doc__\n             return manager_method\n \n",
+  "test_patch": "diff --git a/tests/utils_tests/test_manager_signature.py b/tests/utils_tests/test_manager_signature.py\nnew file mode 100644\nindex 0000000..b1bfc5d\n--- /dev/null\n+++ b/tests/utils_tests/test_manager_signature.py\n@@ -0,0 +1,15 @@\n+import unittest\n+import inspect\n+from django.db import models\n+\n+class Person(models.Model):\n+    name = models.CharField(max_length=100)\n+\n+class TestManagerSignature(unittest.TestCase):\n+    def test_bulk_create_signature(self):\n+        # Reproduce the issue with inspect.signature on manager methods\n+        signature = inspect.signature(Person.objects.bulk_create)\n+        self.assertEqual(str(signature), \"(*args, **kwargs)\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_manager_signature_inverted.py b/tests/utils_tests/test_manager_signature_inverted.py\nnew file mode 100644\nindex 0000000..8795e30\n--- /dev/null\n+++ b/tests/utils_tests/test_manager_signature_inverted.py\n@@ -0,0 +1,18 @@\n+import unittest\n+import inspect\n+from django.db import models\n+\n+class Person(models.Model):\n+    name = models.CharField(max_length=100)\n+\n+class TestManagerSignature(unittest.TestCase):\n+    def test_bulk_create_signature(self):\n+        # Reproduce the issue with inspect.signature on manager methods\n+        signature = inspect.signature(Person.objects.bulk_create)\n+        # Alter the test to fail when the issue is observed\n+        if str(signature) == \"(*args, **kwargs)\":\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(str(signature), \"(objs, batch_size=None, ignore_conflicts=False)\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "num_sent_chars": 5449833,
+  "num_received_chars": 63737,
+  "elapsed_time": 914.788830280304,
+  "lint_repair_count": 10,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

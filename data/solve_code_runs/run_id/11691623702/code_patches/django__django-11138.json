@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11138",
+  "edit_test_file": "tests/model_fields/test_datetimefield.py",
+  "code_patch": "diff --git a/django/db/backends/mysql/operations.py b/django/db/backends/mysql/operations.py\nindex 50f85e0..86857aa 100644\n--- a/django/db/backends/mysql/operations.py\n+++ b/django/db/backends/mysql/operations.py\n@@ -70,7 +70,17 @@ class DatabaseOperations(BaseDatabaseOperations):\n \n     def _convert_field_to_tz(self, field_name, tzname):\n         if settings.USE_TZ:\n-            field_name = \"CONVERT_TZ(%s, 'UTC', '%s')\" % (field_name, tzname)\n+            # Get the database timezone from connection settings, default to UTC\n+            db_timezone = getattr(self.connection.settings_dict, 'TIME_ZONE', 'UTC') or 'UTC'\n+            \n+            # If the target timezone matches the database timezone, no conversion needed\n+            if tzname == db_timezone:\n+                return field_name\n+            \n+            # Convert from database timezone to target timezone\n+            field_name = \"CONVERT_TZ(%s, '%s', '%s')\" % (\n+                field_name, db_timezone, tzname\n+            )\n         return field_name\n \n     def datetime_cast_date_sql(self, field_name, tzname):\n",
+  "test_patch": "diff --git a/tests/model_fields/test_timezone_database_settings.py b/tests/model_fields/test_timezone_database_settings.py\nnew file mode 100644\nindex 0000000..fddb54d\n--- /dev/null\n+++ b/tests/model_fields/test_timezone_database_settings.py\n@@ -0,0 +1,47 @@\n+import datetime\n+\n+from django.test import TestCase, override_settings\n+from django.utils import timezone\n+\n+from .models import DateTimeModel\n+\n+\n+@override_settings(USE_TZ=True, TIME_ZONE='Europe/Paris')\n+class DatabaseTimeZoneTests(TestCase):\n+    @classmethod\n+    def setUpClass(cls):\n+        super().setUpClass()\n+        # Create a timezone-aware datetime in Europe/Paris\n+        cls.test_datetime = datetime.datetime(2017, 7, 6, 20, 50)\n+        cls.test_datetime = timezone.make_aware(cls.test_datetime)\n+\n+    def setUp(self):\n+        super().setUp()\n+        # Create test data with the timezone-aware datetime\n+        self.test_model = DateTimeModel.objects.create(\n+            d=self.test_datetime.date(),\n+            dt=self.test_datetime,\n+            t=self.test_datetime.time()\n+        )\n+\n+    def test_date_lookup_with_database_timezone(self):\n+        \"\"\"\n+        When USE_TZ=True and the database has a TIME_ZONE setting matching Django's TIME_ZONE,\n+        date lookups should work correctly without timezone conversion.\n+        \"\"\"\n+        # Override database settings to set TIME_ZONE\n+        with self.settings(DATABASES={\n+            'default': {\n+                'ENGINE': 'django.db.backends.sqlite3',\n+                'NAME': ':memory:',\n+                'TIME_ZONE': 'Europe/Paris',  # Same as Django TIME_ZONE\n+            }\n+        }):\n+            # Query using the date portion of our test datetime\n+            exists = DateTimeModel.objects.filter(\n+                dt__date=self.test_datetime.date()\n+            ).exists()\n+\n+            # This should be True since the database timezone matches Django's timezone,\n+            # but will be False due to the bug where Django incorrectly converts from UTC\n+            self.assertTrue(exists)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 6800155,
+  "num_received_chars": 98998,
+  "elapsed_time": 1246.889850616455,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

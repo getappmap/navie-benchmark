@@ -1,0 +1,20 @@
+{
+  "instance_id": "pylint-dev__pylint-7080",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/pylint/lint/pylinter.py b/pylint/lint/pylinter.py\nindex e2bbf06..6e979f5 100644\n--- a/pylint/lint/pylinter.py\n+++ b/pylint/lint/pylinter.py\n@@ -593,30 +593,40 @@ class PyLinter(\n             ):\n                 skip_subtrees: list[str] = []\n                 for root, _, files in os.walk(something):\n-                    if any(root.startswith(s) for s in skip_subtrees):\n-                        # Skip subtree of already discovered package.\n-                        continue\n-\n-                    if _is_ignored_file(\n-                        root,\n-                        self.config.ignore,\n-                        self.config.ignore_patterns,\n-                        self.config.ignore_paths,\n+                    if any(root.startswith(s) for s in skip_subtrees) or _is_ignored_file(\n+                        root, self.config.ignore, self.config.ignore_patterns, self.config.ignore_paths\n                     ):\n-                        skip_subtrees.append(root)\n+                        # Skip subtree of already discovered package or ignored directory.\n                         continue\n \n                     if \"__init__.py\" in files:\n                         skip_subtrees.append(root)\n-                        yield root\n+                        if not _is_ignored_file(\n+                            root,\n+                            self.config.ignore,\n+                            self.config.ignore_patterns,\n+                            self.config.ignore_paths,\n+                        ):\n+                            yield root\n                     else:\n-                        yield from (\n-                            os.path.join(root, file)\n-                            for file in files\n-                            if file.endswith(\".py\")\n-                        )\n+                        for file in files:\n+                            if file.endswith(\".py\"):\n+                                file_path = os.path.join(root, file)\n+                                if not _is_ignored_file(\n+                                    file_path,\n+                                    self.config.ignore,\n+                                    self.config.ignore_patterns,\n+                                    self.config.ignore_paths,\n+                                ):\n+                                    yield file_path\n             else:\n-                yield something\n+                if not _is_ignored_file(\n+                    something,\n+                    self.config.ignore,\n+                    self.config.ignore_patterns,\n+                    self.config.ignore_paths,\n+                ):\n+                    yield something\n \n     def check(self, files_or_modules: Sequence[str] | str) -> None:\n         \"\"\"Main checking entry: check a list of files or modules from their name.\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 954995,
+  "num_received_chars": 10170,
+  "elapsed_time": 233.92753076553345,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

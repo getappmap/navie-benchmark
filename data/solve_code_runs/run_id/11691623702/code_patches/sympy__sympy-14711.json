@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-14711",
+  "edit_test_file": "sympy/physics/vector/tests/test_output.py",
+  "code_patch": "diff --git a/sympy/physics/vector/vector.py b/sympy/physics/vector/vector.py\nindex a048ee5..8849119 100644\n--- a/sympy/physics/vector/vector.py\n+++ b/sympy/physics/vector/vector.py\n@@ -57,6 +57,8 @@ def __hash__(self):\n \n     def __add__(self, other):\n         \"\"\"The add operator for Vector. \"\"\"\n+        if other == 0:\n+            return self\n         other = _check_vector(other)\n         return Vector(self.args + other.args)\n \n",
+  "test_patch": "diff --git a/sympy/physics/vector/tests/test_vector_addition.py b/sympy/physics/vector/tests/test_vector_addition.py\nnew file mode 100644\nindex 0000000..1a18995\n--- /dev/null\n+++ b/sympy/physics/vector/tests/test_vector_addition.py\n@@ -0,0 +1,8 @@\n+from sympy.physics.vector import ReferenceFrame, Vector\n+from sympy.utilities.pytest import raises\n+\n+def test_vector_sum_with_zero():\n+    \"\"\"Test that summing a list containing a vector and zero times a vector raises TypeError\"\"\"\n+    N = ReferenceFrame('N')\n+    with raises(TypeError):\n+        sum([N.x, (0 * N.x)])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/physics/vector/tests/test_vector_addition_inverted.py b/sympy/physics/vector/tests/test_vector_addition_inverted.py\nnew file mode 100644\nindex 0000000..662aa0e\n--- /dev/null\n+++ b/sympy/physics/vector/tests/test_vector_addition_inverted.py\n@@ -0,0 +1,13 @@\n+from sympy.physics.vector import ReferenceFrame, Vector\n+from sympy.utilities.pytest import raises\n+\n+def test_vector_sum_with_zero():\n+    \"\"\"Test that summing a list containing a vector and zero times a vector works correctly\"\"\"\n+    N = ReferenceFrame('N')\n+    try:\n+        result = sum([N.x, (0 * N.x)])\n+    except TypeError:\n+        raise AssertionError(\"__BUG__HERE__\")\n+        \n+    # The result should equal N.x since adding zero to a vector should return the original vector\n+    assert result == N.x\n\\ No newline at end of file\n",
+  "num_sent_chars": 1908604,
+  "num_received_chars": 12801,
+  "elapsed_time": 249.4716935157776,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 3,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

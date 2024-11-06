@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-24970",
+  "edit_test_file": "lib/matplotlib/tests/test_cbook.py",
+  "code_patch": "diff --git a/lib/matplotlib/colors.py b/lib/matplotlib/colors.py\nindex 2d3072d..367195d 100644\n--- a/lib/matplotlib/colors.py\n+++ b/lib/matplotlib/colors.py\n@@ -727,9 +727,15 @@ class Colormap:\n                 xa = xa.astype(int)\n         # Set the over-range indices before the under-range;\n         # otherwise the under-range values get converted to over-range.\n-        xa[xa > self.N - 1] = self._i_over\n-        xa[xa < 0] = self._i_under\n-        xa[mask_bad] = self._i_bad\n+        # Convert special indices to match array dtype to avoid overflow warnings\n+        i_over = np.array(self._i_over).astype(xa.dtype, copy=False)\n+        i_under = np.array(self._i_under).astype(xa.dtype, copy=False)\n+        i_bad = np.array(self._i_bad).astype(xa.dtype, copy=False)\n+        \n+        # Assign special indices with explicit type conversion\n+        xa[xa > self.N - 1] = i_over\n+        xa[xa < 0] = i_under\n+        xa[mask_bad] = i_bad\n \n         lut = self._lut\n         if bytes:\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_numpy_deprecation_warnings.py b/lib/matplotlib/tests/test_numpy_deprecation_warnings.py\nnew file mode 100644\nindex 0000000..58bba7d\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_numpy_deprecation_warnings.py\n@@ -0,0 +1,14 @@\n+import unittest\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import warnings\n+\n+class TestNumpyDeprecationWarnings(unittest.TestCase):\n+    def test_numpy_deprecation_warning(self):\n+        with warnings.catch_warnings(record=True) as w:\n+            warnings.simplefilter(\"always\")\n+            plt.get_cmap()(np.empty((0, ), dtype=np.uint8))\n+            self.assertTrue(any(issubclass(warning.category, DeprecationWarning) for warning in w))\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_numpy_deprecation_warnings_inverted.py b/lib/matplotlib/tests/test_numpy_deprecation_warnings_inverted.py\nnew file mode 100644\nindex 0000000..1b866a2\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_numpy_deprecation_warnings_inverted.py\n@@ -0,0 +1,16 @@\n+import unittest\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import warnings\n+\n+class TestNumpyDeprecationWarnings(unittest.TestCase):\n+    def test_numpy_deprecation_warning(self):\n+        with warnings.catch_warnings(record=True) as w:\n+            warnings.simplefilter(\"always\")\n+            plt.get_cmap()(np.empty((0, ), dtype=np.uint8))\n+            # Change the assertion to fail when the bug is observed\n+            if any(issubclass(warning.category, DeprecationWarning) for warning in w):\n+                raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 758080,
+  "num_received_chars": 6534,
+  "elapsed_time": 134.6241226196289,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-10356",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/python.py b/src/_pytest/python.py\nindex 3db8775..39934b3 100644\n--- a/src/_pytest/python.py\n+++ b/src/_pytest/python.py\n@@ -463,10 +463,11 @@ class PyCollector(PyobjMixin, nodes.Collector):\n                     values.append(res)\n             dict_values.append(values)\n \n-        # Between classes in the class hierarchy, reverse-MRO order -- nodes\n-        # inherited from base classes should come before subclasses.\n+        # Between classes in the class hierarchy, use the order from dicts\n+        # which is already in the correct order (base class marks first,\n+        # then derived class marks)\n         result = []\n-        for values in reversed(dict_values):\n+        for values in dict_values:\n             result.extend(values)\n         return result\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1562041,
+  "num_received_chars": 12596,
+  "elapsed_time": 175.68967008590698,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

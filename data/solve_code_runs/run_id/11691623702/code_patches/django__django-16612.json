@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16612",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/sites.py b/django/contrib/admin/sites.py\nindex 61be31d..96c54e4 100644\n--- a/django/contrib/admin/sites.py\n+++ b/django/contrib/admin/sites.py\n@@ -453,7 +453,7 @@ class AdminSite:\n                 pass\n             else:\n                 if getattr(match.func, \"should_append_slash\", True):\n-                    return HttpResponsePermanentRedirect(\"%s/\" % request.path)\n+                    return HttpResponsePermanentRedirect(request.get_full_path(force_append_slash=True))\n         raise Http404\n \n     def _build_app_dict(self, request, label=None):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4236121,
+  "num_received_chars": 33952,
+  "elapsed_time": 936.0393514633179,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

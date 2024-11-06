@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24661",
+  "edit_test_file": "sympy/parsing/tests/test_ast_parser.py",
+  "code_patch": "diff --git a/sympy/core/relational.py b/sympy/core/relational.py\nindex 23ab6cb..768bde1 100644\n--- a/sympy/core/relational.py\n+++ b/sympy/core/relational.py\n@@ -148,9 +148,10 @@ class Relational(Boolean, EvalfMixin):\n     #   have not yet been defined\n \n     def __new__(cls, lhs, rhs, rop=None, **assumptions):\n+        evaluate = assumptions.get('evaluate', global_parameters.evaluate)\n         # If called by a subclass, do nothing special and pass on to Basic.\n         if cls is not Relational:\n-            return Basic.__new__(cls, lhs, rhs, **assumptions)\n+            return Basic.__new__(cls, lhs, rhs, evaluate=evaluate, **assumptions)\n \n         # XXX: Why do this? There should be a separate function to make a\n         # particular subclass of Relational from a string.\n@@ -620,7 +621,7 @@ def __new__(cls, lhs, rhs, **options):\n             else:\n                 return _sympify(val)\n \n-        return Relational.__new__(cls, lhs, rhs)\n+        return Relational.__new__(cls, lhs, rhs, evaluate=False)\n \n     @classmethod\n     def _eval_relation(cls, lhs, rhs):\n@@ -771,7 +772,7 @@ def __new__(cls, lhs, rhs, **options):\n             else:\n                 return _sympify(val)\n \n-        return Relational.__new__(cls, lhs, rhs, **options)\n+        return Relational.__new__(cls, lhs, rhs, evaluate=False, **options)\n \n     @classmethod\n     def _eval_relation(cls, lhs, rhs):\n",
+  "test_patch": "diff --git a/sympy/parsing/tests/test_parse_expr_relational.py b/sympy/parsing/tests/test_parse_expr_relational.py\nnew file mode 100644\nindex 0000000..cc730ce\n--- /dev/null\n+++ b/sympy/parsing/tests/test_parse_expr_relational.py\n@@ -0,0 +1,7 @@\n+from sympy.parsing.sympy_parser import parse_expr\n+from sympy.core.relational import Lt\n+\n+def test_parse_expr_relational_evaluate_false():\n+    # This test reproduces the issue where evaluate=False is ignored for relationals\n+    result = parse_expr('1 < 2', evaluate=False)\n+    assert result == True  # The issue is that this evaluates to True instead of Lt(1, 2, evaluate=False)\n",
+  "test_inverted_patch": "diff --git a/sympy/parsing/tests/test_parse_expr_relational_inverted.py b/sympy/parsing/tests/test_parse_expr_relational_inverted.py\nnew file mode 100644\nindex 0000000..246a004\n--- /dev/null\n+++ b/sympy/parsing/tests/test_parse_expr_relational_inverted.py\n@@ -0,0 +1,9 @@\n+from sympy.parsing.sympy_parser import parse_expr\n+from sympy.core.relational import Lt\n+\n+def test_parse_expr_relational_evaluate_false():\n+    # This test reproduces the issue where evaluate=False is ignored for relationals\n+    result = parse_expr('1 < 2', evaluate=False)\n+    # The issue is that this evaluates to True instead of Lt(1, 2, evaluate=False)\n+    # Alter the assertion to fail when the bug is observed\n+    assert result == Lt(1, 2, evaluate=False), \"__BUG__HERE__\"\n",
+  "num_sent_chars": 6967385,
+  "num_received_chars": 96057,
+  "elapsed_time": 1006.6246209144592,
+  "lint_repair_count": 14,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13195",
+  "edit_test_file": "tests/messages_tests/test_cookie.py",
+  "code_patch": "diff --git a/django/http/response.py b/django/http/response.py\nindex e00bcac..a191317 100644\n--- a/django/http/response.py\n+++ b/django/http/response.py\n@@ -210,13 +210,15 @@ class HttpResponseBase:\n         value = signing.get_cookie_signer(salt=key + salt).sign(value)\n         return self.set_cookie(key, value, **kwargs)\n \n-    def delete_cookie(self, key, path='/', domain=None):\n+    def delete_cookie(self, key, path='/', domain=None, secure=None, samesite=None):\n         # Most browsers ignore the Set-Cookie header if the cookie name starts\n         # with __Host- or __Secure- and the cookie doesn't use the secure flag.\n-        secure = key.startswith(('__Secure-', '__Host-'))\n+        if secure is None:\n+            secure = key.startswith(('__Secure-', '__Host-'))\n         self.set_cookie(\n             key, max_age=0, path=path, domain=domain, secure=secure,\n             expires='Thu, 01 Jan 1970 00:00:00 GMT',\n+            samesite=samesite,\n         )\n \n     # Common methods used by subclasses\n",
+  "test_patch": "diff --git a/tests/messages_tests/test_delete_cookie_preserve_samesite.py b/tests/messages_tests/test_delete_cookie_preserve_samesite.py\nnew file mode 100644\nindex 0000000..3e789ec\n--- /dev/null\n+++ b/tests/messages_tests/test_delete_cookie_preserve_samesite.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from django.http import HttpResponse\n+\n+class DeleteCookiePreserveSameSiteTest(unittest.TestCase):\n+    def test_delete_cookie_preserves_samesite(self):\n+        response = HttpResponse()\n+        # Set a cookie with SameSite attribute\n+        response.set_cookie('messages', 'value', samesite='Lax')\n+        # Delete the cookie\n+        response.delete_cookie('messages')\n+        # Check if the SameSite attribute is preserved\n+        self.assertIn('samesite', response.cookies['messages'])\n+        self.assertEqual(response.cookies['messages']['samesite'], 'Lax')\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/messages_tests/test_delete_cookie_preserve_samesite_inverted.py b/tests/messages_tests/test_delete_cookie_preserve_samesite_inverted.py\nnew file mode 100644\nindex 0000000..5de861f\n--- /dev/null\n+++ b/tests/messages_tests/test_delete_cookie_preserve_samesite_inverted.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from django.http import HttpResponse\n+\n+class DeleteCookiePreserveSameSiteTest(unittest.TestCase):\n+    def test_delete_cookie_preserves_samesite(self):\n+        response = HttpResponse()\n+        # Set a cookie with SameSite attribute\n+        response.set_cookie('messages', 'value', samesite='Lax')\n+        # Delete the cookie\n+        response.delete_cookie('messages')\n+        # Check if the SameSite attribute is preserved\n+        if 'samesite' in response.cookies['messages'] and response.cookies['messages']['samesite'] == 'Lax':\n+            raise AssertionError(\"__BUG__HERE__\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "num_sent_chars": 3318612,
+  "num_received_chars": 36051,
+  "elapsed_time": 451.3633668422699,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

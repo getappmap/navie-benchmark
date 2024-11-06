@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8595",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py\nindex d85d796..dfdee07 100644\n--- a/sphinx/ext/autodoc/__init__.py\n+++ b/sphinx/ext/autodoc/__init__.py\n@@ -1074,7 +1074,10 @@ class ModuleDocumenter(Documenter):\n     def get_object_members(self, want_all: bool) -> Tuple[bool, ObjectMembers]:\n         members = self.get_module_members()\n         if want_all:\n-            if not self.__all__:\n+            if self.__all__ == []:\n+                # empty __all__ means no members should be documented\n+                return False, []\n+            elif not self.__all__:\n                 # for implicit module members, check __module__ to avoid\n                 # documenting imported objects\n                 return True, list(members.values())\n@@ -1082,7 +1085,6 @@ class ModuleDocumenter(Documenter):\n                 for member in members.values():\n                     if member.__name__ not in self.__all__:\n                         member.skipped = True\n-\n                 return False, list(members.values())\n         else:\n             memberlist = self.options.members or []\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4005476,
+  "num_received_chars": 35630,
+  "elapsed_time": 634.7432932853699,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

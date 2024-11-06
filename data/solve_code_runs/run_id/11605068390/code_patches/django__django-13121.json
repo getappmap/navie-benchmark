@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13121",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/sqlite3/operations.py b/django/db/backends/sqlite3/operations.py\nindex 9510b5e..47f4118 100644\n--- a/django/db/backends/sqlite3/operations.py\n+++ b/django/db/backends/sqlite3/operations.py\n@@ -339,10 +339,15 @@ class DatabaseOperations(BaseDatabaseOperations):\n     def combine_duration_expression(self, connector, sub_expressions):\n         if connector not in ['+', '-']:\n             raise DatabaseError('Invalid connector for timedelta: %s.' % connector)\n-        fn_params = [\"'%s'\" % connector] + sub_expressions\n-        if len(fn_params) > 3:\n-            raise ValueError('Too many params for timedelta operations.')\n-        return \"django_format_dtdelta(%s)\" % ', '.join(fn_params)\n+        fn_params = []\n+        for expr in sub_expressions:\n+            if expr.startswith(\"'\") and expr.endswith(\"'\"):\n+                # String literal containing a duration value\n+                fn_params.append(expr)\n+            else:\n+                # Column reference or other expression\n+                fn_params.append(expr)\n+        return \"django_format_dtdelta('%s', %s)\" % (connector, ', '.join(fn_params))\n \n     def integer_field_range(self, internal_type):\n         # SQLite doesn't enforce any integer constraints\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 5600836,
+  "num_received_chars": 46649,
+  "elapsed_time": 615.2764954566956,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

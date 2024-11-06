@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13810",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/handlers/base.py b/django/core/handlers/base.py\nindex 8e8c3da..2e0592c 100644\n--- a/django/core/handlers/base.py\n+++ b/django/core/handlers/base.py\n@@ -49,6 +49,9 @@ class BaseHandler:\n                 middleware_is_async = False\n             else:\n                 middleware_is_async = middleware_can_async\n+            # Store original handler state\n+            original_handler = handler\n+            original_handler_is_async = handler_is_async\n             try:\n                 # Adapt handler, if needed.\n                 handler = self.adapt_method_mode(\n@@ -62,6 +65,9 @@ class BaseHandler:\n                         logger.debug('MiddlewareNotUsed(%r): %s', middleware_path, exc)\n                     else:\n                         logger.debug('MiddlewareNotUsed: %r', middleware_path)\n+                # Restore original handler state\n+                handler = original_handler\n+                handler_is_async = original_handler_is_async\n                 continue\n \n             if mw_instance is None:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 2967900,
+  "num_received_chars": 40001,
+  "elapsed_time": 554.4046716690063,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

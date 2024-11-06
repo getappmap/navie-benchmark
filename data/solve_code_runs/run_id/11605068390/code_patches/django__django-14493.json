@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14493",
+  "edit_test_file": "tests/staticfiles_tests/test_storage.py",
+  "code_patch": "diff --git a/django/contrib/staticfiles/storage.py b/django/contrib/staticfiles/storage.py\nindex f957a66..fe13423 100644\n--- a/django/contrib/staticfiles/storage.py\n+++ b/django/contrib/staticfiles/storage.py\n@@ -260,6 +260,7 @@ class HashedFilesMixin:\n                 processed_adjustable_paths[name] = (name, hashed_name, processed)\n \n         paths = {path: paths[path] for path in adjustable_paths}\n+        substitutions = False\n \n         for i in range(self.max_post_process_passes):\n             substitutions = False\n",
+  "test_patch": "diff --git a/tests/staticfiles_tests/test_manifest_storage_passes.py b/tests/staticfiles_tests/test_manifest_storage_passes.py\nnew file mode 100644\nindex 0000000..fb24ebe\n--- /dev/null\n+++ b/tests/staticfiles_tests/test_manifest_storage_passes.py\n@@ -0,0 +1,29 @@\n+import os\n+from io import StringIO\n+\n+from django.contrib.staticfiles.management.commands.collectstatic import Command as CollectstaticCommand\n+from django.contrib.staticfiles.storage import ManifestStaticFilesStorage\n+from django.core.management import call_command\n+from django.test import SimpleTestCase, override_settings\n+\n+\n+class ZeroPassesStorage(ManifestStaticFilesStorage):\n+    \"\"\"Storage class that sets max_post_process_passes to 0.\"\"\"\n+    max_post_process_passes = 0\n+\n+\n+@override_settings(STATICFILES_STORAGE='staticfiles_tests.test_manifest_storage_passes.ZeroPassesStorage')\n+class TestManifestStorageZeroPasses(SimpleTestCase):\n+    \"\"\"Test ManifestStaticFilesStorage with max_post_process_passes = 0.\"\"\"\n+\n+    def test_zero_passes_raises_error(self):\n+        \"\"\"\n+        Test that setting max_post_process_passes to 0 raises UnboundLocalError\n+        when running collectstatic.\n+        \"\"\"\n+        err = StringIO()\n+        with self.assertRaisesMessage(\n+            UnboundLocalError,\n+            \"local variable 'substitutions' referenced before assignment\"\n+        ):\n+            call_command('collectstatic', interactive=False, verbosity=0, stderr=err)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4077261,
+  "num_received_chars": 59496,
+  "elapsed_time": 827.1175355911255,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

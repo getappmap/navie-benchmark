@@ -1,0 +1,20 @@
+{
+  "instance_id": "psf__requests-2931",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/models.py b/requests/models.py\nindex 9c624d3..ae62186 100644\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -80,7 +80,9 @@ class RequestEncodingMixin(object):\n         if parameters are supplied as a dict.\n         \"\"\"\n \n-        if isinstance(data, (str, bytes)):\n+        if isinstance(data, bytes):\n+            return data\n+        elif isinstance(data, str):\n             return to_native_string(data)\n         elif hasattr(data, 'read'):\n             return data\n@@ -420,7 +422,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):\n \n         is_stream = all([\n             hasattr(data, '__iter__'),\n-            not isinstance(data, (basestring, list, tuple, dict))\n+            not isinstance(data, (basestring, list, tuple, dict, bytes, bytearray))\n         ])\n \n         try:\n@@ -445,7 +447,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):\n             else:\n                 if data:\n                     body = self._encode_params(data)\n-                    if isinstance(data, basestring) or hasattr(data, 'read'):\n+                    if isinstance(data, (basestring, bytes, bytearray)) or hasattr(data, 'read'):\n                         content_type = None\n                     else:\n                         content_type = 'application/x-www-form-urlencoded'\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 926855,
+  "num_received_chars": 11598,
+  "elapsed_time": 126.25429773330688,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

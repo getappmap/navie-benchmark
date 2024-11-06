@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-14351",
+  "edit_test_file": "tests/queries/tests.py",
+  "code_patch": "diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py\nindex 7264929..11fd9d4 100644\n--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@ -1228,6 +1228,10 @@ class SQLCompiler:\n         qn = compiler.quote_name_unless_alias\n         qn2 = self.connection.ops.quote_name\n \n+        # For subqueries in OR conditions, ensure we only select the columns we need\n+        if len(columns) == 1 and not self.query.select:\n+            self.query.set_select([self.query.model._meta.pk.get_col(self.query.get_initial_alias())])\n+\n         for index, select_col in enumerate(self.query.select):\n             lhs_sql, lhs_params = self.compile(select_col)\n             rhs = '%s.%s' % (qn(alias), qn2(columns[index]))\n",
+  "test_patch": "diff --git a/tests/queries/test_q_object_or_subquery.py b/tests/queries/test_q_object_or_subquery.py\nnew file mode 100644\nindex 0000000..ab4f04b\n--- /dev/null\n+++ b/tests/queries/test_q_object_or_subquery.py\n@@ -0,0 +1,54 @@\n+from django.core.exceptions import FieldError\n+from django.db import models\n+from django.test import TestCase\n+from django.db.models import Count, Q\n+\n+\n+class Agent(models.Model):\n+    name = models.CharField(max_length=100)\n+\n+\n+class PropertyGroup(models.Model):\n+    name = models.CharField(max_length=100)\n+    agents = models.ManyToManyField(Agent, through='AgentPropertyGroup')\n+\n+\n+class AgentPropertyGroup(models.Model):\n+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE)\n+    property_group = models.ForeignKey(PropertyGroup, on_delete=models.CASCADE)\n+\n+\n+class Rating(models.Model):\n+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE)\n+    score = models.IntegerField()\n+\n+\n+class QObjectOrSubqueryTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.agent1 = Agent.objects.create(name='Agent 1')\n+        cls.agent2 = Agent.objects.create(name='Agent 2')\n+        \n+        cls.group1 = PropertyGroup.objects.create(name='Group 1')\n+        cls.group2 = PropertyGroup.objects.create(name='Group 2')\n+        \n+        AgentPropertyGroup.objects.create(agent=cls.agent1, property_group=cls.group1)\n+        AgentPropertyGroup.objects.create(agent=cls.agent2, property_group=cls.group2)\n+        \n+        Rating.objects.create(agent=cls.agent1, score=5)\n+        Rating.objects.create(agent=cls.agent2, score=3)\n+\n+    def test_q_object_or_subquery_error(self):\n+        \"\"\"\n+        Test that using __in with a queryset in a Q object OR condition \n+        raises a ProgrammingError when the subquery returns multiple columns.\n+        \"\"\"\n+        property_groups = PropertyGroup.objects.all()\n+        \n+        with self.assertRaises(FieldError):\n+            list(Rating.objects.annotate(\n+                agent_group_count=Count('agent__property_groups')\n+            ).filter(\n+                Q(agent__property_groups__in=property_groups) |\n+                Q(agent__property_groups__count=0)\n+            ).distinct())\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 6645318,
+  "num_received_chars": 89321,
+  "elapsed_time": 1119.8809247016907,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

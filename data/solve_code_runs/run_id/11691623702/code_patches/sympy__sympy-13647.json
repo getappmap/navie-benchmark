@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13647",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/common.py b/sympy/matrices/common.py\nindex 056d9bc..bcd3f52 100644\n--- a/sympy/matrices/common.py\n+++ b/sympy/matrices/common.py\n@@ -84,9 +84,9 @@ def _eval_col_insert(self, pos, other):\n         def entry(i, j):\n             if j < pos:\n                 return self[i, j]\n-            elif pos <= j < pos + other.cols:\n+            elif j < pos + other.cols:\n                 return other[i, j - pos]\n-            return self[i, j - pos - other.cols]\n+            return self[i, j - other.cols]\n \n         return self._new(self.rows, self.cols + other.cols,\n                          lambda i, j: entry(i, j))\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1541188,
+  "num_received_chars": 11803,
+  "elapsed_time": 557.514018535614,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

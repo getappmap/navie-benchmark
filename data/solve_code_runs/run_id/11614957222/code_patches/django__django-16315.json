@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16315",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/postgresql/operations.py b/django/db/backends/postgresql/operations.py\nindex 62273fc..1980ba0 100644\n--- a/django/db/backends/postgresql/operations.py\n+++ b/django/db/backends/postgresql/operations.py\n@@ -353,12 +353,30 @@ class DatabaseOperations(BaseDatabaseOperations):\n         if on_conflict == OnConflict.IGNORE:\n             return \"ON CONFLICT DO NOTHING\"\n         if on_conflict == OnConflict.UPDATE:\n+            # Get the actual database column names for unique fields\n+            unique_columns = []\n+            for field_name in unique_fields:\n+                field = fields[0].model._meta.get_field(field_name)\n+                unique_columns.append(field.column or field_name)\n+\n+            # Get the actual database column names for update fields\n+            update_columns = []\n+            for field_name in update_fields:\n+                field = fields[0].model._meta.get_field(field_name)\n+                update_columns.append(field.column or field_name)\n+\n+            # Build the ON CONFLICT clause using the actual column names\n             return \"ON CONFLICT(%s) DO UPDATE SET %s\" % (\n-                \", \".join(map(self.quote_name, unique_fields)),\n+                # Quote the conflict column names\n+                \", \".join(map(self.quote_name, unique_columns)),\n+                # Quote both sides of the assignment in the UPDATE clause\n                 \", \".join(\n                     [\n-                        f\"{field} = EXCLUDED.{field}\"\n-                        for field in map(self.quote_name, update_fields)\n+                        \"%s = EXCLUDED.%s\" % (\n+                            self.quote_name(column),\n+                            self.quote_name(column)\n+                        )\n+                        for column in update_columns\n                     ]\n                 ),\n             )\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3564832,
+  "num_received_chars": 38883,
+  "elapsed_time": 486.76530480384827,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

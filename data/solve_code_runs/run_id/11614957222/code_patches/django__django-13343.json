@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13343",
+  "edit_test_file": "tests/file_storage/test_generate_filename.py",
+  "code_patch": "diff --git a/django/db/models/fields/files.py b/django/db/models/fields/files.py\nindex e10a5bb..5642708 100644\n--- a/django/db/models/fields/files.py\n+++ b/django/db/models/fields/files.py\n@@ -227,6 +227,7 @@ class FileField(Field):\n     def __init__(self, verbose_name=None, name=None, upload_to='', storage=None, **kwargs):\n         self._primary_key_set_explicitly = 'primary_key' in kwargs\n \n+        self._original_storage = storage\n         self.storage = storage or default_storage\n         if callable(self.storage):\n             self.storage = self.storage()\n@@ -278,8 +279,8 @@ class FileField(Field):\n         if kwargs.get(\"max_length\") == 100:\n             del kwargs[\"max_length\"]\n         kwargs['upload_to'] = self.upload_to\n-        if self.storage is not default_storage:\n-            kwargs['storage'] = self.storage\n+        if self._original_storage is not None:\n+            kwargs['storage'] = self._original_storage\n         return name, path, args, kwargs\n \n     def get_internal_type(self):\n",
+  "test_patch": "diff --git a/tests/file_storage/test_filefield_callable_storage_deconstruction.py b/tests/file_storage/test_filefield_callable_storage_deconstruction.py\nnew file mode 100644\nindex 0000000..3568d7f\n--- /dev/null\n+++ b/tests/file_storage/test_filefield_callable_storage_deconstruction.py\n@@ -0,0 +1,17 @@\n+import unittest\n+from django.db.models import FileField\n+from django.core.files.storage import FileSystemStorage\n+from django.test import SimpleTestCase\n+\n+class CallableStorageDeconstructionTest(SimpleTestCase):\n+    def test_callable_storage_deconstruction(self):\n+        def get_storage():\n+            return FileSystemStorage(location='/tmp')\n+\n+        field = FileField(storage=get_storage)\n+        name, path, args, kwargs = field.deconstruct()\n+\n+        # The issue is that the callable is evaluated during deconstruction,\n+        # so we expect the storage to be inlined instead of being a reference to the callable.\n+        self.assertIn('storage', kwargs)\n+        self.assertIsInstance(kwargs['storage'], FileSystemStorage)\n",
+  "test_inverted_patch": "diff --git a/tests/file_storage/test_filefield_callable_storage_deconstruction_inverted.py b/tests/file_storage/test_filefield_callable_storage_deconstruction_inverted.py\nnew file mode 100644\nindex 0000000..6b29567\n--- /dev/null\n+++ b/tests/file_storage/test_filefield_callable_storage_deconstruction_inverted.py\n@@ -0,0 +1,18 @@\n+import unittest\n+from django.db.models import FileField\n+from django.core.files.storage import FileSystemStorage\n+from django.test import SimpleTestCase\n+\n+class CallableStorageDeconstructionTest(SimpleTestCase):\n+    def test_callable_storage_deconstruction(self):\n+        def get_storage():\n+            return FileSystemStorage(location='/tmp')\n+\n+        field = FileField(storage=get_storage)\n+        name, path, args, kwargs = field.deconstruct()\n+\n+        # The issue is that the callable is evaluated during deconstruction,\n+        # so we expect the storage to be inlined instead of being a reference to the callable.\n+        # Alter the test to fail when the issue is observed.\n+        if 'storage' in kwargs and isinstance(kwargs['storage'], FileSystemStorage):\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 775692,
+  "num_received_chars": 7780,
+  "elapsed_time": 110.85802435874939,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24443",
+  "edit_test_file": "sympy/combinatorics/tests/test_homomorphisms.py",
+  "code_patch": "diff --git a/sympy/combinatorics/homomorphisms.py b/sympy/combinatorics/homomorphisms.py\nindex bb7bdf3..a65b2f7 100644\n--- a/sympy/combinatorics/homomorphisms.py\n+++ b/sympy/combinatorics/homomorphisms.py\n@@ -337,23 +337,25 @@ def _image(r):\n                     s = domain.generators[gens.index(r[i])]\n                 else:\n                     s = r[i]\n+                # Check if s or its inverse is in images\n                 if s in images:\n                     w = w*images[s]**power\n                 elif s**-1 in images:\n-                    w = w*images[s**-1]**power\n+                    w = w*images[s**-1]**(-power)\n                 i += abs(power)\n                 j += 1\n             return w\n \n     for r in rels:\n+        img = _image(r)\n         if isinstance(codomain, FpGroup):\n-            s = codomain.equals(_image(r), identity)\n+            s = codomain.equals(img, identity)\n             if s is None:\n                 # only try to make the rewriting system\n                 # confluent when it can't determine the\n                 # truth of equality otherwise\n                 success = codomain.make_confluent()\n-                s = codomain.equals(_image(r), identity)\n+                s = codomain.equals(img, identity)\n                 if s is None and not success:\n                     raise RuntimeError(\"Can't determine if the images \"\n                         \"define a homomorphism. Try increasing \"\n@@ -362,7 +364,7 @@ def _image(r):\n                         \"the current value is stored in group._rewriting\"\n                         \"_system.maxeqns)\")\n         else:\n-            s = _image(r).is_identity\n+            s = img.is_identity\n         if not s:\n             return False\n     return True\n",
+  "test_patch": "diff --git a/sympy/combinatorics/tests/test_homomorphism_bug.py b/sympy/combinatorics/tests/test_homomorphism_bug.py\nnew file mode 100644\nindex 0000000..f294cb4\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_homomorphism_bug.py\n@@ -0,0 +1,8 @@\n+from sympy.combinatorics import DihedralGroup\n+from sympy.combinatorics.homomorphisms import homomorphism\n+from sympy.testing.pytest import raises\n+\n+def test_homomorphism_bug():\n+    D3 = DihedralGroup(3)\n+    with raises(ValueError):\n+        homomorphism(D3, D3, D3.generators, D3.generators)\n",
+  "test_inverted_patch": "diff --git a/sympy/combinatorics/tests/test_homomorphism_bug_inverted.py b/sympy/combinatorics/tests/test_homomorphism_bug_inverted.py\nnew file mode 100644\nindex 0000000..224f6c8\n--- /dev/null\n+++ b/sympy/combinatorics/tests/test_homomorphism_bug_inverted.py\n@@ -0,0 +1,9 @@\n+from sympy.combinatorics import DihedralGroup\n+from sympy.combinatorics.homomorphisms import homomorphism\n+\n+def test_homomorphism_bug():\n+    D3 = DihedralGroup(3)\n+    try:\n+        homomorphism(D3, D3, D3.generators, D3.generators)\n+    except ValueError:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 4390520,
+  "num_received_chars": 96510,
+  "elapsed_time": 983.8512287139893,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

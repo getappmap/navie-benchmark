@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16485",
+  "edit_test_file": "tests/template_tests/filter_tests/test_floatformat.py",
+  "code_patch": "diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py\nindex 23c3a08..6522b2f 100644\n--- a/django/template/defaultfilters.py\n+++ b/django/template/defaultfilters.py\n@@ -168,6 +168,17 @@ def floatformat(text, arg=-1):\n     except (ValueError, OverflowError, InvalidOperation):\n         return input_val\n \n+    # Special handling for zero values when rounding to whole numbers\n+    if d.is_zero() and p <= 0:\n+        return mark_safe(\n+            formats.number_format(\n+                \"0\",\n+                0,\n+                use_l10n=use_l10n,\n+                force_grouping=force_grouping,\n+            )\n+        )\n+\n     if not m and p < 0:\n         return mark_safe(\n             formats.number_format(\n",
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_floatformat_decimal.py b/tests/template_tests/filter_tests/test_floatformat_decimal.py\nnew file mode 100644\nindex 0000000..9238981\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_floatformat_decimal.py\n@@ -0,0 +1,14 @@\n+from decimal import Decimal\n+from django.template.defaultfilters import floatformat\n+from django.test import SimpleTestCase\n+\n+\n+class FloatformatDecimalTests(SimpleTestCase):\n+    def test_floatformat_with_zero_decimal(self):\n+        with self.assertRaises(ValueError) as cm:\n+            floatformat('0.00', 0)\n+        self.assertEqual(str(cm.exception), \"valid range for prec is [1, MAX_PREC]\")\n+\n+        with self.assertRaises(ValueError) as cm:\n+            floatformat(Decimal('0.00'), 0)\n+        self.assertEqual(str(cm.exception), \"valid range for prec is [1, MAX_PREC]\")\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_floatformat_decimal_inverted.py b/tests/template_tests/filter_tests/test_floatformat_decimal_inverted.py\nnew file mode 100644\nindex 0000000..fc4207e\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_floatformat_decimal_inverted.py\n@@ -0,0 +1,13 @@\n+from decimal import Decimal\n+from django.template.defaultfilters import floatformat\n+from django.test import SimpleTestCase\n+\n+class FloatformatDecimalTests(SimpleTestCase):\n+    def test_floatformat_with_zero_decimal(self):\n+        # The test should now fail when the issue is observed.\n+        # We expect the function to work without raising an exception.\n+        try:\n+            floatformat('0.00', 0)\n+            floatformat(Decimal('0.00'), 0)\n+        except ValueError as e:\n+            self.fail(f\"__BUG__HERE__: {str(e)}\")\n",
+  "num_sent_chars": 738508,
+  "num_received_chars": 6235,
+  "elapsed_time": 81.3279185295105,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

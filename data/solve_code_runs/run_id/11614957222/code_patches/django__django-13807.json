@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13807",
+  "edit_test_file": "tests/backends/sqlite/tests.py",
+  "code_patch": "diff --git a/django/db/backends/sqlite3/base.py b/django/db/backends/sqlite3/base.py\nindex 2eeaf98..b0ef30a 100644\n--- a/django/db/backends/sqlite3/base.py\n+++ b/django/db/backends/sqlite3/base.py\n@@ -327,13 +327,13 @@ class DatabaseWrapper(BaseDatabaseWrapper):\n                     violations = cursor.execute('PRAGMA foreign_key_check').fetchall()\n                 else:\n                     violations = chain.from_iterable(\n-                        cursor.execute('PRAGMA foreign_key_check(%s)' % table_name).fetchall()\n+                        cursor.execute('PRAGMA foreign_key_check(%s)' % self.ops.quote_name(table_name)).fetchall()\n                         for table_name in table_names\n                     )\n                 # See https://www.sqlite.org/pragma.html#pragma_foreign_key_check\n                 for table_name, rowid, referenced_table_name, foreign_key_index in violations:\n                     foreign_key = cursor.execute(\n-                        'PRAGMA foreign_key_list(%s)' % table_name\n+                        'PRAGMA foreign_key_list(%s)' % self.ops.quote_name(table_name)\n                     ).fetchall()[foreign_key_index]\n                     column_name, referenced_column_name = foreign_key[3:5]\n                     primary_key_column_name = self.introspection.get_primary_key_column(cursor, table_name)\n",
+  "test_patch": "diff --git a/tests/backends/sqlite/test_sql_keywords.py b/tests/backends/sqlite/test_sql_keywords.py\nnew file mode 100644\nindex 0000000..43bcf3f\n--- /dev/null\n+++ b/tests/backends/sqlite/test_sql_keywords.py\n@@ -0,0 +1,16 @@\n+import unittest\n+\n+from django.db import connection\n+from django.db.utils import OperationalError\n+from django.test import TestCase\n+\n+\n+@unittest.skipUnless(connection.vendor == 'sqlite', 'SQLite tests')\n+class SQLKeywordTableNameTests(TestCase):\n+    def test_check_constraints_with_sql_keyword_table(self):\n+        \"\"\"\n+        check_constraints() should properly quote table names that are SQL keywords\n+        to avoid syntax errors.\n+        \"\"\"\n+        with self.assertRaisesMessage(OperationalError, 'near \"order\": syntax error'):\n+            connection.check_constraints(['order'])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/backends/sqlite/test_sql_keywords_inverted.py b/tests/backends/sqlite/test_sql_keywords_inverted.py\nnew file mode 100644\nindex 0000000..d37b383\n--- /dev/null\n+++ b/tests/backends/sqlite/test_sql_keywords_inverted.py\n@@ -0,0 +1,21 @@\n+import unittest\n+\n+from django.db import connection\n+from django.test import TestCase\n+from django.db.utils import OperationalError\n+\n+\n+@unittest.skipUnless(connection.vendor == 'sqlite', 'SQLite tests')\n+class SQLKeywordTableNameTests(TestCase):\n+    def test_check_constraints_with_sql_keyword_table(self):\n+        \"\"\"\n+        check_constraints() should properly quote SQL keyword table names to prevent syntax errors.\n+        This test verifies that using 'order' as a table name (SQL keyword) works correctly.\n+        The test should fail if the table name is not properly quoted.\n+        \"\"\"\n+        try:\n+            connection.check_constraints(['order'])\n+            raise AssertionError('__BUG__HERE__')\n+        except OperationalError as e:\n+            if 'near \"order\": syntax error' in str(e):\n+                raise AssertionError('__BUG__HERE__')\n\\ No newline at end of file\n",
+  "num_sent_chars": 1872082,
+  "num_received_chars": 21412,
+  "elapsed_time": 410.5858578681946,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 2,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7521",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/capture.py b/src/_pytest/capture.py\nindex 3f9c60f..7137c63 100644\n--- a/src/_pytest/capture.py\n+++ b/src/_pytest/capture.py\n@@ -177,6 +177,10 @@ def pytest_load_initial_conftests(early_config: Config):\n class EncodedFile(io.TextIOWrapper):\n     __slots__ = ()\n \n+    def __init__(self, *args, **kwargs):\n+        kwargs.setdefault(\"newline\", None)  # Preserve line endings\n+        super().__init__(*args, **kwargs)\n+\n     @property\n     def name(self) -> str:\n         # Ensure that file.name is a string. Workaround for a Python bug\n@@ -192,7 +196,7 @@ class EncodedFile(io.TextIOWrapper):\n \n class CaptureIO(io.TextIOWrapper):\n     def __init__(self) -> None:\n-        super().__init__(io.BytesIO(), encoding=\"UTF-8\", newline=\"\", write_through=True)\n+        super().__init__(io.BytesIO(), encoding=\"UTF-8\", newline=None, write_through=True)\n \n     def getvalue(self) -> str:\n         assert isinstance(self.buffer, io.BytesIO)\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1552113,
+  "num_received_chars": 10343,
+  "elapsed_time": 174.96388387680054,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

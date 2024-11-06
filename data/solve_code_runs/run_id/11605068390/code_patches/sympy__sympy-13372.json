@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13372",
+  "edit_test_file": "sympy/core/tests/test_evalf.py",
+  "code_patch": "diff --git a/sympy/core/evalf.py b/sympy/core/evalf.py\nindex 72a5fba..f3e66e5 100644\n--- a/sympy/core/evalf.py\n+++ b/sympy/core/evalf.py\n@@ -1301,12 +1301,16 @@ def evalf(x, prec, options):\n             elif re.is_number:\n                 re = re._to_mpmath(prec, allow_ints=False)._mpf_\n                 reprec = prec\n+            else:\n+                raise NotImplementedError(\"Could not convert real part to mpmath number\")\n             if im == 0:\n                 im = None\n                 imprec = None\n             elif im.is_number:\n                 im = im._to_mpmath(prec, allow_ints=False)._mpf_\n                 imprec = prec\n+            else:\n+                raise NotImplementedError(\"Could not convert imaginary part to mpmath number\")\n             r = re, im, reprec, imprec\n         except AttributeError:\n             raise NotImplementedError\n",
+  "test_patch": "diff --git a/sympy/core/tests/test_eval_mul.py b/sympy/core/tests/test_eval_mul.py\nnew file mode 100644\nindex 0000000..04dcf18\n--- /dev/null\n+++ b/sympy/core/tests/test_eval_mul.py\n@@ -0,0 +1,10 @@\n+# sympy/core/tests/test_eval_mul.py\n+\n+from sympy import Mul, Max, Symbol\n+from sympy.utilities.pytest import raises\n+\n+def test_evalf_unboundlocalerror():\n+    x = Symbol('x')\n+    y = Symbol('y')\n+    expr = Mul(Max(0, y), x, evaluate=False)\n+    raises(UnboundLocalError, lambda: expr.evalf())\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_eval_mul_inverted.py b/sympy/core/tests/test_eval_mul_inverted.py\nnew file mode 100644\nindex 0000000..9825f63\n--- /dev/null\n+++ b/sympy/core/tests/test_eval_mul_inverted.py\n@@ -0,0 +1,13 @@\n+# sympy/core/tests/test_eval_mul.py\n+\n+from sympy import Mul, Max, Symbol\n+from sympy.utilities.pytest import raises\n+\n+def test_evalf_unboundlocalerror():\n+    x = Symbol('x')\n+    y = Symbol('y')\n+    expr = Mul(Max(0, y), x, evaluate=False)\n+    try:\n+        expr.evalf()\n+    except UnboundLocalError:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 766799,
+  "num_received_chars": 7170,
+  "elapsed_time": 116.19029641151428,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

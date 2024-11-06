@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16642",
+  "edit_test_file": "tests/responses/test_fileresponse.py",
+  "code_patch": "diff --git a/django/http/response.py b/django/http/response.py\nindex f62dec8..5da7bcd 100644\n--- a/django/http/response.py\n+++ b/django/http/response.py\n@@ -612,6 +612,8 @@ class FileResponse(StreamingHttpResponse):\n                     \"bzip2\": \"application/x-bzip\",\n                     \"gzip\": \"application/gzip\",\n                     \"xz\": \"application/x-xz\",\n+                    \"br\": \"application/x-brotli\",\n+                    \"compress\": \"application/x-compress\",\n                 }.get(encoding, content_type)\n                 self.headers[\"Content-Type\"] = (\n                     content_type or \"application/octet-stream\"\n",
+  "test_patch": "diff --git a/tests/responses/test_mime_type_guessing.py b/tests/responses/test_mime_type_guessing.py\nnew file mode 100644\nindex 0000000..0a222c2\n--- /dev/null\n+++ b/tests/responses/test_mime_type_guessing.py\n@@ -0,0 +1,25 @@\n+import os\n+from django.http import FileResponse\n+from django.test import SimpleTestCase\n+\n+class MimeTypeGuessingTests(SimpleTestCase):\n+    def test_mime_type_guessing_for_Z_and_br_extensions(self):\n+        # Create temporary files with .Z and .br extensions\n+        with open('test.html.Z', 'wb') as f:\n+            f.write(b\"dummy content\")\n+        with open('test.html.br', 'wb') as f:\n+            f.write(b\"dummy content\")\n+\n+        # Test FileResponse for .Z extension\n+        with open('test.html.Z', 'rb') as f:\n+            response = FileResponse(f)\n+            self.assertEqual(response.headers[\"Content-Type\"], \"text/html\")\n+\n+        # Test FileResponse for .br extension\n+        with open('test.html.br', 'rb') as f:\n+            response = FileResponse(f)\n+            self.assertEqual(response.headers[\"Content-Type\"], \"text/html\")\n+\n+        # Clean up temporary files\n+        os.remove('test.html.Z')\n+        os.remove('test.html.br')\n",
+  "test_inverted_patch": "diff --git a/tests/responses/test_mime_type_guessing_inverted.py b/tests/responses/test_mime_type_guessing_inverted.py\nnew file mode 100644\nindex 0000000..3a01c4e\n--- /dev/null\n+++ b/tests/responses/test_mime_type_guessing_inverted.py\n@@ -0,0 +1,27 @@\n+import os\n+from django.http import FileResponse\n+from django.test import SimpleTestCase\n+\n+class MimeTypeGuessingTests(SimpleTestCase):\n+    def test_mime_type_guessing_for_Z_and_br_extensions(self):\n+        # Create temporary files with .Z and .br extensions\n+        with open('test.html.Z', 'wb') as f:\n+            f.write(b\"dummy content\")\n+        with open('test.html.br', 'wb') as f:\n+            f.write(b\"dummy content\")\n+\n+        # Test FileResponse for .Z extension\n+        with open('test.html.Z', 'rb') as f:\n+            response = FileResponse(f)\n+            if response.headers[\"Content-Type\"] == \"text/html\":\n+                raise AssertionError(\"__BUG__HERE__\")\n+\n+        # Test FileResponse for .br extension\n+        with open('test.html.br', 'rb') as f:\n+            response = FileResponse(f)\n+            if response.headers[\"Content-Type\"] == \"text/html\":\n+                raise AssertionError(\"__BUG__HERE__\")\n+\n+        # Clean up temporary files\n+        os.remove('test.html.Z')\n+        os.remove('test.html.br')\n",
+  "num_sent_chars": 720923,
+  "num_received_chars": 6753,
+  "elapsed_time": 88.18890595436096,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

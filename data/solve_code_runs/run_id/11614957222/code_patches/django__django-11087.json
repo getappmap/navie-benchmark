@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11087",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/mysql/introspection.py b/django/db/backends/mysql/introspection.py\nindex 65eae56..7fdc9d8 100644\n--- a/django/db/backends/mysql/introspection.py\n+++ b/django/db/backends/mysql/introspection.py\n@@ -1,4 +1,5 @@\n from collections import namedtuple\n+from functools import lru_cache\n \n from MySQLdb.constants import FIELD_TYPE\n \n@@ -36,8 +37,10 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n         FIELD_TYPE.VAR_STRING: 'CharField',\n     }\n \n-    def get_field_type(self, data_type, description):\n+    def get_field_type(self, data_type, description, for_deletion=False):\n         field_type = super().get_field_type(data_type, description)\n+        if for_deletion and field_type in ('TextField', 'CharField'):\n+            return 'CharField'  # Simplified type for deletion operations\n         if 'auto_increment' in description.extra:\n             if field_type == 'IntegerField':\n                 return 'AutoField'\n@@ -56,7 +59,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n         return [TableInfo(row[0], {'BASE TABLE': 't', 'VIEW': 'v'}.get(row[1]))\n                 for row in cursor.fetchall()]\n \n-    def get_table_description(self, cursor, table_name):\n+    def get_table_description(self, cursor, table_name, for_deletion=False):\n         \"\"\"\n         Return a description of the table with the DB-API cursor.description\n         interface.\"\n@@ -66,10 +69,13 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n         #   not visible length (#5725)\n         # - precision and scale (for decimal fields) (#5014)\n         # - auto_increment is not available in cursor.description\n-        cursor.execute(\"\"\"\n+        select_fields = \"column_name, data_type, character_maximum_length\"\n+        if not for_deletion:\n+            select_fields += (\", numeric_precision, numeric_scale, extra, \"\n+                            \"column_default\")\n+        cursor.execute(f\"\"\"\n             SELECT\n-                column_name, data_type, character_maximum_length,\n-                numeric_precision, numeric_scale, extra, column_default,\n+                {select_fields},\n                 CASE\n                     WHEN column_type LIKE '%% unsigned' THEN 1\n                     ELSE 0\n@@ -116,6 +122,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n             relations[my_fieldname] = (other_field, other_table)\n         return relations\n \n+    @lru_cache(maxsize=None)\n     def get_key_columns(self, cursor, table_name):\n         \"\"\"\n         Return a list of (column_name, referenced_table_name, referenced_column_name)\n@@ -130,7 +137,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n                 AND referenced_table_name IS NOT NULL\n                 AND referenced_column_name IS NOT NULL\"\"\", [table_name])\n         key_columns.extend(cursor.fetchall())\n-        return key_columns\n+        return tuple(key_columns)  # Make immutable for caching\n \n     def get_storage_engine(self, cursor, table_name):\n         \"\"\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4059651,
+  "num_received_chars": 60040,
+  "elapsed_time": 671.2867345809937,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-14053",
+  "edit_test_file": "sklearn/utils/tests/test_show_versions.py",
+  "code_patch": "diff --git a/sklearn/tree/export.py b/sklearn/tree/export.py\nindex 1fe11e5..5f7cfc0 100644\n--- a/sklearn/tree/export.py\n+++ b/sklearn/tree/export.py\n@@ -890,9 +890,14 @@ def export_text(decision_tree, feature_names=None, max_depth=10,\n         value_fmt = \"{}{} value: {}\\n\"\n \n     if feature_names:\n-        feature_names_ = [feature_names[i] for i in tree_.feature]\n+        if len(feature_names) != tree_.n_features_:\n+            raise ValueError(\"Length of feature_names, %d does not match number of features, %d\"\n+                             % (len(feature_names), tree_.n_features_))\n+        feature_names_ = [feature_names[i] if i != _tree.TREE_UNDEFINED else \"undefined\" \n+                         for i in tree_.feature]\n     else:\n-        feature_names_ = [\"feature_{}\".format(i) for i in tree_.feature]\n+        feature_names_ = [\"feature_{}\".format(i) if i != _tree.TREE_UNDEFINED else \"undefined\"\n+                         for i in tree_.feature]\n \n     export_text.report = \"\"\n \n@@ -900,9 +905,6 @@ def export_text(decision_tree, feature_names=None, max_depth=10,\n         val = ''\n         is_classification = isinstance(decision_tree,\n                                        DecisionTreeClassifier)\n-        if show_weights or not is_classification:\n-            val = [\"{1:.{0}f}, \".format(decimals, v) for v in value]\n-            val = '['+''.join(val)[:-2]+']'\n         if is_classification:\n             val += ' class: ' + str(class_name)\n         export_text.report += value_fmt.format(indent, '', val)\n",
+  "test_patch": "diff --git a/sklearn/utils/tests/test_export_text_single_feature.py b/sklearn/utils/tests/test_export_text_single_feature.py\nnew file mode 100644\nindex 0000000..f4feef7\n--- /dev/null\n+++ b/sklearn/utils/tests/test_export_text_single_feature.py\n@@ -0,0 +1,18 @@\n+import unittest\n+from sklearn.tree import DecisionTreeClassifier\n+from sklearn.tree.export import export_text\n+from sklearn.datasets import load_iris\n+\n+class TestExportTextSingleFeature(unittest.TestCase):\n+    def test_export_text_single_feature(self):\n+        X, y = load_iris(return_X_y=True)\n+        X = X[:, 0].reshape(-1, 1)  # Use only one feature\n+\n+        tree = DecisionTreeClassifier()\n+        tree.fit(X, y)\n+\n+        with self.assertRaises(IndexError):\n+            export_text(tree, feature_names=['sepal_length'])\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/sklearn/utils/tests/test_export_text_single_feature_inverted.py b/sklearn/utils/tests/test_export_text_single_feature_inverted.py\nnew file mode 100644\nindex 0000000..7aafd1a\n--- /dev/null\n+++ b/sklearn/utils/tests/test_export_text_single_feature_inverted.py\n@@ -0,0 +1,21 @@\n+import unittest\n+from sklearn.tree import DecisionTreeClassifier\n+from sklearn.tree.export import export_text\n+from sklearn.datasets import load_iris\n+\n+class TestExportTextSingleFeature(unittest.TestCase):\n+    def test_export_text_single_feature(self):\n+        X, y = load_iris(return_X_y=True)\n+        X = X[:, 0].reshape(-1, 1)  # Use only one feature\n+\n+        tree = DecisionTreeClassifier()\n+        tree.fit(X, y)\n+\n+        # The test should now fail with a specific error message when the bug is observed\n+        try:\n+            export_text(tree, feature_names=['sepal_length'])\n+        except IndexError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 3265757,
+  "num_received_chars": 40032,
+  "elapsed_time": 475.74934935569763,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

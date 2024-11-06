@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9367",
+  "edit_test_file": "tests/test_pycode_ast.py",
+  "code_patch": "diff --git a/sphinx/pycode/ast.py b/sphinx/pycode/ast.py\nindex f541ec0..2b4f0d4 100644\n--- a/sphinx/pycode/ast.py\n+++ b/sphinx/pycode/ast.py\n@@ -213,10 +213,12 @@ class _UnparseVisitor(ast.NodeVisitor):\n         return \"%s %s\" % (self.visit(node.op), self.visit(node.operand))\n \n     def visit_Tuple(self, node: ast.Tuple) -> str:\n-        if node.elts:\n-            return \"(\" + \", \".join(self.visit(e) for e in node.elts) + \")\"\n-        else:\n+        if not node.elts:\n             return \"()\"\n+        elif len(node.elts) == 1:\n+            return \"(\" + self.visit(node.elts[0]) + \",)\"\n+        else:\n+            return \"(\" + \", \".join(self.visit(e) for e in node.elts) + \")\"\n \n     if sys.version_info < (3, 8):\n         # these ast nodes were deprecated in python 3.8\n",
+  "test_patch": "diff --git a/tests/test_tuple_rendering.py b/tests/test_tuple_rendering.py\nnew file mode 100644\nindex 0000000..d39ce06\n--- /dev/null\n+++ b/tests/test_tuple_rendering.py\n@@ -0,0 +1,13 @@\n+import unittest\n+from sphinx.pycode import ast\n+\n+class TestTupleRendering(unittest.TestCase):\n+    def test_single_element_tuple(self):\n+        source = \"(1,)\"\n+        expected = \"(1,)\"  # The expected output should include the trailing comma\n+        module = ast.parse(source)\n+        # This test will pass if the issue is present, i.e., the output is incorrect\n+        self.assertEqual(ast.unparse(module.body[0].value, source), \"(1)\")\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/test_tuple_rendering_inverted.py b/tests/test_tuple_rendering_inverted.py\nnew file mode 100644\nindex 0000000..926a559\n--- /dev/null\n+++ b/tests/test_tuple_rendering_inverted.py\n@@ -0,0 +1,15 @@\n+import unittest\n+from sphinx.pycode import ast\n+\n+class TestTupleRendering(unittest.TestCase):\n+    def test_single_element_tuple(self):\n+        source = \"(1,)\"\n+        expected = \"(1,)\"  # The expected output should include the trailing comma\n+        module = ast.parse(source)\n+        # This test will fail if the issue is present, i.e., the output is incorrect\n+        if ast.unparse(module.body[0].value, source) == \"(1)\":\n+            raise AssertionError(\"__BUG__HERE__\")\n+        self.assertEqual(ast.unparse(module.body[0].value, source), expected)\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+  "num_sent_chars": 3441217,
+  "num_received_chars": 35528,
+  "elapsed_time": 418.77111053466797,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

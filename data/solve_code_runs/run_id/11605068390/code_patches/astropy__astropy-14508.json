@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14508",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/docs/io/fits/usage/headers.rst b/docs/io/fits/usage/headers.rst\nindex 8616c31..fc4a492 100644\n--- a/docs/io/fits/usage/headers.rst\n+++ b/docs/io/fits/usage/headers.rst\n@@ -252,6 +252,38 @@ manifested by a :class:`Card` object. There are also special kinds of cards:\n commentary cards (see above) and card images taking more than one 80-column\n card image. The latter will be discussed later.\n \n+Floating Point Card Values\n+-------------------------\n+\n+When writing floating point values to FITS cards, ``astropy`` uses a high-precision\n+format that ensures no loss of numerical precision. Floating point values are\n+formatted using up to 16 significant digits (e.g., ``\"{:.16G}\"``). While this\n+preserves the full precision of the value, it can sometimes result in longer string\n+representations than might be expected.\n+\n+For example::\n+\n+    >>> c = fits.Card('MYFLOAT', 0.009125)\n+    >>> print(c)\n+    MYFLOAT =            0.009124999999999999 \n+\n+This behavior is particularly important to be aware of when working with HIERARCH\n+cards that have long keywords, as the expanded float representation may force\n+comments to be truncated to fit within the 80-character card limit. A more compact\n+but equally precise float representation might allow the full comment to fit.\n+\n+Note that while ``astropy`` will always write floating point values at high\n+precision, it can read FITS cards that use more compact representations. For\n+example, a card with the value \"0.009125\" will be read correctly even though\n+``astropy`` would write it as \"0.009124999999999999\".\n+\n+If you need to create cards with specific float representations, you can use\n+``Card.fromstring()`` to create the card exactly as desired::\n+\n+    >>> c = fits.Card.fromstring(\"MYFLOAT =                0.009125\")\n+    >>> print(c)\n+    MYFLOAT =                0.009125\n+\n Most of the time the details of dealing with cards are handled by the\n :class:`Header` object, and it is not necessary to directly manipulate cards.\n In fact, most :class:`Header` methods that accept a ``(keyword, value)`` or\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4937372,
+  "num_received_chars": 55391,
+  "elapsed_time": 1016.0300900936127,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

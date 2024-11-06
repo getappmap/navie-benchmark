@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-17655",
+  "edit_test_file": "sympy/geometry/tests/test_point.py",
+  "code_patch": "diff --git a/sympy/geometry/point.py b/sympy/geometry/point.py\nindex 7c978c4..bb61730 100644\n--- a/sympy/geometry/point.py\n+++ b/sympy/geometry/point.py\n@@ -283,6 +283,13 @@ def __neg__(self):\n         coords = [-x for x in self.args]\n         return Point(coords, evaluate=False)\n \n+    def __rmul__(self, factor):\n+        \"\"\"Called when a Point is multiplied on the right by a scalar, e.g. 2 * Point.\n+\n+        See __mul__ for details on scalar multiplication of Points.\n+        \"\"\"\n+        return self.__mul__(factor)\n+\n     def __sub__(self, other):\n         \"\"\"Subtract two points, or subtract a factor from this point's\n         coordinates.\"\"\"\n",
+  "test_patch": "diff --git a/sympy/geometry/tests/test_point_multiplication.py b/sympy/geometry/tests/test_point_multiplication.py\nnew file mode 100644\nindex 0000000..c857ce3\n--- /dev/null\n+++ b/sympy/geometry/tests/test_point_multiplication.py\n@@ -0,0 +1,16 @@\n+from sympy import Point, sympify\n+from sympy.geometry.exceptions import GeometryError\n+from sympy.utilities.pytest import raises\n+\n+def test_point_multiplication_order():\n+    \"\"\"Test that point multiplication with numbers works consistently regardless of order.\"\"\"\n+    point1 = Point(0, 0)\n+    point2 = Point(1, 1)\n+    scalar = sympify(2.0)\n+\n+    # This works - multiplying point by number\n+    assert point1 + point2 * scalar == Point(2, 2)\n+\n+    # This raises GeometryError - multiplying number by point\n+    with raises(GeometryError):\n+        point1 + scalar * point2\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/geometry/tests/test_point_multiplication_inverted.py b/sympy/geometry/tests/test_point_multiplication_inverted.py\nnew file mode 100644\nindex 0000000..0b6396a\n--- /dev/null\n+++ b/sympy/geometry/tests/test_point_multiplication_inverted.py\n@@ -0,0 +1,21 @@\n+from sympy import Point, sympify\n+from sympy.geometry.exceptions import GeometryError\n+\n+def test_point_multiplication_order():\n+    \"\"\"Test that point multiplication with numbers works consistently regardless of order.\"\"\"\n+    point1 = Point(0, 0)\n+    point2 = Point(1, 1)\n+    scalar = sympify(2.0)\n+\n+    # First operation - multiplying point by number\n+    result1 = point1 + point2 * scalar\n+    expected = Point(2, 2)\n+    assert result1 == expected\n+\n+    # Second operation - multiplying number by point\n+    # This should give the same result, but currently raises GeometryError\n+    try:\n+        result2 = point1 + scalar * point2\n+        assert result2 == expected, \"__BUG__HERE__\"\n+    except GeometryError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 4740135,
+  "num_received_chars": 75366,
+  "elapsed_time": 998.675347328186,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

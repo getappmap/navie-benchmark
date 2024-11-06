@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-4356",
+  "edit_test_file": "xarray/tests/test_duck_array_ops.py",
+  "code_patch": "diff --git a/xarray/core/nanops.py b/xarray/core/nanops.py\nindex 41c8d25..9b4960a 100644\n--- a/xarray/core/nanops.py\n+++ b/xarray/core/nanops.py\n@@ -26,13 +26,14 @@ def _maybe_null_out(result, axis, mask, min_count=1):\n     \"\"\"\n     xarray version of pandas.core.nanops._maybe_null_out\n     \"\"\"\n-    if hasattr(axis, \"__len__\"):  # if tuple or list\n-        raise ValueError(\n-            \"min_count is not available for reduction with more than one dimensions.\"\n-        )\n-\n     if axis is not None and getattr(result, \"ndim\", False):\n-        null_mask = (mask.shape[axis] - mask.sum(axis) - min_count) < 0\n+        if hasattr(axis, \"__len__\"):  # if tuple or list\n+            # Calculate total size and sum across all reduced dimensions\n+            total_size = np.prod([mask.shape[ax] for ax in axis])\n+            valid_count = mask.sum(axis=axis)\n+            null_mask = (total_size - valid_count - min_count) < 0\n+        else:\n+            null_mask = (mask.shape[axis] - mask.sum(axis) - min_count) < 0\n         if null_mask.any():\n             dtype, fill_value = dtypes.maybe_promote(result.dtype)\n             result = result.astype(dtype)\n",
+  "test_patch": "diff --git a/xarray/tests/test_nanops.py b/xarray/tests/test_nanops.py\nnew file mode 100644\nindex 0000000..0391ecf\n--- /dev/null\n+++ b/xarray/tests/test_nanops.py\n@@ -0,0 +1,7 @@\n+import pytest\n+import xarray as xr\n+\n+def test_sum_min_count_multiple_dimensions():\n+    da = xr.DataArray([[1.0, 2, 3], [4, 5, 6]])\n+    with pytest.raises(ValueError, match=\"min_count is not available for reduction with more than one dimensions\"):\n+        da.sum([\"dim_0\", \"dim_1\"], min_count=1)\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_nanops_inverted.py b/xarray/tests/test_nanops_inverted.py\nnew file mode 100644\nindex 0000000..31a783d\n--- /dev/null\n+++ b/xarray/tests/test_nanops_inverted.py\n@@ -0,0 +1,7 @@\n+import pytest\n+import xarray as xr\n+\n+def test_sum_min_count_multiple_dimensions():\n+    da = xr.DataArray([[1.0, 2, 3], [4, 5, 6]])\n+    with pytest.raises(ValueError, match=\"__BUG__HERE__\"):\n+        da.sum([\"dim_0\", \"dim_1\"], min_count=1)\n",
+  "num_sent_chars": 3326859,
+  "num_received_chars": 42395,
+  "elapsed_time": 719.700236082077,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

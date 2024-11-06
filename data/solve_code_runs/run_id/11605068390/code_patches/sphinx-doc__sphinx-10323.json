@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10323",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/directives/code.py b/sphinx/directives/code.py\nindex dc44ed3..7bd20d6 100644\n--- a/sphinx/directives/code.py\n+++ b/sphinx/directives/code.py\n@@ -224,9 +224,9 @@ class LiteralIncludeReader:\n                        self.start_filter,\n                        self.end_filter,\n                        self.lines_filter,\n+                       self.dedent_filter,\n                        self.prepend_filter,\n-                       self.append_filter,\n-                       self.dedent_filter]\n+                       self.append_filter]\n             lines = self.read_file(self.filename, location=location)\n             for func in filters:\n                 lines = func(lines, location=location)\n@@ -342,15 +342,17 @@ class LiteralIncludeReader:\n \n     def prepend_filter(self, lines: List[str], location: Tuple[str, int] = None) -> List[str]:\n         prepend = self.options.get('prepend')\n-        if prepend:\n-            lines.insert(0, prepend + '\\n')\n+        if prepend and lines:\n+            indent = '' if not lines[0] else ' ' * (len(lines[0]) - len(lines[0].lstrip()))\n+            lines.insert(0, indent + prepend + '\\n')\n \n         return lines\n \n     def append_filter(self, lines: List[str], location: Tuple[str, int] = None) -> List[str]:\n         append = self.options.get('append')\n-        if append:\n-            lines.append(append + '\\n')\n+        if append and lines:\n+            indent = '' if not lines[-1] else ' ' * (len(lines[-1]) - len(lines[-1].lstrip()))\n+            lines.append(indent + append + '\\n')\n \n         return lines\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 5939005,
+  "num_received_chars": 68889,
+  "elapsed_time": 737.2044353485107,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

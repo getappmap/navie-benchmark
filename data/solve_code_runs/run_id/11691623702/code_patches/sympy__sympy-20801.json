@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-20801",
+  "edit_test_file": "sympy/utilities/tests/test_lambdify.py",
+  "code_patch": "diff --git a/sympy/core/numbers.py b/sympy/core/numbers.py\nindex 79f6a7d..a2557d5 100644\n--- a/sympy/core/numbers.py\n+++ b/sympy/core/numbers.py\n@@ -1386,10 +1386,10 @@ def __eq__(self, other):\n             other = _sympify(other)\n         except SympifyError:\n             return NotImplemented\n-        if not self:\n-            return not other\n         if isinstance(other, Boolean):\n             return False\n+        if not self:\n+            return not other\n         if other.is_NumberSymbol:\n             if other.is_irrational:\n                 return False\n",
+  "test_patch": "diff --git a/sympy/utilities/tests/test_sympy_comparisons.py b/sympy/utilities/tests/test_sympy_comparisons.py\nnew file mode 100644\nindex 0000000..10473d7\n--- /dev/null\n+++ b/sympy/utilities/tests/test_sympy_comparisons.py\n@@ -0,0 +1,8 @@\n+# sympy/utilities/tests/test_sympy_comparisons.py\n+\n+from sympy import S\n+\n+def test_sympy_comparison_issue():\n+    # Test to reproduce the issue where S(0.0) == S.false returns True\n+    assert (S(0.0) == S.false) is True\n+    assert (S.false == S(0.0)) is False\n",
+  "test_inverted_patch": "diff --git a/sympy/utilities/tests/test_sympy_comparisons_inverted.py b/sympy/utilities/tests/test_sympy_comparisons_inverted.py\nnew file mode 100644\nindex 0000000..bf9f6ea\n--- /dev/null\n+++ b/sympy/utilities/tests/test_sympy_comparisons_inverted.py\n@@ -0,0 +1,10 @@\n+# sympy/utilities/tests/test_sympy_comparisons.py\n+\n+from sympy import S\n+\n+def test_sympy_comparison_issue():\n+    # Test to reproduce the issue where S(0.0) == S.false returns True\n+    # This should now fail when the issue is observed\n+    if (S(0.0) == S.false) is True:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    assert (S.false == S(0.0)) is False\n",
+  "num_sent_chars": 3977473,
+  "num_received_chars": 47908,
+  "elapsed_time": 677.665146112442,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

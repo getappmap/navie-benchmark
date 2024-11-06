@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-24562",
+  "edit_test_file": "sympy/geometry/tests/test_curve.py",
+  "code_patch": "diff --git a/sympy/core/numbers.py b/sympy/core/numbers.py\nindex 52f7ea4..1abdf0d 100644\n--- a/sympy/core/numbers.py\n+++ b/sympy/core/numbers.py\n@@ -1609,11 +1609,11 @@ def __new__(cls, p, q=None, gcd=None):\n                     pq = p.rsplit('/', 1)\n                     if len(pq) == 2:\n                         p, q = pq\n-                        fp = fractions.Fraction(p)\n-                        fq = fractions.Fraction(q)\n-                        p = fp/fq\n                     try:\n                         p = fractions.Fraction(p)\n+                        if q is not None and isinstance(q, str):\n+                            q = fractions.Fraction(q)\n+                            p = p/q\n                     except ValueError:\n                         pass  # error will raise below\n                     else:\n@@ -1627,10 +1627,9 @@ def __new__(cls, p, q=None, gcd=None):\n \n         if not isinstance(p, SYMPY_INTS):\n             p = Rational(p)\n-            q *= p.q\n-            p = p.p\n-        else:\n-            p = int(p)\n+            q = Rational(q) if q is not None else 1\n+            p = p/q\n+            return p\n \n         if not isinstance(q, SYMPY_INTS):\n             q = Rational(q)\n",
+  "test_patch": "diff --git a/sympy/geometry/tests/test_rational_error.py b/sympy/geometry/tests/test_rational_error.py\nnew file mode 100644\nindex 0000000..c97f80e\n--- /dev/null\n+++ b/sympy/geometry/tests/test_rational_error.py\n@@ -0,0 +1,10 @@\n+from sympy import Rational\n+\n+def test_rational_error():\n+    # Reproducing the issue with Rational('0.5', '100')\n+    result = Rational('0.5', '100')\n+    assert result == Rational(1, 100100), f\"Unexpected result: {result}\"\n+\n+    # Verifying the correct behavior with Rational(0.5, 100)\n+    correct_result = Rational(0.5, 100)\n+    assert correct_result == Rational(1, 200), f\"Unexpected result: {correct_result}\"\n",
+  "test_inverted_patch": "diff --git a/sympy/geometry/tests/test_rational_error_inverted.py b/sympy/geometry/tests/test_rational_error_inverted.py\nnew file mode 100644\nindex 0000000..bb7cd23\n--- /dev/null\n+++ b/sympy/geometry/tests/test_rational_error_inverted.py\n@@ -0,0 +1,10 @@\n+from sympy import Rational\n+\n+def test_rational_error():\n+    # Reproducing the issue with Rational('0.5', '100')\n+    result = Rational('0.5', '100')\n+    assert result != Rational(1, 100100), \"__BUG__HERE__\"\n+\n+    # Verifying the correct behavior with Rational(0.5, 100)\n+    correct_result = Rational(0.5, 100)\n+    assert correct_result == Rational(1, 200), f\"Unexpected result: {correct_result}\"\n",
+  "num_sent_chars": 5245359,
+  "num_received_chars": 71538,
+  "elapsed_time": 851.8369085788727,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

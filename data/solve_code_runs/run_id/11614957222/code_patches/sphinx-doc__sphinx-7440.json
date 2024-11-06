@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7440",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/domains/std.py b/sphinx/domains/std.py\nindex d820cfe..e46d84e 100644\n--- a/sphinx/domains/std.py\n+++ b/sphinx/domains/std.py\n@@ -305,7 +305,7 @@ def make_glossary_term(env: \"BuildEnvironment\", textnodes: Iterable[Node], index\n         term['ids'].append(node_id)\n \n     std = cast(StandardDomain, env.get_domain('std'))\n-    std.note_object('term', termtext.lower(), node_id, location=term)\n+    std.note_object('term', termtext, node_id, location=term)\n \n     # add an index entry too\n     indexnode = addnodes.index()\n@@ -652,11 +652,18 @@ class StandardDomain(Domain):\n \n         .. versionadded:: 3.0\n         \"\"\"\n-        if (objtype, name) in self.objects:\n-            docname = self.objects[objtype, name][0]\n+        key = (objtype, name)\n+        if objtype == 'term':\n+            # For terms, check duplicates case-sensitively but store with original case\n+            if any(k == key for k in self.objects.keys()):\n+                docname = self.objects[key][0]\n+                logger.warning(__('duplicate %s description of %s, other instance in %s'),\n+                               objtype, name, docname, location=location)\n+        elif key in self.objects:\n+            docname = self.objects[key][0]\n             logger.warning(__('duplicate %s description of %s, other instance in %s'),\n                            objtype, name, docname, location=location)\n-        self.objects[objtype, name] = (self.env.docname, labelid)\n+        self.objects[key] = (self.env.docname, labelid)\n \n     def add_object(self, objtype: str, name: str, docname: str, labelid: str) -> None:\n         warnings.warn('StandardDomain.add_object() is deprecated.',\n@@ -953,7 +960,12 @@ class StandardDomain(Domain):\n         for objtype in self.object_types:\n             key = (objtype, target)\n             if objtype == 'term':\n-                key = (objtype, ltarget)\n+                # For terms, try exact match first, then case-insensitive\n+                if key in self.objects:\n+                    docname, labelid = self.objects[key]\n+                else:\n+                    # Fall back to case-insensitive match\n+                    key = (objtype, ltarget)\n             if key in self.objects:\n                 docname, labelid = self.objects[key]\n                 results.append(('std:' + self.role_for_objtype(objtype),\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1563193,
+  "num_received_chars": 11272,
+  "elapsed_time": 156.53412914276123,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

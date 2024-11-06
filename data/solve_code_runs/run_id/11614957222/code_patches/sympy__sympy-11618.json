@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-11618",
+  "edit_test_file": "sympy/geometry/tests/test_ellipse.py",
+  "code_patch": "diff --git a/sympy/geometry/point.py b/sympy/geometry/point.py\nindex 5930484..e336fde 100644\n--- a/sympy/geometry/point.py\n+++ b/sympy/geometry/point.py\n@@ -240,7 +240,7 @@ def distance(self, p):\n         Parameters\n         ==========\n \n-        p : Point\n+        p : Point of same dimension as self\n \n         Returns\n         =======\n@@ -266,8 +266,13 @@ def distance(self, p):\n         sqrt(x**2 + y**2)\n \n         \"\"\"\n-        return sqrt(sum([(a - b)**2 for a, b in zip(\n-            self.args, p.args if isinstance(p, Point) else p)]))\n+        p_coords = p.args if isinstance(p, Point) else p\n+        if len(self.args) != len(p_coords):\n+            raise ValueError(\n+                \"Cannot calculate distance between points of different dimensions. \" +\n+                \"Point 1 has dimension %d, Point 2 has dimension %d\" % \n+                (len(self.args), len(p_coords)))\n+        return sqrt(sum([(a - b)**2 for a, b in zip(self.args, p_coords)]))\n \n     def taxicab_distance(self, p):\n         \"\"\"The Taxicab Distance from self to point p.\n",
+  "test_patch": "diff --git a/sympy/geometry/tests/test_distance.py b/sympy/geometry/tests/test_distance.py\nnew file mode 100644\nindex 0000000..2bbd5b2\n--- /dev/null\n+++ b/sympy/geometry/tests/test_distance.py\n@@ -0,0 +1,9 @@\n+from sympy import Point\n+from sympy.utilities.pytest import raises\n+\n+def test_distance_issue():\n+    # This test reproduces the issue where the 3rd dimension is ignored\n+    # in the distance calculation between a 2D and a 3D point.\n+    p1 = Point(2, 0)\n+    p2 = Point(1, 0, 2)\n+    assert p1.distance(p2) == 1  # Incorrect result due to the issue\n",
+  "test_inverted_patch": "diff --git a/sympy/geometry/tests/test_distance_inverted.py b/sympy/geometry/tests/test_distance_inverted.py\nnew file mode 100644\nindex 0000000..3131c23\n--- /dev/null\n+++ b/sympy/geometry/tests/test_distance_inverted.py\n@@ -0,0 +1,12 @@\n+from sympy import Point\n+from sympy.utilities.pytest import raises\n+\n+def test_distance_issue():\n+    # This test reproduces the issue where the 3rd dimension is ignored\n+    # in the distance calculation between a 2D and a 3D point.\n+    p1 = Point(2, 0)\n+    p2 = Point(1, 0, 2)\n+    # The correct distance should be sqrt((2-1)**2 + (0-0)**2 + (0-2)**2) = sqrt(5)\n+    # The test should fail if the distance is incorrectly calculated as 1\n+    if p1.distance(p2) == 1:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 2301833,
+  "num_received_chars": 23856,
+  "elapsed_time": 290.9210500717163,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

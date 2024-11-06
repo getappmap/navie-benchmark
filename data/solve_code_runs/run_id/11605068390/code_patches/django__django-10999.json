@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-10999",
+  "edit_test_file": "tests/utils_tests/test_dateparse.py",
+  "code_patch": "diff --git a/django/utils/dateparse.py b/django/utils/dateparse.py\nindex 8d08b7d..a037758 100644\n--- a/django/utils/dateparse.py\n+++ b/django/utils/dateparse.py\n@@ -29,7 +29,7 @@ datetime_re = re.compile(\n standard_duration_re = re.compile(\n     r'^'\n     r'(?:(?P<days>-?\\d+) (days?, )?)?'\n-    r'((?:(?P<hours>-?\\d+):)(?=\\d+:\\d+))?'\n+    r'((?:(?P<hours>-?\\d+):)(?=-?\\d+:-?\\d+))?'\n     r'(?:(?P<minutes>-?\\d+):)?'\n     r'(?P<seconds>-?\\d+)'\n     r'(?:\\.(?P<microseconds>\\d{1,6})\\d{0,6})?'\n",
+  "test_patch": "diff --git a/tests/utils_tests/test_negative_duration_parsing.py b/tests/utils_tests/test_negative_duration_parsing.py\nnew file mode 100644\nindex 0000000..09817bc\n--- /dev/null\n+++ b/tests/utils_tests/test_negative_duration_parsing.py\n@@ -0,0 +1,19 @@\n+import unittest\n+from datetime import timedelta\n+\n+from django.utils.dateparse import parse_duration\n+\n+\n+class NegativeDurationParseTests(unittest.TestCase):\n+    def test_negative_hours_minutes_seconds(self):\n+        \"\"\"\n+        Test that parse_duration() fails to parse durations with negative hours, minutes and seconds\n+        due to the regex pattern not handling negative values in the lookahead.\n+        \"\"\"\n+        # This is a valid duration string with negative components that should parse,\n+        # but fails with the current regex pattern\n+        duration_string = \"-1:-15:-30\"\n+        expected = timedelta(hours=-1, minutes=-15, seconds=-30)\n+        \n+        # The current implementation will return None because the regex doesn't match\n+        self.assertIsNone(parse_duration(duration_string))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_negative_duration_parsing_inverted.py b/tests/utils_tests/test_negative_duration_parsing_inverted.py\nnew file mode 100644\nindex 0000000..6339168\n--- /dev/null\n+++ b/tests/utils_tests/test_negative_duration_parsing_inverted.py\n@@ -0,0 +1,21 @@\n+import unittest\n+from datetime import timedelta\n+\n+from django.utils.dateparse import parse_duration\n+\n+\n+class NegativeDurationParseTests(unittest.TestCase):\n+    def test_negative_hours_minutes_seconds(self):\n+        \"\"\"\n+        Test that parse_duration() correctly handles durations with negative hours,\n+        minutes and seconds. The test should fail if the parsing fails.\n+        \"\"\"\n+        duration_string = \"-1:-15:-30\"\n+        expected = timedelta(hours=-1, minutes=-15, seconds=-30)\n+        \n+        result = parse_duration(duration_string)\n+        \n+        if result is None:\n+            raise AssertionError(\"__BUG__HERE__\")\n+            \n+        self.assertEqual(result, expected)\n\\ No newline at end of file\n",
+  "num_sent_chars": 427957,
+  "num_received_chars": 4716,
+  "elapsed_time": 72.24888062477112,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

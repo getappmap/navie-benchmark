@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-23476",
+  "edit_test_file": "lib/matplotlib/tests/test_pickle.py",
+  "code_patch": "diff --git a/lib/matplotlib/backend_bases.py b/lib/matplotlib/backend_bases.py\nindex 9ae2982..62693f6 100644\n--- a/lib/matplotlib/backend_bases.py\n+++ b/lib/matplotlib/backend_bases.py\n@@ -1650,6 +1650,8 @@ class FigureCanvasBase:\n         self._key = None  # the key pressed\n         self._lastx, self._lasty = None, None\n         self.mouse_grabber = None  # the Axes currently grabbing mouse\n+        # Store the original pixel ratio for unpickling\n+        self._original_pixel_ratio = 1.0\n         self.toolbar = None  # NavigationToolbar2 will set me\n         self._is_idle_drawing = False\n         # We don't want to scale up the figure DPI more than once.\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_dpi_unpickle.py b/lib/matplotlib/tests/test_dpi_unpickle.py\nnew file mode 100644\nindex 0000000..63d208f\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_dpi_unpickle.py\n@@ -0,0 +1,32 @@\n+from io import BytesIO\n+import pickle\n+import platform\n+\n+import matplotlib.pyplot as plt\n+import numpy as np\n+\n+\n+def test_dpi_doubles_on_unpickle():\n+    \"\"\"Test that figure DPI doubles after each unpickle operation on M1 Mac.\"\"\"\n+    # Skip test if not on macOS\n+    if platform.system() != \"Darwin\":\n+        return\n+\n+    # Create initial figure with known DPI\n+    fig = plt.figure()\n+    initial_dpi = fig.dpi\n+    \n+    # Perform a few pickle/unpickle cycles and check DPI\n+    for i in range(3):  # Test first 3 iterations (200 -> 400 -> 800 -> 1600)\n+        # Pickle and unpickle the figure\n+        buf = BytesIO()\n+        pickle.dump(fig, buf, pickle.HIGHEST_PROTOCOL)\n+        buf.seek(0)\n+        fig = pickle.loads(buf.getbuffer())\n+        \n+        # Verify DPI doubled from previous value\n+        expected_dpi = initial_dpi * (2 ** (i + 1))\n+        assert fig.dpi == expected_dpi, \\\n+            f\"Expected DPI to be {expected_dpi} after {i+1} unpickle(s), got {fig.dpi}\"\n+\n+    plt.close(fig)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 7796161,
+  "num_received_chars": 104612,
+  "elapsed_time": 1561.8695483207703,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

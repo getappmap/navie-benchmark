@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-7671",
+  "edit_test_file": "astropy/utils/tests/test_introspection.py",
+  "code_patch": "diff --git a/astropy/utils/introspection.py b/astropy/utils/introspection.py\nindex 3e784f9..989c4db 100644\n--- a/astropy/utils/introspection.py\n+++ b/astropy/utils/introspection.py\n@@ -91,7 +91,8 @@ def resolve_name(name, *additional_parts):\n def minversion(module, version, inclusive=True, version_path='__version__'):\n     \"\"\"\n     Returns `True` if the specified Python module satisfies a minimum version\n-    requirement, and `False` if not.\n+    requirement, and `False` if not. Development versions (containing 'dev')\n+    are converted to the corresponding release version for comparison.\n \n     Parameters\n     ----------\n@@ -139,6 +140,19 @@ def minversion(module, version, inclusive=True, version_path='__version__'):\n     else:\n         have_version = resolve_name(module.__name__, version_path)\n \n+    # Strip 'dev' suffix from version strings to avoid comparison issues\n+    def normalize_version(ver):\n+        if not isinstance(ver, str):\n+            ver = str(ver)\n+        # Remove any development version indicators\n+        for dev_string in ['dev', '.dev', 'a', 'b', 'rc']:\n+            if dev_string in ver.lower():\n+                ver = ver.lower().split(dev_string)[0]\n+        return ver\n+\n+    have_version = normalize_version(have_version)\n+    version = normalize_version(version)\n+\n     if inclusive:\n         return LooseVersion(have_version) >= LooseVersion(version)\n     else:\n",
+  "test_patch": "diff --git a/astropy/utils/tests/test_version_comparison.py b/astropy/utils/tests/test_version_comparison.py\nnew file mode 100644\nindex 0000000..6bf5aa9\n--- /dev/null\n+++ b/astropy/utils/tests/test_version_comparison.py\n@@ -0,0 +1,23 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import pytest\n+from ..introspection import minversion\n+from types import ModuleType\n+\n+\n+def test_minversion_dev_version():\n+    \"\"\"Test that minversion() raises TypeError when comparing with dev versions.\n+    \n+    This test verifies the bug where comparing version strings containing 'dev'\n+    raises a TypeError due to comparing int and str in LooseVersion.\n+    \"\"\"\n+    # Create a fake module with a version\n+    test_module = ModuleType(str(\"test_module\"))\n+    test_module.__version__ = '1.14.3'\n+    \n+    # This should raise TypeError due to comparing '1.14dev' with '1.14.3'\n+    with pytest.raises(TypeError) as exc_info:\n+        minversion(test_module, '1.14dev')\n+    \n+    # Verify the specific error message\n+    assert str(exc_info.value) == \"'<' not supported between instances of 'int' and 'str'\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4014266,
+  "num_received_chars": 38594,
+  "elapsed_time": 792.853485584259,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

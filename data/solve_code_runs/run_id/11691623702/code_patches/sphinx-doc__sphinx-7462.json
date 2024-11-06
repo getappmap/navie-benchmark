@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7462",
+  "edit_test_file": "tests/test_config.py",
+  "code_patch": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex 3ca730e..8388e1c 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -115,10 +115,13 @@ def _parse_annotation(annotation: str) -> List[Node]:\n             return result\n         elif isinstance(node, ast.Tuple):\n             result = []\n+            if not node.elts:\n+                # Handle empty tuple case\n+                return [nodes.Text('()')]\n             for elem in node.elts:\n                 result.extend(unparse(elem))\n                 result.append(addnodes.desc_sig_punctuation('', ', '))\n-            result.pop()\n+            result.pop()  # Remove trailing comma\n             return result\n         else:\n             raise SyntaxError  # unsupported syntax\n",
+  "test_patch": "diff --git a/tests/test_empty_tuple_annotation.py b/tests/test_empty_tuple_annotation.py\nnew file mode 100644\nindex 0000000..f1eb40b\n--- /dev/null\n+++ b/tests/test_empty_tuple_annotation.py\n@@ -0,0 +1,22 @@\n+\"\"\"\n+    test_empty_tuple_annotation\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test handling of empty tuple type annotations.\n+\n+    :copyright: Copyright 2007-2020 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+import pytest\n+from sphinx.domains.python import _parse_annotation\n+\n+\n+def test_empty_tuple_annotation():\n+    \"\"\"Test that parsing an empty tuple annotation raises IndexError.\"\"\"\n+    annotation = \"Tuple[()]\"\n+    \n+    with pytest.raises(IndexError) as excinfo:\n+        _parse_annotation(annotation)\n+    \n+    assert str(excinfo.value) == \"pop from empty list\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/test_empty_tuple_annotation_inverted.py b/tests/test_empty_tuple_annotation_inverted.py\nnew file mode 100644\nindex 0000000..29bac66\n--- /dev/null\n+++ b/tests/test_empty_tuple_annotation_inverted.py\n@@ -0,0 +1,27 @@\n+\"\"\"\n+    test_empty_tuple_annotation\n+    ~~~~~~~~~~~~~~~~~~~~~~~~~~\n+\n+    Test handling of empty tuple type annotations.\n+\n+    :copyright: Copyright 2007-2020 by the Sphinx team, see AUTHORS.\n+    :license: BSD, see LICENSE for details.\n+\"\"\"\n+\n+from docutils import nodes\n+from sphinx.domains.python import _parse_annotation\n+\n+\n+def test_empty_tuple_annotation():\n+    \"\"\"Test that empty tuple annotations are handled correctly.\"\"\"\n+    annotation = \"Tuple[()]\"\n+    \n+    try:\n+        result = _parse_annotation(annotation)\n+    except IndexError:\n+        raise AssertionError(\"__BUG__HERE__: Empty tuple annotation Tuple[()] should be handled without raising IndexError\")\n+    \n+    # Verify the result is a valid node structure for an empty tuple annotation\n+    assert isinstance(result, list), \"Result should be a list of nodes\"\n+    assert len(result) > 0, \"Result should contain at least one node\"\n+    assert any(isinstance(node, nodes.Text) for node in result), \"Result should contain text nodes\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2834276,
+  "num_received_chars": 41940,
+  "elapsed_time": 657.4205739498138,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

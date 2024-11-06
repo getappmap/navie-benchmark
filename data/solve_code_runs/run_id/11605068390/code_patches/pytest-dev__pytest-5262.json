@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-5262",
+  "edit_test_file": "testing/test_assertrewrite.py",
+  "code_patch": "diff --git a/src/_pytest/capture.py b/src/_pytest/capture.py\nindex 25eab7f..0ac6d0f 100644\n--- a/src/_pytest/capture.py\n+++ b/src/_pytest/capture.py\n@@ -447,6 +447,15 @@ class EncodedFile(object):\n         \"\"\"Ensure that file.name is a string.\"\"\"\n         return repr(self.buffer)\n \n+    @property\n+    def mode(self):\n+        \"\"\"Return the mode with 'b' stripped from it.\n+\n+        This ensures that the file presents itself as a text file.\n+        \"\"\"\n+        mode = self.buffer.mode.replace(\"b\", \"\")\n+        return mode\n+\n     def __getattr__(self, name):\n         return getattr(object.__getattribute__(self, \"buffer\"), name)\n \n",
+  "test_patch": "diff --git a/testing/test_encoded_file_mode.py b/testing/test_encoded_file_mode.py\nnew file mode 100644\nindex 0000000..294abdc\n--- /dev/null\n+++ b/testing/test_encoded_file_mode.py\n@@ -0,0 +1,23 @@\n+import io\n+import pytest\n+from _pytest.capture import EncodedFile\n+\n+def test_encoded_file_mode_binary_write():\n+    \"\"\"Test that EncodedFile raises TypeError when writing bytes despite having 'b' in mode.\"\"\"\n+    # Create a binary file-like object with 'rb+' mode\n+    binary_buffer = io.BytesIO()\n+    binary_buffer.mode = 'rb+'\n+    \n+    # Create EncodedFile wrapping the binary buffer\n+    encoded_file = EncodedFile(binary_buffer, encoding='utf-8')\n+    \n+    # Verify the file reports binary mode from underlying buffer\n+    assert 'b' in encoded_file.mode\n+    \n+    # Attempt to write bytes, which should raise TypeError since EncodedFile\n+    # only accepts str despite having 'b' in mode\n+    with pytest.raises(TypeError) as excinfo:\n+        encoded_file.write(b'test bytes')\n+    \n+    # Verify the specific error message\n+    assert \"write() argument must be str, not bytes\" in str(excinfo.value)\n",
+  "test_inverted_patch": "diff --git a/testing/test_encoded_file_mode_inverted.py b/testing/test_encoded_file_mode_inverted.py\nnew file mode 100644\nindex 0000000..1745129\n--- /dev/null\n+++ b/testing/test_encoded_file_mode_inverted.py\n@@ -0,0 +1,21 @@\n+import io\n+import pytest\n+from _pytest.capture import EncodedFile\n+\n+def test_encoded_file_mode_binary_write():\n+    \"\"\"Test that EncodedFile should not include 'b' in mode when it doesn't support binary writing.\"\"\"\n+    # Create a binary file-like object with 'rb+' mode\n+    binary_buffer = io.BytesIO()\n+    binary_buffer.mode = 'rb+'\n+    \n+    # Create EncodedFile wrapping the binary buffer\n+    encoded_file = EncodedFile(binary_buffer, encoding='utf-8')\n+    \n+    # The EncodedFile should not report binary mode since it doesn't support binary operations\n+    if 'b' in encoded_file.mode:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Additional verification that the file actually doesn't support binary operations\n+    with pytest.raises(TypeError) as excinfo:\n+        encoded_file.write(b'test bytes')\n+    assert \"write() argument must be str, not bytes\" in str(excinfo.value)\n\\ No newline at end of file\n",
+  "num_sent_chars": 780469,
+  "num_received_chars": 7644,
+  "elapsed_time": 90.25970506668091,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

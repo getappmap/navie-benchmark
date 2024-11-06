@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-24627",
+  "edit_test_file": "lib/matplotlib/tests/test_axes.py",
+  "code_patch": "diff --git a/lib/matplotlib/axes/_base.py b/lib/matplotlib/axes/_base.py\nindex 90b0bf1..088383d 100644\n--- a/lib/matplotlib/axes/_base.py\n+++ b/lib/matplotlib/axes/_base.py\n@@ -1284,6 +1284,23 @@ class _AxesBase(martist.Artist):\n         xaxis_visible = self.xaxis.get_visible()\n         yaxis_visible = self.yaxis.get_visible()\n \n+        # Store current children before clearing\n+        children_to_clear = list(self._children)\n+\n+        # Clear all children references\n+        for child in children_to_clear:\n+            # Skip the Axes patch since it's special\n+            if child is self.patch:\n+                continue\n+            # Remove axes reference from the child\n+            if hasattr(child, 'axes'):\n+                child.axes = None\n+            # Clear stale callback\n+            if hasattr(child, 'stale_callback'):\n+                child.stale_callback = None\n+            # Remove from mouseover set if present\n+            self._mouseover_set.discard(child)\n+\n         for axis in self._axis_map.values():\n             axis.clear()  # Also resets the scale to linear.\n         for spine in self.spines.values():\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_artist_attributes.py b/lib/matplotlib/tests/test_artist_attributes.py\nnew file mode 100644\nindex 0000000..3b4d912\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_artist_attributes.py\n@@ -0,0 +1,16 @@\n+# File: lib/matplotlib/tests/test_artist_attributes.py\n+\n+import matplotlib.pyplot as plt\n+\n+def test_artist_axes_attribute_after_cla():\n+    # Create a figure and axes\n+    fig, ax = plt.subplots()\n+    \n+    # Plot a line and get the line artist\n+    line, = ax.plot([1, 2])\n+    \n+    # Clear the axes\n+    ax.cla()\n+    \n+    # Check if the line's axes attribute is still set\n+    assert line.axes is not None, \"Expected line.axes to be None after cla(), but it is not.\"\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_artist_attributes_inverted.py b/lib/matplotlib/tests/test_artist_attributes_inverted.py\nnew file mode 100644\nindex 0000000..b0f5c41\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_artist_attributes_inverted.py\n@@ -0,0 +1,16 @@\n+# File: lib/matplotlib/tests/test_artist_attributes.py\n+\n+import matplotlib.pyplot as plt\n+\n+def test_artist_axes_attribute_after_cla():\n+    # Create a figure and axes\n+    fig, ax = plt.subplots()\n+    \n+    # Plot a line and get the line artist\n+    line, = ax.plot([1, 2])\n+    \n+    # Clear the axes\n+    ax.cla()\n+    \n+    # Check if the line's axes attribute is unset\n+    assert line.axes is None, \"__BUG__HERE__\"\n",
+  "num_sent_chars": 933678,
+  "num_received_chars": 12948,
+  "elapsed_time": 220.8162591457367,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

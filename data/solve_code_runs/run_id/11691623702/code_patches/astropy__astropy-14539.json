@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14539",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/astropy/io/fits/diff.py b/astropy/io/fits/diff.py\nindex 100cdf1..a34dba7 100644\n--- a/astropy/io/fits/diff.py\n+++ b/astropy/io/fits/diff.py\n@@ -1449,16 +1449,23 @@ class TableDataDiff(_BaseDiff):\n                 arrb.dtype, np.floating\n             ):\n                 diffs = where_not_allclose(arra, arrb, rtol=self.rtol, atol=self.atol)\n-            elif \"P\" in col.format:\n-                diffs = (\n-                    [\n-                        idx\n-                        for idx in range(len(arra))\n-                        if not np.allclose(\n-                            arra[idx], arrb[idx], rtol=self.rtol, atol=self.atol\n-                        )\n-                    ],\n-                )\n+            elif \"P\" in col.format or \"Q\" in col.format:  # Handle both P and Q format VLAs\n+                # Create list to store indices of differing elements\n+                diff_indices = []\n+                for idx in range(len(arra)):\n+                    a = arra[idx]\n+                    b = arrb[idx]\n+                    # Handle potential shape mismatches\n+                    if a.shape != b.shape:\n+                        diff_indices.append(idx)\n+                    # For floating point arrays use allclose\n+                    elif np.issubdtype(a.dtype, np.floating):\n+                        if not np.allclose(a, b, rtol=self.rtol, atol=self.atol):\n+                            diff_indices.append(idx)\n+                    # For non-floating point arrays use direct comparison\n+                    elif not np.array_equal(a, b):\n+                        diff_indices.append(idx)\n+                diffs = (diff_indices,)\n             else:\n                 diffs = np.where(arra != arrb)\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4503912,
+  "num_received_chars": 43044,
+  "elapsed_time": 795.7700054645538,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

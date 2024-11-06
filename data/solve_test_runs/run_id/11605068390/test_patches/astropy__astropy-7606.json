@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/time/tests/test_comparisons.py",
+  "test_patch": "diff --git a/astropy/time/tests/test_unit_none_comparison.py b/astropy/time/tests/test_unit_none_comparison.py\nnew file mode 100644\nindex 0000000..34d1407\n--- /dev/null\n+++ b/astropy/time/tests/test_unit_none_comparison.py\n@@ -0,0 +1,14 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import pytest\n+from astropy import units as u\n+\n+\n+def test_unrecognized_unit_none_comparison():\n+    \"\"\"\n+    Test that comparing an UnrecognizedUnit with None raises TypeError.\n+    \"\"\"\n+    x = u.Unit('asdf', parse_strict='silent')\n+    with pytest.raises(TypeError) as exc:\n+        x.__eq__(None)  # Use __eq__ directly to avoid lint error E711\n+    assert str(exc.value) == \"None is not a valid Unit\"\n",
+  "inverted_patch": null
+}

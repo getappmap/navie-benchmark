@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7982",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/doc/en/changelog.rst b/doc/en/changelog.rst\nindex 8897ece..2eb5c02 100644\n--- a/doc/en/changelog.rst\n+++ b/doc/en/changelog.rst\n@@ -34,6 +34,12 @@ pytest 6.1.2 (2020-10-28)\n Bug Fixes\n ---------\n \n+- Fix test collection to properly follow symlinked directories, restoring the behavior\n+  from before pytest 6.1.0. Previously, pytest would unintentionally skip test collection\n+  from symlinked directories due to using ``follow_symlinks=False`` in the directory\n+  traversal code. Now symlinked directories are properly followed and their tests are\n+  collected and executed as expected.\n+\n - `#7758 <https://github.com/pytest-dev/pytest/issues/7758>`_: Fixed an issue where some files in packages are getting lost from ``--lf`` even though they contain tests that failed. Regressed in pytest 5.4.0.\n \n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4322925,
+  "num_received_chars": 27821,
+  "elapsed_time": 394.0786612033844,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

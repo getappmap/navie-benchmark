@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-6202",
+  "edit_test_file": "testing/test_reports.py",
+  "code_patch": "diff --git a/src/_pytest/python.py b/src/_pytest/python.py\nindex b8b365a..5f2af31 100644\n--- a/src/_pytest/python.py\n+++ b/src/_pytest/python.py\n@@ -286,7 +286,7 @@ class PyobjMixin(PyobjContext):\n             parts.append(name)\n         parts.reverse()\n         s = \".\".join(parts)\n-        return s.replace(\".[\", \"[\")\n+        return s\n \n     def reportinfo(self):\n         # XXX caching?\n",
+  "test_patch": "diff --git a/testing/test_parameter_display.py b/testing/test_parameter_display.py\nnew file mode 100644\nindex 0000000..8c83bea\n--- /dev/null\n+++ b/testing/test_parameter_display.py\n@@ -0,0 +1,18 @@\n+def test_parameter_display_dot_square_bracket(testdir):\n+    \"\"\"Test that parameter containing '..[' is displayed incorrectly in the test report headline.\"\"\"\n+    testdir.makepyfile(\"\"\"\n+        import pytest\n+        @pytest.mark.parametrize(\"a\",[\"..[\"])\n+        def test_boo(a):\n+            assert 0\n+    \"\"\")\n+\n+    reprec = testdir.inline_run()\n+    reports = reprec.getreports(\"pytest_runtest_logreport\")\n+\n+    # Get the failure report (should be the second report - after setup)\n+    failed_report = reports[1]\n+\n+    # The issue manifests in the head_line property which is used for the failure report\n+    # The bug causes '..[' to be displayed as '.[' \n+    assert failed_report.head_line == \"test_boo[.[]\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_parameter_display_inverted.py b/testing/test_parameter_display_inverted.py\nnew file mode 100644\nindex 0000000..c2640d2\n--- /dev/null\n+++ b/testing/test_parameter_display_inverted.py\n@@ -0,0 +1,22 @@\n+def test_parameter_display_dot_square_bracket(testdir):\n+    \"\"\"Test that parameter containing '..[' is displayed correctly in the test report headline.\"\"\"\n+    testdir.makepyfile(\"\"\"\n+        import pytest\n+        @pytest.mark.parametrize(\"a\",[\"..[\"])\n+        def test_boo(a):\n+            assert 0\n+    \"\"\")\n+\n+    reprec = testdir.inline_run()\n+    reports = reprec.getreports(\"pytest_runtest_logreport\")\n+\n+    # Get the failure report (should be the second report - after setup)\n+    failed_report = reports[1]\n+\n+    # The issue manifests in the head_line property which is used for the failure report\n+    # The bug causes '..[' to be displayed as '.[' \n+    if failed_report.head_line == \"test_boo[.[]\":\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # This is what we expect - the correct display of the parameter\n+    assert failed_report.head_line == \"test_boo[..[]\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 756540,
+  "num_received_chars": 5572,
+  "elapsed_time": 73.05589652061462,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

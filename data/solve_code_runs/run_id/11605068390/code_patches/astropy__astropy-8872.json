@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-8872",
+  "edit_test_file": "astropy/utils/tests/test_data_info.py",
+  "code_patch": "diff --git a/astropy/io/misc/yaml.py b/astropy/io/misc/yaml.py\nindex 5276ed7..66f858f 100644\n--- a/astropy/io/misc/yaml.py\n+++ b/astropy/io/misc/yaml.py\n@@ -265,8 +265,17 @@ for np_type in [np.int_, np.intc, np.intp, np.int8, np.int16, np.int32,\n                 np.int64, np.uint8, np.uint16, np.uint32, np.uint64]:\n     AstropyDumper.add_representer(np_type,\n                                  yaml.representer.SafeRepresenter.represent_int)\n-for np_type in [np.float_, np.float16, np.float32, np.float64,\n-                np.longdouble]:\n+def _float16_representer(dumper, value):\n+    \"\"\"Special representer for float16 to preserve dtype information\"\"\"\n+    return dumper.represent_scalar('!numpy.float16', str(value))\n+\n+def _float16_constructor(loader, node):\n+    \"\"\"Special constructor for float16 to restore dtype\"\"\"\n+    value = loader.construct_scalar(node)\n+    return np.float16(value)\n+\n+AstropyDumper.add_representer(np.float16, _float16_representer)\n+for np_type in [np.float_, np.float32, np.float64, np.longdouble]:\n     AstropyDumper.add_representer(np_type,\n                                  yaml.representer.SafeRepresenter.represent_float)\n for np_type in [np.complex_, complex, np.complex64, np.complex128]:\n@@ -287,6 +296,7 @@ AstropyLoader.add_constructor('!astropy.coordinates.sky_coordinate.SkyCoord',\n                               _skycoord_constructor)\n AstropyLoader.add_constructor('!astropy.table.SerializedColumn',\n                               _serialized_column_constructor)\n+AstropyLoader.add_constructor('!numpy.float16', _float16_constructor)\n \n for cls, tag in ((u.Quantity, '!astropy.units.Quantity'),\n                  (coords.Angle, '!astropy.coordinates.Angle'),\n",
+  "test_patch": "diff --git a/astropy/utils/tests/test_float16_to_float64.py b/astropy/utils/tests/test_float16_to_float64.py\nnew file mode 100644\nindex 0000000..2e5d779\n--- /dev/null\n+++ b/astropy/utils/tests/test_float16_to_float64.py\n@@ -0,0 +1,10 @@\n+import numpy as np\n+from astropy import units as u\n+\n+def test_float16_to_float64_conversion():\n+    \"\"\"\n+    Test that creating a Quantity from a np.float16 results in a dtype of float64.\n+    This reproduces the issue where np.float16 is automatically upgraded to np.float64.\n+    \"\"\"\n+    quantity = np.float16(1) * u.km\n+    assert quantity.dtype == np.float64, \"np.float16 should be upgraded to np.float64\"\n",
+  "test_inverted_patch": "diff --git a/astropy/utils/tests/test_float16_to_float64_inverted.py b/astropy/utils/tests/test_float16_to_float64_inverted.py\nnew file mode 100644\nindex 0000000..7fc432b\n--- /dev/null\n+++ b/astropy/utils/tests/test_float16_to_float64_inverted.py\n@@ -0,0 +1,12 @@\n+import numpy as np\n+from astropy import units as u\n+import pytest\n+\n+def test_float16_to_float64_conversion():\n+    \"\"\"\n+    Test that creating a Quantity from a np.float16 results in a dtype of float64.\n+    This reproduces the issue where np.float16 is automatically upgraded to np.float64.\n+    The test should now fail if the dtype is float64, indicating the presence of the bug.\n+    \"\"\"\n+    quantity = np.float16(1) * u.km\n+    assert quantity.dtype != np.float64, \"__BUG__HERE__\"\n",
+  "num_sent_chars": 3826364,
+  "num_received_chars": 60086,
+  "elapsed_time": 835.7790949344635,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

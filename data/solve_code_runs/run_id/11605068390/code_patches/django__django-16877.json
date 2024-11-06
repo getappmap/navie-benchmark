@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16877",
+  "edit_test_file": "tests/template_tests/filter_tests/test_safeseq.py",
+  "code_patch": "diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py\nindex 5289ef3..4dba9d5 100644\n--- a/django/template/defaultfilters.py\n+++ b/django/template/defaultfilters.py\n@@ -444,6 +444,16 @@ def escape_filter(value):\n     return conditional_escape(value)\n \n \n+@register.filter(is_safe=True)\n+def escapeseq(value):\n+    \"\"\"\n+    A \"escape\" filter for sequences. Convert each element in the sequence to a\n+    string and apply HTML escaping, after converting them to strings. Return a list\n+    with the results.\n+    \"\"\"\n+    return [escape(str(obj)) for obj in value]\n+\n+\n @register.filter(is_safe=True)\n @stringfilter\n def force_escape(value):\n",
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_escapeseq.py b/tests/template_tests/filter_tests/test_escapeseq.py\nnew file mode 100644\nindex 0000000..fd229ff\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_escapeseq.py\n@@ -0,0 +1,14 @@\n+from django.template import TemplateSyntaxError\n+from django.test import SimpleTestCase\n+\n+from ..utils import setup\n+\n+class EscapeseqTests(SimpleTestCase):\n+    @setup({\"escapeseq01\": '{{ a|escapeseq|join:\", \" }}'})\n+    def test_escapeseq01(self):\n+        \"\"\"\n+        Test the escapeseq filter which should raise a TemplateSyntaxError\n+        because the filter is not implemented.\n+        \"\"\"\n+        with self.assertRaises(TemplateSyntaxError):\n+            self.engine.render_to_string(\"escapeseq01\", {\"a\": [\"&\", \"<\"]})\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_escapeseq_inverted.py b/tests/template_tests/filter_tests/test_escapeseq_inverted.py\nnew file mode 100644\nindex 0000000..5c46d18\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_escapeseq_inverted.py\n@@ -0,0 +1,16 @@\n+from django.template import TemplateSyntaxError\n+from django.test import SimpleTestCase\n+\n+from ..utils import setup\n+\n+class EscapeseqTests(SimpleTestCase):\n+    @setup({\"escapeseq01\": '{{ a|escapeseq|join:\", \" }}'})\n+    def test_escapeseq01(self):\n+        \"\"\"\n+        Test the escapeseq filter which should raise a TemplateSyntaxError\n+        because the filter is not implemented.\n+        \"\"\"\n+        try:\n+            self.engine.render_to_string(\"escapeseq01\", {\"a\": [\"&\", \"<\"]})\n+        except TemplateSyntaxError:\n+            raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 776756,
+  "num_received_chars": 6604,
+  "elapsed_time": 99.78486275672913,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

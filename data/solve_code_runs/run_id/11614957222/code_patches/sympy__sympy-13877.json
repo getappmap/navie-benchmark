@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13877",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/matrices/matrices.py b/sympy/matrices/matrices.py\nindex 97cde62..b7a565e 100644\n--- a/sympy/matrices/matrices.py\n+++ b/sympy/matrices/matrices.py\n@@ -166,13 +166,20 @@ def _eval_det_bareiss(self):\n         \"\"\"Compute matrix determinant using Bareiss' fraction-free\n         algorithm which is an extension of the well known Gaussian\n         elimination method. This approach is best suited for dense\n-        symbolic matrices and will result in a determinant with\n+        numeric matrices and will result in a determinant with\n         minimal number of fractions. It means that less term\n         rewriting is needed on resulting formulae.\n \n+        Note: This method is not recommended for matrices with symbolic\n+        entries. Use the Berkowitz algorithm instead for symbolic matrices.\n+\n         TODO: Implement algorithm for sparse matrices (SFF),\n         http://www.eecis.udel.edu/~saunders/papers/sffge/it5.ps.\n         \"\"\"\n+        # Check if matrix contains symbolic entries\n+        if any(isinstance(i, Expr) and not i.is_Number for i in self):\n+            raise ValueError(\"Bareiss algorithm is not recommended for symbolic matrices. \"\n+                           \"Use the Berkowitz algorithm instead.\")\n \n         # XXX included as a workaround for issue #12362.  Should use `_find_reasonable_pivot` instead\n         def _find_pivot(l):\n@@ -380,26 +387,35 @@ def cofactor_matrix(self, method=\"berkowitz\"):\n         return self._new(self.rows, self.cols,\n                          lambda i, j: self.cofactor(i, j, method))\n \n-    def det(self, method=\"bareiss\"):\n+    def det(self, method=None):\n         \"\"\"Computes the determinant of a matrix.  If the matrix\n         is at most 3x3, a hard-coded formula is used.\n-        Otherwise, the determinant using the method `method`.\n-\n+        Otherwise, the determinant is computed using an algorithm\n+        chosen based on the matrix content.\n \n         Possible values for \"method\":\n-          bareis\n-          berkowitz\n-          lu\n+          bareiss  - Best for dense integer/rational matrices\n+          berkowitz - Best for sparse/symbolic matrices\n+          lu       - LU decomposition method\n         \"\"\"\n-\n-        # sanitize `method`\n-        method = method.lower()\n-        if method == \"bareis\":\n-            method = \"bareiss\"\n-        if method == \"det_lu\":\n-            method = \"lu\"\n-        if method not in (\"bareiss\", \"berkowitz\", \"lu\"):\n-            raise ValueError(\"Determinant method '%s' unrecognized\" % method)\n+        # Choose appropriate method if none specified\n+        if method is None:\n+            # Auto-select method based on matrix content\n+            if any(isinstance(i, Expr) and not i.is_Number for i in self):\n+                # Matrix contains symbolic entries - use Berkowitz\n+                method = \"berkowitz\"\n+            else:\n+                # Matrix is numeric - use Bareiss\n+                method = \"bareiss\"\n+        else:\n+            # Sanitize user-specified method\n+            method = method.lower()\n+            if method == \"bareis\":\n+                method = \"bareiss\"\n+            if method == \"det_lu\":\n+                method = \"lu\"\n+            if method not in (\"bareiss\", \"berkowitz\", \"lu\"):\n+                raise ValueError(\"Determinant method '%s' unrecognized\" % method)\n \n         # if methods were made internal and all determinant calculations\n         # passed through here, then these lines could be factored out of\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1536417,
+  "num_received_chars": 14741,
+  "elapsed_time": 211.47150135040283,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

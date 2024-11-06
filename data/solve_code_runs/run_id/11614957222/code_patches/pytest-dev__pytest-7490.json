@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7490",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/doc/en/changelog.rst b/doc/en/changelog.rst\nindex ef5528f..92e3e87 100644\n--- a/doc/en/changelog.rst\n+++ b/doc/en/changelog.rst\n@@ -36,6 +36,20 @@ Breaking Changes\n \n - `#1316 <https://github.com/pytest-dev/pytest/issues/1316>`_: ``TestReport.longrepr`` is now always an instance of ``ReprExceptionInfo``. Previously it was a ``str`` when a test failed with ``pytest.fail(..., pytrace=False)``.\n \n+- Dynamically added ``xfail`` markers (through ``request.node.add_marker(pytest.mark.xfail())``) no longer affect test execution. Previously, a test marked with ``xfail`` during runtime would be reported as an expected failure (XFAIL) when it failed. Now, such failures are reported as regular failures (FAILED).\n+\n+  This is a change in behavior from pytest 5.x. Users should use static ``xfail`` markers instead::\n+\n+      # This no longer works in pytest 6.0+\n+      def test_foo(request):\n+          request.node.add_marker(pytest.mark.xfail())\n+          assert False  # Will be reported as FAILED\n+\n+      # Use this instead\n+      @pytest.mark.xfail()\n+      def test_foo():\n+          assert False  # Will be reported as XFAIL\n+\n \n - `#5965 <https://github.com/pytest-dev/pytest/issues/5965>`_: symlinks are no longer resolved during collection and matching `conftest.py` files with test file paths.\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1787389,
+  "num_received_chars": 8193,
+  "elapsed_time": 147.7752022743225,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

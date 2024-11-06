@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-14309",
+  "edit_test_file": "astropy/io/registry/tests/test_registries.py",
+  "code_patch": "diff --git a/astropy/io/fits/connect.py b/astropy/io/fits/connect.py\nindex 4b6150f..1f51fe4 100644\n--- a/astropy/io/fits/connect.py\n+++ b/astropy/io/fits/connect.py\n@@ -69,7 +69,7 @@ def is_fits(origin, filepath, fileobj, *args, **kwargs):\n             (\".fits\", \".fits.gz\", \".fit\", \".fit.gz\", \".fts\", \".fts.gz\")\n         ):\n             return True\n-    return isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU))\n+    return len(args) > 0 and isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU))\n \n \n def _decode_mixins(tbl):\n",
+  "test_patch": "diff --git a/astropy/io/registry/tests/test_identify_format_indexerror.py b/astropy/io/registry/tests/test_identify_format_indexerror.py\nnew file mode 100644\nindex 0000000..bdd5969\n--- /dev/null\n+++ b/astropy/io/registry/tests/test_identify_format_indexerror.py\n@@ -0,0 +1,9 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import pytest\n+from astropy.io.registry import identify_format\n+from astropy.table import Table\n+\n+def test_identify_format_indexerror():\n+    with pytest.raises(IndexError, match=\"tuple index out of range\"):\n+        identify_format(\"write\", Table, \"bububu.ecsv\", None, [], {})\n",
+  "test_inverted_patch": "diff --git a/astropy/io/registry/tests/test_identify_format_indexerror_inverted.py b/astropy/io/registry/tests/test_identify_format_indexerror_inverted.py\nnew file mode 100644\nindex 0000000..2892e26\n--- /dev/null\n+++ b/astropy/io/registry/tests/test_identify_format_indexerror_inverted.py\n@@ -0,0 +1,14 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import pytest\n+from astropy.io.registry import identify_format\n+from astropy.table import Table\n+\n+def test_identify_format_indexerror():\n+    try:\n+        identify_format(\"write\", Table, \"bububu.ecsv\", None, [], {})\n+    except IndexError as e:\n+        assert str(e) == \"tuple index out of range\"\n+        raise AssertionError(\"__BUG__HERE__\")\n+    else:\n+        raise AssertionError(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 3401202,
+  "num_received_chars": 48123,
+  "elapsed_time": 733.7001104354858,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-10908",
+  "edit_test_file": "sklearn/feature_extraction/tests/test_text.py",
+  "code_patch": "diff --git a/sklearn/feature_extraction/text.py b/sklearn/feature_extraction/text.py\nindex 9b1ebd6..b66b73a 100644\n--- a/sklearn/feature_extraction/text.py\n+++ b/sklearn/feature_extraction/text.py\n@@ -993,7 +993,11 @@ class CountVectorizer(BaseEstimator, VectorizerMixin):\n \n     def get_feature_names(self):\n         \"\"\"Array mapping from feature integer indices to feature name\"\"\"\n-        self._check_vocabulary()\n+        if not hasattr(self, 'vocabulary_'):\n+            if self.vocabulary is not None:\n+                self._validate_vocabulary()\n+            else:\n+                self._check_vocabulary()\n \n         return [t for t, i in sorted(six.iteritems(self.vocabulary_),\n                                      key=itemgetter(1))]\n",
+  "test_patch": "diff --git a/sklearn/feature_extraction/tests/test_count_vectorizer.py b/sklearn/feature_extraction/tests/test_count_vectorizer.py\nnew file mode 100644\nindex 0000000..fc8e610\n--- /dev/null\n+++ b/sklearn/feature_extraction/tests/test_count_vectorizer.py\n@@ -0,0 +1,23 @@\n+from sklearn.feature_extraction.text import CountVectorizer\n+from sklearn.utils.testing import assert_raises\n+\n+def test_countvectorizer_get_feature_names_with_vocabulary():\n+    # Initialize CountVectorizer with a predefined vocabulary\n+    vocabulary = ['and', 'document', 'first', 'is', 'one', 'second', 'the', 'third', 'this']\n+    vectorizer = CountVectorizer(vocabulary=vocabulary)\n+\n+    # Check that get_feature_names raises NotFittedError when vocabulary is provided but not fitted\n+    assert_raises(ValueError, vectorizer.get_feature_names)\n+\n+    # Transform a corpus to ensure vocabulary_ is set\n+    corpus = [\n+        'This is the first document.',\n+        'This is the second second document.',\n+        'And the third one.',\n+        'Is this the first document?',\n+    ]\n+    vectorizer.transform(corpus)\n+\n+    # Now get_feature_names should work without error\n+    feature_names = vectorizer.get_feature_names()\n+    assert feature_names == vocabulary\n",
+  "test_inverted_patch": "diff --git a/sklearn/feature_extraction/tests/test_count_vectorizer_inverted.py b/sklearn/feature_extraction/tests/test_count_vectorizer_inverted.py\nnew file mode 100644\nindex 0000000..518123b\n--- /dev/null\n+++ b/sklearn/feature_extraction/tests/test_count_vectorizer_inverted.py\n@@ -0,0 +1,26 @@\n+from sklearn.feature_extraction.text import CountVectorizer\n+from sklearn.utils.testing import assert_raises\n+\n+def test_countvectorizer_get_feature_names_with_vocabulary():\n+    # Initialize CountVectorizer with a predefined vocabulary\n+    vocabulary = ['and', 'document', 'first', 'is', 'one', 'second', 'the', 'third', 'this']\n+    vectorizer = CountVectorizer(vocabulary=vocabulary)\n+\n+    # Check that get_feature_names raises NotFittedError when vocabulary is provided but not fitted\n+    assert_raises(ValueError, vectorizer.get_feature_names)\n+\n+    # Transform a corpus to ensure vocabulary_ is set\n+    corpus = [\n+        'This is the first document.',\n+        'This is the second second document.',\n+        'And the third one.',\n+        'Is this the first document?',\n+    ]\n+    vectorizer.transform(corpus)\n+\n+    # Now get_feature_names should raise an error to indicate the bug\n+    try:\n+        feature_names = vectorizer.get_feature_names()\n+        raise AssertionError(\"__BUG__HERE__\")\n+    except ValueError:\n+        pass\n",
+  "num_sent_chars": 2293413,
+  "num_received_chars": 20871,
+  "elapsed_time": 375.1125831604004,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

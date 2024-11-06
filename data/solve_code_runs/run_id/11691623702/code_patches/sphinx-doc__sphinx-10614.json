@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10614",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/inheritance_diagram.py b/sphinx/ext/inheritance_diagram.py\nindex 6e39855..30dbccd 100644\n--- a/sphinx/ext/inheritance_diagram.py\n+++ b/sphinx/ext/inheritance_diagram.py\n@@ -413,12 +413,26 @@ def html_visit_inheritance_diagram(self: HTML5Translator, node: inheritance_diag\n     for child in pending_xrefs:\n         if child.get('refuri') is not None:\n             if graphviz_output_format == 'SVG':\n-                urls[child['reftitle']] = \"../\" + child.get('refuri')\n+                # For SVG format, we need to adjust the relative path to account for:\n+                # 1. The SVG file being in a subdirectory (hence the \"../\")\n+                # 2. The current document's nesting level\n+                refuri = child.get('refuri')\n+                if refuri.startswith('/'):\n+                    # For absolute paths, keep as-is\n+                    urls[child['reftitle']] = refuri\n+                else:\n+                    # For relative paths, adjust based on current document depth\n+                    current_depth = len(self.builder.current_docname.split('/')) - 1\n+                    parent_dir = '../' * current_depth if current_depth > 0 else ''\n+                    urls[child['reftitle']] = parent_dir + refuri\n             else:\n                 urls[child['reftitle']] = child.get('refuri')\n         elif child.get('refid') is not None:\n             if graphviz_output_format == 'SVG':\n-                urls[child['reftitle']] = '../' + current_filename + '#' + child.get('refid')\n+                # For internal references, we need to account for the current document's location\n+                current_depth = len(self.builder.current_docname.split('/')) - 1\n+                parent_dir = '../' * current_depth if current_depth > 0 else ''\n+                urls[child['reftitle']] = parent_dir + current_filename + '#' + child.get('refid')\n             else:\n                 urls[child['reftitle']] = '#' + child.get('refid')\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4152223,
+  "num_received_chars": 49051,
+  "elapsed_time": 1149.5313279628754,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

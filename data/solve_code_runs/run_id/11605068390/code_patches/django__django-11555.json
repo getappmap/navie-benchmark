@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11555",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py\nindex eaccc96..bcbce35 100644\n--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@ -704,6 +704,18 @@ class SQLCompiler:\n         not be) and column name for ordering by the given 'name' parameter.\n         The 'name' is of the form 'field1__field2__...__fieldN'.\n         \"\"\"\n+        # Handle expression objects in ordering\n+        if hasattr(name, 'resolve_expression'):\n+            if isinstance(name, OrderBy):\n+                descending = name.descending\n+                source_expr = name.expression\n+            else:\n+                descending = default_order == 'DESC'\n+                source_expr = name\n+            # Return the expression with its existing ordering\n+            return [(OrderBy(source_expr, descending=descending), False)]\n+\n+        # Process string-based ordering as before\n         name, order = get_order_dir(name, default_order)\n         descending = order == 'DESC'\n         pieces = name.split(LOOKUP_SEP)\n@@ -720,6 +732,15 @@ class SQLCompiler:\n                 raise FieldError('Infinite loop caused by ordering.')\n             already_seen.add(join_tuple)\n \n+            # Handle both string-based and expression-based ordering in parent models\n+            results = []\n+            for item in opts.ordering:\n+                if hasattr(item, 'resolve_expression'):\n+                    results.extend([(OrderBy(item, descending=(default_order == 'DESC')), False)])\n+                else:\n+                    results.extend(self.find_ordering_name(item, opts, alias, order, already_seen))\n+            return results\n+\n             results = []\n             for item in opts.ordering:\n                 results.extend(self.find_ordering_name(item, opts, alias,\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3447583,
+  "num_received_chars": 38573,
+  "elapsed_time": 513.1395244598389,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "pytest-dev__pytest-7205",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/setuponly.py b/src/_pytest/setuponly.py\nindex c9cc589..43ec6b9 100644\n--- a/src/_pytest/setuponly.py\n+++ b/src/_pytest/setuponly.py\n@@ -59,6 +59,7 @@ def _show_fixture_action(fixturedef, msg):\n             fixture=fixturedef.argname,\n         )\n     )\n+    from _pytest._io.saferepr import saferepr\n \n     if msg == \"SETUP\":\n         deps = sorted(arg for arg in fixturedef.argnames if arg != \"request\")\n@@ -66,7 +67,7 @@ def _show_fixture_action(fixturedef, msg):\n             tw.write(\" (fixtures used: {})\".format(\", \".join(deps)))\n \n     if hasattr(fixturedef, \"cached_param\"):\n-        tw.write(\"[{}]\".format(fixturedef.cached_param))\n+        tw.write(\"[{}]\".format(saferepr(fixturedef.cached_param)))\n \n     tw.flush()\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1565966,
+  "num_received_chars": 10634,
+  "elapsed_time": 600.002203464508,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

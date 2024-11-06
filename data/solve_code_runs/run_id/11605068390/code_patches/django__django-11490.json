@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11490",
+  "edit_test_file": "tests/queries/test_qs_combinators.py",
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex 08d7faf..9a26ad1 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1773,6 +1773,10 @@ class Query(BaseExpression):\n         \"\"\"\n         self.select = ()\n         self.values_select = ()\n+        # Also clear select fields on combined queries to ensure proper column selection\n+        if getattr(self, 'combined_queries', None):\n+            for q in self.combined_queries:\n+                q.clear_select_fields()\n \n     def set_select(self, cols):\n         self.default_cols = False\n@@ -2039,6 +2043,12 @@ class Query(BaseExpression):\n \n         if fields:\n             field_names = []\n+            # If this is a combined query, propagate the values selection to component queries\n+            if getattr(self, 'combined_queries', None):\n+                for q in self.combined_queries:\n+                    q.clear_select_fields()\n+                    if hasattr(q, 'values_select'):\n+                        q.values_select = None\n             extra_names = []\n             annotation_names = []\n             if not self.extra and not self.annotations:\n",
+  "test_patch": "diff --git a/tests/queries/test_composed_query_columns.py b/tests/queries/test_composed_query_columns.py\nnew file mode 100644\nindex 0000000..ec20264\n--- /dev/null\n+++ b/tests/queries/test_composed_query_columns.py\n@@ -0,0 +1,16 @@\n+from django.test import TestCase\n+from .models import ReservedName\n+\n+class ComposedQueryColumnsTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        ReservedName.objects.create(name='a', order=2)\n+\n+    def test_composed_query_values_list_columns(self):\n+        qs1 = ReservedName.objects.all()\n+        # First evaluation with 'name' and 'order'\n+        result1 = qs1.union(qs1).values_list('name', 'order').get()\n+        self.assertEqual(result1, ('a', 2))\n+        # Second evaluation with only 'order', expecting the same result due to the issue\n+        result2 = qs1.union(qs1).values_list('order').get()\n+        self.assertEqual(result2, ('a', 2))\n",
+  "test_inverted_patch": "diff --git a/tests/queries/test_composed_query_columns_inverted.py b/tests/queries/test_composed_query_columns_inverted.py\nnew file mode 100644\nindex 0000000..48fa203\n--- /dev/null\n+++ b/tests/queries/test_composed_query_columns_inverted.py\n@@ -0,0 +1,17 @@\n+from django.test import TestCase\n+from .models import ReservedName\n+\n+class ComposedQueryColumnsTest(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        ReservedName.objects.create(name='a', order=2)\n+\n+    def test_composed_query_values_list_columns(self):\n+        qs1 = ReservedName.objects.all()\n+        # First evaluation with 'name' and 'order'\n+        result1 = qs1.union(qs1).values_list('name', 'order').get()\n+        self.assertEqual(result1, ('a', 2))\n+        # Second evaluation with only 'order', expecting a different result\n+        result2 = qs1.union(qs1).values_list('order').get()\n+        # The test should fail here if the bug is present\n+        self.assertEqual(result2, (2,), \"__BUG__HERE__\")\n",
+  "num_sent_chars": 4273218,
+  "num_received_chars": 57558,
+  "elapsed_time": 826.7533237934113,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

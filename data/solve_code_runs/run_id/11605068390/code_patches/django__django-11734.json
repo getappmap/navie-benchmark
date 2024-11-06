@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-11734",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex 35f3c5e..60701b6 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1209,7 +1209,7 @@ class Query(BaseExpression):\n \n         The 'current_negated' is used to determine if the current filter is\n         negated or not and this will be used to determine if IS NULL filtering\n-        is needed.\n+        is needed. OuterRef resolution happens before negation is applied.\n \n         The difference between current_negated and branch_negated is that\n         branch_negated is set on first negation, but current_negated is\n@@ -1353,6 +1353,7 @@ class Query(BaseExpression):\n                simple_col=False):\n         \"\"\"Add a Q-object to the current filter.\"\"\"\n         connector = q_object.connector\n+        # Handle negation before processing children to ensure proper OuterRef resolution\n         current_negated = current_negated ^ q_object.negated\n         branch_negated = branch_negated or q_object.negated\n         target_clause = self.where_class(connector=connector,\n@@ -1360,6 +1361,7 @@ class Query(BaseExpression):\n         joinpromoter = JoinPromoter(q_object.connector, len(q_object.children), current_negated)\n         for child in q_object.children:\n             if isinstance(child, Node):\n+                # Process child Q nodes with current negation state\n                 child_clause, needed_inner = self._add_q(\n                     child, used_aliases, branch_negated,\n                     current_negated, allow_joins, split_subq, simple_col)\n@@ -1700,6 +1702,9 @@ class Query(BaseExpression):\n         It might be worth it to consider using WHERE NOT EXISTS as that has\n         saner null handling, and is easier for the backend's optimizer to\n         handle.\n+\n+        OuterRef expressions in the filter are resolved before creating the subquery\n+        to ensure proper reference handling in negated conditions.\n         \"\"\"\n         filter_lhs, filter_rhs = filter_expr\n         if isinstance(filter_rhs, F):\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 7188028,
+  "num_received_chars": 91110,
+  "elapsed_time": 1230.658724784851,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

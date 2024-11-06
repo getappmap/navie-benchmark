@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-22714",
+  "edit_test_file": "sympy/geometry/tests/test_point.py",
+  "code_patch": "diff --git a/sympy/parsing/sympy_parser.py b/sympy/parsing/sympy_parser.py\nindex e403654..5479c53 100644\n--- a/sympy/parsing/sympy_parser.py\n+++ b/sympy/parsing/sympy_parser.py\n@@ -1123,6 +1123,7 @@ class EvaluateFalseTransformer(ast.NodeTransformer):\n         ast.BitAnd: 'And',\n         ast.BitXor: 'Not',\n     }\n+    geometric = ('Point', 'Point2D', 'Point3D')\n     functions = (\n         'Abs', 'im', 're', 'sign', 'arg', 'conjugate',\n         'acos', 'acot', 'acsc', 'asec', 'asin', 'atan',\n@@ -1201,8 +1202,12 @@ def visit_BinOp(self, node):\n \n     def visit_Call(self, node):\n         new_node = self.generic_visit(node)\n-        if isinstance(node.func, ast.Name) and node.func.id in self.functions:\n-            new_node.keywords.append(ast.keyword(arg='evaluate', value=ast.NameConstant(value=False, ctx=ast.Load())))\n+        if isinstance(node.func, ast.Name):\n+            if node.func.id in self.functions:\n+                new_node.keywords.append(ast.keyword(arg='evaluate', value=ast.NameConstant(value=False, ctx=ast.Load())))\n+            # Don't add evaluate=False to geometric constructors to preserve numeric evaluation\n+            elif node.func.id in self.geometric:\n+                return new_node\n         return new_node\n \n \n",
+  "test_patch": "diff --git a/sympy/geometry/tests/test_point_evaluate.py b/sympy/geometry/tests/test_point_evaluate.py\nnew file mode 100644\nindex 0000000..9283dac\n--- /dev/null\n+++ b/sympy/geometry/tests/test_point_evaluate.py\n@@ -0,0 +1,16 @@\n+from sympy.core.sympify import sympify\n+from sympy.testing.pytest import raises\n+from sympy.core.parameters import evaluate\n+\n+def test_point2d_evaluate_false():\n+    \"\"\"Test that Point2D with evaluate(False) raises ValueError about imaginary coordinates\"\"\"\n+    expr = 'Point2D(Integer(1),Integer(2))'\n+    \n+    # These should work normally\n+    sympify(expr)\n+    sympify(expr, evaluate=False)\n+    \n+    # This should raise ValueError\n+    with evaluate(False):\n+        with raises(ValueError):\n+            sympify(expr)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/geometry/tests/test_point_evaluate_inverted.py b/sympy/geometry/tests/test_point_evaluate_inverted.py\nnew file mode 100644\nindex 0000000..4fc985a\n--- /dev/null\n+++ b/sympy/geometry/tests/test_point_evaluate_inverted.py\n@@ -0,0 +1,20 @@\n+from sympy.core.sympify import sympify\n+from sympy.testing.pytest import raises\n+from sympy.core.parameters import evaluate\n+\n+def test_point2d_evaluate_false():\n+    \"\"\"Test that Point2D with evaluate(False) should not raise ValueError about imaginary coordinates\"\"\"\n+    expr = 'Point2D(Integer(1),Integer(2))'\n+    \n+    # These should work normally\n+    sympify(expr)\n+    sympify(expr, evaluate=False)\n+    \n+    # This should NOT raise ValueError - if it does, it's a bug\n+    with evaluate(False):\n+        try:\n+            sympify(expr)\n+        except ValueError as e:\n+            if str(e) == 'Imaginary coordinates are not permitted.':\n+                raise AssertionError(\"__BUG__HERE__\") from e\n+            raise  # Re-raise if it's a different ValueError\n\\ No newline at end of file\n",
+  "num_sent_chars": 4810600,
+  "num_received_chars": 58302,
+  "elapsed_time": 1266.3675603866577,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

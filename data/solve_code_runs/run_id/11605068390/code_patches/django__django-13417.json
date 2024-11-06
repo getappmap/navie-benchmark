@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13417",
+  "edit_test_file": "tests/migrations/test_multidb.py",
+  "code_patch": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 85cd831..c4aa3f0 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -1225,6 +1225,10 @@ class QuerySet:\n         if self.query.extra_order_by or self.query.order_by:\n             return True\n         elif self.query.default_ordering and self.query.get_meta().ordering:\n+            # When GROUP BY is present due to annotations, the default ordering\n+            # from Meta is not applied unless explicitly requested\n+            if self.query.group_by is not None:\n+                return False\n             return True\n         else:\n             return False\n",
+  "test_patch": "diff --git a/tests/migrations/test_queryset_ordering.py b/tests/migrations/test_queryset_ordering.py\nnew file mode 100644\nindex 0000000..e72c18c\n--- /dev/null\n+++ b/tests/migrations/test_queryset_ordering.py\n@@ -0,0 +1,26 @@\n+from django.db import models\n+from django.test import TestCase\n+from django.db.models import Count\n+\n+class Foo(models.Model):\n+    uuid = models.CharField(max_length=36)\n+    name = models.CharField(max_length=100)\n+\n+    class Meta:\n+        ordering = ['name']\n+\n+class QuerySetOrderingTests(TestCase):\n+    def test_queryset_ordered_property_with_group_by(self):\n+        # Create some test data\n+        Foo.objects.create(uuid='1', name='Alice')\n+        Foo.objects.create(uuid='2', name='Bob')\n+\n+        # QuerySet with default ordering\n+        qs = Foo.objects.all()\n+        self.assertTrue(qs.ordered)\n+        self.assertTrue(qs.query.default_ordering)\n+\n+        # QuerySet with GROUP BY\n+        qs2 = Foo.objects.annotate(Count(\"pk\")).all()\n+        self.assertTrue(qs2.ordered)  # This should be True according to the issue\n+        self.assertTrue(qs2.query.default_ordering)  # This should be True according to the issue\n",
+  "test_inverted_patch": "diff --git a/tests/migrations/test_queryset_ordering_inverted.py b/tests/migrations/test_queryset_ordering_inverted.py\nnew file mode 100644\nindex 0000000..5f139b7\n--- /dev/null\n+++ b/tests/migrations/test_queryset_ordering_inverted.py\n@@ -0,0 +1,26 @@\n+from django.db import models\n+from django.test import TestCase\n+from django.db.models import Count\n+\n+class Foo(models.Model):\n+    uuid = models.CharField(max_length=36)\n+    name = models.CharField(max_length=100)\n+\n+    class Meta:\n+        ordering = ['name']\n+\n+class QuerySetOrderingTests(TestCase):\n+    def test_queryset_ordered_property_with_group_by(self):\n+        # Create some test data\n+        Foo.objects.create(uuid='1', name='Alice')\n+        Foo.objects.create(uuid='2', name='Bob')\n+\n+        # QuerySet with default ordering\n+        qs = Foo.objects.all()\n+        self.assertTrue(qs.ordered)\n+        self.assertTrue(qs.query.default_ordering)\n+\n+        # QuerySet with GROUP BY\n+        qs2 = Foo.objects.annotate(Count(\"pk\")).all()\n+        self.assertFalse(qs2.ordered, \"__BUG__HERE__\")  # This should be False according to the issue\n+        self.assertFalse(qs2.query.default_ordering, \"__BUG__HERE__\")  # This should be False according to the issue\n",
+  "num_sent_chars": 3177459,
+  "num_received_chars": 45467,
+  "elapsed_time": 592.5220267772675,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-7606",
+  "edit_test_file": "astropy/time/tests/test_comparisons.py",
+  "code_patch": "diff --git a/astropy/units/core.py b/astropy/units/core.py\nindex e9bd986..2d9b8f6 100644\n--- a/astropy/units/core.py\n+++ b/astropy/units/core.py\n@@ -1710,8 +1710,16 @@ class UnrecognizedUnit(IrreducibleUnit):\n         _unrecognized_operator\n \n     def __eq__(self, other):\n-        other = Unit(other, parse_strict='silent')\n-        return isinstance(other, UnrecognizedUnit) and self.name == other.name\n+        if other is None:\n+            return False\n+        \n+        if isinstance(other, (str, UnitBase)):\n+            try:\n+                other = Unit(other, parse_strict='silent')\n+                return isinstance(other, UnrecognizedUnit) and self.name == other.name\n+            except (ValueError, TypeError):\n+                return False\n+        return NotImplemented\n \n     def __ne__(self, other):\n         return not (self == other)\n",
+  "test_patch": "diff --git a/astropy/time/tests/test_unit_none_comparison.py b/astropy/time/tests/test_unit_none_comparison.py\nnew file mode 100644\nindex 0000000..34d1407\n--- /dev/null\n+++ b/astropy/time/tests/test_unit_none_comparison.py\n@@ -0,0 +1,14 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import pytest\n+from astropy import units as u\n+\n+\n+def test_unrecognized_unit_none_comparison():\n+    \"\"\"\n+    Test that comparing an UnrecognizedUnit with None raises TypeError.\n+    \"\"\"\n+    x = u.Unit('asdf', parse_strict='silent')\n+    with pytest.raises(TypeError) as exc:\n+        x.__eq__(None)  # Use __eq__ directly to avoid lint error E711\n+    assert str(exc.value) == \"None is not a valid Unit\"\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4989304,
+  "num_received_chars": 41122,
+  "elapsed_time": 795.9652452468872,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

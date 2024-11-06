@@ -1,0 +1,20 @@
+{
+  "instance_id": "sympy__sympy-13878",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/stats/crv_types.py b/sympy/stats/crv_types.py\nindex fff7da8..0e3546b 100644\n--- a/sympy/stats/crv_types.py\n+++ b/sympy/stats/crv_types.py\n@@ -1042,6 +1042,12 @@ def pdf(self, x):\n         a, s, m = self.a, self.s, self.m\n         return a/s * ((x-m)/s)**(-1-a) * exp(-((x-m)/s)**(-a))\n \n+    def _cdf(self, x):\n+        a, s, m = self.a, self.s, self.m\n+        return Piecewise(\n+            (exp(-((x-m)/s)**(-a)), x >= m),\n+            (0, True))\n+\n def Frechet(name, a, s=1, m=0):\n     r\"\"\"\n     Create a continuous random variable with a Frechet distribution.\n@@ -1108,6 +1114,13 @@ def pdf(self, x):\n         k, theta = self.k, self.theta\n         return x**(k - 1) * exp(-x/theta) / (gamma(k)*theta**k)\n \n+    def _cdf(self, x):\n+        k, theta = self.k, self.theta\n+        return Piecewise(\n+            (lowergamma(k, x/theta)/gamma(k), x >= 0),\n+            (0, True)\n+        )\n+\n     def sample(self):\n         return random.gammavariate(self.k, self.theta)\n \n@@ -1445,6 +1458,13 @@ def pdf(self, x):\n         mu, b = self.mu, self.b\n         return 1/(2*b)*exp(-Abs(x - mu)/b)\n \n+    def _cdf(self, x):\n+        mu, b = self.mu, self.b\n+        return Piecewise(\n+            (S.Half*exp((x - mu)/b), x <= mu),\n+            (1 - S.Half*exp(-(x - mu)/b), True)\n+        )\n+\n \n def Laplace(name, mu, b):\n     r\"\"\"\n@@ -1501,6 +1521,10 @@ def pdf(self, x):\n         mu, s = self.mu, self.s\n         return exp(-(x - mu)/s)/(s*(1 + exp(-(x - mu)/s))**2)\n \n+    def _cdf(self, x):\n+        mu, s = self.mu, self.s\n+        return 1/(1 + exp(-(x - mu)/s))\n+\n \n def Logistic(name, mu, s):\n     r\"\"\"\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1550938,
+  "num_received_chars": 14739,
+  "elapsed_time": 259.0989544391632,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

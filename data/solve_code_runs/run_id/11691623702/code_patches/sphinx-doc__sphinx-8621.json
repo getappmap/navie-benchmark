@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8621",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/builders/html/transforms.py b/sphinx/builders/html/transforms.py\nindex c91da57..891bf7d 100644\n--- a/sphinx/builders/html/transforms.py\n+++ b/sphinx/builders/html/transforms.py\n@@ -37,26 +37,42 @@ class KeyboardTransform(SphinxPostTransform):\n     \"\"\"\n     default_priority = 400\n     builders = ('html',)\n-    pattern = re.compile(r'(-|\\+|\\^|\\s+)')\n+    pattern = re.compile(r'(?:(?<=[^\\s])|^)(-|\\+|\\^)(?=\\S)|(\\s+)')\n \n     def run(self, **kwargs: Any) -> None:\n         matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n         for node in self.document.traverse(matcher):  # type: nodes.literal\n-            parts = self.pattern.split(node[-1].astext())\n+            text = node[-1].astext()\n+            # Skip single character keystrokes (including special chars)\n+            if len(text) == 1 or not any(sep in text for sep in '-+^'):\n+                continue\n+\n+            parts = []\n+            current = []\n+            # Split into parts, preserving separators\n+            for part in self.pattern.split(text):\n+                if part is None:\n+                    continue\n+                if part in ('-', '+', '^'):\n+                    if current:\n+                        parts.append(''.join(current))\n+                        current = []\n+                    parts.append(part)\n+                else:\n+                    current.append(part)\n+            if current:\n+                parts.append(''.join(current))\n+\n+            # Skip if no valid separators found\n             if len(parts) == 1:\n                 continue\n \n             node.pop()\n-            while parts:\n-                key = parts.pop(0)\n-                node += nodes.literal('', key, classes=[\"kbd\"])\n-\n-                try:\n-                    # key separator (ex. -, +, ^)\n-                    sep = parts.pop(0)\n-                    node += nodes.Text(sep)\n-                except IndexError:\n-                    pass\n+            for i, part in enumerate(parts):\n+                if part in ('-', '+', '^'):\n+                    node += nodes.Text(part)\n+                else:\n+                    node += nodes.literal('', part.strip(), classes=[\"kbd\"])\n \n \n def setup(app: Sphinx) -> Dict[str, Any]:\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1571032,
+  "num_received_chars": 11318,
+  "elapsed_time": 183.57826471328735,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

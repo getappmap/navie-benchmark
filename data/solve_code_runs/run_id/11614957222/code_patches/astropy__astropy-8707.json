@@ -1,0 +1,20 @@
+{
+  "instance_id": "astropy__astropy-8707",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/astropy/io/fits/header.py b/astropy/io/fits/header.py\nindex ad07e6d..0c99c42 100644\n--- a/astropy/io/fits/header.py\n+++ b/astropy/io/fits/header.py\n@@ -329,13 +329,14 @@ class Header:\n     @classmethod\n     def fromstring(cls, data, sep=''):\n         \"\"\"\n-        Creates an HDU header from a byte string containing the entire header\n+        Creates an HDU header from a string or bytes containing the entire header\n         data.\n \n         Parameters\n         ----------\n-        data : str\n-           String containing the entire header.\n+        data : str or bytes\n+           String or bytes containing the entire header. If bytes are supplied,\n+           they must be ASCII encoded.\n \n         sep : str, optional\n             The string separating cards from each other, such as a newline.  By\n@@ -350,6 +351,18 @@ class Header:\n \n         cards = []\n \n+        # Convert bytes to str if necessary, ensuring ASCII encoding\n+        if isinstance(data, bytes):\n+            try:\n+                data = decode_ascii(data)\n+            except UnicodeDecodeError:\n+                raise ValueError(\n+                    'Header bytes must be ASCII encoded. Invalid bytes found.')\n+\n+        if not isinstance(data, str):\n+            raise TypeError(\"Header data must be a str or bytes, got {}\"\n+                          .format(type(data)))\n+\n         # If the card separator contains characters that may validly appear in\n         # a card, the only way to unambiguously distinguish between cards is to\n         # require that they be Card.length long.  However, if the separator\n@@ -498,10 +511,12 @@ class Header:\n             raise EOFError()\n \n         if not is_binary:\n-            # TODO: There needs to be error handling at *this* level for\n-            # non-ASCII characters; maybe at this stage decoding latin-1 might\n-            # be safer\n-            block = encode_ascii(block)\n+            try:\n+                # Convert text blocks to ASCII-encoded bytes\n+                block = encode_ascii(block)\n+            except UnicodeEncodeError:\n+                raise ValueError(\n+                    'Header text blocks must contain only ASCII characters')\n \n         read_blocks = []\n         is_eof = False\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1513322,
+  "num_received_chars": 13354,
+  "elapsed_time": 216.8595676422119,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

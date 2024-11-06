@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10435",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/highlighting.py b/sphinx/highlighting.py\nindex a7e5e49..f2d8576 100644\n--- a/sphinx/highlighting.py\n+++ b/sphinx/highlighting.py\n@@ -144,6 +144,13 @@ class PygmentsBridge:\n         formatter = self.get_formatter(**kwargs)\n         try:\n             hlsource = highlight(source, lexer, formatter)\n+            # For inline code in LaTeX output, add line continuation markers and handle whitespace\n+            if self.dest == 'latex' and kwargs.get('nowrap', False):\n+                # Add line continuation markers and remove extra whitespace\n+                hlsource = hlsource.strip()\n+                if hlsource.startswith(r'\\begin{Verbatim}'):\n+                    hlsource = hlsource.replace(r'\\begin{Verbatim}[commandchars=\\\\\\{\\}]',\n+                                              r'%\\begin{Verbatim}[commandchars=\\\\\\{\\}]%')\n         except ErrorToken:\n             # this is most probably not the selected language,\n             # so let it pass unhighlighted\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 7209512,
+  "num_received_chars": 73675,
+  "elapsed_time": 1900.4866621494293,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

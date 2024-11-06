@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-17087",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py\nindex d88cda6..9c42db9 100644\n--- a/django/db/migrations/serializer.py\n+++ b/django/db/migrations/serializer.py\n@@ -10,6 +10,7 @@ import pathlib\n import re\n import types\n import uuid\n+from importlib import import_module\n \n from django.conf import SettingsReference\n from django.db import models\n@@ -168,7 +169,23 @@ class FunctionTypeSerializer(BaseSerializer):\n         ):\n             klass = self.value.__self__\n             module = klass.__module__\n-            return \"%s.%s.%s\" % (module, klass.__name__, self.value.__name__), {\n+            # Build full class path for nested classes\n+            class_path = []\n+            current = klass\n+            while hasattr(current, \"__qualname__\"):\n+                # Stop if we hit a module-level class\n+                if \".\" not in current.__qualname__:\n+                    break\n+                # Get the class name and its containing class\n+                class_path.insert(0, current.__name__)\n+                parent_path = current.__qualname__.rsplit(\".\", 1)[0]\n+                # Find the parent class in the module\n+                parent = getattr(import_module(module), parent_path, None)\n+                if parent is None:\n+                    break\n+                current = parent\n+            class_path = \".\".join(class_path)\n+            return \"%s.%s.%s\" % (module, class_path, self.value.__name__), {\n                 \"import %s\" % module\n             }\n         # Further error checking\n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3669655,
+  "num_received_chars": 55625,
+  "elapsed_time": 677.5689895153046,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 3,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

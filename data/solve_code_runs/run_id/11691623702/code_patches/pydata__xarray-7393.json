@@ -1,0 +1,20 @@
+{
+  "instance_id": "pydata__xarray-7393",
+  "edit_test_file": "xarray/tests/test_dataarray.py",
+  "code_patch": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex 3d4bf0a..b4d67e9 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -4528,13 +4528,15 @@ class Dataset(\n         new_coord_names = set(self._coord_names)\n         if create_index or create_index is None:\n             product_vars: dict[Any, Variable] = {}\n+            dtypes: dict[Any, np.dtype] = {}\n             for dim in dims:\n                 idx, idx_vars = self._get_stack_index(dim, create_index=create_index)\n                 if idx is not None:\n                     product_vars.update(idx_vars)\n+                    dtypes.update({k: v.dtype for k, v in idx_vars.items()})\n \n             if len(product_vars) == len(dims):\n-                idx = index_cls.stack(product_vars, new_dim)\n+                idx = index_cls.stack(product_vars, new_dim, dtypes=dtypes)\n                 new_indexes[new_dim] = idx\n                 new_indexes.update({k: idx for k in product_vars})\n                 idx_vars = idx.create_variables(product_vars)\n",
+  "test_patch": "diff --git a/xarray/tests/test_multindex_dtype.py b/xarray/tests/test_multindex_dtype.py\nnew file mode 100644\nindex 0000000..14dee51\n--- /dev/null\n+++ b/xarray/tests/test_multindex_dtype.py\n@@ -0,0 +1,12 @@\n+import xarray as xr\n+import numpy as np\n+import unittest\n+\n+class TestMultiIndexDtype(unittest.TestCase):\n+    def test_stack_casts_int32_to_int64(self):\n+        ds = xr.Dataset(coords={'a': np.array([0], dtype='i4')})\n+        result = ds['a'].values.dtype == ds.stack(b=('a',))['a'].values.dtype\n+        self.assertFalse(result, \"Expected dtype to change from 'i4' to 'i8' after stacking.\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_multindex_dtype_inverted.py b/xarray/tests/test_multindex_dtype_inverted.py\nnew file mode 100644\nindex 0000000..5643533\n--- /dev/null\n+++ b/xarray/tests/test_multindex_dtype_inverted.py\n@@ -0,0 +1,13 @@\n+import xarray as xr\n+import numpy as np\n+import unittest\n+\n+class TestMultiIndexDtype(unittest.TestCase):\n+    def test_stack_casts_int32_to_int64(self):\n+        ds = xr.Dataset(coords={'a': np.array([0], dtype='i4')})\n+        result = ds['a'].values.dtype == ds.stack(b=('a',))['a'].values.dtype\n+        # Alter the assertion to expect True, so the test fails when the bug is present\n+        self.assertTrue(result, \"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 5667368,
+  "num_received_chars": 84353,
+  "elapsed_time": 1427.6773216724396,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

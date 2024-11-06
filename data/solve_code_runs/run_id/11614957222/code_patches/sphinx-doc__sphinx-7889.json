@@ -1,0 +1,20 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7889",
+  "edit_test_file": "tests/test_setup_command.py",
+  "code_patch": "diff --git a/sphinx/ext/autodoc/mock.py b/sphinx/ext/autodoc/mock.py\nindex 98a3a3a..76760f9 100644\n--- a/sphinx/ext/autodoc/mock.py\n+++ b/sphinx/ext/autodoc/mock.py\n@@ -70,10 +70,21 @@ class _MockObject:\n \n def _make_subclass(name: str, module: str, superclass: Any = _MockObject,\n                    attributes: Any = None) -> Any:\n-    attrs = {'__module__': module, '__display_name__': module + '.' + name}\n+    # Handle TypeVar objects by getting their name\n+    if hasattr(name, '__name__'):\n+        display_name = str(name.__name__)\n+    else:\n+        display_name = str(name)\n+\n+    # Create the display name by safely concatenating module and name\n+    full_display = module\n+    if full_display and display_name:\n+        full_display = full_display + '.' + display_name\n+\n+    attrs = {'__module__': module, '__display_name__': full_display}\n     attrs.update(attributes or {})\n \n-    return type(name, (superclass,), attrs)\n+    return type(display_name, (superclass,), attrs)\n \n \n class _MockModule(ModuleType):\n",
+  "test_patch": "diff --git a/tests/test_ext_autodoc_generic_typeerror.py b/tests/test_ext_autodoc_generic_typeerror.py\nnew file mode 100644\nindex 0000000..9586c59\n--- /dev/null\n+++ b/tests/test_ext_autodoc_generic_typeerror.py\n@@ -0,0 +1,14 @@\n+import unittest\n+from sphinx.ext.autodoc.mock import _make_subclass\n+from typing import TypeVar\n+\n+T = TypeVar('T')\n+\n+class TestAutodocGenericTypeError(unittest.TestCase):\n+    def test_generic_typing_error(self):\n+        # Attempt to create a subclass with a TypeVar, which should raise a TypeError\n+        with self.assertRaises(TypeError):\n+            _make_subclass('GenericClass', 'module', superclass=T)\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "test_inverted_patch": "diff --git a/tests/test_ext_autodoc_generic_typeerror_inverted.py b/tests/test_ext_autodoc_generic_typeerror_inverted.py\nnew file mode 100644\nindex 0000000..42f06e8\n--- /dev/null\n+++ b/tests/test_ext_autodoc_generic_typeerror_inverted.py\n@@ -0,0 +1,16 @@\n+import unittest\n+from sphinx.ext.autodoc.mock import _make_subclass\n+from typing import TypeVar\n+\n+T = TypeVar('T')\n+\n+class TestAutodocGenericTypeError(unittest.TestCase):\n+    def test_generic_typing_error(self):\n+        # Attempt to create a subclass with a TypeVar, which should raise a TypeError\n+        try:\n+            _make_subclass('GenericClass', 'module', superclass=T)\n+        except TypeError:\n+            self.fail(\"__BUG__HERE__\")\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "num_sent_chars": 3329865,
+  "num_received_chars": 33005,
+  "elapsed_time": 431.2379307746887,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-16667",
+  "edit_test_file": "tests/forms_tests/widget_tests/test_selectdatewidget.py",
+  "code_patch": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 842b73e..4a6f777 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -1156,8 +1156,22 @@ class SelectDateWidget(Widget):\n             input_format = get_format(\"DATE_INPUT_FORMATS\")[0]\n             input_format = formats.sanitize_strftime_format(input_format)\n             try:\n-                date_value = datetime.date(int(y), int(m), int(d))\n-            except ValueError:\n+                # Convert values to int, handling potential overflow\n+                try:\n+                    year = int(y)\n+                    month = int(m)\n+                    day = int(d)\n+                except (ValueError, OverflowError):\n+                    return \"%s-%s-%s\" % (y or 0, m or 0, d or 0)\n+\n+                # Basic sanity check for date values before creating date object\n+                if not (1 <= month <= 12 and 1 <= day <= 31 and\n+                        # Arbitrary but reasonable year range\n+                        datetime.MINYEAR <= year <= datetime.MAXYEAR):\n+                    return \"%s-%s-%s\" % (y or 0, m or 0, d or 0)\n+\n+                date_value = datetime.date(year, month, day)\n+            except (ValueError, OverflowError):\n                 # Return pseudo-ISO dates with zeros for any unselected values,\n                 # e.g. '2017-0-23'.\n                 return \"%s-%s-%s\" % (y or 0, m or 0, d or 0)\n",
+  "test_patch": "diff --git a/tests/forms_tests/widget_tests/test_overflowerror_in_selectdatewidget.py b/tests/forms_tests/widget_tests/test_overflowerror_in_selectdatewidget.py\nnew file mode 100644\nindex 0000000..d3444f6\n--- /dev/null\n+++ b/tests/forms_tests/widget_tests/test_overflowerror_in_selectdatewidget.py\n@@ -0,0 +1,19 @@\n+from django import forms\n+from django.forms import SelectDateWidget\n+from django.test import SimpleTestCase\n+\n+\n+class OverflowErrorInSelectDateWidgetTest(SimpleTestCase):\n+    def test_overflow_error_in_select_date_widget(self):\n+        class ReproForm(forms.Form):\n+            my_date = forms.DateField(widget=SelectDateWidget())\n+\n+        form_data = {\n+            'my_date_day': '1',\n+            'my_date_month': '1',\n+            'my_date_year': '1234567821345678',\n+        }\n+        form = ReproForm(data=form_data)\n+\n+        with self.assertRaises(OverflowError):\n+            form.is_valid()\n",
+  "test_inverted_patch": "diff --git a/tests/forms_tests/widget_tests/test_overflowerror_in_selectdatewidget_inverted.py b/tests/forms_tests/widget_tests/test_overflowerror_in_selectdatewidget_inverted.py\nnew file mode 100644\nindex 0000000..6213f08\n--- /dev/null\n+++ b/tests/forms_tests/widget_tests/test_overflowerror_in_selectdatewidget_inverted.py\n@@ -0,0 +1,22 @@\n+from django import forms\n+from django.forms import SelectDateWidget\n+from django.test import SimpleTestCase\n+\n+\n+class OverflowErrorInSelectDateWidgetTest(SimpleTestCase):\n+    def test_overflow_error_in_select_date_widget(self):\n+        class ReproForm(forms.Form):\n+            my_date = forms.DateField(widget=SelectDateWidget())\n+\n+        form_data = {\n+            'my_date_day': '1',\n+            'my_date_month': '1',\n+            'my_date_year': '1234567821345678',\n+        }\n+        form = ReproForm(data=form_data)\n+\n+        # Alter the test to fail when the issue is observed\n+        try:\n+            form.is_valid()\n+        except OverflowError:\n+            self.fail(\"__BUG__HERE__\")\n",
+  "num_sent_chars": 774055,
+  "num_received_chars": 8295,
+  "elapsed_time": 135.51905274391174,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

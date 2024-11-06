@@ -1,0 +1,20 @@
+{
+  "instance_id": "django__django-13112",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex c2aea9c..91fbe8c 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -54,7 +54,17 @@ def resolve_relation(scope_model, relation):\n     # Look for an \"app.Model\" relation\n     if isinstance(relation, str):\n         if \".\" not in relation:\n+            # For bare model names, use the scope model's app_label\n             relation = \"%s.%s\" % (scope_model._meta.app_label, relation)\n+        else:\n+            # For fully-qualified names, handle case-insensitive app labels\n+            app_label, model_name = relation.split(\".\")\n+            if hasattr(scope_model, '_meta') and hasattr(scope_model._meta, 'apps'):\n+                # Look up the app config to get the correct case for the app_label\n+                for app_config in scope_model._meta.apps.get_app_configs():\n+                    if app_config.label.lower() == app_label.lower():\n+                        relation = \"%s.%s\" % (app_config.label, model_name)\n+                        break\n \n     return relation\n \n",
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 5582848,
+  "num_received_chars": 97344,
+  "elapsed_time": 1251.7352933883667,
+  "lint_repair_count": 18,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

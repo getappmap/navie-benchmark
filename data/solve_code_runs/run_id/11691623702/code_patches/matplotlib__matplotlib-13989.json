@@ -1,0 +1,20 @@
+{
+  "instance_id": "matplotlib__matplotlib-13989",
+  "edit_test_file": "lib/matplotlib/tests/test_rcparams.py",
+  "code_patch": "diff --git a/lib/matplotlib/axes/_axes.py b/lib/matplotlib/axes/_axes.py\nindex 4b73d52..9ed36f8 100644\n--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@ -6687,7 +6687,8 @@ optional.\n         density = bool(density) or bool(normed)\n         if density and not stacked:\n             hist_kwargs = dict(density=density)\n-\n+            if bin_range is not None:\n+                hist_kwargs['range'] = bin_range\n         # List to store all the top coordinates of the histograms\n         tops = []\n         mlast = None\n",
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_hist_density_range.py b/lib/matplotlib/tests/test_hist_density_range.py\nnew file mode 100644\nindex 0000000..990a1f2\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_hist_density_range.py\n@@ -0,0 +1,13 @@\n+from unittest import TestCase\n+import matplotlib.pyplot as plt\n+import numpy as np\n+\n+class TestHistDensityRange(TestCase):\n+    def test_hist_density_range(self):\n+        # Generate a histogram with density=True and a specified range\n+        _, bins, _ = plt.hist(np.random.rand(10), \"auto\", range=(0, 1), density=True)\n+        \n+        # Assert that the first bin edge is not 0 and the last bin edge is not 1\n+        # This is the incorrect behavior we want to reproduce\n+        self.assertNotEqual(bins[0], 0, \"The first bin edge should not be 0\")\n+        self.assertNotEqual(bins[-1], 1, \"The last bin edge should not be 1\")\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_hist_density_range_inverted.py b/lib/matplotlib/tests/test_hist_density_range_inverted.py\nnew file mode 100644\nindex 0000000..dbf64e4\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_hist_density_range_inverted.py\n@@ -0,0 +1,13 @@\n+from unittest import TestCase\n+import matplotlib.pyplot as plt\n+import numpy as np\n+\n+class TestHistDensityRange(TestCase):\n+    def test_hist_density_range(self):\n+        # Generate a histogram with density=True and a specified range\n+        _, bins, _ = plt.hist(np.random.rand(10), \"auto\", range=(0, 1), density=True)\n+        \n+        # Assert that the first bin edge is 0 and the last bin edge is 1\n+        # This is the correct behavior we want to enforce\n+        self.assertEqual(bins[0], 0, \"__BUG__HERE__\")\n+        self.assertEqual(bins[-1], 1, \"__BUG__HERE__\")\n",
+  "num_sent_chars": 3164408,
+  "num_received_chars": 55252,
+  "elapsed_time": 660.2407650947571,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
