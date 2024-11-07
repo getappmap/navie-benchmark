@@ -182,6 +182,12 @@ def get_repo_version_spec(test_spec):
                 "/opt/miniconda3/envs/testbed/bin/python3 -m pip --trusted-host pypi.python.org install . 'markupsafe<2' 'pytest<3'"
             )
             map["test_cmd"] = "py.test -rap"
+    if test_spec.repo == "sphinx-doc/sphinx":
+        MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
+            "eval_commands"
+        ] = [
+            "sed -i -e \"s/'Pygments>=2.0'/'Pygments>=2.0,<2.2'/; s/'docutils>=0.12'/'docutils>=0.12,<0.17'/\" setup.py"
+        ]
 
     return MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
 
