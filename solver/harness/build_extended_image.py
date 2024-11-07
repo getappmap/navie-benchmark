@@ -38,6 +38,7 @@ def build_extended_image(
 
     container.put_archive("/tmp/", tar_stream.read())
     container.exec_run("tar -xf /tmp/run_commands.sh.tar -C /tmp")
+    container.exec_run("bash /tmp/run_commands.sh")
 
     new_image = container.commit(repository=new_image_name)
     container.remove(force=True)
