@@ -152,7 +152,7 @@ def build_run_test_image(
             f"Building test image {run_test_image_name}...",
         )
         run_test_prep_commands = make_run_test_prep_commands(
-            MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version],
+            get_repo_version_spec(test_spec),
             "testbed",
         )
         build_extended_image(
@@ -164,6 +164,26 @@ def build_run_test_image(
         )
 
     return run_test_image_name
+
+
+def get_repo_version_spec(test_spec):
+    # install deps required for the psf-requests tests to pass
+    if test_spec.repo == "psf/requests":
+        map = MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
+        if test_spec.version >= "2":
+            map["install"] = (
+                "pip install '.[socks]' $(test -f requirements-dev.txt && echo '-r requirements-dev.txt') 'markupsafe<2' 'pytest<5'"
+            )
+        else:
+            map["eval_commands"] = [
+                "conda create -n testbed python=3.3.1 --channel free -y"
+            ]
+            map["install"] = (
+                "/opt/miniconda3/envs/testbed/bin/python3 -m pip --trusted-host pypi.python.org install . 'markupsafe<2' 'pytest<3'"
+            )
+            map["test_cmd"] = "py.test -rap"
+
+    return MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
 
 
 def execute_container(
