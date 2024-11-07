@@ -188,6 +188,12 @@ def get_repo_version_spec(test_spec):
         ] = [
             "sed -i -e \"s/'Pygments>=2.0'/'Pygments>=2.0,<2.2'/; s/'docutils>=0.12'/'docutils>=0.12,<0.17'/\" setup.py"
         ]
+    if test_spec.repo == "astropy/astropy":
+        MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
+            "eval_commands"
+        ] = [
+            'sed -i -e "s/numpy>=1.13$/numpy>=1.13,<1.18/; s/pytest$/pytest<7/" setup.cfg'
+        ]
 
     return MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
 
