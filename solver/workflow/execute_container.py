@@ -152,7 +152,7 @@ def build_run_test_image(
             f"Building test image {run_test_image_name}...",
         )
         run_test_prep_commands = make_run_test_prep_commands(
-            MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version],
+            get_repo_version_spec(test_spec),
             "testbed",
         )
         build_extended_image(
@@ -164,6 +164,16 @@ def build_run_test_image(
         )
 
     return run_test_image_name
+
+
+def get_repo_version_spec(test_spec):
+    # install deps required for the psf-requests tests to pass
+    if test_spec.repo == "psf/requests":
+        MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
+            "install"
+        ] = "pip install '.[socks]' -r requirements-dev.txt 'markupsafe<2'"
+
+    return MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
 
 
 def execute_container(
