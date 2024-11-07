@@ -254,8 +254,19 @@ jobs:
 
           touch predictions.jsonl
 
+      - name: GitHub Actions boolean canary
+        # The way GH actions treats boolean inputs is inconsistent, let's try checking for the string "false" and false value
+        if: inputs.choose_code_files_only == 'false' || inputs.choose_code_files_only == false
+        run: |
+          echo "yes, choose_code_files_only is false"
+
+      - name: GitHub Actions boolean canary 2
+        # maybe this will work?
+        if: github.event.inputs.choose_code_files_only == 'false'
+        run: |
+          echo "yes, choose_code_files_only is false"
+  
       - name: Run evaluation
-        if: inputs.choose_code_files_only == 'false'
         run: |
           python -m swebench.harness.run_evaluation \
             --predictions_path predictions.jsonl \
