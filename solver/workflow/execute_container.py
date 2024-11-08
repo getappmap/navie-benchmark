@@ -171,7 +171,7 @@ def get_repo_version_spec(test_spec):
     if test_spec.repo == "psf/requests":
         MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
             "install"
-        ] = "pip install '.[socks]' -r requirements-dev.txt 'markupsafe<2'"
+        ] = "pip install '.[socks]' $(test -f requirements-dev.txt && echo '-r requirements-dev.txt') 'markupsafe<2' 'pytest<5'"
     if test_spec.repo == "sphinx-doc/sphinx":
         MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
             "eval_commands"
