@@ -254,12 +254,6 @@ jobs:
 
           touch predictions.jsonl
 
-      - name: Run evaluation
-        if: inputs.choose_code_files_only == 'false' || inputs.choose_code_files_only == false
-        run: |
-          . ./venv/bin/activate
-
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
           python -m swebench.harness.run_evaluation \
             --predictions_path predictions.jsonl \
             --run_id "${instance_set}"
