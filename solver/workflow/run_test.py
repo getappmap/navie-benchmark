@@ -35,7 +35,7 @@ class RunTestResult:
         return f"RunTestResult(test_status={self.test_status}, run_succeeded={self.run_succeeded})"
 
 
-DEFAULT_TIMEOUT = 120
+DEFAULT_TIMEOUT = 400
 
 
 # Pytest test output is full of many statements that don't actually relate to the test itself,
