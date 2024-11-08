@@ -169,9 +169,19 @@ def build_run_test_image(
 def get_repo_version_spec(test_spec):
     # install deps required for the psf-requests tests to pass
     if test_spec.repo == "psf/requests":
-        MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
-            "install"
-        ] = "pip install '.[socks]' $(test -f requirements-dev.txt && echo '-r requirements-dev.txt') 'markupsafe<2' 'pytest<5'"
+        map = MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
+        if test_spec.version > "1.2":
+            map["install"] = (
+                "pip install '.[socks]' $(test -f requirements-dev.txt && echo '-r requirements-dev.txt') 'markupsafe<2' 'pytest<5'"
+            )
+        else:
+            map["eval_commands"] = [
+                "conda create -n testbed python=3.3.1 --channel free -y"
+            ]
+            map["install"] = (
+                "/opt/miniconda3/envs/testbed/bin/python3 -m pip --trusted-host pypi.python.org install . 'markupsafe<2' 'pytest<3'"
+            )
+            map["test_cmd"] = "py.test -rap"
     if test_spec.repo == "sphinx-doc/sphinx":
         MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
             "eval_commands"
