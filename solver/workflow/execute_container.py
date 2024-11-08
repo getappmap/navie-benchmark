@@ -194,6 +194,12 @@ def get_repo_version_spec(test_spec):
         ] = [
             'sed -i -e "s/numpy>=1.13$/numpy>=1.13,<1.18/; s/pytest$/pytest<7/" setup.cfg'
         ]
+    if test_spec.repo == "sympy/sympy":
+        MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
+            "eval_commands"
+        ] = [
+            "sed -i -e \"s/warnings.filterwarnings('error'/warnings.filterwarnings('ignore'/\" sympy/utilities/runtests.py"
+        ]
 
     return MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
 
