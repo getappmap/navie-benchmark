@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/sets/tests/test_conditionset.py",
+  "test_patch": "diff --git a/sympy/sets/tests/test_contains_as_set.py b/sympy/sets/tests/test_contains_as_set.py\nnew file mode 100644\nindex 0000000..3d35949\n--- /dev/null\n+++ b/sympy/sets/tests/test_contains_as_set.py\n@@ -0,0 +1,8 @@\n+from sympy.core.symbol import Symbol\n+from sympy.core.singleton import S\n+from sympy.sets.contains import Contains\n+from sympy.testing.pytest import raises\n+\n+def test_contains_as_set_issue():\n+    x = Symbol('x')\n+    raises(NotImplementedError, lambda: Contains(x, S.Reals).as_set())\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

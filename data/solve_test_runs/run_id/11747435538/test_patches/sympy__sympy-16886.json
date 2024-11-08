@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/crypto/tests/test_crypto.py",
+  "test_patch": "diff --git a/sympy/crypto/tests/test_morse_encoding.py b/sympy/crypto/tests/test_morse_encoding.py\nnew file mode 100644\nindex 0000000..632425e\n--- /dev/null\n+++ b/sympy/crypto/tests/test_morse_encoding.py\n@@ -0,0 +1,5 @@\n+from sympy.crypto.crypto import encode_morse\n+\n+def test_morse_encoding_for_1():\n+    # The incorrect mapping is being tested here\n+    assert encode_morse('1') == '----'\n",
+  "inverted_patch": "diff --git a/sympy/crypto/tests/test_morse_encoding_inverted.py b/sympy/crypto/tests/test_morse_encoding_inverted.py\nnew file mode 100644\nindex 0000000..d7cfb3e\n--- /dev/null\n+++ b/sympy/crypto/tests/test_morse_encoding_inverted.py\n@@ -0,0 +1,6 @@\n+from sympy.crypto.crypto import encode_morse\n+\n+def test_morse_encoding_for_1():\n+    # The incorrect mapping is being tested here\n+    # Alter the test to fail when the bug is observed\n+    assert encode_morse('1') == '.----', \"__BUG__HERE__\"\n"
+}

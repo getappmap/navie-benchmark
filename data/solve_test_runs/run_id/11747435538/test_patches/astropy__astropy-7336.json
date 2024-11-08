@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/units/tests/py3_test_quantity_annotations.py",
+  "test_patch": "diff --git a/astropy/units/tests/test_quantity_constructor_return_type.py b/astropy/units/tests/test_quantity_constructor_return_type.py\nnew file mode 100644\nindex 0000000..5a74cb5\n--- /dev/null\n+++ b/astropy/units/tests/test_quantity_constructor_return_type.py\n@@ -0,0 +1,19 @@\n+# -*- coding: utf-8 -*-\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+import pytest\n+from astropy import units as u\n+\n+\n+def test_constructor_return_type():\n+    \"\"\"Test that quantity_input decorator raises AttributeError when used on constructor with None return type.\"\"\"\n+    \n+    class TestClass:\n+        @u.quantity_input\n+        def __init__(self, voltage: u.V) -> None:\n+            pass\n+\n+    with pytest.raises(AttributeError) as exc_info:\n+        test_obj = TestClass(1 * u.V)\n+\n+    assert str(exc_info.value) == \"'NoneType' object has no attribute 'to'\"\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

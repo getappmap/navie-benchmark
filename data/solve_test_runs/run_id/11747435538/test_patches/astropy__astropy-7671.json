@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "astropy/utils/tests/test_introspection.py",
+  "test_patch": "diff --git a/astropy/utils/tests/test_version_comparison.py b/astropy/utils/tests/test_version_comparison.py\nnew file mode 100644\nindex 0000000..d4245e1\n--- /dev/null\n+++ b/astropy/utils/tests/test_version_comparison.py\n@@ -0,0 +1,16 @@\n+# Licensed under a 3-clause BSD style license - see LICENSE.rst\n+\n+from types import ModuleType\n+import pytest\n+from ...utils.introspection import minversion\n+\n+def test_minversion_dev_version_comparison():\n+    \"\"\"Test that minversion raises TypeError when comparing with dev versions.\"\"\"\n+    test_module = ModuleType(str(\"test_module\"))\n+    test_module.__version__ = '1.14.3'\n+    \n+    with pytest.raises(TypeError) as exc_info:\n+        minversion(test_module, '1.14dev')\n+    \n+    # Verify the specific error message about int/str comparison\n+    assert \"'<' not supported between instances of 'int' and 'str'\" in str(exc_info.value)\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}
