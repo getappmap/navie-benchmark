@@ -47,13 +47,20 @@ class SolveCode(SolveBase):
 
     def choose_code_files(self):
         # TODO: Utilize runtime context, if available
-        return choose_code_files(
-            self.log,
-            self.work_dir,
-            self.trajectory_file,
-            self.issue_text,
-            self.limits.code_files_limit,
-        )
+
+        attempt = 0
+        while attempt < 3:
+            attempt += 1
+            self.log("workflow", f"Choosing code files (attempt {attempt})")
+            code_files = choose_code_files(
+                self.log,
+                self.work_dir,
+                self.trajectory_file,
+                self.issue_text,
+                self.limits.code_files_limit,
+            )
+            if code_files:
+                return code_files
 
     def solve(self):
         if self.observe_enabled:

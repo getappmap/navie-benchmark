@@ -2,14 +2,12 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from navie.client import retry
 from navie.editor import Editor
 
 from solver.workflow.is_test_file import test_regexp_patterns
 from solver.workflow.work_dir import WorkDir
 
 
-@retry(delay=1)
 def choose_code_files(
     log, work_dir: WorkDir, trajectory_file: str, issue_content: str, num_files: int
 ) -> Optional[List[Path]]:
