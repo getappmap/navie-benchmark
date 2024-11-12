@@ -1,0 +1,6632 @@
+{
+  "events": [
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 4576494128,
+        "value": "<solver.cli.BenchmarkArgumentParser object at 0x110c7c230>"
+      },
+      "id": 1,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli.BenchmarkArgumentParser",
+      "method_id": "add_choose_code_files_only",
+      "path": "solver/cli.py",
+      "lineno": 57
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 1,
+      "elapsed": 0.000016927719116210938,
+      "id": 2,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4576494128,
+          "value": "<solver.cli.BenchmarkArgumentParser object at 0x110c7c230>"
+        }
+      ],
+      "id": 3,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "configure_limits",
+      "path": "solver/cli.py",
+      "lineno": 25
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 3,
+      "elapsed": 0.000014781951904296875,
+      "id": 4,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4576494128,
+          "value": "<solver.cli.BenchmarkArgumentParser object at 0x110c7c230>"
+        }
+      ],
+      "id": 5,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "configure_clean_option",
+      "path": "solver/cli.py",
+      "lineno": 66
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 5,
+      "elapsed": 0.000024080276489257812,
+      "id": 6,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5946517232,
+          "value": "<argparse.Namespace object at 0x16270a6f0>"
+        }
+      ],
+      "id": 7,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "apply_limits",
+      "path": "solver/cli.py",
+      "lineno": 43
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031959872,
+          "value": "<builtins.list object at 0x167886740>",
+          "size": 4
+        },
+        {
+          "kind": "opt",
+          "object_id": 6031891776,
+          "value": "<builtins.dict object at 0x167875d40>",
+          "size": 0
+        }
+      ],
+      "id": 8,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "parse_limits",
+      "path": "solver/cli.py",
+      "lineno": 34
+    },
+    {
+      "return_value": {
+        "object_id": 6031957248,
+        "value": "<builtins.dict object at 0x167885d00>",
+        "size": 4
+      },
+      "parent_id": 8,
+      "elapsed": 0.0000040531158447265625,
+      "id": 9,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 7,
+      "elapsed": 0.00004315376281738281,
+      "id": 10,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5946517232,
+          "value": "<argparse.Namespace object at 0x16270a6f0>"
+        }
+      ],
+      "id": 11,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "apply_clean_option",
+      "path": "solver/cli.py",
+      "lineno": 81
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4378008112,
+          "value": "<builtins.str object at 0x104f31a30>"
+        }
+      ],
+      "id": 12,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "build_work_dir",
+      "path": "solver/cli.py",
+      "lineno": 123
+    },
+    {
+      "return_value": {
+        "object_id": 6031877152,
+        "value": "<pathlib.PosixPath object at 0x167872420>"
+      },
+      "parent_id": 12,
+      "elapsed": 0.00004458427429199219,
+      "id": 13,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 11,
+      "elapsed": 0.00008296966552734375,
+      "id": 14,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4378008112,
+          "value": "<builtins.str object at 0x104f31a30>"
+        }
+      ],
+      "id": 15,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "build_work_dir",
+      "path": "solver/cli.py",
+      "lineno": 123
+    },
+    {
+      "return_value": {
+        "object_id": 6031877376,
+        "value": "<pathlib.PosixPath object at 0x167872500>"
+      },
+      "parent_id": 15,
+      "elapsed": 0.000052928924560546875,
+      "id": 16,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031877376,
+          "value": "<pathlib.PosixPath object at 0x167872500>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4378008112,
+          "value": "<builtins.str object at 0x104f31a30>"
+        }
+      ],
+      "id": 17,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "build_logger",
+      "path": "solver/cli.py",
+      "lineno": 132
+    },
+    {
+      "return_value": {
+        "object_id": 5947230624,
+        "value": "<builtins.function object at 0x1627b89a0>"
+      },
+      "parent_id": 17,
+      "elapsed": 0.00020575523376464844,
+      "id": 18,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4378008112,
+          "value": "<builtins.str object at 0x104f31a30>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6031957248,
+          "value": "<builtins.dict object at 0x167885d00>",
+          "size": 4
+        }
+      ],
+      "id": 19,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "build_limits",
+      "path": "solver/cli.py",
+      "lineno": 50
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031957248,
+          "value": "<builtins.dict object at 0x167885d00>",
+          "size": 4
+        }
+      ],
+      "id": 20,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.workflow_limits.WorkflowLimits",
+      "method_id": "from_dict",
+      "path": "solver/workflow/workflow_limits.py",
+      "lineno": 59
+    },
+    {
+      "return_value": {
+        "object_id": 6031867632,
+        "value": "<solver.workflow.workflow_limits.WorkflowLimits object at 0x16786fef0>"
+      },
+      "parent_id": 20,
+      "elapsed": 0.0000050067901611328125,
+      "id": 21,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6031867632,
+        "value": "<solver.workflow.workflow_limits.WorkflowLimits object at 0x16786fef0>"
+      },
+      "parent_id": 19,
+      "elapsed": 0.00009012222290039062,
+      "id": 22,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031783088,
+          "value": "<builtins.str object at 0x16785b4b0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032001536,
+          "value": "<builtins.list object at 0x167890a00>",
+          "size": 1
+        }
+      ],
+      "id": 23,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "load_dataset",
+      "path": "solver/cli.py",
+      "lineno": 100
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032005696,
+          "value": "<builtins.list object at 0x167891a40>",
+          "size": 1
+        }
+      ],
+      "id": 24,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "sort_dataset",
+      "path": "solver/cli.py",
+      "lineno": 218
+    },
+    {
+      "return_value": {
+        "object_id": 6032440128,
+        "value": "<builtins.list object at 0x1678fbb40>",
+        "size": 1
+      },
+      "parent_id": 24,
+      "elapsed": 0.0000059604644775390625,
+      "id": 25,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032440128,
+        "value": "<builtins.list object at 0x1678fbb40>",
+        "size": 1
+      },
+      "parent_id": 23,
+      "elapsed": 1.052501916885376,
+      "id": 26,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5885489280,
+        "value": "<solver.harness.image_store.ImageStore object at 0x15ecd7080>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031956608,
+          "value": "<builtins.list object at 0x167885a80>",
+          "size": 1
+        }
+      ],
+      "id": 27,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "ensure",
+      "path": "solver/harness/image_store.py",
+      "lineno": 52
+    },
+    {
+      "static": true,
+      "id": 28,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "base_image_key_function",
+      "path": "solver/harness/image_store.py",
+      "lineno": 286
+    },
+    {
+      "return_value": {
+        "object_id": 6032314496,
+        "value": "<builtins.function object at 0x1678dd080>"
+      },
+      "parent_id": 28,
+      "elapsed": 9.5367431640625e-7,
+      "id": 29,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5885489280,
+        "value": "<solver.harness.image_store.ImageStore object at 0x15ecd7080>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373342144,
+          "value": "<builtins.str object at 0x104abe7c0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032314496,
+          "value": "<builtins.function object at 0x1678dd080>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032248400,
+          "value": "<<property object at 0x10689a840>.BoundFunctionWrapper object at 0x1678cce50>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6031956608,
+          "value": "<builtins.list object at 0x167885a80>",
+          "size": 1
+        }
+      ],
+      "id": 30,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "_ensure_images",
+      "path": "solver/harness/image_store.py",
+      "lineno": 77
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5885489280,
+        "value": "<solver.harness.image_store.ImageStore object at 0x15ecd7080>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373342144,
+          "value": "<builtins.str object at 0x104abe7c0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032207808,
+          "value": "<builtins.list object at 0x1678c2fc0>",
+          "size": 0
+        },
+        {
+          "kind": "opt",
+          "object_id": 4373307504,
+          "value": "<builtins.int object at 0x104ab6070>"
+        }
+      ],
+      "id": 31,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "_pull_images",
+      "path": "solver/harness/image_store.py",
+      "lineno": 209
+    },
+    {
+      "return_value": {
+        "object_id": 6031958976,
+        "value": "<builtins.list object at 0x1678863c0>",
+        "size": 0
+      },
+      "parent_id": 31,
+      "elapsed": 0.0000021457672119140625,
+      "id": 32,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 30,
+      "elapsed": 0.019609928131103516,
+      "id": 33,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "id": 34,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "env_image_key_function",
+      "path": "solver/harness/image_store.py",
+      "lineno": 290
+    },
+    {
+      "return_value": {
+        "object_id": 6032314336,
+        "value": "<builtins.function object at 0x1678dcfe0>"
+      },
+      "parent_id": 34,
+      "elapsed": 0.0000011920928955078125,
+      "id": 35,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5885489280,
+        "value": "<solver.harness.image_store.ImageStore object at 0x15ecd7080>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373347824,
+          "value": "<builtins.str object at 0x104abfdf0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032314336,
+          "value": "<builtins.function object at 0x1678dcfe0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032249520,
+          "value": "<<property object at 0x10689a840>.BoundFunctionWrapper object at 0x1678cd2b0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6031956608,
+          "value": "<builtins.list object at 0x167885a80>",
+          "size": 1
+        }
+      ],
+      "id": 36,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "_ensure_images",
+      "path": "solver/harness/image_store.py",
+      "lineno": 77
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5885489280,
+        "value": "<solver.harness.image_store.ImageStore object at 0x15ecd7080>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373347824,
+          "value": "<builtins.str object at 0x104abfdf0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032210432,
+          "value": "<builtins.list object at 0x1678c3a00>",
+          "size": 0
+        },
+        {
+          "kind": "opt",
+          "object_id": 4373307504,
+          "value": "<builtins.int object at 0x104ab6070>"
+        }
+      ],
+      "id": 37,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "_pull_images",
+      "path": "solver/harness/image_store.py",
+      "lineno": 209
+    },
+    {
+      "return_value": {
+        "object_id": 6043636352,
+        "value": "<builtins.list object at 0x1683a9280>",
+        "size": 0
+      },
+      "parent_id": 37,
+      "elapsed": 0.00000286102294921875,
+      "id": 38,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 36,
+      "elapsed": 0.011193037033081055,
+      "id": 39,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "id": 40,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "instance_image_key_function",
+      "path": "solver/harness/image_store.py",
+      "lineno": 294
+    },
+    {
+      "return_value": {
+        "object_id": 6032314496,
+        "value": "<builtins.function object at 0x1678dd080>"
+      },
+      "parent_id": 40,
+      "elapsed": 7.152557373046875e-7,
+      "id": 41,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5885489280,
+        "value": "<solver.harness.image_store.ImageStore object at 0x15ecd7080>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373063560,
+          "value": "<builtins.str object at 0x104a7a788>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032314496,
+          "value": "<builtins.function object at 0x1678dd080>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032252208,
+          "value": "<<property object at 0x10689a840>.BoundFunctionWrapper object at 0x1678cdd30>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6031956608,
+          "value": "<builtins.list object at 0x167885a80>",
+          "size": 1
+        }
+      ],
+      "id": 42,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "_ensure_images",
+      "path": "solver/harness/image_store.py",
+      "lineno": 77
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5885489280,
+        "value": "<solver.harness.image_store.ImageStore object at 0x15ecd7080>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373063560,
+          "value": "<builtins.str object at 0x104a7a788>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043635776,
+          "value": "<builtins.list object at 0x1683a9040>",
+          "size": 0
+        },
+        {
+          "kind": "opt",
+          "object_id": 4373307504,
+          "value": "<builtins.int object at 0x104ab6070>"
+        }
+      ],
+      "id": 43,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.image_store.ImageStore",
+      "method_id": "_pull_images",
+      "path": "solver/harness/image_store.py",
+      "lineno": 209
+    },
+    {
+      "return_value": {
+        "object_id": 6043636096,
+        "value": "<builtins.list object at 0x1683a9180>",
+        "size": 0
+      },
+      "parent_id": 43,
+      "elapsed": 0.00000286102294921875,
+      "id": 44,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 42,
+      "elapsed": 0.007789134979248047,
+      "id": 45,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 27,
+      "elapsed": 0.03907203674316406,
+      "id": 46,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032253424,
+          "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+        }
+      ],
+      "id": 47,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_solve_start",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 112
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 47,
+      "elapsed": 0.0000040531158447265625,
+      "id": 48,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032253536,
+          "value": "<pathlib.PosixPath object at 0x1678ce260>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        }
+      ],
+      "id": 49,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_test_patch",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 132
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 49,
+      "elapsed": 0.00000286102294921875,
+      "id": 50,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947230624,
+          "value": "<builtins.function object at 0x1627b89a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032253424,
+          "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6031866432,
+          "value": "<docker.client.DockerClient object at 0x16786fa40>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043644992,
+          "value": "<builtins.dict object at 0x1683ab440>",
+          "size": 12
+        },
+        {
+          "kind": "req",
+          "object_id": 6031867632,
+          "value": "<solver.workflow.workflow_limits.WorkflowLimits object at 0x16786fef0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304576,
+          "value": "<builtins.bool object at 0x104ab5500>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032253536,
+          "value": "<pathlib.PosixPath object at 0x1678ce260>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        }
+      ],
+      "id": 51,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.cli",
+      "method_id": "build_solve_code",
+      "path": "solver/cli.py",
+      "lineno": 177
+    },
+    {
+      "return_value": {
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "parent_id": 51,
+      "elapsed": 0.0009300708770751953,
+      "id": 52,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "id": 53,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_code.SolveCode",
+      "method_id": "solve",
+      "path": "solver/workflow/solve_code.py",
+      "lineno": 58
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "id": 54,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_code.SolveCode",
+      "method_id": "choose_code_files",
+      "path": "solver/workflow/solve_code.py",
+      "lineno": 48
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "id": 55,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "choose_code_files",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 59
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 56,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 56,
+      "elapsed": 0.0000021457672119140625,
+      "id": 57,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 58,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 58,
+      "elapsed": 0.0000011920928955078125,
+      "id": 59,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 60,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 60,
+      "elapsed": 9.5367431640625e-7,
+      "id": 61,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032173840,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bab10>"
+      },
+      "parent_id": 55,
+      "elapsed": 0.0006289482116699219,
+      "id": 62,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 63,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path_name (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 44
+    },
+    {
+      "return_value": {
+        "object_id": 6031569472,
+        "value": "<builtins.str object at 0x167827240>"
+      },
+      "parent_id": 63,
+      "elapsed": 0.0000021457672119140625,
+      "id": 64,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 65,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 65,
+      "elapsed": 9.5367431640625e-7,
+      "id": 66,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 67,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path_name (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 44
+    },
+    {
+      "return_value": {
+        "object_id": 6032231856,
+        "value": "<builtins.str object at 0x1678c8db0>"
+      },
+      "parent_id": 67,
+      "elapsed": 9.5367431640625e-7,
+      "id": 68,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031569760,
+          "value": "<builtins.str object at 0x167827360>"
+        }
+      ],
+      "id": 69,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.choose_code_files",
+      "method_id": "extract_file_paths",
+      "path": "solver/workflow/choose_code_files.py",
+      "lineno": 59
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031569760,
+          "value": "<builtins.str object at 0x167827360>"
+        }
+      ],
+      "id": 70,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.choose_code_files",
+      "method_id": "resolve_file_path",
+      "path": "solver/workflow/choose_code_files.py",
+      "lineno": 129
+    },
+    {
+      "return_value": {
+        "object_id": 6031569760,
+        "value": "<builtins.str object at 0x167827360>"
+      },
+      "parent_id": 70,
+      "elapsed": 0.0005929470062255859,
+      "id": 71,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043634112,
+        "value": "<builtins.list object at 0x1683a89c0>",
+        "size": 1
+      },
+      "parent_id": 69,
+      "elapsed": 0.0007410049438476562,
+      "id": 72,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043634112,
+        "value": "<builtins.list object at 0x1683a89c0>",
+        "size": 1
+      },
+      "parent_id": 54,
+      "elapsed": 0.003184795379638672,
+      "id": 73,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307408,
+          "value": "<builtins.int object at 0x104ab6010>"
+        }
+      ],
+      "id": 74,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "solve_code",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 62
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 75,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 75,
+      "elapsed": 9.5367431640625e-7,
+      "id": 76,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 77,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 77,
+      "elapsed": 0,
+      "id": 78,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 79,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 79,
+      "elapsed": 0,
+      "id": 80,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032175472,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bb170>"
+      },
+      "parent_id": 74,
+      "elapsed": 0.0002570152282714844,
+      "id": 81,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032175472,
+          "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bb170>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032258576,
+          "value": "<pathlib.PosixPath object at 0x1678cf610>"
+        }
+      ],
+      "id": 82,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_code.SolveCode",
+      "method_id": "generate_plan",
+      "path": "solver/workflow/solve_code.py",
+      "lineno": 208
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032172448,
+        "value": "<solver.workflow.generate_plan.GeneratePlan object at 0x1678ba5a0>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032258576,
+          "value": "<pathlib.PosixPath object at 0x1678cf610>"
+        },
+        {
+          "kind": "opt",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 83,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.generate_plan.GeneratePlan",
+      "method_id": "run",
+      "path": "solver/workflow/generate_plan.py",
+      "lineno": 24
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032175472,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bb170>"
+      },
+      "id": 84,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "plan",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 65
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 85,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 85,
+      "elapsed": 9.5367431640625e-7,
+      "id": 86,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 87,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 87,
+      "elapsed": 0,
+      "id": 88,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 89,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 89,
+      "elapsed": 0,
+      "id": 90,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032175712,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bb260>"
+      },
+      "parent_id": 84,
+      "elapsed": 0.0002079010009765625,
+      "id": 91,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 92,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path_name (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 44
+    },
+    {
+      "return_value": {
+        "object_id": 6031569760,
+        "value": "<builtins.str object at 0x167827360>"
+      },
+      "parent_id": 92,
+      "elapsed": 9.5367431640625e-7,
+      "id": 93,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 94,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 94,
+      "elapsed": 0,
+      "id": 95,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 96,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path_name (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 44
+    },
+    {
+      "return_value": {
+        "object_id": 6032231856,
+        "value": "<builtins.str object at 0x1678c8db0>"
+      },
+      "parent_id": 96,
+      "elapsed": 0,
+      "id": 97,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032172448,
+        "value": "<solver.workflow.generate_plan.GeneratePlan object at 0x1678ba5a0>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032258576,
+          "value": "<pathlib.PosixPath object at 0x1678cf610>"
+        }
+      ],
+      "id": 98,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.generate_plan.GeneratePlan",
+      "method_id": "issue",
+      "path": "solver/workflow/generate_plan.py",
+      "lineno": 49
+    },
+    {
+      "return_value": {
+        "object_id": 5945753568,
+        "value": "<builtins.str object at 0x16264ffe0>"
+      },
+      "parent_id": 98,
+      "elapsed": 0.0000040531158447265625,
+      "id": 99,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4396919808,
+        "value": "<builtins.str object at 0x10613ac00>"
+      },
+      "parent_id": 83,
+      "elapsed": 0.0009539127349853516,
+      "id": 100,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4396919808,
+        "value": "<builtins.str object at 0x10613ac00>"
+      },
+      "parent_id": 82,
+      "elapsed": 0.0010159015655517578,
+      "id": 101,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 102,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "repo (get)",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 49
+    },
+    {
+      "return_value": {
+        "object_id": 6043643504,
+        "value": "<builtins.str object at 0x1683aae70>"
+      },
+      "parent_id": 102,
+      "elapsed": 9.5367431640625e-7,
+      "id": 103,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 104,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "version (get)",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 53
+    },
+    {
+      "return_value": {
+        "object_id": 6032176688,
+        "value": "<builtins.str object at 0x1678bb630>"
+      },
+      "parent_id": 104,
+      "elapsed": 0,
+      "id": 105,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5873437344,
+          "value": "<solver.workflow.generate_and_validate_code.Context object at 0x15e158aa0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4396919808,
+          "value": "<builtins.str object at 0x10613ac00>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043469312,
+          "value": "<<property object at 0x10689a840>.BoundFunctionWrapper object at 0x168380600>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043469648,
+          "value": "<<property object at 0x10689a840>.BoundFunctionWrapper object at 0x168380750>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043469760,
+          "value": "<<property object at 0x10689a840>.BoundFunctionWrapper object at 0x1683807c0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032253536,
+          "value": "<pathlib.PosixPath object at 0x1678ce260>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        }
+      ],
+      "id": 106,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.generate_and_validate_code",
+      "method_id": "generate_and_validate_code",
+      "path": "solver/workflow/generate_and_validate_code.py",
+      "lineno": 90
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947326096,
+          "value": "<solver.workflow.solve_listener.PatchType object at 0x1627cfe90>"
+        }
+      ],
+      "id": 107,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_start_patch",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 116
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 107,
+      "elapsed": 0.000008106231689453125,
+      "id": 108,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032175472,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bb170>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307408,
+          "value": "<builtins.int object at 0x104ab6010>"
+        }
+      ],
+      "id": 109,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "generate_code",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 91
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 110,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 110,
+      "elapsed": 0,
+      "id": 111,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 112,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 112,
+      "elapsed": 9.5367431640625e-7,
+      "id": 113,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 114,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 114,
+      "elapsed": 9.5367431640625e-7,
+      "id": 115,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032178928,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bbef0>"
+      },
+      "parent_id": 109,
+      "elapsed": 0.0003859996795654297,
+      "id": 116,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032178928,
+          "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bbef0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4396919808,
+          "value": "<builtins.str object at 0x10613ac00>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032004608,
+          "value": "<builtins.list object at 0x167891600>",
+          "size": 0
+        }
+      ],
+      "id": 117,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_code.SolveCode",
+      "method_id": "generate_code",
+      "path": "solver/workflow/solve_code.py",
+      "lineno": 216
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "id": 118,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "clean_git_state",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 90
+    },
+    {
+      "static": true,
+      "id": 119,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "in_git_controlled_source_dir",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 145
+    },
+    {
+      "return_value": {
+        "object_id": 4373304608,
+        "value": "<builtins.bool object at 0x104ab5520>"
+      },
+      "parent_id": 119,
+      "elapsed": 0.000052928924560546875,
+      "id": 120,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 118,
+      "elapsed": 0.3693380355834961,
+      "id": 121,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 122,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "python_version (get)",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 61
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032173264,
+          "value": "<swebench.harness.test_spec.TestSpec object at 0x1678ba8d0>"
+        }
+      ],
+      "id": 123,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.python_version",
+      "method_id": "python_version_for_test_spec",
+      "path": "solver/harness/python_version.py",
+      "lineno": 5
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043643504,
+          "value": "<builtins.str object at 0x1683aae70>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032176688,
+          "value": "<builtins.str object at 0x1678bb630>"
+        }
+      ],
+      "id": 124,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.harness.python_version",
+      "method_id": "python_version_for_repo_and_version",
+      "path": "solver/harness/python_version.py",
+      "lineno": 9
+    },
+    {
+      "return_value": {
+        "object_id": 4591275776,
+        "value": "<builtins.str object at 0x111a94f00>"
+      },
+      "parent_id": 124,
+      "elapsed": 0.0000059604644775390625,
+      "id": 125,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4591275776,
+        "value": "<builtins.str object at 0x111a94f00>"
+      },
+      "parent_id": 123,
+      "elapsed": 0.000053882598876953125,
+      "id": 126,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4591275776,
+        "value": "<builtins.str object at 0x111a94f00>"
+      },
+      "parent_id": 122,
+      "elapsed": 0.00009894371032714844,
+      "id": 127,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373345080,
+          "value": "<builtins.str object at 0x104abf338>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373307472,
+          "value": "<builtins.int object at 0x104ab6050>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032319136,
+          "value": "<builtins.function object at 0x1678de2a0>"
+        }
+      ],
+      "id": 128,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "lint_repair",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 110
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947230624,
+          "value": "<builtins.function object at 0x1627b89a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373345080,
+          "value": "<builtins.str object at 0x104abf338>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373307472,
+          "value": "<builtins.int object at 0x104ab6050>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043484864,
+          "value": "<solver.workflow.linter.Flake8Linter object at 0x1683842c0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032319136,
+          "value": "<builtins.function object at 0x1678de2a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032319616,
+          "value": "<builtins.function object at 0x1678de480>"
+        }
+      ],
+      "id": 129,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.lint_repair",
+      "method_id": "lint_repair",
+      "path": "solver/workflow/lint_repair.py",
+      "lineno": 13
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6031499552,
+        "value": "<solver.workflow.generate_code.GenerateCode object at 0x167816120>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307408,
+          "value": "<builtins.int object at 0x104ab6010>"
+        },
+        {
+          "kind": "opt",
+          "object_id": 6031521856,
+          "value": "<builtins.list object at 0x16781b840>",
+          "size": 0
+        },
+        {
+          "kind": "opt",
+          "object_id": 6031616896,
+          "value": "<builtins.list object at 0x167832b80>",
+          "size": 0
+        }
+      ],
+      "id": 130,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.generate_code.GenerateCode",
+      "method_id": "generate",
+      "path": "solver/workflow/generate_code.py",
+      "lineno": 42
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032178928,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bbef0>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307408,
+          "value": "<builtins.int object at 0x104ab6010>"
+        }
+      ],
+      "id": 131,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "code",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 94
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 132,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 132,
+      "elapsed": 0,
+      "id": 133,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 134,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 134,
+      "elapsed": 9.5367431640625e-7,
+      "id": 135,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 136,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 136,
+      "elapsed": 0,
+      "id": 137,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043485536,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x168384560>"
+      },
+      "parent_id": 131,
+      "elapsed": 0.00036406517028808594,
+      "id": 138,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 139,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path_name (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 44
+    },
+    {
+      "return_value": {
+        "object_id": 6032101200,
+        "value": "<builtins.str object at 0x1678a8f50>"
+      },
+      "parent_id": 139,
+      "elapsed": 0.0000030994415283203125,
+      "id": 140,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 141,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 141,
+      "elapsed": 9.5367431640625e-7,
+      "id": 142,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 143,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path_name (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 44
+    },
+    {
+      "return_value": {
+        "object_id": 6032231856,
+        "value": "<builtins.str object at 0x1678c8db0>"
+      },
+      "parent_id": 143,
+      "elapsed": 0.000003814697265625,
+      "id": 144,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5945753424,
+        "value": "<builtins.str object at 0x16264ff50>"
+      },
+      "parent_id": 130,
+      "elapsed": 0.001508951187133789,
+      "id": 145,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6031499552,
+        "value": "<solver.workflow.generate_code.GenerateCode object at 0x167816120>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307408,
+          "value": "<builtins.int object at 0x104ab6010>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5945753424,
+          "value": "<builtins.str object at 0x16264ff50>"
+        }
+      ],
+      "id": 146,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.generate_code.GenerateCode",
+      "method_id": "apply",
+      "path": "solver/workflow/generate_code.py",
+      "lineno": 119
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043458960,
+          "value": "<builtins.str object at 0x16837dd90>"
+        }
+      ],
+      "id": 147,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.is_test_file",
+      "method_id": "is_non_test_file",
+      "path": "solver/workflow/is_test_file.py",
+      "lineno": 50
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043458960,
+          "value": "<builtins.str object at 0x16837dd90>"
+        }
+      ],
+      "id": 148,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.is_test_file",
+      "method_id": "is_test_file",
+      "path": "solver/workflow/is_test_file.py",
+      "lineno": 29
+    },
+    {
+      "return_value": {
+        "object_id": 4373304576,
+        "value": "<builtins.bool object at 0x104ab5500>"
+      },
+      "parent_id": 148,
+      "elapsed": 0.0000059604644775390625,
+      "id": 149,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304608,
+        "value": "<builtins.bool object at 0x104ab5520>"
+      },
+      "parent_id": 147,
+      "elapsed": 0.00004291534423828125,
+      "id": 150,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032178928,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bbef0>"
+      },
+      "id": 151,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "apply",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 106
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 152,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 152,
+      "elapsed": 9.5367431640625e-7,
+      "id": 153,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 154,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 154,
+      "elapsed": 0,
+      "id": 155,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 156,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 156,
+      "elapsed": 0,
+      "id": 157,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043487504,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x168384d10>"
+      },
+      "parent_id": 151,
+      "elapsed": 0.0002601146697998047,
+      "id": 158,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 159,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path_name (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 44
+    },
+    {
+      "return_value": {
+        "object_id": 6032101376,
+        "value": "<builtins.str object at 0x1678a9000>"
+      },
+      "parent_id": 159,
+      "elapsed": 9.5367431640625e-7,
+      "id": 160,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 161,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 161,
+      "elapsed": 0.0000011920928955078125,
+      "id": 162,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 163,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path_name (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 44
+    },
+    {
+      "return_value": {
+        "object_id": 6032231856,
+        "value": "<builtins.str object at 0x1678c8db0>"
+      },
+      "parent_id": 163,
+      "elapsed": 0,
+      "id": 164,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043458960,
+          "value": "<builtins.str object at 0x16837dd90>"
+        }
+      ],
+      "id": 165,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.choose_code_files",
+      "method_id": "resolve_file_path",
+      "path": "solver/workflow/choose_code_files.py",
+      "lineno": 129
+    },
+    {
+      "return_value": {
+        "object_id": 6043458960,
+        "value": "<builtins.str object at 0x16837dd90>"
+      },
+      "parent_id": 165,
+      "elapsed": 0.000008821487426757812,
+      "id": 166,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "opt",
+          "object_id": 4373304608,
+          "value": "<builtins.bool object at 0x104ab5520>"
+        }
+      ],
+      "id": 167,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "git_diff",
+      "path": "solver/workflow/patch.py",
+      "lineno": 15
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945752704,
+          "value": "<builtins.str object at 0x16264fc80>"
+        }
+      ],
+      "id": 168,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "clean_patch",
+      "path": "solver/workflow/patch.py",
+      "lineno": 23
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945752704,
+          "value": "<builtins.str object at 0x16264fc80>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947278784,
+          "value": "<builtins.list object at 0x1627c45c0>",
+          "size": 2
+        }
+      ],
+      "id": 169,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "exclude_files",
+      "path": "solver/workflow/patch.py",
+      "lineno": 62
+    },
+    {
+      "return_value": {
+        "object_id": 5945754048,
+        "value": "<builtins.str object at 0x1626501c0>"
+      },
+      "parent_id": 169,
+      "elapsed": 0.00026869773864746094,
+      "id": 170,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5945754048,
+        "value": "<builtins.str object at 0x1626501c0>"
+      },
+      "parent_id": 168,
+      "elapsed": 0.0003941059112548828,
+      "id": 171,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5945754048,
+        "value": "<builtins.str object at 0x1626501c0>"
+      },
+      "parent_id": 167,
+      "elapsed": 0.04625892639160156,
+      "id": 172,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945754048,
+          "value": "<builtins.str object at 0x1626501c0>"
+        }
+      ],
+      "id": 173,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "filter_patch_exclude_tests",
+      "path": "solver/workflow/patch.py",
+      "lineno": 58
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945754048,
+          "value": "<builtins.str object at 0x1626501c0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947108368,
+          "value": "<<property object at 0x10689a840>.FunctionWrapper object at 0x16279ac10>"
+        }
+      ],
+      "id": 174,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "filter_patch",
+      "path": "solver/workflow/patch.py",
+      "lineno": 39
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945754048,
+          "value": "<builtins.str object at 0x1626501c0>"
+        }
+      ],
+      "id": 175,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "clean_patch",
+      "path": "solver/workflow/patch.py",
+      "lineno": 23
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945754048,
+          "value": "<builtins.str object at 0x1626501c0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947278784,
+          "value": "<builtins.list object at 0x1627c45c0>",
+          "size": 2
+        }
+      ],
+      "id": 176,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "exclude_files",
+      "path": "solver/workflow/patch.py",
+      "lineno": 62
+    },
+    {
+      "return_value": {
+        "object_id": 5945752704,
+        "value": "<builtins.str object at 0x16264fc80>"
+      },
+      "parent_id": 176,
+      "elapsed": 0.000051975250244140625,
+      "id": 177,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5945752704,
+        "value": "<builtins.str object at 0x16264fc80>"
+      },
+      "parent_id": 175,
+      "elapsed": 0.00008869171142578125,
+      "id": 178,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043461840,
+          "value": "<builtins.str object at 0x16837e8d0>"
+        }
+      ],
+      "id": 179,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.is_test_file",
+      "method_id": "is_non_test_file",
+      "path": "solver/workflow/is_test_file.py",
+      "lineno": 50
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043461840,
+          "value": "<builtins.str object at 0x16837e8d0>"
+        }
+      ],
+      "id": 180,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.is_test_file",
+      "method_id": "is_test_file",
+      "path": "solver/workflow/is_test_file.py",
+      "lineno": 29
+    },
+    {
+      "return_value": {
+        "object_id": 4373304576,
+        "value": "<builtins.bool object at 0x104ab5500>"
+      },
+      "parent_id": 180,
+      "elapsed": 0.0000069141387939453125,
+      "id": 181,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304608,
+        "value": "<builtins.bool object at 0x104ab5520>"
+      },
+      "parent_id": 179,
+      "elapsed": 0.000050067901611328125,
+      "id": 182,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5945754656,
+        "value": "<builtins.str object at 0x162650420>"
+      },
+      "parent_id": 174,
+      "elapsed": 0.00026917457580566406,
+      "id": 183,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5945754656,
+        "value": "<builtins.str object at 0x162650420>"
+      },
+      "parent_id": 173,
+      "elapsed": 0.0003120899200439453,
+      "id": 184,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032165968,
+        "value": "<solver.workflow.patch.Patch object at 0x1678b8c50>"
+      },
+      "parent_id": 146,
+      "elapsed": 2.534754991531372,
+      "id": 185,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032165968,
+        "value": "<solver.workflow.patch.Patch object at 0x1678b8c50>"
+      },
+      "id": 186,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch.Patch",
+      "method_id": "list_files",
+      "path": "solver/workflow/patch.py",
+      "lineno": 90
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945752704,
+          "value": "<builtins.str object at 0x16264fc80>"
+        }
+      ],
+      "id": 187,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "list_files_in_patch",
+      "path": "solver/workflow/patch.py",
+      "lineno": 28
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945752704,
+          "value": "<builtins.str object at 0x16264fc80>"
+        }
+      ],
+      "id": 188,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "clean_patch",
+      "path": "solver/workflow/patch.py",
+      "lineno": 23
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5945752704,
+          "value": "<builtins.str object at 0x16264fc80>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947278784,
+          "value": "<builtins.list object at 0x1627c45c0>",
+          "size": 2
+        }
+      ],
+      "id": 189,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch",
+      "method_id": "exclude_files",
+      "path": "solver/workflow/patch.py",
+      "lineno": 62
+    },
+    {
+      "return_value": {
+        "object_id": 5945753312,
+        "value": "<builtins.str object at 0x16264fee0>"
+      },
+      "parent_id": 189,
+      "elapsed": 0.00004291534423828125,
+      "id": 190,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5945753312,
+        "value": "<builtins.str object at 0x16264fee0>"
+      },
+      "parent_id": 188,
+      "elapsed": 0.00007700920104980469,
+      "id": 191,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043550208,
+        "value": "<builtins.list object at 0x168394200>",
+        "size": 1
+      },
+      "parent_id": 187,
+      "elapsed": 0.00013899803161621094,
+      "id": 192,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043550208,
+        "value": "<builtins.list object at 0x168394200>",
+        "size": 1
+      },
+      "parent_id": 186,
+      "elapsed": 0.0001819133758544922,
+      "id": 193,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043484864,
+        "value": "<solver.workflow.linter.Flake8Linter object at 0x1683842c0>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043463840,
+          "value": "<builtins.str object at 0x16837f0a0>"
+        }
+      ],
+      "id": 194,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.linter.Linter",
+      "method_id": "lint",
+      "path": "solver/workflow/linter.py",
+      "lineno": 18
+    },
+    {
+      "return_value": {
+        "object_id": 6043551424,
+        "value": "<builtins.list object at 0x1683946c0>",
+        "size": 1
+      },
+      "parent_id": 194,
+      "elapsed": 0.6644411087036133,
+      "id": 195,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032165968,
+        "value": "<solver.workflow.patch.Patch object at 0x1678b8c50>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043463840,
+          "value": "<builtins.str object at 0x16837f0a0>"
+        }
+      ],
+      "id": 196,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.patch.Patch",
+      "method_id": "modified_lines",
+      "path": "solver/workflow/patch.py",
+      "lineno": 93
+    },
+    {
+      "return_value": {
+        "object_id": 6043549824,
+        "value": "<builtins.list object at 0x168394080>",
+        "size": 7
+      },
+      "parent_id": 196,
+      "elapsed": 0.0001342296600341797,
+      "id": 197,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043484864,
+        "value": "<solver.workflow.linter.Flake8Linter object at 0x1683842c0>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043551424,
+          "value": "<builtins.list object at 0x1683946c0>",
+          "size": 1
+        },
+        {
+          "kind": "req",
+          "object_id": 6032217408,
+          "value": "<builtins.set object at 0x1678c5540>"
+        }
+      ],
+      "id": 198,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.linter.Linter",
+      "method_id": "select_lint_errors",
+      "path": "solver/workflow/linter.py",
+      "lineno": 26
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043484864,
+        "value": "<solver.workflow.linter.Flake8Linter object at 0x1683842c0>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373328728,
+          "value": "<builtins.str object at 0x104abb358>"
+        }
+      ],
+      "id": 199,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.linter.Flake8Linter",
+      "method_id": "lint_error_line_number",
+      "path": "solver/workflow/linter.py",
+      "lineno": 51
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 199,
+      "elapsed": 0.000012874603271484375,
+      "id": 200,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032089024,
+        "value": "<builtins.list object at 0x1678a5fc0>",
+        "size": 0
+      },
+      "parent_id": 198,
+      "elapsed": 0.00031113624572753906,
+      "id": 201,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5943161056,
+        "value": "<solver.workflow.lint_repair.LintRepairResult object at 0x1623d70e0>"
+      },
+      "parent_id": 129,
+      "elapsed": 3.202895164489746,
+      "id": 202,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307408,
+          "value": "<builtins.int object at 0x104ab6010>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304608,
+          "value": "<builtins.bool object at 0x104ab5520>"
+        }
+      ],
+      "id": 203,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_lint_repair",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 126
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 203,
+      "elapsed": 0.0000050067901611328125,
+      "id": 204,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5943161056,
+        "value": "<solver.workflow.lint_repair.LintRepairResult object at 0x1623d70e0>"
+      },
+      "parent_id": 128,
+      "elapsed": 3.203117847442627,
+      "id": 205,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "id": 206,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "clean_git_state",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 90
+    },
+    {
+      "static": true,
+      "id": 207,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "in_git_controlled_source_dir",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 145
+    },
+    {
+      "return_value": {
+        "object_id": 4373304608,
+        "value": "<builtins.bool object at 0x104ab5520>"
+      },
+      "parent_id": 207,
+      "elapsed": 0.00011229515075683594,
+      "id": 208,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 206,
+      "elapsed": 0.2091991901397705,
+      "id": 209,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032165968,
+        "value": "<solver.workflow.patch.Patch object at 0x1678b8c50>"
+      },
+      "parent_id": 117,
+      "elapsed": 3.7824981212615967,
+      "id": 210,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032253536,
+          "value": "<pathlib.PosixPath object at 0x1678ce260>"
+        }
+      ],
+      "id": 211,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.generate_and_validate_code",
+      "method_id": "empty_patch",
+      "path": "solver/workflow/generate_and_validate_code.py",
+      "lineno": 82
+    },
+    {
+      "return_value": {
+        "object_id": 5943161056,
+        "value": "<solver.workflow.patch.Patch object at 0x1623d70e0>"
+      },
+      "parent_id": 211,
+      "elapsed": 0.00013327598571777344,
+      "id": 212,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032178928,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bbef0>"
+      },
+      "id": 213,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "run_pass_to_pass",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 97
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 214,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 214,
+      "elapsed": 0.0000059604644775390625,
+      "id": 215,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 216,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 216,
+      "elapsed": 0.0000019073486328125,
+      "id": 217,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 218,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 218,
+      "elapsed": 9.5367431640625e-7,
+      "id": 219,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032166352,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b8dd0>"
+      },
+      "parent_id": 213,
+      "elapsed": 0.0004878044128417969,
+      "id": 220,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032166352,
+          "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b8dd0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5943161056,
+          "value": "<solver.workflow.patch.Patch object at 0x1623d70e0>"
+        },
+        {
+          "kind": "opt",
+          "object_id": 5947522496,
+          "value": "<builtins.list object at 0x1627ffdc0>",
+          "size": 0
+        }
+      ],
+      "id": 221,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "run_test",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 65
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 222,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6043481728,
+        "value": "<pathlib.PosixPath object at 0x168383680>"
+      },
+      "parent_id": 222,
+      "elapsed": 0.0000011920928955078125,
+      "id": 223,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043492352,
+        "value": "<solver.workflow.run_test.RunTest object at 0x168386000>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031866432,
+          "value": "<docker.client.DockerClient object at 0x16786fa40>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5943161056,
+          "value": "<solver.workflow.patch.Patch object at 0x1623d70e0>"
+        }
+      ],
+      "id": 224,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.run_test.RunTest",
+      "method_id": "run",
+      "path": "solver/workflow/run_test.py",
+      "lineno": 89
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947230624,
+          "value": "<builtins.function object at 0x1627b89a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043481728,
+          "value": "<pathlib.PosixPath object at 0x168383680>"
+        }
+      ],
+      "id": 225,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.execute_container",
+      "method_id": "read_test_output",
+      "path": "solver/workflow/execute_container.py",
+      "lineno": 66
+    },
+    {
+      "return_value": {
+        "object_id": 4390261760,
+        "value": "<builtins.str object at 0x105ae1400>"
+      },
+      "parent_id": 225,
+      "elapsed": 0.00023889541625976562,
+      "id": 226,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947230624,
+          "value": "<builtins.function object at 0x1627b89a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043643504,
+          "value": "<builtins.str object at 0x1683aae70>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4390261760,
+          "value": "<builtins.str object at 0x105ae1400>"
+        }
+      ],
+      "id": 227,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.execute_container",
+      "method_id": "parse_test_status",
+      "path": "solver/workflow/execute_container.py",
+      "lineno": 76
+    },
+    {
+      "return_value": {
+        "object_id": 5846498528,
+        "value": "<solver.workflow.solve_listener.TestStatus object at 0x15c7a7ce0>"
+      },
+      "parent_id": 227,
+      "elapsed": 0.000743865966796875,
+      "id": 228,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5946518816,
+        "value": "<solver.workflow.run_test.RunTestResult object at 0x16270ad20>"
+      },
+      "parent_id": 224,
+      "elapsed": 0.0017251968383789062,
+      "id": 229,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5946518816,
+        "value": "<solver.workflow.run_test.RunTestResult object at 0x16270ad20>"
+      },
+      "parent_id": 221,
+      "elapsed": 0.0018961429595947266,
+      "id": 230,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947326336,
+          "value": "<solver.workflow.solve_listener.TestType object at 0x1627cff80>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6031960896,
+          "value": "<builtins.list object at 0x167886b40>",
+          "size": 1
+        },
+        {
+          "kind": "req",
+          "object_id": 5943161056,
+          "value": "<solver.workflow.patch.Patch object at 0x1623d70e0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5846498528,
+          "value": "<solver.workflow.solve_listener.TestStatus object at 0x15c7a7ce0>"
+        }
+      ],
+      "id": 231,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_run_test",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 169
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 231,
+      "elapsed": 0.0000016689300537109375,
+      "id": 232,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032178928,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bbef0>"
+      },
+      "id": 233,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "run_test_patch",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 100
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 234,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 234,
+      "elapsed": 0,
+      "id": 235,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 236,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 236,
+      "elapsed": 9.5367431640625e-7,
+      "id": 237,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 238,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 238,
+      "elapsed": 0.0000011920928955078125,
+      "id": 239,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6032165008,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b8890>"
+      },
+      "parent_id": 233,
+      "elapsed": 0.00023698806762695312,
+      "id": 240,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032165008,
+          "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b8890>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        },
+        {
+          "kind": "opt",
+          "object_id": 5947522496,
+          "value": "<builtins.list object at 0x1627ffdc0>",
+          "size": 0
+        }
+      ],
+      "id": 241,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "run_test",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 65
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 242,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6043583536,
+        "value": "<pathlib.PosixPath object at 0x16839c430>"
+      },
+      "parent_id": 242,
+      "elapsed": 9.5367431640625e-7,
+      "id": 243,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5947141456,
+        "value": "<solver.workflow.run_test.RunTest object at 0x1627a2d50>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031866432,
+          "value": "<docker.client.DockerClient object at 0x16786fa40>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        }
+      ],
+      "id": 244,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.run_test.RunTest",
+      "method_id": "run",
+      "path": "solver/workflow/run_test.py",
+      "lineno": 89
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947230624,
+          "value": "<builtins.function object at 0x1627b89a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043583536,
+          "value": "<pathlib.PosixPath object at 0x16839c430>"
+        }
+      ],
+      "id": 245,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.execute_container",
+      "method_id": "read_test_output",
+      "path": "solver/workflow/execute_container.py",
+      "lineno": 66
+    },
+    {
+      "return_value": {
+        "object_id": 5882909616,
+        "value": "<builtins.str object at 0x15ea613b0>"
+      },
+      "parent_id": 245,
+      "elapsed": 0.0001990795135498047,
+      "id": 246,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947230624,
+          "value": "<builtins.function object at 0x1627b89a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043643504,
+          "value": "<builtins.str object at 0x1683aae70>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5882909616,
+          "value": "<builtins.str object at 0x15ea613b0>"
+        }
+      ],
+      "id": 247,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.execute_container",
+      "method_id": "parse_test_status",
+      "path": "solver/workflow/execute_container.py",
+      "lineno": 76
+    },
+    {
+      "return_value": {
+        "object_id": 5947474240,
+        "value": "<solver.workflow.solve_listener.TestStatus object at 0x1627f4140>"
+      },
+      "parent_id": 247,
+      "elapsed": 0.0001533031463623047,
+      "id": 248,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043494320,
+        "value": "<solver.workflow.run_test.RunTestResult object at 0x1683867b0>"
+      },
+      "parent_id": 244,
+      "elapsed": 0.000762939453125,
+      "id": 249,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043494320,
+        "value": "<solver.workflow.run_test.RunTestResult object at 0x1683867b0>"
+      },
+      "parent_id": 241,
+      "elapsed": 0.000843048095703125,
+      "id": 250,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5887147328,
+          "value": "<solver.workflow.solve_listener.TestType object at 0x15ee6bd40>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043555136,
+          "value": "<builtins.list object at 0x168395540>",
+          "size": 1
+        },
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947474240,
+          "value": "<solver.workflow.solve_listener.TestStatus object at 0x1627f4140>"
+        }
+      ],
+      "id": 251,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_run_test",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 169
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 251,
+      "elapsed": 9.5367431640625e-7,
+      "id": 252,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032178928,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678bbef0>"
+      },
+      "id": 253,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "run_test_inverted_patch",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 103
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 254,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "root (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 48
+    },
+    {
+      "return_value": {
+        "object_id": 6032167552,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x1678b9280>"
+      },
+      "parent_id": 254,
+      "elapsed": 9.5367431640625e-7,
+      "id": 255,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 256,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 256,
+      "elapsed": 0,
+      "id": 257,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 258,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 258,
+      "elapsed": 0,
+      "id": 259,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5946518816,
+        "value": "<solver.workflow.work_dir.WorkDir object at 0x16270ad20>"
+      },
+      "parent_id": 253,
+      "elapsed": 0.0002589225769042969,
+      "id": 260,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5946518816,
+          "value": "<solver.workflow.work_dir.WorkDir object at 0x16270ad20>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        },
+        {
+          "kind": "opt",
+          "object_id": 5947522496,
+          "value": "<builtins.list object at 0x1627ffdc0>",
+          "size": 0
+        }
+      ],
+      "id": 261,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "run_test",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 65
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 262,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6043585776,
+        "value": "<pathlib.PosixPath object at 0x16839ccf0>"
+      },
+      "parent_id": 262,
+      "elapsed": 0,
+      "id": 263,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 5884733888,
+        "value": "<solver.workflow.run_test.RunTest object at 0x15ec1e9c0>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6031866432,
+          "value": "<docker.client.DockerClient object at 0x16786fa40>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        }
+      ],
+      "id": 264,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.run_test.RunTest",
+      "method_id": "run",
+      "path": "solver/workflow/run_test.py",
+      "lineno": 89
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947230624,
+          "value": "<builtins.function object at 0x1627b89a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043585776,
+          "value": "<pathlib.PosixPath object at 0x16839ccf0>"
+        }
+      ],
+      "id": 265,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.execute_container",
+      "method_id": "read_test_output",
+      "path": "solver/workflow/execute_container.py",
+      "lineno": 66
+    },
+    {
+      "return_value": {
+        "object_id": 5944569712,
+        "value": "<builtins.str object at 0x16252ef70>"
+      },
+      "parent_id": 265,
+      "elapsed": 0.00026416778564453125,
+      "id": 266,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947230624,
+          "value": "<builtins.function object at 0x1627b89a0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043643504,
+          "value": "<builtins.str object at 0x1683aae70>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5944569712,
+          "value": "<builtins.str object at 0x16252ef70>"
+        }
+      ],
+      "id": 267,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.execute_container",
+      "method_id": "parse_test_status",
+      "path": "solver/workflow/execute_container.py",
+      "lineno": 76
+    },
+    {
+      "return_value": {
+        "object_id": 5846498528,
+        "value": "<solver.workflow.solve_listener.TestStatus object at 0x15c7a7ce0>"
+      },
+      "parent_id": 267,
+      "elapsed": 0.00026702880859375,
+      "id": 268,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043495952,
+        "value": "<solver.workflow.run_test.RunTestResult object at 0x168386e10>"
+      },
+      "parent_id": 264,
+      "elapsed": 0.0012421607971191406,
+      "id": 269,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043495952,
+        "value": "<solver.workflow.run_test.RunTestResult object at 0x168386e10>"
+      },
+      "parent_id": 261,
+      "elapsed": 0.0013239383697509766,
+      "id": 270,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947474000,
+          "value": "<solver.workflow.solve_listener.TestType object at 0x1627f4050>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043558336,
+          "value": "<builtins.list object at 0x1683961c0>",
+          "size": 1
+        },
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5846498528,
+          "value": "<solver.workflow.solve_listener.TestStatus object at 0x15c7a7ce0>"
+        }
+      ],
+      "id": 271,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_run_test",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 169
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 271,
+      "elapsed": 9.5367431640625e-7,
+      "id": 272,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "id": 273,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_end_patch",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 129
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 273,
+      "elapsed": 9.5367431640625e-7,
+      "id": 274,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 5946518816,
+        "value": "<solver.workflow.generate_and_validate_code.Result object at 0x16270ad20>"
+      },
+      "parent_id": 106,
+      "elapsed": 3.789605140686035,
+      "id": 275,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032165968,
+          "value": "<solver.workflow.patch.Patch object at 0x1678b8c50>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304608,
+          "value": "<builtins.bool object at 0x104ab5520>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304608,
+          "value": "<builtins.bool object at 0x104ab5520>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304608,
+          "value": "<builtins.bool object at 0x104ab5520>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373307472,
+          "value": "<builtins.int object at 0x104ab6050>"
+        }
+      ],
+      "id": 276,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_code_patch",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 155
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 276,
+      "elapsed": 0.0000019073486328125,
+      "id": 277,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 278,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 278,
+      "elapsed": 9.5367431640625e-7,
+      "id": 279,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032165008,
+        "value": "<solver.workflow.generate_and_validate_code.CodePatchResult object at 0x1678b8890>"
+      },
+      "id": 280,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.generate_and_validate_code.CodePatchResult",
+      "method_id": "to_h",
+      "path": "solver/workflow/generate_and_validate_code.py",
+      "lineno": 63
+    },
+    {
+      "return_value": {
+        "object_id": 6043564352,
+        "value": "<builtins.dict object at 0x168397940>",
+        "size": 4
+      },
+      "parent_id": 280,
+      "elapsed": 0.000010967254638671875,
+      "id": 281,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032170768,
+        "value": "<solver.workflow.solve_code.SolveCode object at 0x1678b9f10>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373345080,
+          "value": "<builtins.str object at 0x104abf338>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032165968,
+          "value": "<solver.workflow.patch.Patch object at 0x1678b8c50>"
+        }
+      ],
+      "id": 282,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solve_base.SolveBase",
+      "method_id": "write_patch_file",
+      "path": "solver/workflow/solve_base.py",
+      "lineno": 84
+    },
+    {
+      "static": false,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "auxtype": "get",
+      "id": 283,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.work_dir.WorkDir",
+      "method_id": "path (get)",
+      "path": "solver/workflow/work_dir.py",
+      "lineno": 40
+    },
+    {
+      "return_value": {
+        "object_id": 6032253424,
+        "value": "<pathlib.PosixPath object at 0x1678ce1f0>"
+      },
+      "parent_id": 283,
+      "elapsed": 9.5367431640625e-7,
+      "id": 284,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 282,
+      "elapsed": 0.0002319812774658203,
+      "id": 285,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 53,
+      "elapsed": 3.7962028980255127,
+      "id": 286,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "id": 287,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "on_completed",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 178
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 287,
+      "elapsed": 7.152557373046875e-7,
+      "id": 288,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6032055936,
+        "value": "<solver.workflow.solution_listener.SolutionListener object at 0x16789de80>"
+      },
+      "id": 289,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "build_solution",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 44
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043589584,
+          "value": "<pathlib.PosixPath object at 0x16839dbd0>"
+        }
+      ],
+      "id": 290,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.solution_listener.SolutionListener",
+      "method_id": "count_llm_chars",
+      "path": "solver/workflow/solution_listener.py",
+      "lineno": 91
+    },
+    {
+      "return_value": {
+        "object_id": 6043441408,
+        "value": "<builtins.tuple object at 0x168379900>"
+      },
+      "parent_id": 290,
+      "elapsed": 0.0015878677368164062,
+      "id": 291,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043565248,
+        "value": "<builtins.dict object at 0x168397cc0>",
+        "size": 19
+      },
+      "parent_id": 289,
+      "elapsed": 0.0016491413116455078,
+      "id": 292,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043565248,
+          "value": "<builtins.dict object at 0x168397cc0>",
+          "size": 19
+        }
+      ],
+      "id": 293,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043644912,
+          "value": "<builtins.str object at 0x1683ab3f0>"
+        }
+      ],
+      "id": 294,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 6043644912,
+        "value": "<builtins.str object at 0x1683ab3f0>"
+      },
+      "parent_id": 294,
+      "elapsed": 0.0000019073486328125,
+      "id": 295,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032253536,
+          "value": "<pathlib.PosixPath object at 0x1678ce260>"
+        }
+      ],
+      "id": 296,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 6043465360,
+        "value": "<builtins.str object at 0x16837f690>"
+      },
+      "parent_id": 296,
+      "elapsed": 0.0000021457672119140625,
+      "id": 297,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032165968,
+          "value": "<solver.workflow.patch.Patch object at 0x1678b8c50>"
+        }
+      ],
+      "id": 298,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 5945752704,
+        "value": "<builtins.str object at 0x16264fc80>"
+      },
+      "parent_id": 298,
+      "elapsed": 0.000010013580322265625,
+      "id": 299,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 300,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 300,
+      "elapsed": 9.5367431640625e-7,
+      "id": 301,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        }
+      ],
+      "id": 302,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 5945754480,
+        "value": "<builtins.str object at 0x162650370>"
+      },
+      "parent_id": 302,
+      "elapsed": 0.000010013580322265625,
+      "id": 303,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        }
+      ],
+      "id": 304,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 5945753312,
+        "value": "<builtins.str object at 0x16264fee0>"
+      },
+      "parent_id": 304,
+      "elapsed": 0.000013113021850585938,
+      "id": 305,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043532368,
+          "value": "<builtins.int object at 0x16838fc50>"
+        }
+      ],
+      "id": 306,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 6043532368,
+        "value": "<builtins.int object at 0x16838fc50>"
+      },
+      "parent_id": 306,
+      "elapsed": 0.0000011920928955078125,
+      "id": 307,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043532336,
+          "value": "<builtins.int object at 0x16838fc30>"
+        }
+      ],
+      "id": 308,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 6043532336,
+        "value": "<builtins.int object at 0x16838fc30>"
+      },
+      "parent_id": 308,
+      "elapsed": 0,
+      "id": 309,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043531408,
+          "value": "<builtins.float object at 0x16838f890>"
+        }
+      ],
+      "id": 310,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 6043531408,
+        "value": "<builtins.float object at 0x16838f890>"
+      },
+      "parent_id": 310,
+      "elapsed": 0,
+      "id": 311,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307376,
+          "value": "<builtins.int object at 0x104ab5ff0>"
+        }
+      ],
+      "id": 312,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373307376,
+        "value": "<builtins.int object at 0x104ab5ff0>"
+      },
+      "parent_id": 312,
+      "elapsed": 9.5367431640625e-7,
+      "id": 313,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307376,
+          "value": "<builtins.int object at 0x104ab5ff0>"
+        }
+      ],
+      "id": 314,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373307376,
+        "value": "<builtins.int object at 0x104ab5ff0>"
+      },
+      "parent_id": 314,
+      "elapsed": 0,
+      "id": 315,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307408,
+          "value": "<builtins.int object at 0x104ab6010>"
+        }
+      ],
+      "id": 316,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373307408,
+        "value": "<builtins.int object at 0x104ab6010>"
+      },
+      "parent_id": 316,
+      "elapsed": 9.5367431640625e-7,
+      "id": 317,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304608,
+          "value": "<builtins.bool object at 0x104ab5520>"
+        }
+      ],
+      "id": 318,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373304608,
+        "value": "<builtins.bool object at 0x104ab5520>"
+      },
+      "parent_id": 318,
+      "elapsed": 0.0000011920928955078125,
+      "id": 319,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304608,
+          "value": "<builtins.bool object at 0x104ab5520>"
+        }
+      ],
+      "id": 320,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373304608,
+        "value": "<builtins.bool object at 0x104ab5520>"
+      },
+      "parent_id": 320,
+      "elapsed": 9.5367431640625e-7,
+      "id": 321,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304608,
+          "value": "<builtins.bool object at 0x104ab5520>"
+        }
+      ],
+      "id": 322,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373304608,
+        "value": "<builtins.bool object at 0x104ab5520>"
+      },
+      "parent_id": 322,
+      "elapsed": 7.152557373046875e-7,
+      "id": 323,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373307472,
+          "value": "<builtins.int object at 0x104ab6050>"
+        }
+      ],
+      "id": 324,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373307472,
+        "value": "<builtins.int object at 0x104ab6050>"
+      },
+      "parent_id": 324,
+      "elapsed": 0,
+      "id": 325,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 326,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 326,
+      "elapsed": 0,
+      "id": 327,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 328,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 328,
+      "elapsed": 0,
+      "id": 329,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 330,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 330,
+      "elapsed": 0,
+      "id": 331,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043564992,
+        "value": "<builtins.dict object at 0x168397bc0>",
+        "size": 19
+      },
+      "parent_id": 293,
+      "elapsed": 0.0005929470062255859,
+      "id": 332,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043700800,
+          "value": "<builtins.dict object at 0x1683b8e40>",
+          "size": 3
+        }
+      ],
+      "id": 333,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6032253536,
+          "value": "<pathlib.PosixPath object at 0x1678ce260>"
+        }
+      ],
+      "id": 334,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 6043465360,
+        "value": "<builtins.str object at 0x16837f690>"
+      },
+      "parent_id": 334,
+      "elapsed": 7.152557373046875e-7,
+      "id": 335,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        }
+      ],
+      "id": 336,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 5945756448,
+        "value": "<builtins.str object at 0x162650b20>"
+      },
+      "parent_id": 336,
+      "elapsed": 0.000008821487426757812,
+      "id": 337,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        }
+      ],
+      "id": 338,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.workflow.convert_to_plain_types",
+      "method_id": "convert_to_plain_types",
+      "path": "solver/workflow/convert_to_plain_types.py",
+      "lineno": 7
+    },
+    {
+      "return_value": {
+        "object_id": 5945755280,
+        "value": "<builtins.str object at 0x162650690>"
+      },
+      "parent_id": 338,
+      "elapsed": 0.000009059906005859375,
+      "id": 339,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043700736,
+        "value": "<builtins.dict object at 0x1683b8e00>",
+        "size": 3
+      },
+      "parent_id": 333,
+      "elapsed": 0.00010919570922851562,
+      "id": 340,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 6043644992,
+          "value": "<builtins.dict object at 0x1683ab440>",
+          "size": 12
+        },
+        {
+          "kind": "req",
+          "object_id": 4405638992,
+          "value": "<builtins.str object at 0x10698b750>"
+        }
+      ],
+      "id": 341,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "build_predictions",
+      "path": "solver/prediction.py",
+      "lineno": 29
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4405743728,
+          "value": "<builtins.str object at 0x1069a5070>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 342,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 342,
+      "elapsed": 0.0000021457672119140625,
+      "id": 343,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4591314544,
+          "value": "<builtins.str object at 0x111a9e670>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043702000,
+          "value": "<builtins.str object at 0x1683b92f0>"
+        }
+      ],
+      "id": 344,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 344,
+      "elapsed": 9.5367431640625e-7,
+      "id": 345,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4405743856,
+          "value": "<builtins.str object at 0x1069a50f0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 346,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 346,
+      "elapsed": 0,
+      "id": 347,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4405743920,
+          "value": "<builtins.str object at 0x1069a5130>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 348,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 348,
+      "elapsed": 0,
+      "id": 349,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4405743984,
+          "value": "<builtins.str object at 0x1069a5170>"
+        },
+        {
+          "kind": "req",
+          "object_id": 4373304104,
+          "value": "<builtins.NoneType object at 0x104ab5328>"
+        }
+      ],
+      "id": 350,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 350,
+      "elapsed": 0,
+      "id": 351,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "return_value": {
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parent_id": 341,
+      "elapsed": 0.00024127960205078125,
+      "id": 352,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4405743728,
+          "value": "<builtins.str object at 0x1069a5070>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032165968,
+          "value": "<solver.workflow.patch.Patch object at 0x1678b8c50>"
+        }
+      ],
+      "id": 353,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 353,
+      "elapsed": 0.000009059906005859375,
+      "id": 354,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4405743856,
+          "value": "<builtins.str object at 0x1069a50f0>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5947487584,
+          "value": "<solver.workflow.patch.Patch object at 0x1627f7560>"
+        }
+      ],
+      "id": 355,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 355,
+      "elapsed": 0.000012159347534179688,
+      "id": 356,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4405743920,
+          "value": "<builtins.str object at 0x1069a5130>"
+        },
+        {
+          "kind": "req",
+          "object_id": 5946707552,
+          "value": "<solver.workflow.patch.Patch object at 0x162738e60>"
+        }
+      ],
+      "id": 357,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 357,
+      "elapsed": 0.000010013580322265625,
+      "id": 358,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4405743984,
+          "value": "<builtins.str object at 0x1069a5170>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6032253536,
+          "value": "<pathlib.PosixPath object at 0x1678ce260>"
+        }
+      ],
+      "id": 359,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "add_prediction",
+      "path": "solver/prediction.py",
+      "lineno": 23
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 359,
+      "elapsed": 0.0000011920928955078125,
+      "id": 360,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": false,
+      "receiver": {
+        "kind": "req",
+        "object_id": 6043714192,
+        "value": "<solver.prediction.Prediction object at 0x1683bc290>"
+      },
+      "id": 361,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.prediction.Prediction",
+      "method_id": "as_dict",
+      "path": "solver/prediction.py",
+      "lineno": 20
+    },
+    {
+      "return_value": {
+        "object_id": 6043702464,
+        "value": "<builtins.dict object at 0x1683b94c0>",
+        "size": 17
+      },
+      "parent_id": 361,
+      "elapsed": 0,
+      "id": 362,
+      "event": "return",
+      "thread_id": 1
+    },
+    {
+      "static": true,
+      "parameters": [
+        {
+          "kind": "req",
+          "object_id": 4377593984,
+          "value": "<builtins.str object at 0x104ecc880>"
+        },
+        {
+          "kind": "req",
+          "object_id": 6043702464,
+          "value": "<builtins.dict object at 0x1683b94c0>",
+          "size": 17
+        }
+      ],
+      "id": 363,
+      "event": "call",
+      "thread_id": 1,
+      "defined_class": "solver.predictions_file.PredictionsFile",
+      "method_id": "add_prediction",
+      "path": "solver/predictions_file.py",
+      "lineno": 75
+    },
+    {
+      "return_value": {
+        "object_id": 4373304104,
+        "value": "<builtins.NoneType object at 0x104ab5328>"
+      },
+      "parent_id": 363,
+      "elapsed": 0.0002999305725097656,
+      "id": 364,
+      "event": "return",
+      "thread_id": 1
+    }
+  ],
+  "version": "1.9",
+  "metadata": {
+    "language": {
+      "name": "python",
+      "engine": "CPython",
+      "version": "3.12.6"
+    },
+    "client": {
+      "name": "appmap",
+      "url": "https://github.com/applandinc/appmap-python"
+    },
+    "git": {
+      "repository": "git@github.com:getappmap/navie-benchmark.git",
+      "branch": "wip/moar-fixed",
+      "commit": "13b569f2a762560b9663c1aa0232d4f7ab15b921"
+    },
+    "name": "Solve instance with existing navie run and test patch",
+    "recorder": {
+      "name": "process",
+      "type": "process"
+    }
+  },
+  "classMap": [
+    {
+      "name": "solver",
+      "type": "package",
+      "children": [
+        {
+          "name": "cli",
+          "type": "package",
+          "children": [
+            {
+              "name": "BenchmarkArgumentParser",
+              "type": "class",
+              "children": [
+                {
+                  "name": "add_choose_code_files_only",
+                  "type": "function",
+                  "static": false,
+                  "location": "solver/cli.py:57"
+                }
+              ]
+            },
+            {
+              "name": "configure_limits",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:25"
+            },
+            {
+              "name": "configure_clean_option",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:66"
+            },
+            {
+              "name": "apply_limits",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:43"
+            },
+            {
+              "name": "parse_limits",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:34"
+            },
+            {
+              "name": "apply_clean_option",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:81"
+            },
+            {
+              "name": "build_work_dir",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:123"
+            },
+            {
+              "name": "build_logger",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:132"
+            },
+            {
+              "name": "build_limits",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:50"
+            },
+            {
+              "name": "load_dataset",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:100"
+            },
+            {
+              "name": "sort_dataset",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:218"
+            },
+            {
+              "name": "build_solve_code",
+              "type": "function",
+              "static": true,
+              "location": "solver/cli.py:177"
+            }
+          ]
+        },
+        {
+          "name": "workflow",
+          "type": "package",
+          "children": [
+            {
+              "name": "workflow_limits",
+              "type": "package",
+              "children": [
+                {
+                  "name": "WorkflowLimits",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "from_dict",
+                      "type": "function",
+                      "static": true,
+                      "location": "solver/workflow/workflow_limits.py:59"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "solution_listener",
+              "type": "package",
+              "children": [
+                {
+                  "name": "SolutionListener",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "on_solve_start",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:112"
+                    },
+                    {
+                      "name": "on_test_patch",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:132"
+                    },
+                    {
+                      "name": "on_start_patch",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:116"
+                    },
+                    {
+                      "name": "on_lint_repair",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:126"
+                    },
+                    {
+                      "name": "on_run_test",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:169"
+                    },
+                    {
+                      "name": "on_end_patch",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:129"
+                    },
+                    {
+                      "name": "on_code_patch",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:155"
+                    },
+                    {
+                      "name": "on_completed",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:178"
+                    },
+                    {
+                      "name": "build_solution",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solution_listener.py:44"
+                    },
+                    {
+                      "name": "count_llm_chars",
+                      "type": "function",
+                      "static": true,
+                      "location": "solver/workflow/solution_listener.py:91"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "solve_code",
+              "type": "package",
+              "children": [
+                {
+                  "name": "SolveCode",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "solve",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_code.py:58"
+                    },
+                    {
+                      "name": "choose_code_files",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_code.py:48"
+                    },
+                    {
+                      "name": "generate_plan",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_code.py:208"
+                    },
+                    {
+                      "name": "generate_code",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_code.py:216"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "work_dir",
+              "type": "package",
+              "children": [
+                {
+                  "name": "WorkDir",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "choose_code_files",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:59"
+                    },
+                    {
+                      "name": "root (get)",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:48"
+                    },
+                    {
+                      "name": "path (get)",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:40"
+                    },
+                    {
+                      "name": "path_name (get)",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:44"
+                    },
+                    {
+                      "name": "solve_code",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:62"
+                    },
+                    {
+                      "name": "plan",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:65"
+                    },
+                    {
+                      "name": "generate_code",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:91"
+                    },
+                    {
+                      "name": "code",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:94"
+                    },
+                    {
+                      "name": "apply",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:106"
+                    },
+                    {
+                      "name": "run_pass_to_pass",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:97"
+                    },
+                    {
+                      "name": "run_test_patch",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:100"
+                    },
+                    {
+                      "name": "run_test_inverted_patch",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/work_dir.py:103"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "choose_code_files",
+              "type": "class",
+              "children": [
+                {
+                  "name": "extract_file_paths",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/choose_code_files.py:59"
+                },
+                {
+                  "name": "resolve_file_path",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/choose_code_files.py:129"
+                }
+              ]
+            },
+            {
+              "name": "generate_plan",
+              "type": "package",
+              "children": [
+                {
+                  "name": "GeneratePlan",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "run",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/generate_plan.py:24"
+                    },
+                    {
+                      "name": "issue",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/generate_plan.py:49"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "solve_base",
+              "type": "package",
+              "children": [
+                {
+                  "name": "SolveBase",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "repo (get)",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_base.py:49"
+                    },
+                    {
+                      "name": "version (get)",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_base.py:53"
+                    },
+                    {
+                      "name": "clean_git_state",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_base.py:90"
+                    },
+                    {
+                      "name": "in_git_controlled_source_dir",
+                      "type": "function",
+                      "static": true,
+                      "location": "solver/workflow/solve_base.py:145"
+                    },
+                    {
+                      "name": "python_version (get)",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_base.py:61"
+                    },
+                    {
+                      "name": "lint_repair",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_base.py:110"
+                    },
+                    {
+                      "name": "run_test",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_base.py:65"
+                    },
+                    {
+                      "name": "write_patch_file",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/solve_base.py:84"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "generate_and_validate_code",
+              "type": "class",
+              "children": [
+                {
+                  "name": "generate_and_validate_code",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/generate_and_validate_code.py:90"
+                },
+                {
+                  "name": "empty_patch",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/generate_and_validate_code.py:82"
+                },
+                {
+                  "name": "CodePatchResult",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "to_h",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/generate_and_validate_code.py:63"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "lint_repair",
+              "type": "class",
+              "children": [
+                {
+                  "name": "lint_repair",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/lint_repair.py:13"
+                }
+              ]
+            },
+            {
+              "name": "generate_code",
+              "type": "package",
+              "children": [
+                {
+                  "name": "GenerateCode",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "generate",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/generate_code.py:42"
+                    },
+                    {
+                      "name": "apply",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/generate_code.py:119"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "is_test_file",
+              "type": "class",
+              "children": [
+                {
+                  "name": "is_non_test_file",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/is_test_file.py:50"
+                },
+                {
+                  "name": "is_test_file",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/is_test_file.py:29"
+                }
+              ]
+            },
+            {
+              "name": "patch",
+              "type": "class",
+              "children": [
+                {
+                  "name": "git_diff",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/patch.py:15"
+                },
+                {
+                  "name": "clean_patch",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/patch.py:23"
+                },
+                {
+                  "name": "exclude_files",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/patch.py:62"
+                },
+                {
+                  "name": "filter_patch_exclude_tests",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/patch.py:58"
+                },
+                {
+                  "name": "filter_patch",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/patch.py:39"
+                },
+                {
+                  "name": "Patch",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "list_files",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/patch.py:90"
+                    },
+                    {
+                      "name": "modified_lines",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/patch.py:93"
+                    }
+                  ]
+                },
+                {
+                  "name": "list_files_in_patch",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/patch.py:28"
+                }
+              ]
+            },
+            {
+              "name": "linter",
+              "type": "package",
+              "children": [
+                {
+                  "name": "Linter",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "lint",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/linter.py:18"
+                    },
+                    {
+                      "name": "select_lint_errors",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/linter.py:26"
+                    }
+                  ]
+                },
+                {
+                  "name": "Flake8Linter",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "lint_error_line_number",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/linter.py:51"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "run_test",
+              "type": "package",
+              "children": [
+                {
+                  "name": "RunTest",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "run",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/workflow/run_test.py:89"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "execute_container",
+              "type": "class",
+              "children": [
+                {
+                  "name": "read_test_output",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/execute_container.py:66"
+                },
+                {
+                  "name": "parse_test_status",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/execute_container.py:76"
+                }
+              ]
+            },
+            {
+              "name": "convert_to_plain_types",
+              "type": "class",
+              "children": [
+                {
+                  "name": "convert_to_plain_types",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/workflow/convert_to_plain_types.py:7"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "harness",
+          "type": "package",
+          "children": [
+            {
+              "name": "image_store",
+              "type": "package",
+              "children": [
+                {
+                  "name": "ImageStore",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "ensure",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/harness/image_store.py:52"
+                    },
+                    {
+                      "name": "base_image_key_function",
+                      "type": "function",
+                      "static": true,
+                      "location": "solver/harness/image_store.py:286"
+                    },
+                    {
+                      "name": "_ensure_images",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/harness/image_store.py:77"
+                    },
+                    {
+                      "name": "_pull_images",
+                      "type": "function",
+                      "static": false,
+                      "location": "solver/harness/image_store.py:209"
+                    },
+                    {
+                      "name": "env_image_key_function",
+                      "type": "function",
+                      "static": true,
+                      "location": "solver/harness/image_store.py:290"
+                    },
+                    {
+                      "name": "instance_image_key_function",
+                      "type": "function",
+                      "static": true,
+                      "location": "solver/harness/image_store.py:294"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "python_version",
+              "type": "class",
+              "children": [
+                {
+                  "name": "python_version_for_test_spec",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/harness/python_version.py:5"
+                },
+                {
+                  "name": "python_version_for_repo_and_version",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/harness/python_version.py:9"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "prediction",
+          "type": "package",
+          "children": [
+            {
+              "name": "Prediction",
+              "type": "class",
+              "children": [
+                {
+                  "name": "build_predictions",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/prediction.py:29"
+                },
+                {
+                  "name": "add_prediction",
+                  "type": "function",
+                  "static": false,
+                  "location": "solver/prediction.py:23"
+                },
+                {
+                  "name": "as_dict",
+                  "type": "function",
+                  "static": false,
+                  "location": "solver/prediction.py:20"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "predictions_file",
+          "type": "package",
+          "children": [
+            {
+              "name": "PredictionsFile",
+              "type": "class",
+              "children": [
+                {
+                  "name": "add_prediction",
+                  "type": "function",
+                  "static": true,
+                  "location": "solver/predictions_file.py:75"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
