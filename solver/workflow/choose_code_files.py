@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import List, Optional
 
 from navie.editor import Editor
-from navie.fences import extract_fenced_content
 
 from solver.workflow.is_test_file import test_regexp_patterns
 from solver.workflow.work_dir import WorkDir
@@ -68,11 +67,6 @@ def extract_file_paths(files_to_modify_str: str) -> Optional[List[Path]]:
         ):
             file_name = line[file_start_index + len("<!-- file: ") : file_end_index]
             files_to_modify.append(file_name)
-
-    # Also recognized the fenced output, which should just be a list of files.
-    if len(files_to_modify) == 0 and "```" in files_to_modify_str:
-        files_to_modify_lines = "\n".join(extract_fenced_content(files_to_modify_str))
-        files_to_modify.extend(files_to_modify_lines.split("\n"))
 
     # Still nothing? Use the whole response.
     if len(files_to_modify) == 0:

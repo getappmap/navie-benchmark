@@ -78,6 +78,57 @@ This demonstrates how quaternion rotations are used in reference frames.
             )
         )
 
+    def test_is_not_confused_by_fences(self):
+        # Sometimes LLM adds extra content, such as fenced code blocks which can be confusing
+        assert (
+            self.check(
+                """Based on the code snippets provided, I can identify the issue in the Quaternion rotation matrix implementation. Let me analyze the most relevant files:
+
+1. /sympy/algebras/quaternion.py
+This contains the core implementation of the quaternion class and the problematic to_rotation_matrix() method.
+
+2. /sympy/vector/orienters.py
+This shows how quaternion rotations are used in the vector orientation system.
+
+3. /sympy/physics/vector/frame.py
+This demonstrates how quaternion rotations are used in reference frames.
+
+The issue is in the to_rotation_matrix() implementation. For a rotation about the x-axis by angle x, the correct rotation matrix should be:
+
+```
+[1,      0,       0]
+[0,  cos(x), -sin(x)]
+[0,  sin(x),  cos(x)]
+```
+
+The current implementation produces:
+
+```
+[1,      0,     0]
+[0,  cos(x), sin(x)]
+[0,  sin(x), cos(x)]
+```
+
+The error appears to be in the sign of the m12 term (the sin(x) in the middle row). This is a well-known rotation matrix form that can be found in standard robotics and computer graphics texts.
+
+The quaternion-to-rotation-matrix conversion is documented in the code comments referencing:
+- http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/
+- https://en.wikipedia.org/wiki/Quaternion
+
+The error likely stems from a sign error in the conversion formula implementation, not accounting for the proper relationship between quaternion components and rotation matrix elements.
+
+This issue affects the correctness of rotations when using quaternions in SymPy's vector and physics modules.
+"""
+            )
+            == snapshot(
+                [
+                    Path("sympy/algebras/quaternion.py"),
+                    Path("sympy/vector/orienters.py"),
+                    Path("sympy/physics/vector/frame.py"),
+                ]
+            )
+        )
+
     def check(self, response: str):
         with patch("solver.workflow.choose_code_files.Editor") as Editor_mock, patch(
             "solver.workflow.choose_code_files.os.path.exists"
