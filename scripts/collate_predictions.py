@@ -1,18 +1,21 @@
+from collections.abc import Callable
 import json
 import shutil
 from pathlib import Path
+from typing import Optional
 from zipfile import ZipFile
 
 from tqdm import tqdm
 
-
-MODEL_NAME = "navie2+gpt4o+sonnet3.5"
+from solver.load_instance_set import load_instance_set
 
 
 def main(
     code_run_dir: str,
     target_dir: str,
     dry_run: bool = False,
+    filter_set: Optional[str] = None,
+    model_name="navie2+gpt4o+sonnet3.5",
 ):
     """
     Collates predictions and trajectories from a code run directory into a target directory.
@@ -21,9 +24,15 @@ def main(
         code_run_dir: Path to the code run directory.
         target_dir: Path to the target directory.
         dry_run: Whether to perform a dry run.
+        filter_set: The instance set to filter the instances by.
     """
+    print(f"Using model name {model_name}")
+    if filter_set:
+        print(f"Filtering with instance set {filter_set}")
     code_run_p = Path(code_run_dir)
     target_p = Path(target_dir)
+
+    include = make_filter(filter_set)
 
     # Create target directories
     target_p.mkdir(parents=True, exist_ok=True)
@@ -31,6 +40,10 @@ def main(
     (target_p / "logs").mkdir(exist_ok=True)
 
     all_preds_file = target_p / "all_preds.jsonl"
+
+    preds_count = 0
+    traj_count = 0
+    eval_count = 0
 
     # 1. Collate code patches
     code_patches_dir = code_run_p / "code_patches"
@@ -44,9 +57,12 @@ def main(
                 with patch_file.open() as f:
                     patch = json.load(f)
                 instance_id = patch["instance_id"]
+                if not include(instance_id):
+                    continue
+                preds_count += 1
                 prediction = {
                     "instance_id": instance_id,
-                    "model_name_or_path": MODEL_NAME,
+                    "model_name_or_path": model_name,
                     "model_patch": patch["code_patch"],
                 }
                 print(json.dumps(prediction), file=all_preds_f)
@@ -61,6 +77,9 @@ def main(
             for info in zf.infolist():
                 if info.filename.endswith("/navie/trajectory.jsonl"):
                     instance_id = info.filename.split("/")[0]
+                    if not include(instance_id):
+                        continue
+                    traj_count += 1
                     traj_target = target_p / "trajs" / f"{instance_id}.jsonl"
                     with traj_target.open("wb") as traj_target_f:
 
@@ -98,6 +117,8 @@ def main(
                         with zf.open(info) as code_traj_f:
                             shutil.copyfileobj(code_traj_f, traj_target_f)
 
+    eval_seen = set()
+
     # 4. Unpack run evaluation logs
     for eval_zip_file in tqdm(
         code_run_p.glob("run_evaluation-*.zip"), desc="Unpacking evaluation logs"
@@ -113,11 +134,30 @@ def main(
                 if "image_build_dir" in info.filename:
                     continue
 
-                target_name = "/".join(info.filename.split("/")[-2:])
-                target_path = target_p / "logs" / target_name
+                [instance_id, file_name] = info.filename.split("/")[-2:]
+                if not include(instance_id):
+                    continue
+
+                if instance_id not in eval_seen:
+                    eval_count += 1
+                    eval_seen.add(instance_id)
+
+                target_path = target_p / "logs" / instance_id / file_name
                 target_path.parent.mkdir(parents=True, exist_ok=True)
                 with target_path.open("wb") as f:
                     shutil.copyfileobj(zf.open(info), f)
+
+    print(f"Total predictions: {preds_count}")
+    print(f"Total trajectories: {traj_count}")
+    print(f"Total evaluations: {eval_count}")
+
+
+def make_filter(instance_set: Optional[str]) -> Callable[[str], bool]:
+    if instance_set:
+        ids = load_instance_set(instance_set)
+        return lambda x: x in ids
+    else:
+        return lambda x: True
 
 
 if __name__ == "__main__":
@@ -127,6 +167,7 @@ if __name__ == "__main__":
     parser.add_argument("code_run_dir", type=str)
     parser.add_argument("target_dir", type=str)
     parser.add_argument("--dry_run", action="store_true")
+    parser.add_argument("--filter_set", type=str)
     args = parser.parse_args()
 
-    main(args.code_run_dir, args.target_dir, args.dry_run)
+    main(args.code_run_dir, args.target_dir, args.dry_run, args.filter_set)
