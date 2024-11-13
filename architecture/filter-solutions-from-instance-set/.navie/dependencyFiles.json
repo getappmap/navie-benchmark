@@ -1,0 +1,12 @@
+[
+  "solver/filter_solutions_from_instance_set.py",
+  "solver/prepare_predictions.py",
+  "solver/report.py",
+  "solver/solve.py",
+  "solver/solve_loop.py",
+  "solver/workflow/generate_code.py",
+  "solver/workflow/generate_test.py",
+  "solver/workflow/observe_test.py",
+  "solver/workflow/patch.py",
+  "solver/workflow/solve_listener.py"
+]

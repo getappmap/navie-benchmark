@@ -1,0 +1,9 @@
+[
+  "solver/appmap/appmap.py",
+  "solver/observe_test.py",
+  "solver/solve.py",
+  "solver/workflow/collect_appmap_context.py",
+  "solver/workflow/observe_test.py",
+  "solver/workflow/solution_listener.py",
+  "solver/workflow/solve_code.py"
+]

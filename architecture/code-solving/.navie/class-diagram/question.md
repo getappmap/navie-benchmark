@@ -1,0 +1,1 @@
+@diagram /noprojectinfo /include=\bsolver\b Create a class diagram for the feature "code solving", using the provided documentation as a guide.

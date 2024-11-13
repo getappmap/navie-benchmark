@@ -172,6 +172,7 @@ notebooks/
 *logs/
 work/
 appmap.log
+tmp/appmap
 
 # Solve
 solve

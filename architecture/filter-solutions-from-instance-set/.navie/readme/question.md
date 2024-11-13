@@ -1,0 +1,1 @@
+@explain /noprojectinfo /include=\bsolver\b Document the feature "filter solutions from instance set".
