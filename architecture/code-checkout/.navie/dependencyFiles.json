@@ -1,0 +1,5 @@
+[
+  "solver/checkout_code.py",
+  "solver/harness/build_extended_image.py",
+  "solver/harness/image_store.py"
+]

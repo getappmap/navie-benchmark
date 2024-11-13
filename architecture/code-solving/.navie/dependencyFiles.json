@@ -1,0 +1,4 @@
+[
+  "solver/solve.py",
+  "solver/workflow/generate_code.py"
+]

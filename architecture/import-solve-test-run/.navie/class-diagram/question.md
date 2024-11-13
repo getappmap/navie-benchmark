@@ -1,0 +1,1 @@
+@diagram /noprojectinfo /include=\bsolver\b Create a class diagram for the feature "import solve test run", using the provided documentation as a guide.
