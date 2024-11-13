@@ -1,3 +1,5 @@
+# Dataset: princeton-nlp/SWE-bench_Lite
+# Instances from the Lite set that are not in Verified
 astropy__astropy-6938
 astropy__astropy-7746
 django__django-10924

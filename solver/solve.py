@@ -34,7 +34,7 @@ from solver.cli import (
     select_instances_for_runner,
 )
 
-DATASET_NAME = "princeton-nlp/SWE-bench_Verified"
+DATASET_NAME = "princeton-nlp/SWE-bench_Lite"
 DATASET_SPLIT = "test"
 
 
