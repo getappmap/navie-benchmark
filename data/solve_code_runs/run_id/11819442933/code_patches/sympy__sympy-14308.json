@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-14308",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/pretty/pretty.py b/sympy/printing/pretty/pretty.py\nindex 09e2b00..0ef71cc 100644\n--- a/sympy/printing/pretty/pretty.py\n+++ b/sympy/printing/pretty/pretty.py\n@@ -897,23 +897,23 @@ def _print_BasisDependent(self, expr):\n         o1 = []\n         vectstrs = []\n         if isinstance(expr, Vector):\n-            items = expr.separate().items()\n+            items = list(expr.separate().items())\n+            items.sort(key=lambda x: str(x[0]))\n         else:\n             items = [(0, expr)]\n         for system, vect in items:\n             inneritems = list(vect.components.items())\n             inneritems.sort(key = lambda x: x[0].__str__())\n             for k, v in inneritems:\n-                #if the coef of the basis vector is 1\n-                #we skip the 1\n+                # If the coef of the basis vector is 1\n+                # we skip the 1\n                 if v == 1:\n-                    o1.append(u\"\" +\n-                              k._pretty_form)\n-                #Same for -1\n+                    pform = prettyForm(k._pretty_form)\n+                # Same for -1\n                 elif v == -1:\n-                    o1.append(u\"(-1) \" +\n-                              k._pretty_form)\n-                #For a general expr\n+                    pform = prettyForm(k._pretty_form)\n+                    pform = prettyForm(*pform.left(u\"(-1) \"))\n+                # For a general expr\n                 else:\n                     #We always wrap the measure numbers in\n                     #parentheses\n@@ -923,18 +923,23 @@ def _print_BasisDependent(self, expr):\n                     o1.append(arg_str + ' ' + k._pretty_form)\n                 vectstrs.append(k._pretty_form)\n \n-        #outstr = u(\"\").join(o1)\n-        if o1[0].startswith(u\" + \"):\n-            o1[0] = o1[0][3:]\n-        elif o1[0].startswith(\" \"):\n-            o1[0] = o1[0][1:]\n-        #Fixing the newlines\n-        lengths = []\n-        strs = ['']\n-        for i, partstr in enumerate(o1):\n-            # XXX: What is this hack?\n-            if '\\n' in partstr:\n-                tempstr = partstr\n+        # Combine all parts with proper spacing and alignment\n+        result = o1[0]\n+        for part in o1[1:]:\n+            result = prettyForm(*result.right(\" + \"))\n+            result = prettyForm(*result.right(part))\n+        \n+        # Center the expression vertically\n+        height = result.height()\n+        baseline = height // 2\n+        \n+        # Create final form with centered baseline\n+        final = prettyForm(\n+            binding=prettyForm.OPEN,\n+            *result.parens() if len(o1) > 1 else (result,))\n+        final.baseline = baseline\n+        \n+        return final\n                 tempstr = tempstr.replace(vectstrs[i], '')\n                 tempstr = tempstr.replace(u'\\N{RIGHT PARENTHESIS UPPER HOOK}',\n                                           u'\\N{RIGHT PARENTHESIS UPPER HOOK}'\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 10086737,
+  "num_received_chars": 168745,
+  "elapsed_time": 1663.2546937465668,
+  "lint_repair_count": 14,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-13710",
+  "edit_test_file": "tests/admin_inlines/tests.py",
+  "code_patch": "diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py\nindex dadd4ac..804ac63 100644\n--- a/django/contrib/admin/options.py\n+++ b/django/contrib/admin/options.py\n@@ -2037,10 +2037,18 @@ class InlineModelAdmin(BaseModelAdmin):\n         self.opts = self.model._meta\n         self.has_registered_model = admin_site.is_registered(self.model)\n         super().__init__()\n+        # Set verbose_name from model if not explicitly set on inline\n         if self.verbose_name is None:\n             self.verbose_name = self.model._meta.verbose_name\n+        # Handle verbose_name_plural:\n+        # 1. If explicitly set on inline, keep it\n+        # 2. If verbose_name is set on inline but plural isn't, derive plural from inline's verbose_name\n+        # 3. Otherwise fall back to model's verbose_name_plural\n         if self.verbose_name_plural is None:\n-            self.verbose_name_plural = self.model._meta.verbose_name_plural\n+            if self.verbose_name is not None and self.verbose_name != self.model._meta.verbose_name:\n+                self.verbose_name_plural = str(self.verbose_name) + 's'\n+            else:\n+                self.verbose_name_plural = self.model._meta.verbose_name_plural\n \n     @property\n     def media(self):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/admin_inlines/test_admin_inline_verbose_name.py b/tests/admin_inlines/test_admin_inline_verbose_name.py\nnew file mode 100644\nindex 0000000..5433651\n--- /dev/null\n+++ b/tests/admin_inlines/test_admin_inline_verbose_name.py\n@@ -0,0 +1,49 @@\n+from django.contrib.admin import ModelAdmin, TabularInline\n+from django.contrib.auth.models import User\n+from django.test import RequestFactory, TestCase, override_settings\n+from django.urls import reverse\n+\n+from .models import Profile, ProfileCollection\n+from .admin import site as admin_site\n+\n+\n+@override_settings(ROOT_URLCONF='admin_inlines.urls')\n+class TestInlineVerboseNamePlural(TestCase):\n+    \"\"\"Test that verbose_name_plural is not automatically based on verbose_name.\"\"\"\n+\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.superuser = User.objects.create_superuser(\n+            username='super',\n+            email='super@example.com',\n+            password='secret'\n+        )\n+\n+    def setUp(self):\n+        self.client.force_login(self.superuser)\n+        self.factory = RequestFactory()\n+\n+    def test_inline_verbose_name_plural_not_based_on_verbose_name(self):\n+        \"\"\"\n+        Test that an inline's verbose_name_plural is not automatically derived from\n+        its verbose_name, unlike model Meta classes where this is the default behavior.\n+        \"\"\"\n+        class CustomInline(TabularInline):\n+            model = Profile\n+            verbose_name = \"Custom Profile Name\"\n+            # Note: Not setting verbose_name_plural\n+\n+        modeladmin = ModelAdmin(ProfileCollection, admin_site)\n+        modeladmin.inlines = [CustomInline]\n+\n+        obj = ProfileCollection.objects.create()\n+        url = reverse('admin:admin_inlines_profilecollection_change', args=(obj.pk,))\n+        request = self.factory.get(url)\n+        request.user = self.superuser\n+        response = modeladmin.changeform_view(request, object_id=str(obj.pk))\n+\n+        # The verbose_name_plural should still be based on the model name \"profiles\"\n+        # rather than being automatically pluralized from the inline's verbose_name\n+        self.assertContains(response, '<h2>Profiles</h2>')\n+        # It should not show a pluralized version of the custom verbose_name\n+        self.assertNotContains(response, '<h2>Custom Profile Names</h2>')\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4448623,
+  "num_received_chars": 55709,
+  "elapsed_time": 920.4711811542511,
+  "lint_repair_count": 3,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

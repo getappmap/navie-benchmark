@@ -1,0 +1,21 @@
+{
+  "instance_id": "pytest-dev__pytest-7168",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/_io/saferepr.py b/src/_pytest/_io/saferepr.py\nindex 23af4d0..c2d8cd4 100644\n--- a/src/_pytest/_io/saferepr.py\n+++ b/src/_pytest/_io/saferepr.py\n@@ -4,23 +4,56 @@ from typing import Any\n \n \n def _try_repr_or_str(obj):\n+    \"\"\"Safely get a string representation of an object.\n+    \n+    Tries repr() first, falls back to str(), and provides a minimal\n+    representation if both fail.\n+    \"\"\"\n     try:\n         return repr(obj)\n     except (KeyboardInterrupt, SystemExit):\n         raise\n     except BaseException:\n-        return '{}(\"{}\")'.format(type(obj).__name__, obj)\n+        try:\n+            return '{}(\"{}\")'.format(type(obj).__name__, str(obj))\n+        except (KeyboardInterrupt, SystemExit):\n+            raise\n+        except BaseException:\n+            # If both repr() and str() fail, provide minimal info\n+            try:\n+                return \"<unpresentable {} object>\".format(type(obj).__name__)\n+            except BaseException:\n+                return \"<unpresentable object>\"\n \n \n def _format_repr_exception(exc: BaseException, obj: Any) -> str:\n+    \"\"\"Format an exception that occurred during repr() into a string.\n+    \n+    Takes extra care to avoid triggering additional exceptions while generating\n+    the error message.\n+    \"\"\"\n     try:\n         exc_info = _try_repr_or_str(exc)\n     except (KeyboardInterrupt, SystemExit):\n         raise\n     except BaseException as exc:\n         exc_info = \"unpresentable exception ({})\".format(_try_repr_or_str(exc))\n+\n+    try:\n+        obj_type = type(obj)\n+        type_name = obj_type.__name__\n+    except Exception:\n+        # If we can't even get the type, provide a fallback\n+        type_name = \"<unknown type>\"\n+\n+    try:\n+        obj_id = id(obj)\n+    except Exception:\n+        # If id() somehow fails, use a dummy value\n+        obj_id = 0\n+\n     return \"<[{} raised in repr()] {} object at 0x{:x}>\".format(\n-        exc_info, obj.__class__.__name__, id(obj)\n+        exc_info, type_name, obj_id\n     )\n \n \n@@ -52,13 +85,31 @@ class SafeRepr(reprlib.Repr):\n         return _ellipsize(s, self.maxsize)\n \n     def repr_instance(self, x: Any, level: int) -> str:\n+        # Track recursion depth to prevent infinite recursion\n+        if not hasattr(self, '_repr_recursion_depth'):\n+            self._repr_recursion_depth = 0\n+        self._repr_recursion_depth += 1\n+\n         try:\n-            s = repr(x)\n-        except (KeyboardInterrupt, SystemExit):\n-            raise\n-        except BaseException as exc:\n-            s = _format_repr_exception(exc, x)\n-        return _ellipsize(s, self.maxsize)\n+            # Guard against excessive recursion\n+            if self._repr_recursion_depth > 10:  # Arbitrary but reasonable limit\n+                return \"<repr recursion limit exceeded>\"\n+\n+            try:\n+                s = repr(x)\n+            except (KeyboardInterrupt, SystemExit):\n+                raise\n+            except BaseException as exc:\n+                s = _format_repr_exception(exc, x)\n+\n+            return _ellipsize(s, self.maxsize)\n+\n+        finally:\n+            # Always decrement recursion depth counter\n+            self._repr_recursion_depth -= 1\n+            # Clean up if we're back at the top level\n+            if self._repr_recursion_depth == 0:\n+                del self._repr_recursion_depth\n \n \n def safeformat(obj: Any) -> str:\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4018641,
+  "num_received_chars": 33734,
+  "elapsed_time": 739.4906804561615,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

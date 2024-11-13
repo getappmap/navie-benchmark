@@ -1,0 +1,21 @@
+{
+  "instance_id": "pytest-dev__pytest-11148",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex e43310e..d94b32e 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -533,6 +533,14 @@ def import_path(\n \n         if spec is None:\n             raise ImportError(f\"Can't find module {module_name} at location {path}\")\n+            \n+        # Check if module already exists in sys.modules\n+        existing_mod = sys.modules.get(module_name)\n+        if existing_mod is not None:\n+            # If the module exists and has the same file path, reuse it\n+            if hasattr(existing_mod, \"__file__\") and Path(existing_mod.__file__) == path:\n+                return existing_mod\n+                \n         mod = importlib.util.module_from_spec(spec)\n         sys.modules[module_name] = mod\n         spec.loader.exec_module(mod)  # type: ignore[union-attr]\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4016543,
+  "num_received_chars": 42989,
+  "elapsed_time": 553.0562927722931,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

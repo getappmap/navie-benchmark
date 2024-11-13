@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-15498",
+  "edit_test_file": "tests/middleware/tests.py",
+  "code_patch": "diff --git a/django/utils/http.py b/django/utils/http.py\nindex 0292713..486889a 100644\n--- a/django/utils/http.py\n+++ b/django/utils/http.py\n@@ -146,6 +146,8 @@ def parse_http_date_safe(date):\n     \"\"\"\n     Same as parse_http_date, but return None if the input is invalid.\n     \"\"\"\n+    if not date:\n+        return None\n     try:\n         return parse_http_date(date)\n     except Exception:\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/middleware/test_if_modified_since.py b/tests/middleware/test_if_modified_since.py\nnew file mode 100644\nindex 0000000..eac5aa1\n--- /dev/null\n+++ b/tests/middleware/test_if_modified_since.py\n@@ -0,0 +1,27 @@\n+from django.http import HttpResponse\n+from django.middleware.http import ConditionalGetMiddleware\n+from django.test import RequestFactory, SimpleTestCase\n+\n+\n+class EmptyIfModifiedSinceTest(SimpleTestCase):\n+    \"\"\"Test handling of empty If-Modified-Since header.\"\"\"\n+\n+    def setUp(self):\n+        self.factory = RequestFactory()\n+        self.middleware = ConditionalGetMiddleware(get_response=self.get_response)\n+\n+    def get_response(self, request):\n+        response = HttpResponse()\n+        response[\"Last-Modified\"] = \"Sat, 12 Feb 2011 17:38:44 GMT\"\n+        return response\n+\n+    def test_empty_if_modified_since(self):\n+        \"\"\"\n+        Empty string for If-Modified-Since header should not raise an exception.\n+        Regression test for change introduced in d6aff369ad3.\n+        \"\"\"\n+        request = self.factory.get(\"/\")\n+        request.META[\"HTTP_IF_MODIFIED_SINCE\"] = \"\"\n+        \n+        # This should raise an exception after d6aff369ad3\n+        self.middleware(request)\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 5485969,
+  "num_received_chars": 62069,
+  "elapsed_time": 1007.4741122722626,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

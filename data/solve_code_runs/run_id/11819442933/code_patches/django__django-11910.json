@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-11910",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py\nindex 1c40161..16a3c73 100644\n--- a/django/db/migrations/autodetector.py\n+++ b/django/db/migrations/autodetector.py\n@@ -842,6 +842,22 @@ class MigrationAutodetector:\n                             self.old_field_keys.remove((rem_app_label, rem_model_name, rem_field_name))\n                             self.old_field_keys.add((app_label, model_name, field_name))\n                             self.renamed_fields[app_label, model_name, field_name] = rem_field_name\n+\n+                            # If this is a primary key being renamed, we need to update any ForeignKey\n+                            # fields that reference it through to_field\n+                            if field.primary_key:\n+                                # Look through all models to find ForeignKeys pointing to this field\n+                                for other_app_label, other_model_name in sorted(self.kept_model_keys):\n+                                    other_model_state = self.to_state.models[other_app_label, other_model_name]\n+                                    for field_name, field_instance in other_model_state.fields:\n+                                        if (hasattr(field_instance, 'remote_field') and\n+                                                field_instance.remote_field and\n+                                                field_instance.remote_field.model and\n+                                                field_instance.remote_field.model._meta.app_label == app_label and\n+                                                field_instance.remote_field.model._meta.model_name == model_name and\n+                                                getattr(field_instance.remote_field, 'field_name', None) == rem_field_name):\n+                                            # Update the to_field reference to the new field name\n+                                            field_instance.remote_field.field_name = field_name\n                             break\n \n     def generate_added_fields(self):\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3962816,
+  "num_received_chars": 63180,
+  "elapsed_time": 821.445193529129,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

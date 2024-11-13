@@ -1,0 +1,21 @@
+{
+  "instance_id": "pylint-dev__pylint-5859",
+  "edit_test_file": "tests/checkers/unittest_misc.py",
+  "code_patch": "diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py\nindex 69149e6..ab73a4f 100644\n--- a/pylint/checkers/misc.py\n+++ b/pylint/checkers/misc.py\n@@ -28,6 +28,7 @@\n \"\"\"Check source code is ascii only or has an encoding declaration (PEP 263).\"\"\"\n \n import re\n+import string\n import tokenize\n from typing import TYPE_CHECKING, List, Optional\n \n@@ -119,11 +120,20 @@ class EncodingChecker(BaseChecker):\n     def open(self):\n         super().open()\n \n-        notes = \"|\".join(re.escape(note) for note in self.config.notes)\n+        # Create pattern for each note, handling punctuation-only tags specially\n+        note_patterns = []\n+        for note in self.config.notes:\n+            if note.strip(string.punctuation):\n+                # Contains non-punctuation - use word boundary\n+                note_patterns.append(rf\"{re.escape(note)}\\b\")\n+            else:\n+                # Punctuation only - match exactly\n+                note_patterns.append(re.escape(note))\n+        notes = \"|\".join(note_patterns)\n         if self.config.notes_rgx:\n-            regex_string = rf\"#\\s*({notes}|{self.config.notes_rgx})\\b\"\n+            regex_string = rf\"#\\s*({notes}|{self.config.notes_rgx})\"\n         else:\n-            regex_string = rf\"#\\s*({notes})\\b\"\n+            regex_string = rf\"#\\s*({notes})\"\n \n         self._fixme_pattern = re.compile(regex_string, re.I)\n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/checkers/unittest_punctuation_notes.py b/tests/checkers/unittest_punctuation_notes.py\nnew file mode 100644\nindex 0000000..6a45a19\n--- /dev/null\n+++ b/tests/checkers/unittest_punctuation_notes.py\n@@ -0,0 +1,24 @@\n+\"\"\"Tests for the misc checker handling of punctuation-only notes.\"\"\"\n+\n+from pylint.checkers import misc\n+from pylint.testutils import CheckerTestCase, MessageTest, _tokenize_str, set_config\n+\n+\n+class TestPunctuationNotes(CheckerTestCase):\n+    \"\"\"Test that punctuation-only notes are properly handled.\"\"\"\n+\n+    CHECKER_CLASS = misc.EncodingChecker\n+\n+    @set_config(notes=[\"YES\", \"???\"])\n+    def test_punctuation_notes(self) -> None:\n+        \"\"\"Test that punctuation-only notes are detected.\"\"\"\n+        code = \"\"\"a = 1\n+                # YES: yes\n+                # ???: no\n+                \"\"\"\n+        # The test passes when the issue is present - only detecting the \"YES\" note\n+        # and not the \"???\" note, which demonstrates the bug\n+        with self.assertAddsMessages(\n+            MessageTest(msg_id=\"fixme\", line=2, args=\"YES: yes\", col_offset=17)\n+        ):\n+            self.checker.process_tokens(_tokenize_str(code))\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 1434783,
+  "num_received_chars": 44137,
+  "elapsed_time": 617.981440782547,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

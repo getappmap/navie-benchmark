@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-13146",
+  "edit_test_file": "sympy/core/tests/test_function.py",
+  "code_patch": "diff --git a/sympy/simplify/simplify.py b/sympy/simplify/simplify.py\nindex f1609aa..ff43707 100644\n--- a/sympy/simplify/simplify.py\n+++ b/sympy/simplify/simplify.py\n@@ -5,7 +5,7 @@\n from sympy.core import (Basic, S, Add, Mul, Pow,\n     Symbol, sympify, expand_mul, expand_func,\n     Function, Dummy, Expr, factor_terms,\n-    symbols, expand_power_exp)\n+    expand_power_exp)\n from sympy.core.compatibility import (iterable,\n     ordered, range, as_int)\n from sympy.core.numbers import Float, I, pi, Rational, Integer\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/core/tests/test_power_simplification.py b/sympy/core/tests/test_power_simplification.py\nnew file mode 100644\nindex 0000000..21965c4\n--- /dev/null\n+++ b/sympy/core/tests/test_power_simplification.py\n@@ -0,0 +1,13 @@\n+from sympy import Symbol, S, simplify\n+\n+def test_power_simplification_floating_rational():\n+    \"\"\"Test that floating point and rational exponents don't fully simplify.\"\"\"\n+    x = Symbol('x')\n+    expr1 = S(1)/2*x**2.5  # floating point exponent\n+    expr2 = S(1)*x**(S(5)/2)/2  # rational exponent\n+    res = expr1 - expr2\n+    res = simplify(res.evalf(5))\n+    \n+    # The issue is that this doesn't simplify to 0\n+    # Instead it gives: -0.5*x**2.5 + 0.5*x**2.5\n+    assert str(res) == '-0.5*x**2.5 + 0.5*x**2.5'\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_power_simplification_inverted.py b/sympy/core/tests/test_power_simplification_inverted.py\nnew file mode 100644\nindex 0000000..94aff51\n--- /dev/null\n+++ b/sympy/core/tests/test_power_simplification_inverted.py\n@@ -0,0 +1,17 @@\n+from sympy import Symbol, S, simplify\n+\n+def test_power_simplification_floating_rational():\n+    \"\"\"Test that floating point and rational exponents should fully simplify to zero.\"\"\"\n+    x = Symbol('x')\n+    expr1 = S(1)/2*x**2.5  # floating point exponent\n+    expr2 = S(1)*x**(S(5)/2)/2  # rational exponent\n+    res = expr1 - expr2\n+    res = simplify(res.evalf(5))\n+    \n+    # The expressions should be equal and simplify to 0\n+    # If they don't, this indicates a bug in the simplification\n+    if str(res) == '-0.5*x**2.5 + 0.5*x**2.5':\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # This assertion should pass when the bug is fixed\n+    assert res == 0\n\\ No newline at end of file\n",
+  "num_sent_chars": 6223840,
+  "num_received_chars": 98937,
+  "elapsed_time": 1265.7238957881927,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

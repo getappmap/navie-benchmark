@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-15609",
+  "edit_test_file": "sympy/matrices/expressions/tests/test_indexing.py",
+  "code_patch": "diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py\nindex 9019186..79aafc0 100644\n--- a/sympy/printing/latex.py\n+++ b/sympy/printing/latex.py\n@@ -614,9 +614,8 @@ def _print_BasisDependent(self, expr):\n \n     def _print_Indexed(self, expr):\n         tex_base = self._print(expr.base)\n-        tex = '{'+tex_base+'}'+'_{%s}' % ','.join(\n-            map(self._print, expr.indices))\n-        return tex\n+        indices = [self._print(i) for i in expr.indices]\n+        return '{%s}_{%s}' % (tex_base, ', '.join(indices))\n \n     def _print_IndexedBase(self, expr):\n         return self._print(expr.label)\n@@ -1437,8 +1436,9 @@ def _print_MatrixBase(self, expr):\n                            = _print_MatrixBase\n \n     def _print_MatrixElement(self, expr):\n+        indices = [self._print(expr.i), self._print(expr.j)]\n         return self.parenthesize(expr.parent, PRECEDENCE[\"Atom\"], strict=True) \\\n-            + '_{%s, %s}' % (expr.i, expr.j)\n+            + '_{%s}' % ', '.join(indices)\n \n     def _print_MatrixSlice(self, expr):\n         def latexslice(x):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/matrices/expressions/tests/test_latex_printing.py b/sympy/matrices/expressions/tests/test_latex_printing.py\nnew file mode 100644\nindex 0000000..736b60a\n--- /dev/null\n+++ b/sympy/matrices/expressions/tests/test_latex_printing.py\n@@ -0,0 +1,11 @@\n+from sympy import (symbols, MatrixSymbol, latex)\n+\n+def test_latex_matrix_mul_indexing():\n+    i, j, k = symbols(\"i j k\")\n+    M = MatrixSymbol(\"M\", k, k)\n+    N = MatrixSymbol(\"N\", k, k)\n+    \n+    # Test that the incorrect LaTeX output with double subscript is produced\n+    expr = (M*N)[i, j]\n+    result = latex(expr)\n+    assert result == r\"\\sum_{i_{1}=0}^{k - 1} M_{i, _i_1} N_{_i_1, j}\"\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/matrices/expressions/tests/test_latex_printing_inverted.py b/sympy/matrices/expressions/tests/test_latex_printing_inverted.py\nnew file mode 100644\nindex 0000000..e0f49a4\n--- /dev/null\n+++ b/sympy/matrices/expressions/tests/test_latex_printing_inverted.py\n@@ -0,0 +1,17 @@\n+from sympy import (symbols, MatrixSymbol, latex)\n+\n+def test_latex_matrix_mul_indexing():\n+    i, j, k = symbols(\"i j k\")\n+    M = MatrixSymbol(\"M\", k, k)\n+    N = MatrixSymbol(\"N\", k, k)\n+    \n+    expr = (M*N)[i, j]\n+    result = latex(expr)\n+    \n+    # Check if the problematic double subscript pattern exists\n+    if \"_i_1\" in result:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # The correct LaTeX output should use proper subscript notation\n+    expected = r\"\\sum_{i_{1}=0}^{k - 1} M_{i,i_1} N_{i_1,j}\"\n+    assert result == expected\n\\ No newline at end of file\n",
+  "num_sent_chars": 6022622,
+  "num_received_chars": 54954,
+  "elapsed_time": 876.7798755168915,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-24102",
+  "edit_test_file": "sympy/parsing/tests/test_mathematica.py",
+  "code_patch": "diff --git a/sympy/parsing/mathematica.py b/sympy/parsing/mathematica.py\nindex 7ea14ce..47f5dda 100644\n--- a/sympy/parsing/mathematica.py\n+++ b/sympy/parsing/mathematica.py\n@@ -586,7 +586,7 @@ def parse(self, s):\n         \"##\": lambda: [\"SlotSequence\", \"1\"],\n     }\n \n-    _literal = r\"[A-Za-z][A-Za-z0-9]*\"\n+    _literal = r\"[A-Za-z\\u0370-\\u03FF\\u1F00-\\u1FFF][A-Za-z0-9\\u0370-\\u03FF\\u1F00-\\u1FFF]*\"\n     _number = r\"(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)\"\n \n     _enclosure_open = [\"(\", \"[\", \"[[\", \"{\"]\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/parsing/tests/test_mathematica_greek_chars.py b/sympy/parsing/tests/test_mathematica_greek_chars.py\nnew file mode 100644\nindex 0000000..78e6ea9\n--- /dev/null\n+++ b/sympy/parsing/tests/test_mathematica_greek_chars.py\n@@ -0,0 +1,7 @@\n+from sympy.parsing.mathematica import parse_mathematica\n+from sympy.testing.pytest import raises\n+\n+def test_mathematica_greek_chars():\n+    # Test that parse_mathematica fails to parse Greek characters\n+    # This should raise a SyntaxError as described in the issue\n+    raises(SyntaxError, lambda: parse_mathematica('\u03bb'))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/parsing/tests/test_mathematica_greek_chars_inverted.py b/sympy/parsing/tests/test_mathematica_greek_chars_inverted.py\nnew file mode 100644\nindex 0000000..1c38f91\n--- /dev/null\n+++ b/sympy/parsing/tests/test_mathematica_greek_chars_inverted.py\n@@ -0,0 +1,14 @@\n+from sympy.parsing.mathematica import parse_mathematica, mathematica\n+\n+def test_mathematica_greek_chars():\n+    # Test that parse_mathematica should handle Greek characters\n+    # Compare behavior with the old mathematica parser\n+    old_result = mathematica('\u03bb')\n+    \n+    try:\n+        new_result = parse_mathematica('\u03bb')\n+        if new_result != old_result:\n+            raise AssertionError(\"__BUG__HERE__\")\n+    except SyntaxError:\n+        # If parse_mathematica raises SyntaxError, this indicates the bug is present\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 6315177,
+  "num_received_chars": 62162,
+  "elapsed_time": 974.5726127624512,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 8,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

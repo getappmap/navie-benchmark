@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-12747",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py\nindex 16dff6a..71a6d89 100644\n--- a/django/db/models/deletion.py\n+++ b/django/db/models/deletion.py\n@@ -387,6 +387,9 @@ class Collector:\n         self.sort()\n         # number of objects deleted for each model label\n         deleted_counter = Counter()\n+        # Initialize counter with 0 for all models that will be processed\n+        for model in self.data:\n+            deleted_counter[model._meta.label] = 0\n \n         # Optimize for the case with a single obj and no dependencies\n         if len(self.data) == 1 and len(instances) == 1:\n@@ -408,6 +411,7 @@ class Collector:\n             # fast deletes\n             for qs in self.fast_deletes:\n                 count = qs._raw_delete(using=self.using)\n+                # Counter already initialized with 0, just add the count\n                 deleted_counter[qs.model._meta.label] += count\n \n             # update fields\n@@ -426,6 +430,7 @@ class Collector:\n                 query = sql.DeleteQuery(model)\n                 pk_list = [obj.pk for obj in instances]\n                 count = query.delete_batch(pk_list, self.using)\n+                # Counter already initialized with 0, just add the count\n                 deleted_counter[model._meta.label] += count\n \n                 if not model._meta.auto_created:\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3358289,
+  "num_received_chars": 37227,
+  "elapsed_time": 755.1423196792603,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

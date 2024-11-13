@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-12454",
+  "edit_test_file": "sympy/matrices/tests/test_commonmatrix.py",
+  "code_patch": "diff --git a/sympy/matrices/matrices.py b/sympy/matrices/matrices.py\nindex 90ea232..c600fe8 100644\n--- a/sympy/matrices/matrices.py\n+++ b/sympy/matrices/matrices.py\n@@ -1112,7 +1112,7 @@ def is_upper(self):\n         \"\"\"\n         return all(self[i, j].is_zero\n                    for i in range(1, self.rows)\n-                   for j in range(i))\n+                   for j in range(min(i, self.cols)))\n \n     @property\n     def is_zero(self):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/matrices/tests/test_matrix_upper_triangular.py b/sympy/matrices/tests/test_matrix_upper_triangular.py\nnew file mode 100644\nindex 0000000..cc304a4\n--- /dev/null\n+++ b/sympy/matrices/tests/test_matrix_upper_triangular.py\n@@ -0,0 +1,7 @@\n+from sympy.matrices import Matrix, zeros\n+from sympy.utilities.pytest import raises\n+\n+def test_is_upper_tall_matrix():\n+    \"\"\"Test that is_upper() raises IndexError for tall matrices.\"\"\"\n+    A = zeros(4, 2)  # Create a 4x2 matrix of zeros\n+    raises(IndexError, lambda: A.is_upper)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/matrices/tests/test_matrix_upper_triangular_inverted.py b/sympy/matrices/tests/test_matrix_upper_triangular_inverted.py\nnew file mode 100644\nindex 0000000..68ba756\n--- /dev/null\n+++ b/sympy/matrices/tests/test_matrix_upper_triangular_inverted.py\n@@ -0,0 +1,16 @@\n+from sympy.matrices import Matrix, zeros\n+from sympy.utilities.pytest import raises\n+\n+def test_is_upper_tall_matrix():\n+    \"\"\"Test that is_upper() works correctly for tall matrices.\"\"\"\n+    A = zeros(4, 2)  # Create a 4x2 matrix of zeros\n+    \n+    try:\n+        result = A.is_upper\n+        # If we get here without an IndexError, check if the result is correct\n+        # A tall zero matrix should be upper triangular\n+        if result is not True:\n+            raise AssertionError(\"__BUG__HERE__\")\n+    except IndexError:\n+        # If we get an IndexError, that's the bug we're looking for\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1656267,
+  "num_received_chars": 12229,
+  "elapsed_time": 264.5866742134094,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

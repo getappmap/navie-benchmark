@@ -1,0 +1,21 @@
+{
+  "instance_id": "matplotlib__matplotlib-24265",
+  "edit_test_file": "lib/matplotlib/tests/test_style.py",
+  "code_patch": "diff --git a/lib/matplotlib/style/core.py b/lib/matplotlib/style/core.py\nindex fb0a542..8f0aa9e 100644\n--- a/lib/matplotlib/style/core.py\n+++ b/lib/matplotlib/style/core.py\n@@ -26,6 +26,27 @@ _log = logging.getLogger(__name__)\n __all__ = ['use', 'context', 'available', 'library', 'reload_library']\n \n \n+class _DeprecatedSeabornStyle(dict):\n+    \"\"\"\n+    A dict subclass that shows a deprecation warning when accessed.\n+    Used for backward compatibility with old seaborn style names.\n+    \"\"\"\n+    def __init__(self, style_dict, old_name):\n+        self._style_dict = style_dict\n+        self._old_name = old_name\n+        super().__init__(style_dict)\n+\n+    def __getitem__(self, key):\n+        _api.warn_deprecated(\n+            \"3.6\",\n+            message=\"The seaborn styles shipped by Matplotlib \"\n+            \"are deprecated since %(since)s, as they no longer \"\n+            \"correspond to the styles shipped by seaborn. However, \"\n+            \"they will remain available as 'seaborn-v0_8-<style>'. \"\n+            \"Alternatively, directly use the seaborn API instead.\")\n+        return self._style_dict[key]\n+\n+\n @_api.caching_module_getattr  # module-level deprecations\n class __getattr__:\n     STYLE_FILE_PATTERN = _api.deprecated(\"3.5\", obj_type=\"\")(property(\n@@ -215,6 +236,20 @@ def update_user_library(library):\n     for stylelib_path in map(os.path.expanduser, USER_LIBRARY_PATHS):\n         styles = read_style_directory(stylelib_path)\n         update_nested_dict(library, styles)\n+    \n+    # Add backward compatibility for old seaborn style names\n+    seaborn_styles = [\n+        name for name in library.keys()\n+        if name.startswith('seaborn-v0_8-')\n+    ]\n+    \n+    for style_name in seaborn_styles:\n+        # Create the old style name by removing the version prefix\n+        old_name = style_name.replace('seaborn-v0_8-', 'seaborn-')\n+        if old_name not in library:\n+            # Create a proxy dict that will show the deprecation warning\n+            library[old_name] = _DeprecatedSeabornStyle(library[style_name], old_name)\n+    \n     return library\n \n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_style_library_compatibility.py b/lib/matplotlib/tests/test_style_library_compatibility.py\nnew file mode 100644\nindex 0000000..92ed4cd\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_style_library_compatibility.py\n@@ -0,0 +1,9 @@\n+import pytest\n+import matplotlib.pyplot as plt\n+from matplotlib import style\n+\n+\n+def test_seaborn_colorblind_style_access():\n+    \"\"\"Test that accessing seaborn-colorblind style raises KeyError in 3.6.1.\"\"\"\n+    with pytest.raises(KeyError, match=\"seaborn-colorblind\"):\n+        _ = style.library[\"seaborn-colorblind\"]\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_style_library_compatibility_inverted.py b/lib/matplotlib/tests/test_style_library_compatibility_inverted.py\nnew file mode 100644\nindex 0000000..b6ed4fd\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_style_library_compatibility_inverted.py\n@@ -0,0 +1,10 @@\n+import matplotlib.pyplot as plt\n+from matplotlib import style\n+\n+\n+def test_seaborn_colorblind_style_access():\n+    \"\"\"Test that seaborn-colorblind style is available in the style library.\"\"\"\n+    try:\n+        _ = style.library[\"seaborn-colorblind\"]\n+    except KeyError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 2203310,
+  "num_received_chars": 26569,
+  "elapsed_time": 459.6091718673706,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 3,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

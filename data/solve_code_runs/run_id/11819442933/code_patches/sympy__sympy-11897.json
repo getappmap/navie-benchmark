@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-11897",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py\nindex 1edc712..800fdc3 100644\n--- a/sympy/printing/latex.py\n+++ b/sympy/printing/latex.py\n@@ -133,6 +133,7 @@ class LatexPrinter(Printer):\n         \"mat_str\": None,\n         \"mat_delim\": \"[\",\n         \"symbol_names\": {},\n+        \"combine_fractions\": False,  # Control whether to combine fractions\n     }\n \n     def __init__(self, settings=None):\n@@ -356,8 +357,7 @@ def _print_Mul(self, expr):\n         else:\n             tex = \"\"\n \n-        from sympy.simplify import fraction\n-        numer, denom = fraction(expr, exact=True)\n+        # Print factors directly without fraction manipulation\n         separator = self._settings['mul_symbol_latex']\n         numbersep = self._settings['mul_symbol_latex_numbers']\n \n@@ -406,8 +406,8 @@ def convert(expr):\n                     tex += r\"\\left(%s\\right) / %s\" % (snumer, sdenom)\n                 else:\n                     tex += r\"%s / %s\" % (snumer, sdenom)\n-            elif len(snumer.split()) > ratio*ldenom:\n-                # handle long fractions\n+            elif len(snumer.split()) > ratio*ldenom and self._settings['combine_fractions']:\n+                # handle long fractions only if combining is enabled\n                 if self._needs_mul_brackets(numer, last=True):\n                     tex += r\"\\frac{1}{%s}%s\\left(%s\\right)\" \\\n                         % (sdenom, separator, snumer)\n@@ -423,7 +423,7 @@ def convert(expr):\n                         else:\n                             a *= x\n                     if self._needs_mul_brackets(b, last=True):\n-                        tex += r\"\\frac{%s}{%s}%s\\left(%s\\right)\" \\\n+                        tex += r\"%s/%s%s\\left(%s\\right)\" \\\n                             % (convert(a), sdenom, separator, convert(b))\n                     else:\n                         tex += r\"\\frac{%s}{%s}%s%s\" \\\n@@ -450,10 +450,8 @@ def _print_Pow(self, expr):\n             else:\n                 tex = r\"\\sqrt[%d]{%s}\" % (expq, base)\n \n-            if expr.exp.is_negative:\n-                return r\"\\frac{1}{%s}\" % tex\n-            else:\n-                return tex\n+            # Don't convert negative exponents to fractions\n+            return tex + ('^{-1}' if expr.exp.is_negative else '')\n         elif self._settings['fold_frac_powers'] \\\n             and expr.exp.is_Rational \\\n                 and expr.exp.q != 1:\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3636850,
+  "num_received_chars": 36199,
+  "elapsed_time": 717.320479631424,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

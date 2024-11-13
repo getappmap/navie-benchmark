@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-11400",
+  "edit_test_file": "sympy/printing/tests/test_ccode.py",
+  "code_patch": "diff --git a/sympy/printing/ccode.py b/sympy/printing/ccode.py\nindex 30a07a7..1128624 100644\n--- a/sympy/printing/ccode.py\n+++ b/sympy/printing/ccode.py\n@@ -36,6 +36,7 @@\n     \"log\": \"log\",\n     \"erf\": \"erf\",\n     \"sinh\": \"sinh\",\n+    \"sinc\": \"sinc\",\n     \"cosh\": \"cosh\",\n     \"tanh\": \"tanh\",\n     \"asinh\": \"asinh\",\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/printing/tests/test_sinc_ccode.py b/sympy/printing/tests/test_sinc_ccode.py\nnew file mode 100644\nindex 0000000..618bdf1\n--- /dev/null\n+++ b/sympy/printing/tests/test_sinc_ccode.py\n@@ -0,0 +1,8 @@\n+from sympy import symbols, sinc\n+from sympy.printing.ccode import ccode\n+\n+def test_ccode_sinc():\n+    x = symbols('x')\n+    result = ccode(sinc(x))\n+    expected = '// Not supported in C:\\n// sinc\\nsinc(x)'\n+    assert result == expected\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/printing/tests/test_sinc_ccode_inverted.py b/sympy/printing/tests/test_sinc_ccode_inverted.py\nnew file mode 100644\nindex 0000000..154c11c\n--- /dev/null\n+++ b/sympy/printing/tests/test_sinc_ccode_inverted.py\n@@ -0,0 +1,15 @@\n+from sympy import symbols, sinc, sin, Ne, Piecewise\n+from sympy.printing.ccode import ccode\n+\n+def test_ccode_sinc():\n+    x = symbols('x')\n+    result = ccode(sinc(x))\n+    \n+    # The expected result should be a piecewise expression that properly\n+    # represents sinc(x) = sin(x)/x if x != 0, and 1 if x == 0\n+    expected = '((Ne(x, 0)) ? (\\n   sin(x)/x\\n)\\n: (\\n   1\\n))'\n+    \n+    if result == '// Not supported in C:\\n// sinc\\nsinc(x)':\n+        raise AssertionError(\"__BUG__HERE__\")\n+        \n+    assert result == expected\n\\ No newline at end of file\n",
+  "num_sent_chars": 7285936,
+  "num_received_chars": 83697,
+  "elapsed_time": 1410.8122618198395,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

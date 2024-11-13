@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-12171",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/mathematica.py b/sympy/printing/mathematica.py\nindex 4c2ffd8..47b709b 100644\n--- a/sympy/printing/mathematica.py\n+++ b/sympy/printing/mathematica.py\n@@ -99,6 +99,27 @@ def _print_Function(self, expr):\n                     return \"%s[%s]\" % (mfunc, self.stringify(expr.args, \", \"))\n         return expr.func.__name__ + \"[%s]\" % self.stringify(expr.args, \", \")\n \n+    def _print_Float(self, expr):\n+        # Convert float to string and replace e notation with Mathematica's *^ notation\n+        printed = str(expr)\n+        if 'e' in printed:\n+            mantissa, exponent = printed.split('e')\n+            # Add + for positive exponents for consistency with Mathematica\n+            if exponent[0] == '+':\n+                exponent = exponent[1:]\n+            return mantissa + '*^' + exponent\n+        return printed\n+\n+    def _print_Derivative(self, expr):\n+        # Convert to Mathematica's D[] notation\n+        function = expr.args[0]\n+        variables = expr.variables\n+        # Handle repeated derivatives\n+        deriv_list = []\n+        for var, count in expr.derivative_count:\n+            deriv_list.extend([var] * count)\n+        return \"D[%s, %s]\" % (self._print(function), self.stringify(deriv_list, \", \"))\n+\n     def _print_Integral(self, expr):\n         if len(expr.variables) == 1 and not expr.limits[0][1:]:\n             args = [expr.args[0], expr.variables[0]]\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3090721,
+  "num_received_chars": 27613,
+  "elapsed_time": 582.6615796089172,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

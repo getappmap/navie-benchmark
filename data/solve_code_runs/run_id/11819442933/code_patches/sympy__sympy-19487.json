@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-19487",
+  "edit_test_file": "sympy/functions/elementary/tests/test_complexes.py",
+  "code_patch": "diff --git a/sympy/functions/elementary/complexes.py b/sympy/functions/elementary/complexes.py\nindex 7fda459..d289d5c 100644\n--- a/sympy/functions/elementary/complexes.py\n+++ b/sympy/functions/elementary/complexes.py\n@@ -393,6 +393,11 @@ def _eval_rewrite_as_Heaviside(self, arg, **kwargs):\n         from sympy.functions.special.delta_functions import Heaviside\n         if arg.is_extended_real:\n             return Heaviside(arg, H0=S(1)/2) * 2 - 1\n+            \n+    def _eval_rewrite_as_Abs(self, arg, **kwargs):\n+        if arg.is_zero:\n+            return S.Zero\n+        return arg/Abs(arg)\n \n     def _eval_simplify(self, **kwargs):\n         return self.func(self.args[0].factor())  # XXX include doit?\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/functions/elementary/tests/test_sign_rewrite.py b/sympy/functions/elementary/tests/test_sign_rewrite.py\nnew file mode 100644\nindex 0000000..103309f\n--- /dev/null\n+++ b/sympy/functions/elementary/tests/test_sign_rewrite.py\n@@ -0,0 +1,10 @@\n+from sympy import sign, Abs, nan\n+from sympy.abc import x\n+\n+def test_sign_rewrite_abs():\n+    # Test that sign(x) cannot be rewritten in terms of Abs\n+    assert sign(x).rewrite(Abs) == sign(x)  # currently no rewrite implemented\n+\n+    # Test the discrepancy between sign(0) and 0/Abs(0)\n+    assert sign(0) == 0\n+    assert 0/Abs(0) == nan\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/functions/elementary/tests/test_sign_rewrite_inverted.py b/sympy/functions/elementary/tests/test_sign_rewrite_inverted.py\nnew file mode 100644\nindex 0000000..2ab93fd\n--- /dev/null\n+++ b/sympy/functions/elementary/tests/test_sign_rewrite_inverted.py\n@@ -0,0 +1,17 @@\n+from sympy import sign, Abs, nan\n+from sympy.abc import x\n+\n+def test_sign_rewrite_abs():\n+    # Test that sign(x) can be rewritten in terms of Abs\n+    expected_rewrite = x/Abs(x)\n+    actual_rewrite = sign(x).rewrite(Abs)\n+    \n+    if actual_rewrite == sign(x):  # If no rewrite is implemented\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Test the consistency between sign(0) and 0/Abs(0)\n+    zero_sign = sign(0)\n+    zero_abs_ratio = 0/Abs(0)\n+    \n+    if zero_sign != zero_abs_ratio:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 6924795,
+  "num_received_chars": 71776,
+  "elapsed_time": 1175.6485748291016,
+  "lint_repair_count": 11,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

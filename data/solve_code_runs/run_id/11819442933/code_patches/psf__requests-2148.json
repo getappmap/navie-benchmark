@@ -1,0 +1,21 @@
+{
+  "instance_id": "psf__requests-2148",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/models.py b/requests/models.py\nindex 0dc5556..a81ce48 100644\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -9,6 +9,7 @@ This module contains the primary objects that power Requests.\n \n import collections\n import datetime\n+import socket\n \n from io import BytesIO, UnsupportedOperation\n from .hooks import default_hooks\n@@ -640,13 +641,18 @@ class Response(object):\n                     raise ChunkedEncodingError(e)\n                 except DecodeError as e:\n                     raise ContentDecodingError(e)\n+                except socket.error as e:\n+                    raise ConnectionError(e)\n             except AttributeError:\n                 # Standard file-like object.\n                 while True:\n-                    chunk = self.raw.read(chunk_size)\n-                    if not chunk:\n-                        break\n-                    yield chunk\n+                    try:\n+                        chunk = self.raw.read(chunk_size)\n+                        if not chunk:\n+                            break\n+                        yield chunk\n+                    except socket.error as e:\n+                        raise ConnectionError(e)\n \n             self._content_consumed = True\n \n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1225068,
+  "num_received_chars": 16066,
+  "elapsed_time": 286.36820912361145,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

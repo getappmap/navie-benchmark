@@ -100,8 +100,6 @@ def download_github_workflow_run(run_id: int):
 
     download_artifacts(run_dir, run)
 
-    unpack_test_patches(run_dir)
-
     print(f"Imported workflow run {run_id}")
 
 
@@ -146,7 +144,6 @@ def archive_local_run(solve_dir: Path, local_run_name: str, no_solve_dir: bool =
     if not no_solve_dir:
         zip_solve()
     zip_test_patches()
-    unpack_test_patches(run_dir)
 
     print(f"Archived local run to {run_dir}")
 
@@ -180,6 +177,8 @@ def main(
             archive_local_run(Path(solve_dir), local_run_name, no_solve_dir)
 
     if not no_link:
+        unpack_test_patches(run_dir)
+
         test_patch_dir_path = (
             Path(test_patch_dir) if test_patch_dir else Path("data") / "test_patches"
         )

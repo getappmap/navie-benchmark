@@ -1,0 +1,21 @@
+{
+  "instance_id": "pylint-dev__pylint-6506",
+  "edit_test_file": "tests/config/test_config.py",
+  "code_patch": "diff --git a/pylint/config/config_initialization.py b/pylint/config/config_initialization.py\nindex 24e453a..d06d180 100644\n--- a/pylint/config/config_initialization.py\n+++ b/pylint/config/config_initialization.py\n@@ -82,7 +82,8 @@ def _config_initialization(\n     if unrecognized_options:\n         msg = \", \".join(unrecognized_options)\n         linter.add_message(\"unrecognized-option\", line=0, args=msg)\n-        raise _UnrecognizedOptionError(options=unrecognized_options)\n+        print(f\"Unrecognized option found: {msg}\", file=sys.stderr)\n+        sys.exit(32)\n \n     # Set the current module to configuration as we don't know where\n     # the --load-plugins key is coming from\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/config/test_unrecognized_option_handling.py b/tests/config/test_unrecognized_option_handling.py\nnew file mode 100644\nindex 0000000..bde8749\n--- /dev/null\n+++ b/tests/config/test_unrecognized_option_handling.py\n@@ -0,0 +1,33 @@\n+# Licensed under the GPL: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html\n+# For details: https://github.com/PyCQA/pylint/blob/main/LICENSE\n+# Copyright (c) https://github.com/PyCQA/pylint/blob/main/CONTRIBUTORS.txt\n+\n+\"\"\"Test for handling of unrecognized command line options.\"\"\"\n+\n+from pathlib import Path\n+\n+import pytest\n+from pytest import CaptureFixture\n+\n+from pylint.config.exceptions import _UnrecognizedOptionError\n+from pylint.testutils._run import _Run as Run\n+\n+HERE = Path(__file__).parent.absolute()\n+REGRTEST_DATA_DIR = HERE / \"..\" / \"regrtest_data\"\n+EMPTY_MODULE = REGRTEST_DATA_DIR / \"empty.py\"\n+\n+\n+def test_unrecognized_short_option_with_traceback(capsys: CaptureFixture) -> None:\n+    \"\"\"Check that we correctly handle unrecognized short options.\n+    \n+    This test verifies that:\n+    1. The correct error message is displayed\n+    2. The _UnrecognizedOptionError is raised with a traceback\n+    \"\"\"\n+    with pytest.raises(_UnrecognizedOptionError):\n+        Run([str(EMPTY_MODULE), \"-Q\"], exit=False)\n+    \n+    output = capsys.readouterr()\n+    \n+    # Verify the error message is displayed\n+    assert \"E0015: Unrecognized option found: Q\" in output.out\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 4253576,
+  "num_received_chars": 74656,
+  "elapsed_time": 1314.0835976600647,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

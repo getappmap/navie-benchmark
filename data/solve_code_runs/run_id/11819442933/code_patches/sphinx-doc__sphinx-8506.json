@@ -1,0 +1,21 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8506",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/domains/std.py b/sphinx/domains/std.py\nindex c87217c..bd86c63 100644\n--- a/sphinx/domains/std.py\n+++ b/sphinx/domains/std.py\n@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)\n \n \n # RE for option descriptions\n-option_desc_re = re.compile(r'((?:/|--|-|\\+)?[^\\s=[]+)(=?\\s*.*)')\n+option_desc_re = re.compile(r'([^\\s](?:[^\\s=]|=[^\\s])*)((?:\\s+.*)?)')\n # RE for grammar tokens\n token_re = re.compile(r'`(\\w+)`', re.U)\n \n@@ -192,8 +192,8 @@ class Cmdoption(ObjectDescription):\n             m = option_desc_re.match(potential_option)\n             if not m:\n                 logger.warning(__('Malformed option description %r, should '\n-                                  'look like \"opt\", \"-opt args\", \"--opt args\", '\n-                                  '\"/opt args\" or \"+opt args\"'), potential_option,\n+                                  'be a non-empty option name followed by an '\n+                                  'optional description'), potential_option,\n                                location=signode)\n                 continue\n             optname, args = m.groups()\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4872521,
+  "num_received_chars": 38286,
+  "elapsed_time": 773.08718085289,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

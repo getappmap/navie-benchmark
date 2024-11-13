@@ -1,0 +1,21 @@
+{
+  "instance_id": "psf__requests-2674",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/models.py b/requests/models.py\nindex 4270c64..1c30fc0 100644\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -20,10 +20,11 @@ from .packages.urllib3.fields import RequestField\n from .packages.urllib3.filepost import encode_multipart_formdata\n from .packages.urllib3.util import parse_url\n from .packages.urllib3.exceptions import (\n-    DecodeError, ReadTimeoutError, ProtocolError, LocationParseError)\n+    DecodeError, ReadTimeoutError, ProtocolError, LocationParseError,\n+    TimeoutError as URLLib3TimeoutError)\n from .exceptions import (\n     HTTPError, MissingSchema, InvalidURL, ChunkedEncodingError,\n-    ContentDecodingError, ConnectionError, StreamConsumedError)\n+    ContentDecodingError, ConnectionError, StreamConsumedError, Timeout)\n from .utils import (\n     guess_filename, get_auth_from_url, requote_uri,\n     stream_decode_response_unicode, to_key_val_list, parse_header_links,\n@@ -662,6 +663,8 @@ class Response(object):\n                     raise ContentDecodingError(e)\n                 except ReadTimeoutError as e:\n                     raise ConnectionError(e)\n+                except URLLib3TimeoutError as e:\n+                    raise Timeout(e)\n             else:\n                 # Standard file-like object.\n                 while True:\n@@ -802,6 +805,10 @@ class Response(object):\n                     # and the server didn't bother to tell us what codec *was*\n                     # used.\n                     pass\n+                except DecodeError as e:\n+                    raise ContentDecodingError(e)\n+                except URLLib3TimeoutError as e:\n+                    raise Timeout(e)\n         return complexjson.loads(self.text, **kwargs)\n \n     @property\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1241603,
+  "num_received_chars": 21010,
+  "elapsed_time": 309.84964084625244,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

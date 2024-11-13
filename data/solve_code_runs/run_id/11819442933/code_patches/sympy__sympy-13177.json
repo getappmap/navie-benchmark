@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-13177",
+  "edit_test_file": "sympy/core/tests/test_eval_power.py",
+  "code_patch": "diff --git a/sympy/core/mod.py b/sympy/core/mod.py\nindex 11c8007..f7efc66 100644\n--- a/sympy/core/mod.py\n+++ b/sympy/core/mod.py\n@@ -39,7 +39,7 @@ def doit(p, q):\n             if p.is_infinite or q.is_infinite or p is nan or q is nan:\n                 return nan\n             if (p == q or p == -q or\n-                    p.is_Pow and p.exp.is_Integer and p.base == q or\n+                    p.is_Pow and p.exp.is_Integer and p.base == q and q.is_integer or\n                     p.is_integer and q == 1):\n                 return S.Zero\n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/core/tests/test_mod_power.py b/sympy/core/tests/test_mod_power.py\nnew file mode 100644\nindex 0000000..a1cdc01\n--- /dev/null\n+++ b/sympy/core/tests/test_mod_power.py\n@@ -0,0 +1,10 @@\n+from sympy import Symbol, S, Mod\n+\n+def test_mod_power_non_integer():\n+    # For symbolic x, Mod(x**2, x) evaluates to 0\n+    x = Symbol('x')\n+    assert Mod(x**2, x) == 0\n+\n+    # But for non-integer values, Mod(x**2, x) is not 0\n+    x = S(1.5)  # non-integer value\n+    assert Mod(x**2, x) == 0.75  # x**2 = 2.25, 2.25 % 1.5 = 0.75\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_mod_power_inverted.py b/sympy/core/tests/test_mod_power_inverted.py\nnew file mode 100644\nindex 0000000..318ea4d\n--- /dev/null\n+++ b/sympy/core/tests/test_mod_power_inverted.py\n@@ -0,0 +1,15 @@\n+from sympy import Symbol, S, Mod\n+\n+def test_mod_power_non_integer():\n+    # For symbolic x, Mod(x**2, x) incorrectly evaluates to 0\n+    x = Symbol('x')\n+    result = Mod(x**2, x)\n+    # This should fail because Mod(x**2, x) should not always be 0\n+    if result == 0:\n+        raise AssertionError(\"__BUG__HERE__\")\n+\n+    # Verify with a concrete non-integer value\n+    x = S(1.5)  # non-integer value\n+    result = Mod(x**2, x)\n+    expected = S(0.75)  # x**2 = 2.25, 2.25 % 1.5 = 0.75\n+    assert result == expected, f\"Expected {expected}, but got {result}\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 2060592,
+  "num_received_chars": 16733,
+  "elapsed_time": 500.29939460754395,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 4,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

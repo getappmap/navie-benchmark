@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-15400",
+  "edit_test_file": "tests/utils_tests/test_functional.py",
+  "code_patch": "diff --git a/django/utils/functional.py b/django/utils/functional.py\nindex 9e1be0f..e5609f5 100644\n--- a/django/utils/functional.py\n+++ b/django/utils/functional.py\n@@ -372,6 +372,7 @@ class LazyObject:\n     __iter__ = new_method_proxy(iter)\n     __len__ = new_method_proxy(len)\n     __contains__ = new_method_proxy(operator.contains)\n+    __radd__ = new_method_proxy(lambda x, other: other + x)\n \n \n def unpickle_lazyobject(wrapped):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/utils_tests/test_simplelazyobject_radd.py b/tests/utils_tests/test_simplelazyobject_radd.py\nnew file mode 100644\nindex 0000000..5ada5a4\n--- /dev/null\n+++ b/tests/utils_tests/test_simplelazyobject_radd.py\n@@ -0,0 +1,17 @@\n+from django.test import SimpleTestCase\n+from django.utils.functional import SimpleLazyObject\n+\n+\n+class SimpleLazyObjectRaddTests(SimpleTestCase):\n+    \"\"\"\n+    Tests for SimpleLazyObject's missing __radd__ implementation.\n+    \"\"\"\n+    def test_radd_not_implemented(self):\n+        \"\"\"\n+        Test that right-side addition with SimpleLazyObject fails due to missing __radd__.\n+        The test verifies that adding a number to a SimpleLazyObject (where the SimpleLazyObject\n+        is on the right side) raises a TypeError.\n+        \"\"\"\n+        lazy_num = SimpleLazyObject(lambda: 5)\n+        with self.assertRaises(TypeError):\n+            3 + lazy_num  # This should fail because __radd__ is not implemented\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_simplelazyobject_radd_inverted.py b/tests/utils_tests/test_simplelazyobject_radd_inverted.py\nnew file mode 100644\nindex 0000000..3940380\n--- /dev/null\n+++ b/tests/utils_tests/test_simplelazyobject_radd_inverted.py\n@@ -0,0 +1,39 @@\n+from django.test import SimpleTestCase\n+from django.utils.functional import SimpleLazyObject\n+\n+\n+class SimpleLazyObjectRaddTests(SimpleTestCase):\n+    \"\"\"\n+    Tests for SimpleLazyObject's __radd__ implementation.\n+    \"\"\"\n+    def test_radd_implementation(self):\n+        \"\"\"\n+        Test that right-side addition with SimpleLazyObject works correctly.\n+        The test verifies that adding a number to a SimpleLazyObject (where the SimpleLazyObject\n+        is on the right side) should work and return the correct result.\n+        \"\"\"\n+        lazy_num = SimpleLazyObject(lambda: 5)\n+        try:\n+            result = 3 + lazy_num\n+            if result != 8:\n+                raise AssertionError(\"__BUG__HERE__: Expected 3 + lazy_num(5) to equal 8\")\n+        except TypeError:\n+            raise AssertionError(\"__BUG__HERE__: SimpleLazyObject does not implement __radd__ correctly\")\n+        except Exception as e:\n+            raise AssertionError(f\"__BUG__HERE__: Unexpected error during __radd__ operation: {str(e)}\")\n+\n+    def test_radd_with_string(self):\n+        \"\"\"\n+        Test that right-side addition with SimpleLazyObject works with strings.\n+        The test verifies that concatenating a string with a SimpleLazyObject containing\n+        a string should work correctly.\n+        \"\"\"\n+        lazy_str = SimpleLazyObject(lambda: \"world\")\n+        try:\n+            result = \"hello \" + lazy_str\n+            if result != \"hello world\":\n+                raise AssertionError(\"__BUG__HERE__: Expected 'hello ' + lazy_str('world') to equal 'hello world'\")\n+        except TypeError:\n+            raise AssertionError(\"__BUG__HERE__: SimpleLazyObject does not implement __radd__ correctly for strings\")\n+        except Exception as e:\n+            raise AssertionError(f\"__BUG__HERE__: Unexpected error during string __radd__ operation: {str(e)}\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1439683,
+  "num_received_chars": 17182,
+  "elapsed_time": 300.64707493782043,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

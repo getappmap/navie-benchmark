@@ -1,0 +1,21 @@
+{
+  "instance_id": "mwaskom__seaborn-3010",
+  "edit_test_file": "tests/_core/test_groupby.py",
+  "code_patch": "diff --git a/seaborn/_stats/regression.py b/seaborn/_stats/regression.py\nindex 7b7ddc8..bb20b25 100644\n--- a/seaborn/_stats/regression.py\n+++ b/seaborn/_stats/regression.py\n@@ -23,11 +23,19 @@ class PolyFit(Stat):\n \n         x = data[\"x\"]\n         y = data[\"y\"]\n-        if x.nunique() <= self.order:\n+        \n+        # Filter out missing values from both x and y\n+        mask = pd.notnull(x) & pd.notnull(y)\n+        x_clean = x[mask]\n+        y_clean = y[mask]\n+        \n+        # Check if we have enough valid points for the polynomial order\n+        if len(x_clean) <= self.order or x_clean.nunique() <= self.order:\n             # TODO warn?\n             xx = yy = []\n         else:\n-            p = np.polyfit(x, y, self.order)\n+            p = np.polyfit(x_clean, y_clean, self.order)\n+            # Use original data range for prediction, even with missing values\n             xx = np.linspace(x.min(), x.max(), self.gridsize)\n             yy = np.polyval(p, xx)\n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/_core/test_polyfit_missing_data.py b/tests/_core/test_polyfit_missing_data.py\nnew file mode 100644\nindex 0000000..1adf6d9\n--- /dev/null\n+++ b/tests/_core/test_polyfit_missing_data.py\n@@ -0,0 +1,28 @@\n+import numpy as np\n+import pandas as pd\n+import pytest\n+from numpy.linalg import LinAlgError\n+\n+from seaborn._core.groupby import GroupBy\n+from seaborn._stats.regression import PolyFit\n+\n+\n+def test_polyfit_missing_data():\n+    \"\"\"Test that PolyFit raises LinAlgError when data contains missing values.\"\"\"\n+    \n+    # Create test data with missing values\n+    df = pd.DataFrame({\n+        \"x\": [1, 2, 3, None, 4],\n+        \"y\": [1, 2, 3, 4, 5]\n+    })\n+\n+    # Initialize GroupBy with a dummy grouping variable\n+    # This avoids the \"requires at least one grouping variable\" error\n+    groupby = GroupBy([\"dummy\"])\n+\n+    # Initialize PolyFit with default parameters\n+    polyfit = PolyFit()\n+\n+    # Test that LinAlgError is raised when fitting data with missing values\n+    with pytest.raises(LinAlgError, match=\"SVD did not converge in Linear Least Squares\"):\n+        polyfit(df, groupby, \"x\", {})\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/_core/test_polyfit_missing_data_inverted.py b/tests/_core/test_polyfit_missing_data_inverted.py\nnew file mode 100644\nindex 0000000..8bdcf02\n--- /dev/null\n+++ b/tests/_core/test_polyfit_missing_data_inverted.py\n@@ -0,0 +1,32 @@\n+import numpy as np\n+import pandas as pd\n+import pytest\n+from numpy.linalg import LinAlgError\n+\n+from seaborn._core.groupby import GroupBy\n+from seaborn._stats.regression import PolyFit\n+\n+\n+def test_polyfit_missing_data():\n+    \"\"\"Test that PolyFit should handle missing values gracefully.\"\"\"\n+    \n+    # Create test data with missing values\n+    df = pd.DataFrame({\n+        \"x\": [1, 2, 3, None, 4],\n+        \"y\": [1, 2, 3, 4, 5]\n+    })\n+\n+    # Initialize GroupBy with a dummy grouping variable\n+    groupby = GroupBy([\"dummy\"])\n+\n+    # Initialize PolyFit with default parameters\n+    polyfit = PolyFit()\n+\n+    # The test should fail when LinAlgError is raised\n+    try:\n+        polyfit(df, groupby, \"x\", {})\n+        # If we reach this point, no error was raised\n+    except LinAlgError as e:\n+        if str(e) == \"SVD did not converge in Linear Least Squares\":\n+            raise AssertionError(\"__BUG__HERE__\")\n+        raise  # Re-raise if it's a different error\n",
+  "num_sent_chars": 2643158,
+  "num_received_chars": 22935,
+  "elapsed_time": 512.4041812419891,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 5,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

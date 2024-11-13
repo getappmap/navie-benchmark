@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-16041",
+  "edit_test_file": "tests/model_formsets/tests.py",
+  "code_patch": "diff --git a/django/forms/formsets.py b/django/forms/formsets.py\nindex 5767642..2e7b827 100644\n--- a/django/forms/formsets.py\n+++ b/django/forms/formsets.py\n@@ -257,12 +257,19 @@ class BaseFormSet(RenderableFormMixin):\n \n     @property\n     def empty_form(self):\n+        # Remove empty_permitted from form kwargs since empty form must always\n+        # permit empty data\n+        form_kwargs = self.get_form_kwargs(None)\n+        if 'empty_permitted' in form_kwargs:\n+            form_kwargs = form_kwargs.copy()\n+            del form_kwargs['empty_permitted']\n+            \n         form = self.form(\n             auto_id=self.auto_id,\n             prefix=self.add_prefix(\"__prefix__\"),\n             empty_permitted=True,\n             use_required_attribute=False,\n-            **self.get_form_kwargs(None),\n+            **form_kwargs,\n             renderer=self.renderer,\n         )\n         self.add_fields(form, None)\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/model_formsets/test_formset_empty_form.py b/tests/model_formsets/test_formset_empty_form.py\nnew file mode 100644\nindex 0000000..1052467\n--- /dev/null\n+++ b/tests/model_formsets/test_formset_empty_form.py\n@@ -0,0 +1,26 @@\n+from django.test import TestCase\n+from django.forms import modelformset_factory\n+from model_formsets.models import Author\n+\n+class TestFormsetEmptyFormWithEmptyPermitted(TestCase):\n+    def test_empty_form_with_empty_permitted_form_kwargs(self):\n+        \"\"\"\n+        Rendering empty_form should raise TypeError when empty_permitted is passed \n+        in form_kwargs.\n+        \"\"\"\n+        AuthorFormSet = modelformset_factory(Author, fields=\"__all__\")\n+        \n+        # Create formset with empty_permitted in form_kwargs\n+        formset = AuthorFormSet(\n+            queryset=Author.objects.none(),\n+            form_kwargs={'empty_permitted': True}\n+        )\n+\n+        # This should raise TypeError due to duplicate empty_permitted argument\n+        with self.assertRaises(TypeError) as cm:\n+            formset.empty_form.as_p()\n+            \n+        self.assertEqual(\n+            str(cm.exception),\n+            \"django.forms.widgets.AuthorForm() got multiple values for keyword argument 'empty_permitted'\"\n+        )\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 3356057,
+  "num_received_chars": 35760,
+  "elapsed_time": 718.076712846756,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

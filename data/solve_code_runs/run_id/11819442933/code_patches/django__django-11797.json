@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-11797",
+  "edit_test_file": "tests/extra_regress/tests.py",
+  "code_patch": "diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py\nindex 8e55bd0..efe96ec 100644\n--- a/django/db/models/sql/query.py\n+++ b/django/db/models/sql/query.py\n@@ -1022,6 +1022,9 @@ class Query(BaseExpression):\n                 not self.distinct_fields and\n                 not self.select_for_update):\n             clone.clear_ordering(True)\n+        else:\n+            # Preserve the GROUP BY clause when using slicing\n+            clone.group_by = self.group_by\n         clone.where.resolve_expression(query, *args, **kwargs)\n         for key, value in clone.annotations.items():\n             resolved = value.resolve_expression(query, *args, **kwargs)\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/extra_regress/test_group_by_subquery_filter.py b/tests/extra_regress/test_group_by_subquery_filter.py\nnew file mode 100644\nindex 0000000..25c28f9\n--- /dev/null\n+++ b/tests/extra_regress/test_group_by_subquery_filter.py\n@@ -0,0 +1,39 @@\n+from django.contrib.auth.models import User\n+from django.db.models import Max\n+from django.test import TestCase\n+\n+\n+class GroupBySubqueryFilterTests(TestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        # Create test users with some having null emails\n+        User.objects.create_user(username='user1', email=None)\n+        User.objects.create_user(username='user2', email=None)\n+        User.objects.create_user(username='user3', email='user3@example.com')\n+\n+    def test_group_by_subquery_filter(self):\n+        \"\"\"\n+        Test that filtering on a subquery maintains the correct GROUP BY clause.\n+        \n+        The issue is that when filtering on a subquery that uses values() and \n+        annotate() with a slice, the GROUP BY clause in the subquery gets \n+        incorrectly changed from grouping by the values() field to grouping\n+        by the annotation field.\n+        \"\"\"\n+        # First query: Get max ID grouped by email (for null emails)\n+        subquery = (\n+            User.objects.filter(email__isnull=True)\n+            .values('email')\n+            .annotate(m=Max('id'))\n+            .values('m')[:1]\n+        )\n+\n+        # Second query: Filter users by ID from subquery\n+        main_query = User.objects.filter(id__in=subquery)\n+        \n+        # Get the SQL for the main query\n+        main_query_sql = str(main_query.query)\n+\n+        # The subquery should be grouping by email, not by id\n+        self.assertIn('GROUP BY U0.\"email\"', main_query_sql)\n+        self.assertNotIn('GROUP BY U0.\"id\"', main_query_sql)\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 8840295,
+  "num_received_chars": 115584,
+  "elapsed_time": 1530.10515832901,
+  "lint_repair_count": 11,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 8,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,21 @@
+{
+  "instance_id": "matplotlib__matplotlib-25498",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/lib/matplotlib/colorbar.py b/lib/matplotlib/colorbar.py\nindex d3d53e3..852abe5 100644\n--- a/lib/matplotlib/colorbar.py\n+++ b/lib/matplotlib/colorbar.py\n@@ -506,9 +506,16 @@ class Colorbar:\n         _log.debug('colorbar update normal %r %r', mappable.norm, self.norm)\n         self.mappable = mappable\n         self.set_alpha(mappable.get_alpha())\n+        # Ensure the mappable's norm is properly initialized\n+        if mappable.get_array() is not None:\n+            mappable.autoscale_None()\n         self.cmap = mappable.cmap\n         if mappable.norm != self.norm:\n             self.norm = mappable.norm\n+            # Ensure the norm has valid limits before resetting\n+            if not self.norm.scaled():\n+                self.norm.vmin = self.norm.vmax = None\n+                self.norm.autoscale_None(mappable.get_array())\n             self._reset_locator_formatter_scale()\n \n         self._draw_all()\n@@ -1170,6 +1177,13 @@ class Colorbar:\n         need to be re-entered if this gets called (either at init, or when\n         the mappable normal gets changed: Colorbar.update_normal)\n         \"\"\"\n+        # Ensure norm is properly initialized before processing values\n+        if not self.norm.scaled():\n+            if isinstance(self.mappable, contour.ContourSet):\n+                self.norm.autoscale_None(self.mappable.cvalues)\n+            elif self.mappable.get_array() is not None:\n+                self.norm.autoscale_None(self.mappable.get_array())\n+\n         self._process_values()\n         self._locator = None\n         self._minorlocator = None\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4345739,
+  "num_received_chars": 34649,
+  "elapsed_time": 716.5951476097107,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

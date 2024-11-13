@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-16400",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/management/base.py b/django/core/management/base.py\nindex abc6f79..ac9dd96 100644\n--- a/django/core/management/base.py\n+++ b/django/core/management/base.py\n@@ -272,6 +272,7 @@ class BaseCommand:\n             and self.requires_system_checks != ALL_CHECKS\n         ):\n             raise TypeError(\"requires_system_checks must be a list or tuple.\")\n+        self._target_database = None  # Store the explicitly requested database\n \n     def get_version(self):\n         \"\"\"\n@@ -431,6 +432,8 @@ class BaseCommand:\n         if options[\"force_color\"]:\n             self.style = color_style(force_color=True)\n         elif options[\"no_color\"]:\n+            # Store the target database if specified\n+            self._target_database = options.get('database')\n             self.style = no_style()\n             self.stderr.style_func = None\n         if options.get(\"stdout\"):\n@@ -457,6 +460,20 @@ class BaseCommand:\n             self.stdout.write(output)\n         return output\n \n+    def get_target_database(self):\n+        \"\"\"\n+        Return the explicitly specified database for this command, if any.\n+        This is used to override router decisions when a specific database\n+        is requested via the --database option.\n+        \"\"\"\n+        return self._target_database\n+\n+    def is_database_specified(self):\n+        \"\"\"\n+        Return True if a specific database was requested for this command.\n+        \"\"\"\n+        return self._target_database is not None\n+\n     def check(\n         self,\n         app_configs=None,\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 6603339,
+  "num_received_chars": 89170,
+  "elapsed_time": 1300.394795179367,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 5,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

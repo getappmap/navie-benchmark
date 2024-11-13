@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-16816",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/templatetags/admin_list.py b/django/contrib/admin/templatetags/admin_list.py\nindex 9bff84d..e3fc9e1 100644\n--- a/django/contrib/admin/templatetags/admin_list.py\n+++ b/django/contrib/admin/templatetags/admin_list.py\n@@ -85,6 +85,7 @@ def result_headers(cl):\n     \"\"\"\n     Generate the list column headers.\n     \"\"\"\n+    from django.core.exceptions import FieldDoesNotExist\n     ordering_field_columns = cl.get_ordering_field_columns()\n     for i, field_name in enumerate(cl.list_display):\n         text, attr = label_for_field(\n@@ -108,6 +109,24 @@ def result_headers(cl):\n                 }\n                 continue\n \n+            # Validate field references to related models\n+            if \".\" in field_name:\n+                field_path = field_name.split(\".\")\n+                try:\n+                    field = cl.model._meta.get_field(field_path[0])\n+                    # Check if this is a proper related field\n+                    if not hasattr(field, \"related_model\"):\n+                        raise FieldDoesNotExist(\n+                            f\"Field '{field_path[0]}' on model '{cl.model._meta.label}' is \"\n+                            \"not a related field but contains a '.' accessor\"\n+                        )\n+                except FieldDoesNotExist:\n+                    if not hasattr(cl.model, field_path[0]):\n+                        raise FieldDoesNotExist(\n+                            f\"Cannot resolve '{field_name}' into field. \"\n+                            f\"Choices are: {', '.join(cl.model._meta.get_fields())}\"\n+                        )\n+\n             admin_order_field = getattr(attr, \"admin_order_field\", None)\n             # Set ordering for attr that is a property, if defined.\n             if isinstance(attr, property) and hasattr(attr, \"fget\"):\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4861139,
+  "num_received_chars": 61308,
+  "elapsed_time": 903.6178526878357,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

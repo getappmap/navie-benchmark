@@ -1,0 +1,21 @@
+{
+  "instance_id": "pytest-dev__pytest-5495",
+  "edit_test_file": "testing/test_doctest.py",
+  "code_patch": "diff --git a/src/_pytest/assertion/util.py b/src/_pytest/assertion/util.py\nindex 762e576..6761e14 100644\n--- a/src/_pytest/assertion/util.py\n+++ b/src/_pytest/assertion/util.py\n@@ -259,15 +259,15 @@ def _compare_eq_sequence(left, right, verbose=0):\n     len_right = len(right)\n     for i in range(min(len_left, len_right)):\n         if left[i] != right[i]:\n-            explanation += [\n-                \"At index {} diff: {!r} != {!r}\".format(i, left[i], right[i])\n-            ]\n+            if isinstance(left, bytes) and isinstance(right, bytes):\n+                explanation += [\n+                    \"At index {} bytes differ: {!r} != {!r}\".format(i, bytes([left[i]]), bytes([right[i]]))\n+                ]\n+            else:\n+                explanation += [\n+                    \"At index {} diff: {!r} != {!r}\".format(i, left[i], right[i])\n+                ]\n             break\n-    len_diff = len_left - len_right\n-\n-    if len_diff:\n-        if len_diff > 0:\n-            dir_with_more = \"Left\"\n             extra = saferepr(left[len_right])\n         else:\n             len_diff = 0 - len_diff\n",
+  "code_files": null,
+  "test_patch": "diff --git a/testing/test_byte_string_assertion.py b/testing/test_byte_string_assertion.py\nnew file mode 100644\nindex 0000000..9507d34\n--- /dev/null\n+++ b/testing/test_byte_string_assertion.py\n@@ -0,0 +1,16 @@\n+def test_byte_string_assertion_message(testdir):\n+    \"\"\"Test that byte string assertion messages show confusing ASCII ordinal values.\"\"\"\n+    testdir.makepyfile(\"\"\"\n+        def test_byte_strings():\n+            assert b\"\" == b\"42\"\n+    \"\"\")\n+\n+    result = testdir.runpytest(\"-vv\")  # Use -vv to get full diff\n+    result.stdout.fnmatch_lines([\n+        \"*AssertionError: assert b'' == b'42'\",\n+        \"*Right contains 2 more items, first extra item: 52*\",  # 52 is ASCII for '4'\n+        \"*Full diff:\",\n+        \"*- b''\", \n+        \"*+ b'42'\",\n+        \"*?   ++*\"\n+    ])\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_byte_string_assertion_inverted.py b/testing/test_byte_string_assertion_inverted.py\nnew file mode 100644\nindex 0000000..1ebd789\n--- /dev/null\n+++ b/testing/test_byte_string_assertion_inverted.py\n@@ -0,0 +1,22 @@\n+def test_byte_string_assertion_message(testdir):\n+    \"\"\"Test that byte string assertion messages should not show confusing ASCII ordinal values.\"\"\"\n+    testdir.makepyfile(\"\"\"\n+        def test_byte_strings():\n+            assert b\"\" == b\"42\"\n+    \"\"\")\n+\n+    result = testdir.runpytest(\"-vv\")\n+    \n+    # Check if the confusing ASCII ordinal value (52) is present in the output\n+    output = result.stdout.str()\n+    if \"first extra item: 52\" in output:\n+        raise AssertionError(\"__BUG__HERE__\")\n+        \n+    # The test should expect a more user-friendly error message\n+    result.stdout.fnmatch_lines([\n+        \"*AssertionError: assert b'' == b'42'\",\n+        \"*Full diff:\",\n+        \"*- b''\", \n+        \"*+ b'42'\",\n+        \"*?   ++*\"\n+    ])\n\\ No newline at end of file\n",
+  "num_sent_chars": 4708397,
+  "num_received_chars": 57104,
+  "elapsed_time": 874.8474006652832,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 8,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

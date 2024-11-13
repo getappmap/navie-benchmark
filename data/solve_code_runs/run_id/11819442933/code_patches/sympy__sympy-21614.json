@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-21614",
+  "edit_test_file": "sympy/core/tests/test_kind.py",
+  "code_patch": "diff --git a/sympy/core/kind.py b/sympy/core/kind.py\nindex f1935b5..a91ce9e 100644\n--- a/sympy/core/kind.py\n+++ b/sympy/core/kind.py\n@@ -85,7 +85,8 @@ class _UndefinedKind(Kind):\n     \"\"\"\n     Default kind for all SymPy object. If the kind is not defined for\n     the object, or if the object cannot infer the kind from its\n-    arguments, this will be returned.\n+    arguments, this will be returned. For derivatives, the kind of the\n+    differentiated expression is preserved.\n \n     Examples\n     ========\n@@ -100,6 +101,12 @@ def __new__(cls):\n     def __repr__(self):\n         return \"UndefinedKind\"\n \n+    def _eval_derivative(self, expr):\n+        \"\"\"Preserve the kind of the differentiated expression.\"\"\"\n+        if hasattr(expr, 'expr'):\n+            return expr.expr.kind\n+        return self\n+\n UndefinedKind = _UndefinedKind()\n \n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/core/tests/test_matrix_derivative_kind.py b/sympy/core/tests/test_matrix_derivative_kind.py\nnew file mode 100644\nindex 0000000..f8ef8ca\n--- /dev/null\n+++ b/sympy/core/tests/test_matrix_derivative_kind.py\n@@ -0,0 +1,11 @@\n+from sympy.core.kind import NumberKind, UndefinedKind\n+from sympy.matrices import MatrixSymbol, MatrixKind\n+from sympy.abc import x\n+from sympy import Derivative\n+\n+def test_matrix_derivative_kind():\n+    A = MatrixSymbol('A', 2, 2)\n+    d = Derivative(A, x)\n+    # This assertion verifies the current incorrect behavior\n+    # where derivative of a matrix returns UndefinedKind\n+    assert d.kind is UndefinedKind\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/core/tests/test_matrix_derivative_kind_inverted.py b/sympy/core/tests/test_matrix_derivative_kind_inverted.py\nnew file mode 100644\nindex 0000000..8c1fc22\n--- /dev/null\n+++ b/sympy/core/tests/test_matrix_derivative_kind_inverted.py\n@@ -0,0 +1,17 @@\n+from sympy.core.kind import NumberKind, UndefinedKind\n+from sympy.matrices import MatrixSymbol, MatrixKind\n+from sympy.abc import x\n+from sympy import Derivative\n+\n+def test_matrix_derivative_kind():\n+    A = MatrixSymbol('A', 2, 2)\n+    d = Derivative(A, x)\n+    \n+    # The test should fail when d.kind is UndefinedKind (the bug)\n+    # and pass when d.kind is MatrixKind(NumberKind) (the correct behavior)\n+    if d.kind is UndefinedKind:\n+        raise AssertionError(\"__BUG__HERE__: Derivative of matrix returns UndefinedKind instead of expected MatrixKind(NumberKind)\")\n+    \n+    # Verify the correct behavior\n+    assert d.kind == MatrixKind(NumberKind), \\\n+        f\"Expected MatrixKind(NumberKind), but got {d.kind}\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 4806822,
+  "num_received_chars": 86023,
+  "elapsed_time": 984.6468975543976,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

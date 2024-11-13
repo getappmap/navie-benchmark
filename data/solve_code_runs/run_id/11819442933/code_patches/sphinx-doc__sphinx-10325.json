@@ -1,0 +1,21 @@
+{
+  "instance_id": "sphinx-doc__sphinx-10325",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/autosummary/generate.py b/sphinx/ext/autosummary/generate.py\nindex 1866b6c..5bbb5ac 100644\n--- a/sphinx/ext/autosummary/generate.py\n+++ b/sphinx/ext/autosummary/generate.py\n@@ -188,7 +188,7 @@ class ModuleScanner:\n             return False\n \n     def scan(self, imported_members: bool) -> List[str]:\n-        members = []\n+        result_members = []\n         for name in members_of(self.object, self.app.config):\n             try:\n                 value = safe_getattr(self.object, name)\n@@ -202,7 +202,7 @@ class ModuleScanner:\n             try:\n                 if inspect.ismodule(value):\n                     imported = True\n-                elif safe_getattr(value, '__module__') != self.object.__name__:\n+                elif safe_getattr(value, '__module__', '') != self.object.__name__:\n                     imported = True\n                 else:\n                     imported = False\n@@ -215,12 +215,12 @@ class ModuleScanner:\n                 members.append(name)\n             elif imported is False:\n                 # list not-imported members\n-                members.append(name)\n+                result_members.append(name)\n             elif '__all__' in dir(self.object) and respect_module_all:\n                 # list members that have __all__ set\n-                members.append(name)\n+                result_members.append(name)\n \n-        return members\n+        return result_members\n \n \n def members_of(obj: Any, conf: Config) -> Sequence[str]:\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 6760444,
+  "num_received_chars": 116136,
+  "elapsed_time": 1398.9841856956482,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 8,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

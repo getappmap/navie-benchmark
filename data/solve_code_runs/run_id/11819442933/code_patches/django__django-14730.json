@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-14730",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex febaadb..8097583 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -1214,6 +1214,7 @@ class ManyToManyField(RelatedField):\n             *self._check_relationship_model(**kwargs),\n             *self._check_ignored_options(**kwargs),\n             *self._check_table_uniqueness(**kwargs),\n+            *self._check_symmetrical_related_name(**kwargs),\n         ]\n \n     def _check_unique(self, **kwargs):\n@@ -1227,6 +1228,26 @@ class ManyToManyField(RelatedField):\n             ]\n         return []\n \n+    def _check_symmetrical_related_name(self, **kwargs):\n+        if not self.remote_field.symmetrical:\n+            return []\n+\n+        if self._related_name is None:\n+            return []\n+\n+        return [\n+            checks.Error(\n+                \"ManyToManyField specifies a related_name '%s', \"\n+                \"but it is being used in a symmetrical relation. \"\n+                \"Symmetrical relations cannot specify a related_name, \"\n+                \"as there would be no reverse relation to name.\" % self._related_name,\n+                hint=\"Remove the related_name argument on the ManyToManyField, \"\n+                     \"as it is redundant in a symmetrical relation.\",\n+                obj=self,\n+                id='fields.E345',\n+            )\n+        ]\n+\n     def _check_ignored_options(self, **kwargs):\n         warnings = []\n \n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4063504,
+  "num_received_chars": 48641,
+  "elapsed_time": 711.0233418941498,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

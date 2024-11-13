@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-11870",
+  "edit_test_file": "sympy/simplify/tests/test_trigsimp.py",
+  "code_patch": "diff --git a/sympy/simplify/trigsimp.py b/sympy/simplify/trigsimp.py\nindex 34a3bab..d7330b2 100644\n--- a/sympy/simplify/trigsimp.py\n+++ b/sympy/simplify/trigsimp.py\n@@ -752,6 +752,13 @@ def _trigpats():\n     global _trigpat\n     a, b, c = symbols('a b c', cls=Wild)\n     d = Wild('d', commutative=False)\n+    k = Wild('k')\n+\n+    # Exponential to trig patterns\n+    exp_trig = (\n+        (a*(-I*exp(I*k) + I*exp(-I*k))/2, a*sin(k)),\n+        (a*(-I*exp(I*k) + I*exp(-I*k))/(2*k), a*sin(k)/k),\n+    )\n \n     # for the simplifications like sinh/cosh -> tanh:\n     # DO NOT REORDER THE FIRST 14 since these are assumed to be in this\n@@ -827,8 +834,8 @@ def _trigpats():\n         (a*d + a*d*(1/sinh(b))**2 + c, a*d*coth(b)**2 + c, sinh),\n     )\n \n-    _trigpat = (a, b, c, d, matchers_division, matchers_add,\n-        matchers_identity, artifacts)\n+    _trigpat = (a, b, c, d, k, matchers_division, matchers_add,\n+        matchers_identity, artifacts, exp_trig)\n     return _trigpat\n \n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/simplify/tests/test_expotrig_simp.py b/sympy/simplify/tests/test_expotrig_simp.py\nnew file mode 100644\nindex 0000000..2ecf2dc\n--- /dev/null\n+++ b/sympy/simplify/tests/test_expotrig_simp.py\n@@ -0,0 +1,14 @@\n+from sympy import (\n+    symbols, sin, simplify, cos, trigsimp, exp, I, sinc\n+)\n+\n+def test_exp_trig_conversion():\n+    k = symbols('k')\n+    \n+    # Test case 1: Should ideally convert to sin(k) but currently doesn't\n+    f1 = 1/2*(-I*exp(I*k) + I*exp(-I*k))\n+    assert trigsimp(f1) == f1  # Currently returns unchanged expression\n+    \n+    # Test case 2: Should ideally convert to sinc(k) but currently doesn't \n+    f2 = 1/2/k*(-I*exp(I*k) + I*exp(-I*k))\n+    assert trigsimp(f2) == f2  # Currently returns unchanged expression\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/simplify/tests/test_expotrig_simp_inverted.py b/sympy/simplify/tests/test_expotrig_simp_inverted.py\nnew file mode 100644\nindex 0000000..aa6d7aa\n--- /dev/null\n+++ b/sympy/simplify/tests/test_expotrig_simp_inverted.py\n@@ -0,0 +1,20 @@\n+from sympy import (\n+    symbols, sin, simplify, cos, trigsimp, exp, I, sinc\n+)\n+\n+def test_exp_trig_conversion():\n+    k = symbols('k')\n+    \n+    # Test case 1: Should convert to sin(k)\n+    f1 = 1/2*(-I*exp(I*k) + I*exp(-I*k))\n+    result1 = trigsimp(f1)\n+    if result1 == f1:  # If expression remains unchanged, the bug is present\n+        raise AssertionError(\"__BUG__HERE__\")\n+    assert result1 == sin(k)\n+    \n+    # Test case 2: Should convert to sinc(k)\n+    f2 = 1/2/k*(-I*exp(I*k) + I*exp(-I*k))\n+    result2 = trigsimp(f2)\n+    if result2 == f2:  # If expression remains unchanged, the bug is present\n+        raise AssertionError(\"__BUG__HERE__\")\n+    assert result2 == sinc(k)\n\\ No newline at end of file\n",
+  "num_sent_chars": 6011990,
+  "num_received_chars": 127365,
+  "elapsed_time": 1680.5782322883606,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

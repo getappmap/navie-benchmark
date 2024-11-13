@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-18621",
+  "edit_test_file": "sympy/matrices/expressions/tests/test_blockmatrix.py",
+  "code_patch": "diff --git a/sympy/matrices/expressions/blockmatrix.py b/sympy/matrices/expressions/blockmatrix.py\nindex 11aebbc..94ed892 100644\n--- a/sympy/matrices/expressions/blockmatrix.py\n+++ b/sympy/matrices/expressions/blockmatrix.py\n@@ -303,6 +303,17 @@ def blocks(self):\n                         for i in range(len(mats))]\n         return ImmutableDenseMatrix(data)\n \n+    def as_explicit(self):\n+        \"\"\"Returns an explicit version of self.\"\"\"\n+        if len(self.args) == 1:\n+            # For single matrix case, return the matrix directly\n+            # if it's already explicit, otherwise call as_explicit()\n+            mat = self.args[0]\n+            if hasattr(mat, 'as_explicit'):\n+                return mat.as_explicit()\n+            return mat\n+        return super(BlockDiagMatrix, self).as_explicit()\n+\n     @property\n     def shape(self):\n         return (sum(block.rows for block in self.args),\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/matrices/expressions/tests/test_block_diag_conversion.py b/sympy/matrices/expressions/tests/test_block_diag_conversion.py\nnew file mode 100644\nindex 0000000..942de82\n--- /dev/null\n+++ b/sympy/matrices/expressions/tests/test_block_diag_conversion.py\n@@ -0,0 +1,11 @@\n+from sympy.matrices.expressions.blockmatrix import BlockDiagMatrix\n+from sympy.matrices import Matrix\n+from sympy.testing.pytest import raises\n+\n+def test_block_diag_single_matrix_conversion():\n+    \"\"\"Test that BlockDiagMatrix with single matrix raises TypeError when converting to Matrix\"\"\"\n+    M = Matrix([[1, 2], [3, 4]])\n+    D = BlockDiagMatrix(M)\n+    \n+    # Converting BlockDiagMatrix with single matrix should raise TypeError\n+    raises(TypeError, lambda: Matrix(D))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/matrices/expressions/tests/test_block_diag_conversion_inverted.py b/sympy/matrices/expressions/tests/test_block_diag_conversion_inverted.py\nnew file mode 100644\nindex 0000000..35e7d9e\n--- /dev/null\n+++ b/sympy/matrices/expressions/tests/test_block_diag_conversion_inverted.py\n@@ -0,0 +1,12 @@\n+from sympy.matrices.expressions.blockmatrix import BlockDiagMatrix\n+from sympy.matrices import Matrix\n+\n+def test_block_diag_single_matrix_conversion():\n+    \"\"\"Test that BlockDiagMatrix with single matrix can be converted to Matrix\"\"\"\n+    M = Matrix([[1, 2], [3, 4]])\n+    D = BlockDiagMatrix(M)\n+    \n+    try:\n+        Matrix(D)\n+    except TypeError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 4109853,
+  "num_received_chars": 59373,
+  "elapsed_time": 744.9336404800415,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

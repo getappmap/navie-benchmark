@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-16820",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py\nindex 23c97e5..d43f42f 100644\n--- a/django/db/migrations/autodetector.py\n+++ b/django/db/migrations/autodetector.py\n@@ -1224,6 +1224,17 @@ class MigrationAutodetector:\n             old_model_state = self.from_state.models[app_label, old_model_name]\n             new_model_state = self.to_state.models[app_label, model_name]\n \n+            # Handle transition from index_together to indexes\n+            old_index_together = old_model_state.options.get(\"index_together\", set())\n+            new_index_together = new_model_state.options.get(\"index_together\", set())\n+            \n+            # If index_together is being removed in favor of indexes, track this\n+            if old_index_together and not new_index_together:\n+                new_indexes = new_model_state.options.get(\"indexes\", [])\n+                for index_together_fields in old_index_together:\n+                    if any(tuple(idx.fields) == tuple(index_together_fields) for idx in new_indexes):\n+                        self.renamed_index_together_values[app_label, model_name].append(index_together_fields)\n+\n             old_indexes = old_model_state.options[option_name]\n             new_indexes = new_model_state.options[option_name]\n             added_indexes = [idx for idx in new_indexes if idx not in old_indexes]\n@@ -1501,12 +1512,21 @@ class MigrationAutodetector:\n             dependencies,\n         ) in self._get_altered_foo_together_operations(operation.option_name):\n             if operation == operations.AlterIndexTogether:\n+                # Skip generating AlterIndexTogether if all values have been converted to indexes\n                 old_value = {\n                     value\n                     for value in old_value\n                     if value\n                     not in self.renamed_index_together_values[app_label, model_name]\n                 }\n+                # Check if all index_together values have equivalent indexes\n+                model_state = self.to_state.models[app_label, model_name]\n+                indexes = model_state.options.get(\"indexes\", [])\n+                index_fields = {tuple(idx.fields) for idx in indexes}\n+                if all(value in index_fields for value in old_value):\n+                    # Skip generating the operation if all index_together values\n+                    # have equivalent indexes\n+                    continue\n             removal_value = new_value.intersection(old_value)\n             if removal_value or old_value:\n                 self.add_operation(\n@@ -1532,6 +1552,15 @@ class MigrationAutodetector:\n             model_name,\n             dependencies,\n         ) in self._get_altered_foo_together_operations(operation.option_name):\n+            # Skip generating AlterIndexTogether if it's being replaced by indexes\n+            if operation == operations.AlterIndexTogether:\n+                model_state = self.to_state.models[app_label, model_name]\n+                indexes = model_state.options.get(\"indexes\", [])\n+                index_fields = {tuple(idx.fields) for idx in indexes}\n+                # If all new index_together values have equivalent indexes, skip\n+                if all(value in index_fields for value in new_value):\n+                    continue\n+\n             removal_value = new_value.intersection(old_value)\n             if new_value != removal_value:\n                 self.add_operation(\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3314666,
+  "num_received_chars": 52788,
+  "elapsed_time": 571.2364161014557,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-23117",
+  "edit_test_file": "sympy/tensor/array/tests/test_immutable_ndim_array.py",
+  "code_patch": "diff --git a/sympy/tensor/array/ndim_array.py b/sympy/tensor/array/ndim_array.py\nindex 6490a65..ad9195c 100644\n--- a/sympy/tensor/array/ndim_array.py\n+++ b/sympy/tensor/array/ndim_array.py\n@@ -194,8 +194,15 @@ def f(pointer):\n             if not isinstance(pointer, Iterable):\n                 return [pointer], ()\n \n+            if not any(True for _ in pointer):\n+                # Empty iterable - return empty list and shape (0,)\n+                return [], (0,)\n+\n             result = []\n-            elems, shapes = zip(*[f(i) for i in pointer])\n+            pointer_list = list(pointer)\n+            if not pointer_list:\n+                return [], (0,)\n+            elems, shapes = zip(*[f(i) for i in pointer_list])\n             if len(set(shapes)) != 1:\n                 raise ValueError(\"could not determine shape unambiguously\")\n             for i in elems:\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/tensor/array/tests/test_empty_array_construction.py b/sympy/tensor/array/tests/test_empty_array_construction.py\nnew file mode 100644\nindex 0000000..63604a6\n--- /dev/null\n+++ b/sympy/tensor/array/tests/test_empty_array_construction.py\n@@ -0,0 +1,10 @@\n+from sympy.testing.pytest import raises\n+from sympy.tensor.array import Array\n+from sympy.matrices import Matrix\n+\n+def test_empty_array_construction():\n+    # Matrix([]) works fine\n+    Matrix([])  # This should not raise any exception\n+\n+    # Array([]) fails with ValueError\n+    raises(ValueError, lambda: Array([]))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/tensor/array/tests/test_empty_array_construction_inverted.py b/sympy/tensor/array/tests/test_empty_array_construction_inverted.py\nnew file mode 100644\nindex 0000000..a676233\n--- /dev/null\n+++ b/sympy/tensor/array/tests/test_empty_array_construction_inverted.py\n@@ -0,0 +1,12 @@\n+from sympy.tensor.array import Array\n+from sympy.matrices import Matrix\n+\n+def test_empty_array_construction():\n+    # Matrix([]) works fine\n+    Matrix([])  # This should not raise any exception\n+\n+    # Array([]) should work like Matrix([]), but it doesn't\n+    try:\n+        Array([])\n+    except ValueError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 3727436,
+  "num_received_chars": 46006,
+  "elapsed_time": 638.8847930431366,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

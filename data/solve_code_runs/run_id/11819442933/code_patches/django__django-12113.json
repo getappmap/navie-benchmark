@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-12113",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/sqlite3/base.py b/django/db/backends/sqlite3/base.py\nindex a3ae1f0..30c1f0b 100644\n--- a/django/db/backends/sqlite3/base.py\n+++ b/django/db/backends/sqlite3/base.py\n@@ -7,7 +7,9 @@ import functools\n import hashlib\n import math\n import operator\n+import random\n import re\n+import time\n import statistics\n import warnings\n from itertools import chain\n@@ -180,6 +182,10 @@ class DatabaseWrapper(BaseDatabaseWrapper):\n             # https://bugs.python.org/issue33496\n             'database': str(settings_dict['NAME']),\n             'detect_types': Database.PARSE_DECLTYPES | Database.PARSE_COLNAMES,\n+            # Increase timeout for test databases\n+            'timeout': settings_dict.get('TEST', {}).get('TIMEOUT', 30),\n+            # Enable SQLite's WAL mode for better concurrency\n+            'isolation_level': None,  # autocommit mode\n             **settings_dict['OPTIONS'],\n         }\n         # Always allow the underlying SQLite connection to be shareable\n@@ -395,14 +401,44 @@ class SQLiteCursorWrapper(Database.Cursor):\n     you'll need to use \"%%s\".\n     \"\"\"\n     def execute(self, query, params=None):\n+        max_attempts = 10  # Maximum number of retry attempts\n+        base_delay = 0.1   # Base delay in seconds\n+        \n+        for attempt in range(max_attempts):\n+            try:\n+                if params is None:\n+                    return Database.Cursor.execute(self, query)\n+                query = self.convert_query(query)\n+                return Database.Cursor.execute(self, query, params)\n+            except Database.OperationalError as e:\n+                if str(e) == 'database is locked' and attempt < max_attempts - 1:\n+                    # Add exponential backoff with jitter\n+                    delay = (base_delay * (2 ** attempt) + \n+                            random.uniform(0, 0.1 * (2 ** attempt)))\n+                    time.sleep(delay)\n+                    continue\n+                raise\n         if params is None:\n             return Database.Cursor.execute(self, query)\n         query = self.convert_query(query)\n         return Database.Cursor.execute(self, query, params)\n \n     def executemany(self, query, param_list):\n-        query = self.convert_query(query)\n-        return Database.Cursor.executemany(self, query, param_list)\n+        max_attempts = 10  # Maximum number of retry attempts\n+        base_delay = 0.1   # Base delay in seconds\n+        \n+        for attempt in range(max_attempts):\n+            try:\n+                query = self.convert_query(query)\n+                return Database.Cursor.executemany(self, query, param_list)\n+            except Database.OperationalError as e:\n+                if str(e) == 'database is locked' and attempt < max_attempts - 1:\n+                    # Add exponential backoff with jitter\n+                    delay = (base_delay * (2 ** attempt) + \n+                            random.uniform(0, 0.1 * (2 ** attempt)))\n+                    time.sleep(delay)\n+                    continue\n+                raise\n \n     def convert_query(self, query):\n         return FORMAT_QMARK_REGEX.sub('?', query).replace('%%', '%')\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3610236,
+  "num_received_chars": 57739,
+  "elapsed_time": 677.6842765808105,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

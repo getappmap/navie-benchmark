@@ -1,0 +1,21 @@
+{
+  "instance_id": "pydata__xarray-5131",
+  "edit_test_file": "xarray/tests/test_groupby.py",
+  "code_patch": "diff --git a/xarray/core/groupby.py b/xarray/core/groupby.py\nindex 8a09725..af5abd9 100644\n--- a/xarray/core/groupby.py\n+++ b/xarray/core/groupby.py\n@@ -436,7 +436,7 @@ class GroupBy(SupportsArithmetic):\n         return zip(self._unique_coord.values, self._iter_grouped())\n \n     def __repr__(self):\n-        return \"{}, grouped over {!r} \\n{!r} groups with labels {}.\".format(\n+        return \"{}, grouped over {!r}\\n{!r} groups with labels {}.\".format(\n             self.__class__.__name__,\n             self._unique_coord.name,\n             self._unique_coord.size,\n",
+  "code_files": null,
+  "test_patch": "diff --git a/xarray/tests/test_dataset_groupby_repr.py b/xarray/tests/test_dataset_groupby_repr.py\nnew file mode 100644\nindex 0000000..c9d1dc1\n--- /dev/null\n+++ b/xarray/tests/test_dataset_groupby_repr.py\n@@ -0,0 +1,21 @@\n+import numpy as np\n+import xarray as xr\n+\n+\n+def test_dataset_groupby_repr_trailing_whitespace():\n+    # Create a simple dataset similar to the example in the issue\n+    ds = xr.Dataset(\n+        {\"foo\": ((\"x\", \"y\"), np.random.rand(4, 3))},\n+        coords={\"x\": [10, 20, 30, 40], \"letters\": (\"x\", list(\"abba\"))},\n+    )\n+    \n+    # Get the groupby object\n+    grouped = ds.groupby(\"letters\")\n+    \n+    # Test the string representation\n+    expected_str = \"DatasetGroupBy, grouped over 'letters' \\n2 groups with labels 'a', 'b'.\"\n+    assert str(grouped) == expected_str\n+    \n+    # Test that repr's first line has trailing whitespace\n+    repr_lines = repr(grouped).split('\\n')\n+    assert repr_lines[0].endswith(\" \")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/xarray/tests/test_dataset_groupby_repr_inverted.py b/xarray/tests/test_dataset_groupby_repr_inverted.py\nnew file mode 100644\nindex 0000000..5310593\n--- /dev/null\n+++ b/xarray/tests/test_dataset_groupby_repr_inverted.py\n@@ -0,0 +1,28 @@\n+import numpy as np\n+import xarray as xr\n+\n+\n+def test_dataset_groupby_repr_trailing_whitespace():\n+    # Create a simple dataset similar to the example in the issue\n+    ds = xr.Dataset(\n+        {\"foo\": ((\"x\", \"y\"), np.random.rand(4, 3))},\n+        coords={\"x\": [10, 20, 30, 40], \"letters\": (\"x\", list(\"abba\"))},\n+    )\n+    \n+    # Get the groupby object\n+    grouped = ds.groupby(\"letters\")\n+    \n+    # Test the string representation\n+    # The string should NOT have trailing whitespace\n+    expected_str = \"DatasetGroupBy, grouped over 'letters'\\n2 groups with labels 'a', 'b'.\"\n+    \n+    # Get the actual string representation\n+    actual_str = str(grouped)\n+    \n+    # Check if there's trailing whitespace in the first line\n+    first_line = actual_str.split('\\n')[0]\n+    if first_line.endswith(\" \"):\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    # Verify the complete string matches the expected format\n+    assert actual_str == expected_str, \"String representation contains unexpected trailing whitespace\"\n\\ No newline at end of file\n",
+  "num_sent_chars": 7542896,
+  "num_received_chars": 58364,
+  "elapsed_time": 1309.2208771705627,
+  "lint_repair_count": 12,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

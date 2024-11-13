@@ -1,0 +1,21 @@
+{
+  "instance_id": "mwaskom__seaborn-2848",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/seaborn/axisgrid.py b/seaborn/axisgrid.py\nindex 8526f44..1d40ae6 100644\n--- a/seaborn/axisgrid.py\n+++ b/seaborn/axisgrid.py\n@@ -1546,13 +1546,26 @@ class PairGrid(Grid):\n         else:\n             plt.sca(ax)\n \n+        # Get the variables we need from the data\n         if x_var == y_var:\n             axes_vars = [x_var]\n         else:\n             axes_vars = [x_var, y_var]\n \n-        if self._hue_var is not None and self._hue_var not in axes_vars:\n-            axes_vars.append(self._hue_var)\n+        # Handle hue passed directly to map() vs constructor\n+        map_hue = kwargs.get(\"hue\", None)\n+        if map_hue is not None and isinstance(map_hue, str) and map_hue in self.data:\n+            # Use hue from map() call\n+            hue_var = map_hue\n+            if hue_var not in axes_vars:\n+                axes_vars.append(hue_var)\n+        elif self._hue_var is not None:\n+            # Use hue from constructor\n+            hue_var = self._hue_var\n+            if hue_var not in axes_vars:\n+                axes_vars.append(hue_var)\n+        else:\n+            hue_var = None\n \n         data = self.data[axes_vars]\n         if self._dropna:\n@@ -1560,15 +1573,29 @@ class PairGrid(Grid):\n \n         x = data[x_var]\n         y = data[y_var]\n-        if self._hue_var is None:\n+        \n+        if hue_var is None:\n             hue = None\n         else:\n-            hue = data.get(self._hue_var)\n+            hue = data[hue_var]\n+            # Set up color mapping for categorical hue if not already done\n+            if self._hue_var is None:\n+                hue_order = categorical_order(hue)\n+                n_colors = len(hue_order)\n+                colors = color_palette(n_colors=n_colors)\n+                palette = dict(zip(hue_order, colors))\n+                kwargs[\"palette\"] = palette\n \n         if \"hue\" not in kwargs:\n-            kwargs.update({\n-                \"hue\": hue, \"hue_order\": self._hue_order, \"palette\": self._orig_palette,\n-            })\n+            hue_params = {\"hue\": hue}\n+            if self._hue_var is not None:\n+                # Use constructor hue parameters\n+                hue_params.update({\n+                    \"hue_order\": self._hue_order,\n+                    \"palette\": self._orig_palette\n+                })\n+            kwargs.update(hue_params)\n+\n         func(x=x, y=y, **kwargs)\n \n         self._update_legend_data(ax)\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1524777,
+  "num_received_chars": 14542,
+  "elapsed_time": 267.2476785182953,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

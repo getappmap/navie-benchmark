@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-17022",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/utilities/lambdify.py b/sympy/utilities/lambdify.py\nindex a940509..f399a97 100644\n--- a/sympy/utilities/lambdify.py\n+++ b/sympy/utilities/lambdify.py\n@@ -22,8 +22,8 @@\n # by simple variable maps, like I => 1j\n MATH_DEFAULT = {}\n MPMATH_DEFAULT = {}\n-NUMPY_DEFAULT = {\"I\": 1j}\n-SCIPY_DEFAULT = {\"I\": 1j}\n+NUMPY_DEFAULT = {\"I\": 1j, \"Identity\": \"numpy.identity\", \"eye\": \"numpy.eye\"}\n+SCIPY_DEFAULT = {\"I\": 1j, \"Identity\": \"scipy.sparse.eye\", \"eye\": \"scipy.sparse.eye\"}\n TENSORFLOW_DEFAULT = {}\n SYMPY_DEFAULT = {}\n NUMEXPR_DEFAULT = {}\n@@ -79,7 +79,11 @@\n     \"FallingFactorial\": \"ff\",\n }\n \n-NUMPY_TRANSLATIONS = {}\n+NUMPY_TRANSLATIONS = {\n+    \"Identity\": \"identity\",\n+    \"eye\": \"eye\",\n+    \"ImmutableDenseMatrix\": \"array\"\n+}\n SCIPY_TRANSLATIONS = {}\n \n TENSORFLOW_TRANSLATIONS = {\n@@ -707,8 +711,12 @@ def _lambdifygenerated(x):\n             from sympy.printing.pycode import MpmathPrinter as Printer\n         elif _module_present('scipy', namespaces):\n             from sympy.printing.pycode import SciPyPrinter as Printer\n+            # Ensure Identity matrices use scipy.sparse.eye\n+            namespace['Identity'] = namespace.get('eye', namespace.get('identity'))\n         elif _module_present('numpy', namespaces):\n             from sympy.printing.pycode import NumPyPrinter as Printer\n+            # Ensure Identity matrices use numpy.identity\n+            namespace['Identity'] = namespace.get('identity', namespace.get('eye'))\n         elif _module_present('numexpr', namespaces):\n             from sympy.printing.lambdarepr import NumExprPrinter as Printer\n         elif _module_present('tensorflow', namespaces):\n@@ -809,7 +817,12 @@ def _get_namespace(m):\n     \"\"\"\n     if isinstance(m, string_types):\n         _import(m)\n-        return MODULES[m][0]\n+        namespace = MODULES[m][0].copy()\n+        # Ensure Identity matrices are handled properly for numpy/scipy\n+        if m in ('numpy', 'scipy'):\n+            from sympy.matrices import Identity, eye\n+            namespace.update({'Identity': namespace.get('identity', namespace.get('eye'))})\n+        return namespace\n     elif isinstance(m, dict):\n         return m\n     elif hasattr(m, \"__dict__\"):\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 5196079,
+  "num_received_chars": 46884,
+  "elapsed_time": 828.120304107666,
+  "lint_repair_count": 5,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

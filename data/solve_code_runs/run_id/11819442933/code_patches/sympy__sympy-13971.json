@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-13971",
+  "edit_test_file": "sympy/series/tests/test_sequences.py",
+  "code_patch": "diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py\nindex 364b24a..040976e 100644\n--- a/sympy/printing/latex.py\n+++ b/sympy/printing/latex.py\n@@ -1655,9 +1655,9 @@ def _print_SeqFormula(self, s):\n         else:\n             printset = tuple(s)\n \n-        return (r\"\\left\\[\"\n+        return (r\"[\"\n               + r\", \".join(self._print(el) for el in printset)\n-              + r\"\\right\\]\")\n+              + r\"]\")\n \n     _print_SeqPer = _print_SeqFormula\n     _print_SeqAdd = _print_SeqFormula\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/series/tests/test_seqformula_display.py b/sympy/series/tests/test_seqformula_display.py\nnew file mode 100644\nindex 0000000..5030c10\n--- /dev/null\n+++ b/sympy/series/tests/test_seqformula_display.py\n@@ -0,0 +1,16 @@\n+from sympy import SeqFormula, oo, symbols, latex\n+\n+def test_seqformula_latex_brackets():\n+    \"\"\"Test that SeqFormula LaTeX output contains escaped brackets that cause \n+    rendering issues in markdown.\n+    \"\"\"\n+    n = symbols('n', integer=True)\n+    seq = SeqFormula(n**2, (n, 0, oo))\n+    \n+    # The actual LaTeX output with escaped brackets\n+    latex_str = latex(seq)\n+    \n+    # This is the problematic output that causes rendering issues\n+    expected = r\"\\left\\[0, 1, 4, 9, \\ldots\\right\\]\"\n+    \n+    assert latex_str == expected\n",
+  "test_inverted_patch": "diff --git a/sympy/series/tests/test_seqformula_display_inverted.py b/sympy/series/tests/test_seqformula_display_inverted.py\nnew file mode 100644\nindex 0000000..ebe213b\n--- /dev/null\n+++ b/sympy/series/tests/test_seqformula_display_inverted.py\n@@ -0,0 +1,20 @@\n+from sympy import SeqFormula, oo, symbols, latex\n+\n+def test_seqformula_latex_brackets():\n+    \"\"\"Test that SeqFormula LaTeX output does not contain escaped brackets that cause \n+    rendering issues in markdown.\n+    \"\"\"\n+    n = symbols('n', integer=True)\n+    seq = SeqFormula(n**2, (n, 0, oo))\n+    \n+    # The actual LaTeX output\n+    latex_str = latex(seq)\n+    \n+    # This is the expected output that should render properly in markdown\n+    expected = r\"[0, 1, 4, 9, \\ldots]\"\n+    \n+    # Check if the LaTeX output contains escaped brackets\n+    if r'\\[' in latex_str or r'\\]' in latex_str:\n+        raise AssertionError(\"__BUG__HERE__\")\n+    \n+    assert latex_str == expected\n\\ No newline at end of file\n",
+  "num_sent_chars": 2983206,
+  "num_received_chars": 24539,
+  "elapsed_time": 557.987122297287,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 4,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

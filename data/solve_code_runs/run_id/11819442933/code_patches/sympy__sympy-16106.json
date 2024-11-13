@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-16106",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/printing/mathml.py b/sympy/printing/mathml.py\nindex 1aa0ee0..7fbb4f5 100644\n--- a/sympy/printing/mathml.py\n+++ b/sympy/printing/mathml.py\n@@ -135,6 +135,8 @@ def mathml_tag(self, e):\n             'Symbol': 'ci',\n             'MatrixSymbol': 'ci',\n             'RandomSymbol': 'ci',\n+            'Indexed': 'ci',\n+            'IndexedBase': 'ci',\n             'Integral': 'int',\n             'Sum': 'sum',\n             'sin': 'sin',\n@@ -848,6 +850,30 @@ def _print_MatrixSymbol(self, sym):\n \n     _print_RandomSymbol = _print_Symbol\n \n+    def _print_Indexed(self, expr):\n+        mrow = self.dom.createElement('mrow')\n+        msub = self.dom.createElement('msub')\n+        \n+        # Print the base\n+        base = self._print(expr.base)\n+        msub.appendChild(base)\n+        \n+        # Create mrow for indices\n+        idx_mrow = self.dom.createElement('mrow')\n+        for i, index in enumerate(expr.indices):\n+            if i > 0:\n+                comma = self.dom.createElement('mo')\n+                comma.appendChild(self.dom.createTextNode(','))\n+                idx_mrow.appendChild(comma)\n+            idx_mrow.appendChild(self._print(index))\n+            \n+        msub.appendChild(idx_mrow)\n+        mrow.appendChild(msub)\n+        return mrow\n+\n+    def _print_IndexedBase(self, expr):\n+        return self._print(expr.label)\n+\n     def _print_conjugate(self, expr):\n         enc = self.dom.createElement('menclose')\n         enc.setAttribute('notation', 'top')\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3930850,
+  "num_received_chars": 28822,
+  "elapsed_time": 686.1751279830933,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

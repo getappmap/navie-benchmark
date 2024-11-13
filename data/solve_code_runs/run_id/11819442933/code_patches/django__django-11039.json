@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-11039",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/management/commands/sqlmigrate.py b/django/core/management/commands/sqlmigrate.py\nindex f0b6632..d443093 100644\n--- a/django/core/management/commands/sqlmigrate.py\n+++ b/django/core/management/commands/sqlmigrate.py\n@@ -55,8 +55,10 @@ class Command(BaseCommand):\n                 migration_name, app_label))\n         targets = [(app_label, migration.name)]\n \n-        # Show begin/end around output only for atomic migrations\n-        self.output_transaction = migration.atomic\n+        # Show begin/end around output only for atomic migrations on databases\n+        # that support transactional DDL\n+        self.output_transaction = (\n+            migration.atomic and connection.features.can_rollback_ddl)\n \n         # Make a plan that represents just the requested migrations and show SQL\n         # for it\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3190879,
+  "num_received_chars": 36706,
+  "elapsed_time": 552.9550857543945,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

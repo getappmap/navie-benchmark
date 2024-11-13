@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-16046",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/contrib/admin/utils.py b/django/contrib/admin/utils.py\nindex b971bd5..a0cccc7 100644\n--- a/django/contrib/admin/utils.py\n+++ b/django/contrib/admin/utils.py\n@@ -449,6 +449,8 @@ def display_for_value(value, empty_value_display, boolean=False):\n     elif isinstance(value, (datetime.date, datetime.time)):\n         return formats.localize(value)\n     elif isinstance(value, (int, decimal.Decimal, float)):\n+        if value is None:  # Extra check for numeric types\n+            return empty_value_display\n         return formats.number_format(value)\n     elif isinstance(value, (list, tuple)):\n         return \", \".join(str(v) for v in value)\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3376109,
+  "num_received_chars": 33630,
+  "elapsed_time": 609.3704540729523,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

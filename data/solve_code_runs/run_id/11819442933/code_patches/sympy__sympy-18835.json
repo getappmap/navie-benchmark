@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-18835",
+  "edit_test_file": "sympy/utilities/tests/test_iterables.py",
+  "code_patch": "diff --git a/sympy/utilities/iterables.py b/sympy/utilities/iterables.py\nindex d96e762..2b058bf 100644\n--- a/sympy/utilities/iterables.py\n+++ b/sympy/utilities/iterables.py\n@@ -2109,7 +2109,12 @@ def uniq(seq, result=None):\n     try:\n         seen = set()\n         result = result or []\n+        initial_size = len(seq) if hasattr(seq, '__len__') else None\n         for i, s in enumerate(seq):\n+            if initial_size is not None:\n+                current_size = len(seq)\n+                if current_size != initial_size:\n+                    raise RuntimeError(\"sequence changed size during iteration\")\n             if not (s in seen or seen.add(s)):\n                 yield s\n     except TypeError:\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/utilities/tests/test_uniq_list_modification.py b/sympy/utilities/tests/test_uniq_list_modification.py\nnew file mode 100644\nindex 0000000..bca1a88\n--- /dev/null\n+++ b/sympy/utilities/tests/test_uniq_list_modification.py\n@@ -0,0 +1,19 @@\n+from sympy.utilities.iterables import uniq\n+\n+def test_uniq_list_modification():\n+    \"\"\"Test that uniq produces incorrect output when list is modified during iteration\"\"\"\n+    # Create input list with duplicates\n+    f = list('THISTLE')\n+    \n+    # Collect output while modifying list during iteration\n+    output = []\n+    for i in uniq(f):\n+        f.remove(i)  # Modify list during iteration\n+        output.append(i)\n+    \n+    # The output should be incorrect - missing some letters\n+    # Only 'T', 'I', 'L' appear instead of all unique letters\n+    assert output == ['T', 'I', 'L']\n+    \n+    # The original list should be modified\n+    assert f == ['H', 'S', 'T', 'E']\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/utilities/tests/test_uniq_list_modification_inverted.py b/sympy/utilities/tests/test_uniq_list_modification_inverted.py\nnew file mode 100644\nindex 0000000..8af4373\n--- /dev/null\n+++ b/sympy/utilities/tests/test_uniq_list_modification_inverted.py\n@@ -0,0 +1,20 @@\n+from sympy.utilities.iterables import uniq\n+\n+def test_uniq_list_modification():\n+    \"\"\"Test that uniq raises an error when list is modified during iteration\"\"\"\n+    # Create input list with duplicates\n+    f = list('THISTLE')\n+    \n+    try:\n+        # Attempt to collect output while modifying list during iteration\n+        output = []\n+        for i in uniq(f):\n+            f.remove(i)  # Modify list during iteration\n+            output.append(i)\n+            \n+        # If we get here without an exception, the bug is present\n+        raise AssertionError(\"__BUG__HERE__\")\n+        \n+    except RuntimeError:\n+        # This is the expected behavior - similar to dict/set modification during iteration\n+        pass\n\\ No newline at end of file\n",
+  "num_sent_chars": 5826233,
+  "num_received_chars": 80584,
+  "elapsed_time": 1074.2829985618591,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,21 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8713",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/napoleon/docstring.py b/sphinx/ext/napoleon/docstring.py\nindex 755088c..a5a986e 100644\n--- a/sphinx/ext/napoleon/docstring.py\n+++ b/sphinx/ext/napoleon/docstring.py\n@@ -682,7 +682,13 @@ class GoogleDocstring:\n         return self._parse_generic_section(_('Notes'), use_admonition)\n \n     def _parse_other_parameters_section(self, section: str) -> List[str]:\n-        return self._format_fields(_('Other Parameters'), self._consume_fields())\n+        if self._config.napoleon_use_param:\n+            # Allow to declare multiple parameters at once (ex: x, y: int)\n+            fields = self._consume_fields(multiple=True)\n+            return self._format_docutils_params(fields)\n+        else:\n+            fields = self._consume_fields()\n+            return self._format_fields(_('Other Parameters'), fields)\n \n     def _parse_parameters_section(self, section: str) -> List[str]:\n         if self._config.napoleon_use_param:\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1555197,
+  "num_received_chars": 9817,
+  "elapsed_time": 125.98435711860657,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

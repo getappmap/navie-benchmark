@@ -1,0 +1,21 @@
+{
+  "instance_id": "pytest-dev__pytest-5413",
+  "edit_test_file": "testing/code/test_excinfo.py",
+  "code_patch": "diff --git a/src/_pytest/_code/code.py b/src/_pytest/_code/code.py\nindex c4ed961..9e3f863 100644\n--- a/src/_pytest/_code/code.py\n+++ b/src/_pytest/_code/code.py\n@@ -537,9 +537,9 @@ class ExceptionInfo:\n     def __str__(self):\n         if self._excinfo is None:\n             return repr(self)\n-        entry = self.traceback[-1]\n-        loc = ReprFileLocation(entry.path, entry.lineno + 1, self.exconly())\n-        return str(loc)\n+        if self.value is None:\n+            return str(self.type)\n+        return str(self.value)\n \n     def match(self, regexp):\n         \"\"\"\n",
+  "code_files": null,
+  "test_patch": "diff --git a/testing/code/test_exception_str_behavior.py b/testing/code/test_exception_str_behavior.py\nnew file mode 100644\nindex 0000000..60bb738\n--- /dev/null\n+++ b/testing/code/test_exception_str_behavior.py\n@@ -0,0 +1,33 @@\n+import pytest\n+\n+\n+def test_multiline_error_str_behavior():\n+    # First verify normal exception behavior\n+    try:\n+        raise LookupError(\n+            \"A\\n\"\n+            \"B\\n\"\n+            \"C\"\n+        )\n+    except LookupError as e:\n+        normal_exception_str = str(e)\n+\n+    # Then verify pytest.raises behavior\n+    with pytest.raises(LookupError) as excinfo:\n+        raise LookupError(\n+            \"A\\n\"\n+            \"B\\n\"\n+            \"C\"\n+        )\n+\n+    # The normal exception str() should contain the full multiline message\n+    assert normal_exception_str == \"A\\nB\\nC\"\n+\n+    # The pytest excinfo str() should only contain the first line\n+    assert str(excinfo) != normal_exception_str\n+    assert \"A\" in str(excinfo)\n+    assert \"B\" not in str(excinfo)\n+    assert \"C\" not in str(excinfo)\n+\n+    # But excinfo.value str() should contain the full message\n+    assert str(excinfo.value) == normal_exception_str\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/code/test_exception_str_behavior_inverted.py b/testing/code/test_exception_str_behavior_inverted.py\nnew file mode 100644\nindex 0000000..72432fb\n--- /dev/null\n+++ b/testing/code/test_exception_str_behavior_inverted.py\n@@ -0,0 +1,37 @@\n+import pytest\n+\n+\n+def test_multiline_error_str_behavior():\n+    # First verify normal exception behavior\n+    try:\n+        raise LookupError(\n+            \"A\\n\"\n+            \"B\\n\"\n+            \"C\"\n+        )\n+    except LookupError as e:\n+        normal_exception_str = str(e)\n+\n+    # Then verify pytest.raises behavior\n+    with pytest.raises(LookupError) as excinfo:\n+        raise LookupError(\n+            \"A\\n\"\n+            \"B\\n\"\n+            \"C\"\n+        )\n+\n+    # The normal exception str() should contain the full multiline message\n+    assert normal_exception_str == \"A\\nB\\nC\"\n+\n+    # The pytest excinfo str() should contain the full message\n+    # This assertion will fail when the bug is present, raising the specified error\n+    if str(excinfo) != normal_exception_str:\n+        raise AssertionError(\"__BUG__HERE__\")\n+\n+    # These assertions should pass if the bug is fixed\n+    assert \"A\" in str(excinfo)\n+    assert \"B\" in str(excinfo)\n+    assert \"C\" in str(excinfo)\n+\n+    # This should always pass as it's the documented way to get the full message\n+    assert str(excinfo.value) == normal_exception_str\n\\ No newline at end of file\n",
+  "num_sent_chars": 4513893,
+  "num_received_chars": 42788,
+  "elapsed_time": 830.4069821834564,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

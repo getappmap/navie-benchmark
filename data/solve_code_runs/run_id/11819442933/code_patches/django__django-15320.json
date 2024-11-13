@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-15320",
+  "edit_test_file": "tests/expressions/tests.py",
+  "code_patch": "diff --git a/django/db/models/expressions.py b/django/db/models/expressions.py\nindex 6f26dff..201e483 100644\n--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@ -1150,6 +1150,7 @@ class Subquery(BaseExpression, Combinable):\n     def __init__(self, queryset, output_field=None, **extra):\n         # Allow the usage of both QuerySet and sql.Query objects.\n         self.query = getattr(queryset, 'query', queryset)\n+        self.query.subquery = True\n         self.extra = extra\n         super().__init__(output_field)\n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/expressions/test_subquery_sql_generation.py b/tests/expressions/test_subquery_sql_generation.py\nnew file mode 100644\nindex 0000000..550d18d\n--- /dev/null\n+++ b/tests/expressions/test_subquery_sql_generation.py\n@@ -0,0 +1,34 @@\n+from django.db import connection\n+from django.test import TestCase\n+from django.db.models import Subquery\n+\n+from .models import Company\n+\n+\n+class SubquerySQLGenerationTests(TestCase):\n+    def test_subquery_sql_generation(self):\n+        # Create a basic subquery\n+        subquery = Subquery(Company.objects.all())\n+\n+        # Get the raw query string - should be valid SQL\n+        raw_sql = str(subquery.query)\n+        self.assertIn('SELECT', raw_sql)\n+        self.assertTrue(raw_sql.startswith('SELECT'))\n+        self.assertFalse(raw_sql.startswith('('))\n+\n+        # Get the SQL via as_sql() - will be incorrect without subquery=True\n+        compiler = subquery.query.get_compiler(connection=connection)\n+        sql, params = subquery.as_sql(compiler, connection)\n+\n+        # The SQL should be invalid - missing first/last chars\n+        self.assertTrue(sql.startswith('('))\n+        self.assertFalse('SELECT' in sql)\n+        self.assertTrue(sql.startswith('(ELECT'))\n+\n+        # Set subquery=True to fix the issue\n+        subquery.query.subquery = True\n+        sql, params = subquery.as_sql(compiler, connection)\n+\n+        # Now the SQL should be valid\n+        self.assertTrue(sql.startswith('(SELECT'))\n+        self.assertTrue(sql.endswith(')'))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/expressions/test_subquery_sql_generation_inverted.py b/tests/expressions/test_subquery_sql_generation_inverted.py\nnew file mode 100644\nindex 0000000..9c815c7\n--- /dev/null\n+++ b/tests/expressions/test_subquery_sql_generation_inverted.py\n@@ -0,0 +1,32 @@\n+from django.db import connection\n+from django.test import TestCase\n+from django.db.models import Subquery\n+\n+from .models import Company\n+\n+\n+class SubquerySQLGenerationTests(TestCase):\n+    def test_subquery_sql_generation(self):\n+        # Create a basic subquery\n+        subquery = Subquery(Company.objects.all())\n+\n+        # Get the raw query string - should be valid SQL\n+        raw_sql = str(subquery.query)\n+        self.assertIn('SELECT', raw_sql)\n+        self.assertTrue(raw_sql.startswith('SELECT'))\n+        self.assertFalse(raw_sql.startswith('('))\n+\n+        # Get the SQL via as_sql() - should generate valid SQL\n+        compiler = subquery.query.get_compiler(connection=connection)\n+        sql, params = subquery.as_sql(compiler, connection)\n+\n+        # The SQL should be valid and properly formatted\n+        # This will fail when the bug is present, raising the specified error\n+        if not sql.startswith('(SELECT'):\n+            raise AssertionError('__BUG__HERE__')\n+        \n+        self.assertTrue(sql.endswith(')'))\n+        \n+        # Verify that the SQL contains all necessary parts\n+        self.assertIn('FROM', sql)\n+        self.assertIn('company', sql.lower())\n\\ No newline at end of file\n",
+  "num_sent_chars": 1515660,
+  "num_received_chars": 14405,
+  "elapsed_time": 229.0253779888153,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

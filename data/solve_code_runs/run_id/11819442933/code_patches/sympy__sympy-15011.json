@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-15011",
+  "edit_test_file": "sympy/utilities/tests/test_lambdify.py",
+  "code_patch": "diff --git a/sympy/utilities/lambdify.py b/sympy/utilities/lambdify.py\nindex f71bea2..94a8363 100644\n--- a/sympy/utilities/lambdify.py\n+++ b/sympy/utilities/lambdify.py\n@@ -708,7 +708,7 @@ def _preprocess(self, args, expr):\n         Returns string form of args, and updated expr.\n         \"\"\"\n         from sympy import Dummy, Symbol, Function, flatten\n-        from sympy.matrices import DeferredVector\n+        from sympy.matrices import DeferredVector, MatrixSymbol\n \n         dummify = self._dummify\n \n@@ -725,6 +725,14 @@ def _preprocess(self, args, expr):\n                 argstrs.append(nested_argstrs)\n             elif isinstance(arg, DeferredVector):\n                 argstrs.append(str(arg))\n+            elif isinstance(arg, MatrixSymbol):\n+                argrep = self._argrepr(arg.name)\n+                if dummify or not self._is_safe_ident(argrep):\n+                    dummy = MatrixSymbol(str(Dummy()), *arg.shape)\n+                    argstrs.append(self._argrepr(dummy.name))\n+                    expr = self._subexpr(expr, {arg: dummy})\n+                else:\n+                    argstrs.append(argrep)\n             elif isinstance(arg, Symbol):\n                 argrep = self._argrepr(arg)\n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/utilities/tests/test_lambdify_matrix_symbols.py b/sympy/utilities/tests/test_lambdify_matrix_symbols.py\nnew file mode 100644\nindex 0000000..080d334\n--- /dev/null\n+++ b/sympy/utilities/tests/test_lambdify_matrix_symbols.py\n@@ -0,0 +1,18 @@\n+from sympy import symbols, MatrixSymbol, lambdify\n+from sympy.utilities.pytest import raises\n+\n+def test_lambdify_curly_matrix_symbol():\n+    # Regular cases that should work\n+    curlyx = symbols(\"{x}\")\n+    v = MatrixSymbol(\"v\", 2, 1)\n+    \n+    # These should work fine\n+    curlyScalarId = lambdify(curlyx, curlyx)\n+    vectorId = lambdify(v, v)\n+    \n+    # MatrixSymbol with curly braces should fail\n+    curlyv = MatrixSymbol(\"{v}\", 2, 1)\n+    \n+    # Both of these should raise SyntaxError\n+    raises(SyntaxError, lambda: lambdify(curlyv, curlyv))\n+    raises(SyntaxError, lambda: lambdify(curlyv, curlyv, dummify=True))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/utilities/tests/test_lambdify_matrix_symbols_inverted.py b/sympy/utilities/tests/test_lambdify_matrix_symbols_inverted.py\nnew file mode 100644\nindex 0000000..84f894b\n--- /dev/null\n+++ b/sympy/utilities/tests/test_lambdify_matrix_symbols_inverted.py\n@@ -0,0 +1,19 @@\n+from sympy import symbols, MatrixSymbol, lambdify\n+\n+def test_lambdify_curly_matrix_symbol():\n+    # Regular cases that should work\n+    curlyx = symbols(\"{x}\")\n+    v = MatrixSymbol(\"v\", 2, 1)\n+    \n+    # These should work fine\n+    curlyScalarId = lambdify(curlyx, curlyx)\n+    vectorId = lambdify(v, v)\n+    \n+    # MatrixSymbol with curly braces should work with dummify=True\n+    curlyv = MatrixSymbol(\"{v}\", 2, 1)\n+    \n+    try:\n+        # This should work with dummify=True, if it doesn't, it's a bug\n+        lambdify(curlyv, curlyv, dummify=True)\n+    except SyntaxError:\n+        raise AssertionError(\"__BUG__HERE__\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 1815432,
+  "num_received_chars": 14443,
+  "elapsed_time": 273.1662983894348,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

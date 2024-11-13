@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-13321",
+  "edit_test_file": "tests/sessions_tests/tests.py",
+  "code_patch": "diff --git a/django/contrib/sessions/backends/base.py b/django/contrib/sessions/backends/base.py\nindex 187e14b..2eb0cb7 100644\n--- a/django/contrib/sessions/backends/base.py\n+++ b/django/contrib/sessions/backends/base.py\n@@ -1,4 +1,5 @@\n import base64\n+import binascii\n import logging\n import string\n import warnings\n@@ -132,7 +133,13 @@ class SessionBase:\n \n     def _legacy_decode(self, session_data):\n         # RemovedInDjango40Warning: pre-Django 3.1 format will be invalid.\n-        encoded_data = base64.b64decode(session_data.encode('ascii'))\n+        try:\n+            encoded_data = base64.b64decode(session_data.encode('ascii'))\n+        except (binascii.Error, UnicodeEncodeError) as e:\n+            # If there's any error decoding the session data, \n+            # return an empty session\n+            return {}\n+            \n         try:\n             # could produce ValueError if there is no ':'\n             hash, serialized = encoded_data.split(b':', 1)\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/sessions_tests/test_session_decode_error.py b/tests/sessions_tests/test_session_decode_error.py\nnew file mode 100644\nindex 0000000..1040e7a\n--- /dev/null\n+++ b/tests/sessions_tests/test_session_decode_error.py\n@@ -0,0 +1,26 @@\n+import binascii\n+import unittest\n+from django.contrib.sessions.backends.db import SessionStore\n+from django.test import TestCase\n+\n+\n+class SessionDecodeErrorTests(TestCase):\n+    \"\"\"Test session decode errors.\"\"\"\n+\n+    def test_decode_invalid_base64_padding(self):\n+        \"\"\"\n+        Test that decoding session data with invalid base64 padding raises\n+        binascii.Error.\n+        \n+        This reproduces the issue where an invalid session cookie causes a crash\n+        due to incorrect base64 padding.\n+        \"\"\"\n+        session = SessionStore()\n+        \n+        # Invalid base64 data missing padding\n+        invalid_session_data = \"abc123\"  # Missing required padding\n+        \n+        with self.assertRaises(binascii.Error) as cm:\n+            session._legacy_decode(invalid_session_data)\n+            \n+        self.assertEqual(str(cm.exception), \"Incorrect padding\")\n",
+  "test_inverted_patch": "diff --git a/tests/sessions_tests/test_session_decode_error_inverted.py b/tests/sessions_tests/test_session_decode_error_inverted.py\nnew file mode 100644\nindex 0000000..b919b6c\n--- /dev/null\n+++ b/tests/sessions_tests/test_session_decode_error_inverted.py\n@@ -0,0 +1,29 @@\n+import binascii\n+import unittest\n+from django.contrib.sessions.backends.db import SessionStore\n+from django.test import TestCase\n+\n+\n+class SessionDecodeErrorTests(TestCase):\n+    \"\"\"Test session decode errors.\"\"\"\n+\n+    def test_decode_invalid_base64_padding(self):\n+        \"\"\"\n+        Test that decoding session data with invalid base64 padding should not\n+        raise binascii.Error, as this causes crashes in production.\n+        \n+        This test will FAIL when the issue is observed (when binascii.Error is raised),\n+        indicating that the bug is present.\n+        \"\"\"\n+        session = SessionStore()\n+        \n+        # Invalid base64 data missing padding\n+        invalid_session_data = \"abc123\"  # Missing required padding\n+        \n+        try:\n+            session._legacy_decode(invalid_session_data)\n+        except binascii.Error:\n+            raise AssertionError(\"__BUG__HERE__: Session decode crashes on invalid base64 padding\")\n+            \n+        # If we get here, no error was raised, which is the desired behavior\n+        # The session decode should handle invalid padding gracefully\n\\ No newline at end of file\n",
+  "num_sent_chars": 1332945,
+  "num_received_chars": 18084,
+  "elapsed_time": 204.79535698890686,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-12983",
+  "edit_test_file": "tests/template_tests/filter_tests/test_slugify.py",
+  "code_patch": "diff --git a/django/utils/text.py b/django/utils/text.py\nindex fb5f629..3ba4bbb 100644\n--- a/django/utils/text.py\n+++ b/django/utils/text.py\n@@ -403,7 +403,7 @@ def slugify(value, allow_unicode=False):\n     else:\n         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')\n     value = re.sub(r'[^\\w\\s-]', '', value.lower()).strip()\n-    return re.sub(r'[-\\s]+', '-', value)\n+    return re.sub(r'[-\\s]+', '-', value).strip('-_')\n \n \n def camel_case_to_spaces(value):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_slugify_strip_chars.py b/tests/template_tests/filter_tests/test_slugify_strip_chars.py\nnew file mode 100644\nindex 0000000..15a9815\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_slugify_strip_chars.py\n@@ -0,0 +1,16 @@\n+from django.template.defaultfilters import slugify\n+from django.test import SimpleTestCase\n+\n+\n+class SlugifyStripCharsTests(SimpleTestCase):\n+    \"\"\"\n+    Test that slugify currently preserves leading/trailing dashes and underscores\n+    instead of stripping them as desired.\n+    \"\"\"\n+    def test_slugify_preserves_leading_trailing_chars(self):\n+        \"\"\"\n+        slugify() should strip leading/trailing dashes and underscores,\n+        but currently preserves them.\n+        \"\"\"\n+        value = \"___This is a test ---\"\n+        self.assertEqual(slugify(value), \"___this-is-a-test-\")\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_slugify_strip_chars_inverted.py b/tests/template_tests/filter_tests/test_slugify_strip_chars_inverted.py\nnew file mode 100644\nindex 0000000..6ee78bb\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_slugify_strip_chars_inverted.py\n@@ -0,0 +1,24 @@\n+from django.template.defaultfilters import slugify\n+from django.test import SimpleTestCase\n+\n+\n+class SlugifyStripCharsTests(SimpleTestCase):\n+    \"\"\"\n+    Test that slugify strips leading/trailing dashes and underscores.\n+    The test will fail if these characters are preserved (which is the current bug).\n+    \"\"\"\n+    def test_slugify_should_strip_leading_trailing_chars(self):\n+        \"\"\"\n+        slugify() should strip leading/trailing dashes and underscores.\n+        Test fails if these characters are preserved (current buggy behavior).\n+        \"\"\"\n+        value = \"___This is a test ---\"\n+        result = slugify(value)\n+        expected = \"this-is-a-test\"\n+        \n+        if result != expected:\n+            raise AssertionError(\"__BUG__HERE__: \"\n+                               f\"Expected '{expected}', but got '{result}'. \"\n+                               \"slugify() is not stripping leading/trailing dashes and underscores\")\n+        \n+        self.assertEqual(result, expected)\n\\ No newline at end of file\n",
+  "num_sent_chars": 1072781,
+  "num_received_chars": 11194,
+  "elapsed_time": 185.13601422309875,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

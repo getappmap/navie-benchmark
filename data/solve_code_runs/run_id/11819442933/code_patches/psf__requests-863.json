@@ -1,0 +1,21 @@
+{
+  "instance_id": "psf__requests-863",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/requests/models.py b/requests/models.py\nindex d845637..fa99d24 100644\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -149,7 +149,11 @@ class Request(object):\n         hooks = hooks or {}\n \n         for (k, v) in list(hooks.items()):\n-            self.register_hook(event=k, hook=v)\n+            if hasattr(v, '__iter__') and not isinstance(v, str):\n+                for hook in v:\n+                    self.register_hook(event=k, hook=hook)\n+            else:\n+                self.register_hook(event=k, hook=v)\n \n         #: Session.\n         self.session = session\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 988930,
+  "num_received_chars": 11239,
+  "elapsed_time": 159.30778980255127,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

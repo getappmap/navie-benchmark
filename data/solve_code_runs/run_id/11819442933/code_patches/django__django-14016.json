@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-14016",
+  "edit_test_file": "tests/utils_tests/test_datastructures.py",
+  "code_patch": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex c2623f0..768f291 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -40,6 +40,29 @@ class Q(tree.Node):\n     def __init__(self, *args, _connector=None, _negated=False, **kwargs):\n         super().__init__(children=[*args, *sorted(kwargs.items())], connector=_connector, negated=_negated)\n \n+    def _convert_values(self):\n+        \"\"\"\n+        Convert non-pickleable values in the Q object to pickleable equivalents.\n+        Returns a new Q object with converted values.\n+        \"\"\"\n+        obj = type(self)()\n+        obj.connector = self.connector\n+        obj.negated = self.negated\n+\n+        children = []\n+        for child in self.children:\n+            if isinstance(child, Q):\n+                children.append(child._convert_values())\n+            else:\n+                # For (key, value) pairs, convert non-pickleable values\n+                key, value = child\n+                if hasattr(value, '__iter__') and not isinstance(value, (list, tuple, str, bytes)):\n+                    value = list(value)\n+                children.append((key, value))\n+\n+        obj.children = children\n+        return obj\n+\n     def _combine(self, other, conn):\n         if not isinstance(other, Q):\n             raise TypeError(other)\n@@ -53,8 +76,8 @@ class Q(tree.Node):\n \n         obj = type(self)()\n         obj.connector = conn\n-        obj.add(self, conn)\n-        obj.add(other, conn)\n+        obj.add(self._convert_values(), conn)\n+        obj.add(other._convert_values(), conn)\n         return obj\n \n     def __or__(self, other):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/utils_tests/test_q_object_pickle.py b/tests/utils_tests/test_q_object_pickle.py\nnew file mode 100644\nindex 0000000..ebd931a\n--- /dev/null\n+++ b/tests/utils_tests/test_q_object_pickle.py\n@@ -0,0 +1,15 @@\n+from django.test import SimpleTestCase\n+from django.db.models import Q\n+\n+\n+class QObjectPickleTests(SimpleTestCase):\n+    def test_q_object_with_dict_keys_or_operator(self):\n+        \"\"\"\n+        Using the | operator with a Q object containing dict_keys should raise TypeError.\n+        \"\"\"\n+        empty_dict = {}\n+        q1 = Q()\n+        q2 = Q(x__in=empty_dict.keys())\n+\n+        with self.assertRaisesMessage(TypeError, \"cannot pickle 'dict_keys' object\"):\n+            q1 | q2\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/utils_tests/test_q_object_pickle_inverted.py b/tests/utils_tests/test_q_object_pickle_inverted.py\nnew file mode 100644\nindex 0000000..7535f2c\n--- /dev/null\n+++ b/tests/utils_tests/test_q_object_pickle_inverted.py\n@@ -0,0 +1,21 @@\n+from django.test import SimpleTestCase\n+from django.db.models import Q\n+\n+\n+class QObjectPickleTests(SimpleTestCase):\n+    def test_q_object_with_dict_keys_or_operator(self):\n+        \"\"\"\n+        Using the | operator with a Q object containing dict_keys should not raise TypeError.\n+        \"\"\"\n+        empty_dict = {}\n+        q1 = Q()\n+        q2 = Q(x__in=empty_dict.keys())\n+\n+        try:\n+            result = q1 | q2\n+        except TypeError as e:\n+            if \"cannot pickle 'dict_keys' object\" in str(e):\n+                raise AssertionError(\"__BUG__HERE__\") from e\n+            raise  # re-raise if it's a different TypeError\n+\n+        # If we get here, the operation succeeded as it should\n\\ No newline at end of file\n",
+  "num_sent_chars": 5621040,
+  "num_received_chars": 82485,
+  "elapsed_time": 1215.4385437965393,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-20442",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sympy/physics/units/definitions/unit_definitions.py b/sympy/physics/units/definitions/unit_definitions.py\nindex 5a86bfb..079a9d3 100644\n--- a/sympy/physics/units/definitions/unit_definitions.py\n+++ b/sympy/physics/units/definitions/unit_definitions.py\n@@ -1,6 +1,6 @@\n from sympy.physics.units.definitions.dimension_definitions import current, temperature, amount_of_substance, \\\n     luminous_intensity, angle, charge, voltage, impedance, conductance, capacitance, inductance, magnetic_density, \\\n-    magnetic_flux, information\n+    magnetic_flux, information, energy\n \n from sympy import Rational, pi, S as S_singleton\n from sympy.physics.units.prefixes import kilo, milli, micro, deci, centi, nano, pico, kibi, mebi, gibi, tebi, pebi, exbi\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3969402,
+  "num_received_chars": 93520,
+  "elapsed_time": 1063.6289529800415,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 7,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

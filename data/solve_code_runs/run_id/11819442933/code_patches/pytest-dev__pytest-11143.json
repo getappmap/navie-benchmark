@@ -1,0 +1,21 @@
+{
+  "instance_id": "pytest-dev__pytest-11143",
+  "edit_test_file": "testing/test_assertrewrite.py",
+  "code_patch": "diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py\nindex 157903f..6de9269 100644\n--- a/src/_pytest/assertion/rewrite.py\n+++ b/src/_pytest/assertion/rewrite.py\n@@ -743,7 +743,7 @@ class AssertionRewriter(ast.NodeVisitor):\n \n     @staticmethod\n     def is_rewrite_disabled(docstring: str) -> bool:\n-        return \"PYTEST_DONT_REWRITE\" in docstring\n+        return isinstance(docstring, str) and \"PYTEST_DONT_REWRITE\" in docstring\n \n     def variable(self) -> str:\n         \"\"\"Get a new variable.\"\"\"\n",
+  "code_files": null,
+  "test_patch": "diff --git a/testing/test_rewrite_numeric_docstring.py b/testing/test_rewrite_numeric_docstring.py\nnew file mode 100644\nindex 0000000..8606c90\n--- /dev/null\n+++ b/testing/test_rewrite_numeric_docstring.py\n@@ -0,0 +1,11 @@\n+import pytest\n+from _pytest.assertion.rewrite import rewrite_asserts\n+import ast\n+\n+def test_rewrite_numeric_docstring():\n+    \"\"\"Test that assertion rewriting handles numeric values at start of file correctly\"\"\"\n+    source = b\"123\\n\\ndef test_something():\\n    assert True\\n\"\n+    tree = ast.parse(source)\n+    \n+    with pytest.raises(TypeError, match=\"argument of type 'int' is not iterable\"):\n+        rewrite_asserts(tree, source, \"test_file.py\", None)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/testing/test_rewrite_numeric_docstring_inverted.py b/testing/test_rewrite_numeric_docstring_inverted.py\nnew file mode 100644\nindex 0000000..f64abd6\n--- /dev/null\n+++ b/testing/test_rewrite_numeric_docstring_inverted.py\n@@ -0,0 +1,18 @@\n+import pytest\n+from _pytest.assertion.rewrite import rewrite_asserts\n+import ast\n+\n+def test_rewrite_numeric_docstring():\n+    \"\"\"Test that assertion rewriting handles numeric values at start of file correctly\"\"\"\n+    source = b\"123\\n\\ndef test_something():\\n    assert True\\n\"\n+    tree = ast.parse(source)\n+    \n+    try:\n+        rewrite_asserts(tree, source, \"test_file.py\", None)\n+    except TypeError as e:\n+        if str(e) == \"argument of type 'int' is not iterable\":\n+            raise AssertionError(\"__BUG__HERE__\") from e\n+        raise e\n+\n+    # If we get here, the bug wasn't triggered\n+    pytest.fail(\"Expected TypeError but got none\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 4474820,
+  "num_received_chars": 33512,
+  "elapsed_time": 837.8744015693665,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

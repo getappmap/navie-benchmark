@@ -1,0 +1,5 @@
+{
+  "edit_test_file": "sympy/printing/tests/test_latex.py",
+  "test_patch": "diff --git a/sympy/printing/tests/test_singularity_function_printing.py b/sympy/printing/tests/test_singularity_function_printing.py\nnew file mode 100644\nindex 0000000..d3ad542\n--- /dev/null\n+++ b/sympy/printing/tests/test_singularity_function_printing.py\n@@ -0,0 +1,9 @@\n+from sympy import symbols, latex\n+from sympy.functions.special.singularity_functions import SingularityFunction\n+from sympy.testing.pytest import raises\n+\n+def test_singularity_function_power_printing():\n+    x, L, F = symbols('x L F')\n+    expr = SingularityFunction(x, L/2, -1)**2\n+    \n+    raises(TypeError, lambda: latex(expr))\n\\ No newline at end of file\n",
+  "inverted_patch": null
+}

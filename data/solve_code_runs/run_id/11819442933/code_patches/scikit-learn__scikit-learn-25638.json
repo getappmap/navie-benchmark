@@ -1,0 +1,21 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-25638",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sklearn/utils/multiclass.py b/sklearn/utils/multiclass.py\nindex 5eaef2f..d0b017c 100644\n--- a/sklearn/utils/multiclass.py\n+++ b/sklearn/utils/multiclass.py\n@@ -20,8 +20,24 @@ from .validation import check_array, _assert_all_finite\n from ..utils._array_api import get_namespace\n \n \n+def _convert_pandas_nullable(y):\n+    \"\"\"Convert pandas nullable dtypes to their numpy equivalents.\"\"\"\n+    if hasattr(y, \"dtype\") and hasattr(y.dtype, \"name\"):\n+        dtype_name = y.dtype.name\n+        if dtype_name.startswith((\"Int\", \"Float\", \"boolean\")):\n+            # Convert to corresponding numpy dtype\n+            if dtype_name.startswith(\"Int\"):\n+                return y.astype(\"float64\").to_numpy()\n+            elif dtype_name.startswith(\"Float\"):\n+                return y.astype(\"float64\").to_numpy()\n+            else:  # boolean\n+                return y.astype(\"bool\").to_numpy()\n+    return y\n+\n def _unique_multiclass(y):\n     xp, is_array_api = get_namespace(y)\n+    # Handle pandas nullable dtypes\n+    y = _convert_pandas_nullable(y)\n     if hasattr(y, \"__array__\") or is_array_api:\n         return xp.unique_values(xp.asarray(y))\n     else:\n@@ -77,6 +93,9 @@ def unique_labels(*ys):\n     if not ys:\n         raise ValueError(\"No argument has been passed.\")\n     # Check that we don't mix label format\n+    \n+    # Convert any pandas nullable types before type checking\n+    ys = [_convert_pandas_nullable(y) for y in ys]\n \n     ys_types = set(type_of_target(x) for x in ys)\n     if ys_types == {\"binary\", \"multiclass\"}:\n@@ -111,7 +130,11 @@ def unique_labels(*ys):\n         unique_ys = xp.concat([_unique_labels(y) for y in ys])\n         return xp.unique_values(unique_ys)\n \n-    ys_labels = set(chain.from_iterable((i for i in _unique_labels(y)) for y in ys))\n+    # Get unique labels after converting nullable dtypes\n+    ys_labels = set(chain.from_iterable(\n+        (i for i in _unique_labels(_convert_pandas_nullable(y))) for y in ys\n+    ))\n+    \n     # Check that we don't mix string type with number type\n     if len(set(isinstance(label, str) for label in ys_labels)) > 1:\n         raise ValueError(\"Mix of label input types (string and number)\")\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 6599980,
+  "num_received_chars": 58096,
+  "elapsed_time": 957.2896032333374,
+  "lint_repair_count": 9,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

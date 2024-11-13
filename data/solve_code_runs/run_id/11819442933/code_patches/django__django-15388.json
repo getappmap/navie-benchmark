@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-15388",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/template/autoreload.py b/django/template/autoreload.py\nindex cf1b20b..77fb722 100644\n--- a/django/template/autoreload.py\n+++ b/django/template/autoreload.py\n@@ -19,13 +19,13 @@ def get_template_directories():\n         if not isinstance(backend, DjangoTemplates):\n             continue\n \n-        items.update(cwd / to_path(dir) for dir in backend.engine.dirs)\n+        items.update(Path(dir) if isinstance(dir, Path) else cwd / to_path(dir) for dir in backend.engine.dirs)\n \n         for loader in backend.engine.template_loaders:\n             if not hasattr(loader, 'get_dirs'):\n                 continue\n             items.update(\n-                cwd / to_path(directory)\n+                Path(directory) if isinstance(directory, Path) else cwd / to_path(directory)\n                 for directory in loader.get_dirs()\n                 if not is_django_path(directory)\n             )\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3014619,
+  "num_received_chars": 45985,
+  "elapsed_time": 1159.0258452892303,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

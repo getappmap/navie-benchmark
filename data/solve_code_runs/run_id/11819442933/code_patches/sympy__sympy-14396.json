@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-14396",
+  "edit_test_file": "sympy/polys/tests/test_polytools.py",
+  "code_patch": "diff --git a/sympy/polys/polyoptions.py b/sympy/polys/polyoptions.py\nindex 6e504a3..18449eb 100644\n--- a/sympy/polys/polyoptions.py\n+++ b/sympy/polys/polyoptions.py\n@@ -405,7 +405,7 @@ class Domain(with_metaclass(OptionType, Option)):\n     _re_realfield = re.compile(r\"^(R|RR)(_(\\d+))?$\")\n     _re_complexfield = re.compile(r\"^(C|CC)(_(\\d+))?$\")\n     _re_finitefield = re.compile(r\"^(FF|GF)\\((\\d+)\\)$\")\n-    _re_polynomial = re.compile(r\"^(Z|ZZ|Q|QQ)\\[(.+)\\]$\")\n+    _re_polynomial = re.compile(r\"^(Z|ZZ|Q|QQ|R|RR|C|CC)\\[(.+)\\]$\")\n     _re_fraction = re.compile(r\"^(Z|ZZ|Q|QQ)\\((.+)\\)$\")\n     _re_algebraic = re.compile(r\"^(Q|QQ)\\<(.+)\\>$\")\n \n@@ -480,7 +480,7 @@ def preprocess(cls, domain):\n                 gens = list(map(sympify, r.groups()[1].split(',')))\n                 return sympy.polys.domains.QQ.algebraic_field(*gens)\n \n-        raise OptionError('expected a valid domain specification, got %s' % domain)\n+        raise OptionError(\"expected a valid domain specification (e.g. ZZ, QQ, RR, CC, EX, RR[x,y], QQ[x], etc.), got %s\" % domain)\n \n     @classmethod\n     def postprocess(cls, options):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/polys/tests/test_domain_parsing.py b/sympy/polys/tests/test_domain_parsing.py\nnew file mode 100644\nindex 0000000..a144e8f\n--- /dev/null\n+++ b/sympy/polys/tests/test_domain_parsing.py\n@@ -0,0 +1,11 @@\n+\"\"\"Tests for domain parsing in polynomial construction.\"\"\"\n+\n+from sympy import Poly, Symbol\n+from sympy.abc import x, y, z\n+from sympy.polys.polyerrors import OptionError\n+from sympy.utilities.pytest import raises\n+\n+def test_domain_parsing():\n+    \"\"\"Test that invalid domain specifications raise appropriate errors.\"\"\"\n+    # This should raise an OptionError since 'RR[y,z]' is not a valid domain specification\n+    raises(OptionError, lambda: Poly(1.2*x*y*z, x, domain='RR[y,z]'))\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/polys/tests/test_domain_parsing_inverted.py b/sympy/polys/tests/test_domain_parsing_inverted.py\nnew file mode 100644\nindex 0000000..4e436b2\n--- /dev/null\n+++ b/sympy/polys/tests/test_domain_parsing_inverted.py\n@@ -0,0 +1,15 @@\n+\"\"\"Tests for domain parsing in polynomial construction.\"\"\"\n+\n+from sympy import Poly, Symbol\n+from sympy.abc import x, y, z\n+from sympy.polys.polyerrors import OptionError\n+from sympy.utilities.pytest import raises\n+\n+def test_domain_parsing():\n+    \"\"\"Test that valid domain specifications are handled correctly.\"\"\"\n+    # This should work since RR[y,z] is a reasonable domain specification\n+    # for a polynomial with real coefficients in y,z\n+    try:\n+        p = Poly(1.2*x*y*z, x, domain='RR[y,z]')\n+    except OptionError:\n+        raise AssertionError(\"__BUG__HERE__: RR[y,z] should be a valid domain specification\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 3705852,
+  "num_received_chars": 53915,
+  "elapsed_time": 975.5797395706177,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 6,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 3,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

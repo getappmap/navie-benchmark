@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-13043",
+  "edit_test_file": "sympy/solvers/tests/test_diophantine.py",
+  "code_patch": "diff --git a/sympy/integrals/intpoly.py b/sympy/integrals/intpoly.py\nindex fc72bd2..81de68e 100644\n--- a/sympy/integrals/intpoly.py\n+++ b/sympy/integrals/intpoly.py\n@@ -593,7 +593,18 @@ def decompose(expr, separate=False):\n         poly_dict[0] = expr\n \n     if separate:\n-        return list(poly_dict.values())\n+        # Sort monomials by total degree and then lexicographically\n+        def sort_key(monomial):\n+            if monomial.is_number:\n+                return (0, str(monomial))\n+            if monomial.is_Symbol:\n+                return (1, str(monomial))\n+            if monomial.is_Mul:\n+                return (sum(exp for _, exp in monomial.as_powers_dict().items()), str(monomial))\n+            if monomial.is_Pow:\n+                return (monomial.args[1], str(monomial))\n+            return (0, str(monomial))\n+        return sorted(poly_dict.values(), key=sort_key)\n     return poly_dict\n \n \n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/solvers/tests/test_intpoly_decompose.py b/sympy/solvers/tests/test_intpoly_decompose.py\nnew file mode 100644\nindex 0000000..4c6015a\n--- /dev/null\n+++ b/sympy/solvers/tests/test_intpoly_decompose.py\n@@ -0,0 +1,29 @@\n+from sympy.abc import x, y\n+from sympy.integrals.intpoly import decompose\n+\n+def test_decompose_arbitrary_order():\n+    \"\"\"Test that decompose() with separate=True returns values in arbitrary order\"\"\"\n+    expr = x**2 + y + x*y + y**2 + x**3 + x**2*y + y**4 + x**3*y + y**2*x**2\n+    \n+    # Call decompose multiple times and verify we can get different orderings\n+    result1 = decompose(expr, separate=True)\n+    result2 = decompose(expr, separate=True)\n+    \n+    # Both results should contain the same terms but potentially in different orders\n+    assert sorted(str(term) for term in result1) == sorted(str(term) for term in result2)\n+    \n+    # Verify we have all the expected terms regardless of order\n+    expected_terms = {\n+        'y', \n+        'x**2', \n+        'x*y',\n+        'y**2',\n+        'x**3',\n+        'x**2*y',\n+        'y**4',\n+        'x**3*y',\n+        'x**2*y**2'\n+    }\n+    \n+    result_terms = {str(term) for term in result1}\n+    assert result_terms == expected_terms\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 6544942,
+  "num_received_chars": 69321,
+  "elapsed_time": 1366.7441818714142,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

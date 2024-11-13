@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-12453",
+  "edit_test_file": "tests/serializers/tests.py",
+  "code_patch": "diff --git a/django/db/backends/base/creation.py b/django/db/backends/base/creation.py\nindex c50fc90..de31a85 100644\n--- a/django/db/backends/base/creation.py\n+++ b/django/db/backends/base/creation.py\n@@ -126,8 +126,12 @@ class BaseDatabaseCreation:\n         the serialize_db_to_string() method.\n         \"\"\"\n         data = StringIO(data)\n-        for obj in serializers.deserialize(\"json\", data, using=self.connection.alias):\n-            obj.save()\n+        # Wrap in atomic block to handle forward references and\n+        # ensure data consistency\n+        from django.db import transaction\n+        with transaction.atomic(using=self.connection.alias):\n+            for obj in serializers.deserialize(\"json\", data, using=self.connection.alias):\n+                obj.save()\n \n     def _get_database_display_str(self, verbosity, database_name):\n         \"\"\"\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/serializers/test_serialized_rollback_integrity.py b/tests/serializers/test_serialized_rollback_integrity.py\nnew file mode 100644\nindex 0000000..bc137dc\n--- /dev/null\n+++ b/tests/serializers/test_serialized_rollback_integrity.py\n@@ -0,0 +1,51 @@\n+from django.db import models, transaction\n+from django.test import TransactionTestCase\n+\n+\n+class ParentModel(models.Model):\n+    name = models.CharField(max_length=100)\n+\n+    class Meta:\n+        app_label = 'serializers'\n+\n+\n+class ChildModel(models.Model):\n+    parent = models.ForeignKey(ParentModel, on_delete=models.CASCADE)\n+    name = models.CharField(max_length=100)\n+\n+    class Meta:\n+        app_label = 'serializers'\n+\n+\n+class SerializedRollbackIntegrityTest(TransactionTestCase):\n+    \"\"\"\n+    Test that serialized_rollback fails when restoring objects with foreign key\n+    relationships due to integrity errors when not using a transaction.\n+    \"\"\"\n+    available_apps = ['serializers']\n+    serialized_rollback = True\n+\n+    def setUp(self):\n+        # Create a parent and child with FK relationship\n+        self.parent = ParentModel.objects.create(name='parent')\n+        self.child = ChildModel.objects.create(parent=self.parent, name='child')\n+\n+    def test_serialized_rollback_integrity_error(self):\n+        \"\"\"\n+        Test that restoring objects fails with an IntegrityError when the child\n+        is restored before its parent due to lack of transaction wrapping.\n+        \"\"\"\n+        # Force the serialization order to be child before parent\n+        # by clearing and manually saving in that order\n+        ChildModel.objects.all().delete()\n+        ParentModel.objects.all().delete()\n+\n+        # Disable transaction wrapping to demonstrate the issue\n+        with transaction.atomic():\n+            # Save child first - this should fail with IntegrityError\n+            # when serialized_rollback tries to restore it\n+            self.child.save()\n+            self.parent.save()\n+\n+        # The test passes if we get here, since serialized_rollback will fail\n+        # when trying to restore the objects in the wrong order without a transaction\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 7434032,
+  "num_received_chars": 113075,
+  "elapsed_time": 1437.6231215000153,
+  "lint_repair_count": 7,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

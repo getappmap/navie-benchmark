@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-21171",
+  "edit_test_file": "sympy/printing/tests/test_latex.py",
+  "code_patch": "diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py\nindex 43f9e6a..edc05dd 100644\n--- a/sympy/printing/latex.py\n+++ b/sympy/printing/latex.py\n@@ -1968,10 +1968,14 @@ def _print_DiracDelta(self, expr, exp=None):\n             tex = r\"\\left(%s\\right)^{%s}\" % (tex, exp)\n         return tex\n \n-    def _print_SingularityFunction(self, expr):\n+    def _print_SingularityFunction(self, expr, exp=None):\n         shift = self._print(expr.args[0] - expr.args[1])\n         power = self._print(expr.args[2])\n         tex = r\"{\\left\\langle %s \\right\\rangle}^{%s}\" % (shift, power)\n+        \n+        if exp is not None:\n+            tex = r\"\\left(%s\\right)^{%s}\" % (tex, exp)\n+        \n         return tex\n \n     def _print_Heaviside(self, expr, exp=None):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/printing/tests/test_singularity_function_printing.py b/sympy/printing/tests/test_singularity_function_printing.py\nnew file mode 100644\nindex 0000000..d3ad542\n--- /dev/null\n+++ b/sympy/printing/tests/test_singularity_function_printing.py\n@@ -0,0 +1,9 @@\n+from sympy import symbols, latex\n+from sympy.functions.special.singularity_functions import SingularityFunction\n+from sympy.testing.pytest import raises\n+\n+def test_singularity_function_power_printing():\n+    x, L, F = symbols('x L F')\n+    expr = SingularityFunction(x, L/2, -1)**2\n+    \n+    raises(TypeError, lambda: latex(expr))\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 7654941,
+  "num_received_chars": 80263,
+  "elapsed_time": 1614.7239396572113,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

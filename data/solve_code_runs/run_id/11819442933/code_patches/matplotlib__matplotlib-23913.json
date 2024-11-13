@@ -1,0 +1,21 @@
+{
+  "instance_id": "matplotlib__matplotlib-23913",
+  "edit_test_file": "lib/matplotlib/tests/test_legend.py",
+  "code_patch": "diff --git a/lib/matplotlib/legend.py b/lib/matplotlib/legend.py\nindex 9e5b903..cccfa6b 100644\n--- a/lib/matplotlib/legend.py\n+++ b/lib/matplotlib/legend.py\n@@ -314,6 +314,7 @@ class Legend(Artist):\n         prop=None,           # properties for the legend texts\n         fontsize=None,       # keyword to set font size directly\n         labelcolor=None,     # keyword to set the text color\n+        draggable=None,      # whether the legend can be dragged\n \n         # spacing & pad defined as a fraction of the font-size\n         borderpad=None,      # whitespace inside the legend border\n@@ -539,8 +540,11 @@ class Legend(Artist):\n         self.set_title(title, prop=title_prop_fp)\n         self._draggable = None\n \n-        # set the text color\n+        # Initialize draggable state if specified\n+        if draggable is not None:\n+            self.set_draggable(draggable)\n \n+        # set the text color\n         color_getters = {  # getter function depends on line or patch\n             'linecolor':       ['get_color',           'get_facecolor'],\n             'markerfacecolor': ['get_markerfacecolor', 'get_facecolor'],\n",
+  "code_files": null,
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_legend_draggable.py b/lib/matplotlib/tests/test_legend_draggable.py\nnew file mode 100644\nindex 0000000..17bf9e4\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_legend_draggable.py\n@@ -0,0 +1,16 @@\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_no_draggable_keyword_at_creation():\n+    \"\"\"Test that legend does not accept draggable as a keyword arg at creation time.\"\"\"\n+    fig, ax = plt.subplots()\n+    ax.plot([1, 2, 3], label='test')\n+    \n+    # This should raise TypeError since draggable is not a valid kwarg\n+    with pytest.raises(TypeError, match=\"got an unexpected keyword argument 'draggable'\"):\n+        ax.legend(draggable=True)\n+        \n+    # Show that the current workflow requires setting draggable after creation\n+    leg = ax.legend()\n+    leg.set_draggable(True)\n+    assert leg.get_draggable() is True\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/lib/matplotlib/tests/test_legend_draggable_inverted.py b/lib/matplotlib/tests/test_legend_draggable_inverted.py\nnew file mode 100644\nindex 0000000..5f0935c\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_legend_draggable_inverted.py\n@@ -0,0 +1,19 @@\n+import matplotlib.pyplot as plt\n+import pytest\n+\n+def test_no_draggable_keyword_at_creation():\n+    \"\"\"Test that legend should accept draggable as a keyword arg at creation time.\"\"\"\n+    fig, ax = plt.subplots()\n+    ax.plot([1, 2, 3], label='test')\n+    \n+    try:\n+        # This should work, but currently raises TypeError\n+        ax.legend(draggable=True)\n+    except TypeError as e:\n+        if \"got an unexpected keyword argument 'draggable'\" in str(e):\n+            raise AssertionError(\"__BUG__HERE__\")\n+        raise  # Re-raise if it's a different TypeError\n+        \n+    # If we get here, the bug is fixed and the test passes\n+    leg = ax.legend()\n+    assert leg.get_draggable() is True\n\\ No newline at end of file\n",
+  "num_sent_chars": 5641564,
+  "num_received_chars": 76662,
+  "elapsed_time": 1606.9955079555511,
+  "lint_repair_count": 4,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

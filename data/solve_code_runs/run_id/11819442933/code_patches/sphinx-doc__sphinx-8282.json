@@ -1,0 +1,21 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8282",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/autodoc/typehints.py b/sphinx/ext/autodoc/typehints.py\nindex 4f81a6e..df2b27c 100644\n--- a/sphinx/ext/autodoc/typehints.py\n+++ b/sphinx/ext/autodoc/typehints.py\n@@ -28,12 +28,29 @@ def record_typehints(app: Sphinx, objtype: str, name: str, obj: Any,\n         if callable(obj):\n             annotations = app.env.temp_data.setdefault('annotations', {})\n             annotation = annotations.setdefault(name, OrderedDict())\n-            sig = inspect.signature(obj)\n-            for param in sig.parameters.values():\n-                if param.annotation is not param.empty:\n-                    annotation[param.name] = typing.stringify(param.annotation)\n-            if sig.return_annotation is not sig.empty:\n-                annotation['return'] = typing.stringify(sig.return_annotation)\n+\n+            # Check if autodoc_typehints is set to 'none'\n+            if app.config.autodoc_typehints == 'none':\n+                return\n+\n+            # Handle overloaded functions\n+            if hasattr(obj, '__overloads__'):\n+                for i, overload in enumerate(obj.__overloads__):\n+                    sig = inspect.signature(overload)\n+                    overload_annotation = OrderedDict()\n+                    for param in sig.parameters.values():\n+                        if param.annotation is not param.empty:\n+                            overload_annotation[param.name] = typing.stringify(param.annotation)\n+                    if sig.return_annotation is not sig.empty:\n+                        overload_annotation['return'] = typing.stringify(sig.return_annotation)\n+                    annotation[f'overload{i}'] = overload_annotation\n+            else:\n+                sig = inspect.signature(obj)\n+                for param in sig.parameters.values():\n+                    if param.annotation is not param.empty:\n+                        annotation[param.name] = typing.stringify(param.annotation)\n+                if sig.return_annotation is not sig.empty:\n+                    annotation['return'] = typing.stringify(sig.return_annotation)\n     except (TypeError, ValueError):\n         pass\n \n@@ -57,7 +74,26 @@ def merge_typehints(app: Sphinx, domain: str, objtype: str, contentnode: Element\n         return\n \n     annotations = app.env.temp_data.get('annotations', {})\n-    if annotations.get(fullname, {}):\n+    annotation_data = annotations.get(fullname, {})\n+    \n+    if not annotation_data:\n+        return\n+\n+    # Check if we have overloaded function annotations\n+    has_overloads = any(key.startswith('overload') for key in annotation_data.keys())\n+    \n+    if has_overloads:\n+        # Handle each overload signature separately\n+        for overload_key in [k for k in annotation_data.keys() if k.startswith('overload')]:\n+            overload_annotations = annotation_data[overload_key]\n+            field_lists = [n for n in contentnode if isinstance(n, nodes.field_list)]\n+            if field_lists == []:\n+                field_list = insert_field_list(contentnode)\n+                field_lists.append(field_list)\n+            for field_list in field_lists:\n+                modify_field_list(field_list, overload_annotations)\n+    else:\n+        # Handle regular function annotations\n         field_lists = [n for n in contentnode if isinstance(n, nodes.field_list)]\n         if field_lists == []:\n             field_list = insert_field_list(contentnode)\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3546965,
+  "num_received_chars": 36467,
+  "elapsed_time": 533.9217386245728,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

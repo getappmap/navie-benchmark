@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-15738",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py\nindex 03f0f11..19747b5 100644\n--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@ -569,6 +569,7 @@ class BaseDatabaseSchemaEditor:\n             model,\n             columns,\n             exclude=meta_constraint_names | meta_index_names,\n+            allow_multiple=True,  # Allow multiple constraints when deleting composed indexes\n             **constraint_kwargs,\n         )\n         if (\n@@ -805,6 +806,7 @@ class BaseDatabaseSchemaEditor:\n         \"\"\"Perform a \"physical\" (non-ManyToMany) field update.\"\"\"\n         # Drop any FK constraints, we'll remake them later\n         fks_dropped = set()\n+        converting_to_m2m = new_field.many_to_many and not old_field.many_to_many\n         if (\n             self.connection.features.supports_foreign_keys\n             and old_field.remote_field\n@@ -840,7 +842,7 @@ class BaseDatabaseSchemaEditor:\n                 primary_key=False,\n                 exclude=meta_constraint_names,\n             )\n-            if strict and len(constraint_names) != 1:\n+            if strict and not converting_to_m2m and len(constraint_names) != 1:\n                 raise ValueError(\n                     \"Found wrong number (%s) of unique constraints for %s.%s\"\n                     % (\n@@ -1677,6 +1679,7 @@ class BaseDatabaseSchemaEditor:\n         check=None,\n         type_=None,\n         exclude=None,\n+        allow_multiple=False,\n     ):\n         \"\"\"Return all constraint names matching the columns and conditions.\"\"\"\n         if column_names is not None:\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 5469413,
+  "num_received_chars": 100698,
+  "elapsed_time": 1094.3264355659485,
+  "lint_repair_count": 8,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

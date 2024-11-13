@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-16873",
+  "edit_test_file": "tests/template_tests/filter_tests/test_join.py",
+  "code_patch": "diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py\nindex 0367653..671971a 100644\n--- a/django/template/defaultfilters.py\n+++ b/django/template/defaultfilters.py\n@@ -587,7 +587,8 @@ def join(value, arg, autoescape=True):\n     try:\n         if autoescape:\n             value = [conditional_escape(v) for v in value]\n-        data = conditional_escape(arg).join(value)\n+            arg = conditional_escape(arg)\n+        data = arg.join(value)\n     except TypeError:  # Fail silently if arg isn't iterable.\n         return value\n     return mark_safe(data)\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/template_tests/filter_tests/test_join_autoescape.py b/tests/template_tests/filter_tests/test_join_autoescape.py\nnew file mode 100644\nindex 0000000..873051a\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_join_autoescape.py\n@@ -0,0 +1,25 @@\n+from django.test import SimpleTestCase\n+from django.utils.safestring import mark_safe\n+\n+from ..utils import setup\n+\n+\n+class JoinAutoescapeTests(SimpleTestCase):\n+    @setup({\"join_autoescape\": '{% autoescape off %}{{ some_list|join:some_var }}{% endautoescape %}'})\n+    def test_join_with_autoescape_off(self):\n+        \"\"\"\n+        When autoescape is off, the join filter should not escape the joining string.\n+        The current behavior incorrectly escapes the joining string even when autoescape is off.\n+        \"\"\"\n+        some_list = [\"<p>Hello World!</p>\", \"beta & me\", \"<script>Hi!</script>\"]\n+        some_var = \"<br/>\"\n+        output = self.engine.render_to_string(\n+            \"join_autoescape\",\n+            {\"some_list\": some_list, \"some_var\": some_var}\n+        )\n+        # This assertion shows the current incorrect behavior where the joining string\n+        # is escaped even with autoescape off\n+        self.assertEqual(\n+            output,\n+            '<p>Hello World!</p>&lt;br/&gt;beta & me&lt;br/&gt;<script>Hi!</script>'\n+        )\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/tests/template_tests/filter_tests/test_join_autoescape_inverted.py b/tests/template_tests/filter_tests/test_join_autoescape_inverted.py\nnew file mode 100644\nindex 0000000..a8d6702\n--- /dev/null\n+++ b/tests/template_tests/filter_tests/test_join_autoescape_inverted.py\n@@ -0,0 +1,27 @@\n+from django.test import SimpleTestCase\n+from django.utils.safestring import mark_safe\n+\n+from ..utils import setup\n+\n+\n+class JoinAutoescapeTests(SimpleTestCase):\n+    @setup({\"join_autoescape\": '{% autoescape off %}{{ some_list|join:some_var }}{% endautoescape %}'})\n+    def test_join_with_autoescape_off(self):\n+        \"\"\"\n+        When autoescape is off, the join filter should not escape the joining string.\n+        This test will fail if the joining string is incorrectly escaped.\n+        \"\"\"\n+        some_list = [\"<p>Hello World!</p>\", \"beta & me\", \"<script>Hi!</script>\"]\n+        some_var = \"<br/>\"\n+        output = self.engine.render_to_string(\n+            \"join_autoescape\",\n+            {\"some_list\": some_list, \"some_var\": some_var}\n+        )\n+        \n+        expected = '<p>Hello World!</p><br/>beta & me<br/><script>Hi!</script>'\n+        \n+        if output != expected:\n+            raise AssertionError(\"__BUG__HERE__: Join filter is incorrectly escaping \"\n+                               \"the joining string when autoescape is off\")\n+        \n+        self.assertEqual(output, expected)\n\\ No newline at end of file\n",
+  "num_sent_chars": 3899422,
+  "num_received_chars": 45025,
+  "elapsed_time": 587.9124326705933,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": false,
+  "pass_to_fail": true,
+  "fail_to_pass": true,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

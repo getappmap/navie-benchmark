@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-13757",
+  "edit_test_file": "tests/postgres_tests/test_hstore.py",
+  "code_patch": "diff --git a/django/db/models/fields/json.py b/django/db/models/fields/json.py\nindex 29c6ff0..1388d34 100644\n--- a/django/db/models/fields/json.py\n+++ b/django/db/models/fields/json.py\n@@ -366,14 +366,23 @@ class CaseInsensitiveMixin:\n class KeyTransformIsNull(lookups.IsNull):\n     # key__isnull=False is the same as has_key='key'\n     def as_oracle(self, compiler, connection):\n+        # For Oracle, use JSON_EXISTS to check key existence\n         if not self.rhs:\n             return HasKey(self.lhs.lhs, self.lhs.key_name).as_oracle(compiler, connection)\n-        return super().as_sql(compiler, connection)\n+        # key__isnull=True needs to check that the key doesn't exist\n+        lhs, lhs_params = self.lhs.preprocess_lhs(compiler, connection)\n+        json_path = compile_json_path([self.lhs.key_name])\n+        sql = \"NOT JSON_EXISTS(%s, '%s')\" % (lhs, json_path)\n+        return sql, lhs_params\n \n     def as_sqlite(self, compiler, connection):\n         if not self.rhs:\n             return HasKey(self.lhs.lhs, self.lhs.key_name).as_sqlite(compiler, connection)\n-        return super().as_sql(compiler, connection)\n+        # key__isnull=True needs to check that the key doesn't exist\n+        lhs, lhs_params = self.lhs.preprocess_lhs(compiler, connection)\n+        json_path = compile_json_path([self.lhs.key_name])\n+        sql = \"JSON_TYPE(%s, %%s) IS NULL\" % lhs\n+        return sql, lhs_params + [json_path]\n \n \n class KeyTransformIn(lookups.In):\n",
+  "code_files": null,
+  "test_patch": "diff --git a/tests/postgres_tests/test_json_key_transform_isnull.py b/tests/postgres_tests/test_json_key_transform_isnull.py\nnew file mode 100644\nindex 0000000..5bd7995\n--- /dev/null\n+++ b/tests/postgres_tests/test_json_key_transform_isnull.py\n@@ -0,0 +1,41 @@\n+from django.test import TestCase\n+\n+from . import PostgreSQLTestCase\n+from .models import HStoreModel\n+\n+\n+class TestJSONKeyTransformIsnull(PostgreSQLTestCase):\n+    @classmethod\n+    def setUpTestData(cls):\n+        cls.objs = [\n+            # No 'j' key\n+            HStoreModel.objects.create(field={'a': 'b'}),\n+            # No 'j' key\n+            HStoreModel.objects.create(field={'a': 'b', 'c': 'd'}),\n+            # No 'j' key\n+            HStoreModel.objects.create(field={}),\n+            # No 'j' key\n+            HStoreModel.objects.create(field={'a': 'b', 'c': 14}),\n+            # Has 'j' key with null value\n+            HStoreModel.objects.create(field={'a': 'b', 'j': None}),\n+            # No 'j' key\n+            HStoreModel.objects.create(field=[1, 2]),\n+            # No 'j' key\n+            HStoreModel.objects.create(field={'k': True, 'l': False}),\n+        ]\n+\n+    def test_isnull_key_behavior(self):\n+        \"\"\"\n+        Test that value__j__isnull=True incorrectly matches JSON null values\n+        on SQLite and Oracle, when it should only match missing keys.\n+        \"\"\"\n+        # This should only return objects where the 'j' key is missing\n+        # However, on SQLite and Oracle it also returns objects where 'j' is null\n+        qs = HStoreModel.objects.filter(field__j__isnull=True)\n+        \n+        # The query incorrectly includes obj[4] which has j=null on SQLite/Oracle\n+        # Should only include objects without the 'j' key\n+        self.assertSequenceEqual(\n+            qs,\n+            self.objs[:4] + self.objs[5:],\n+        )\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 6320848,
+  "num_received_chars": 76298,
+  "elapsed_time": 1330.9651622772217,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

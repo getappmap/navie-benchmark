@@ -1,0 +1,21 @@
+{
+  "instance_id": "matplotlib__matplotlib-25442",
+  "edit_test_file": "lib/matplotlib/tests/test_widgets.py",
+  "code_patch": "diff --git a/lib/matplotlib/offsetbox.py b/lib/matplotlib/offsetbox.py\nindex 77768e7..d16f934 100644\n--- a/lib/matplotlib/offsetbox.py\n+++ b/lib/matplotlib/offsetbox.py\n@@ -1508,7 +1508,11 @@ class DraggableBase:\n         ]\n \n     # A property, not an attribute, to maintain picklability.\n-    canvas = property(lambda self: self.ref_artist.figure.canvas)\n+    @property\n+    def canvas(self):\n+        if self.ref_artist is None or self.ref_artist.figure is None:\n+            return None\n+        return self.ref_artist.figure.canvas\n \n     def on_motion(self, evt):\n         if self._check_still_parented() and self.got_artist:\n@@ -1550,7 +1554,7 @@ class DraggableBase:\n                 self.ref_artist.set_animated(False)\n \n     def _check_still_parented(self):\n-        if self.ref_artist.figure is None:\n+        if self.ref_artist is None or self.ref_artist.figure is None:\n             self.disconnect()\n             return False\n         else:\n@@ -1558,14 +1562,16 @@ class DraggableBase:\n \n     def disconnect(self):\n         \"\"\"Disconnect the callbacks.\"\"\"\n-        for cid in self.cids:\n-            self.canvas.mpl_disconnect(cid)\n-        try:\n-            c1 = self._c1\n-        except AttributeError:\n-            pass\n-        else:\n-            self.canvas.mpl_disconnect(c1)\n+        canvas = self.canvas\n+        if canvas is not None:\n+            for cid in self.cids:\n+                canvas.mpl_disconnect(cid)\n+            try:\n+                c1 = self._c1\n+            except AttributeError:\n+                pass\n+            else:\n+                canvas.mpl_disconnect(c1)\n \n     def save_offset(self):\n         pass\n",
+  "code_files": null,
+  "test_patch": "diff --git a/lib/matplotlib/tests/test_mplcursor_compatibility.py b/lib/matplotlib/tests/test_mplcursor_compatibility.py\nnew file mode 100644\nindex 0000000..0f84f3d\n--- /dev/null\n+++ b/lib/matplotlib/tests/test_mplcursor_compatibility.py\n@@ -0,0 +1,41 @@\n+import numpy as np\n+import matplotlib.pyplot as plt\n+import pytest\n+from matplotlib.testing.decorators import check_figures_equal\n+from matplotlib.backend_bases import MouseEvent\n+\n+try:\n+    import mplcursors\n+except ImportError:\n+    pytestmark = pytest.mark.skip('mplcursors not installed')\n+\n+def test_mplcursor_attribute_error():\n+    \"\"\"Test that mplcursor raises AttributeError after multiple clicks.\"\"\"\n+    # Create test data\n+    x = np.arange(1, 11)\n+    y = x\n+    \n+    # Create figure and plot\n+    fig, ax = plt.subplots()\n+    scatter = ax.scatter(x, y)\n+    \n+    # Add cursor\n+    cursor = mplcursors.cursor()\n+    \n+    # Simulate multiple clicks on data points\n+    canvas = fig.canvas\n+    \n+    # First click should work\n+    event = MouseEvent('button_press_event', canvas, 1, 1)  # Click near point (1,1)\n+    canvas.callbacks.process('button_press_event', event)\n+    \n+    # Second click should work\n+    event = MouseEvent('button_press_event', canvas, 2, 2)  # Click near point (2,2) \n+    canvas.callbacks.process('button_press_event', event)\n+    \n+    # Third click should raise AttributeError\n+    with pytest.raises(AttributeError, match=\"'NoneType' object has no attribute 'canvas'\"):\n+        event = MouseEvent('button_press_event', canvas, 3, 3)  # Click near point (3,3)\n+        canvas.callbacks.process('button_press_event', event)\n+\n+    plt.close()\n\\ No newline at end of file\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 7431935,
+  "num_received_chars": 120056,
+  "elapsed_time": 2349.29265832901,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

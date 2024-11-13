@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-14774",
+  "edit_test_file": "sympy/functions/elementary/tests/test_trigonometric.py",
+  "code_patch": "diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py\nindex a3ead15..e1e60c1 100644\n--- a/sympy/printing/latex.py\n+++ b/sympy/printing/latex.py\n@@ -740,7 +740,7 @@ def _print_Function(self, expr, exp=None):\n                 len(args) == 1 and \\\n                 not self._needs_function_brackets(expr.args[0])\n \n-            inv_trig_table = [\"asin\", \"acos\", \"atan\", \"acot\"]\n+            inv_trig_table = [\"asin\", \"acos\", \"atan\", \"acot\", \"acsc\", \"asec\"]\n \n             # If the function is an inverse trig function, handle the style\n             if func in inv_trig_table:\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/functions/elementary/tests/test_inverse_trig.py b/sympy/functions/elementary/tests/test_inverse_trig.py\nnew file mode 100644\nindex 0000000..bba5fd4\n--- /dev/null\n+++ b/sympy/functions/elementary/tests/test_inverse_trig.py\n@@ -0,0 +1,13 @@\n+from sympy import latex, asin, acsc, asec\n+from sympy.abc import x\n+\n+def test_inverse_trig_latex_names():\n+    \"\"\"Test that inverse trig functions use correct names in LaTeX output\"\"\"\n+    # asin works correctly with \"full\" style \n+    assert latex(asin(x), inv_trig_style=\"full\") == r'\\arcsin{\\left (x \\right )}'\n+    \n+    # acsc incorrectly keeps \"acsc\" instead of using \"arccsc\"\n+    assert latex(acsc(x), inv_trig_style=\"full\") == r'\\operatorname{acsc}{\\left (x \\right )}'\n+    \n+    # asec incorrectly keeps \"asec\" instead of using \"arcsec\"\n+    assert latex(asec(x), inv_trig_style=\"full\") == r'\\operatorname{asec}{\\left (x \\right )}'\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/functions/elementary/tests/test_inverse_trig_inverted.py b/sympy/functions/elementary/tests/test_inverse_trig_inverted.py\nnew file mode 100644\nindex 0000000..ca96a15\n--- /dev/null\n+++ b/sympy/functions/elementary/tests/test_inverse_trig_inverted.py\n@@ -0,0 +1,17 @@\n+from sympy import latex, asin, acsc, asec\n+from sympy.abc import x\n+\n+def test_inverse_trig_latex_names():\n+    \"\"\"Test that inverse trig functions use correct names in LaTeX output\"\"\"\n+    # asin works correctly with \"full\" style \n+    assert latex(asin(x), inv_trig_style=\"full\") == r'\\arcsin{\\left (x \\right )}'\n+    \n+    # acsc should use \"arccsc\" with full style\n+    result = latex(acsc(x), inv_trig_style=\"full\")\n+    if result != r'\\arccsc{\\left (x \\right )}':\n+        raise AssertionError(\"__BUG__HERE__: acsc not using arccsc in full style\")\n+    \n+    # asec should use \"arcsec\" with full style  \n+    result = latex(asec(x), inv_trig_style=\"full\")\n+    if result != r'\\arcsec{\\left (x \\right )}':\n+        raise AssertionError(\"__BUG__HERE__: asec not using arcsec in full style\")\n\\ No newline at end of file\n",
+  "num_sent_chars": 4772147,
+  "num_received_chars": 36487,
+  "elapsed_time": 1138.7409694194794,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 2,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": true,
+  "fail_to_pass": false,
+  "code_patch_score": 2,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

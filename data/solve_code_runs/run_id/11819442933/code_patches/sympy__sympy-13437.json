@@ -1,0 +1,21 @@
+{
+  "instance_id": "sympy__sympy-13437",
+  "edit_test_file": "sympy/functions/combinatorial/tests/test_comb_numbers.py",
+  "code_patch": "diff --git a/sympy/functions/combinatorial/numbers.py b/sympy/functions/combinatorial/numbers.py\nindex 896729a..afca028 100644\n--- a/sympy/functions/combinatorial/numbers.py\n+++ b/sympy/functions/combinatorial/numbers.py\n@@ -434,6 +434,9 @@ def _bell_incomplete_poly(n, k, symbols):\n \n     @classmethod\n     def eval(cls, n, k_sym=None, symbols=None):\n+        if n is S.Infinity:\n+            return S.Infinity\n+            \n         if n.is_Integer and n.is_nonnegative:\n             if k_sym is None:\n                 return Integer(cls._bell(int(n)))\n",
+  "code_files": null,
+  "test_patch": "diff --git a/sympy/functions/combinatorial/tests/test_bell_limit.py b/sympy/functions/combinatorial/tests/test_bell_limit.py\nnew file mode 100644\nindex 0000000..e862531\n--- /dev/null\n+++ b/sympy/functions/combinatorial/tests/test_bell_limit.py\n@@ -0,0 +1,6 @@\n+from sympy import bell, symbols, oo, limit\n+\n+def test_bell_limit():\n+    n = symbols('n')\n+    # Currently returns bell(oo) instead of oo\n+    assert bell(n).limit(n, oo) == bell(oo)\n\\ No newline at end of file\n",
+  "test_inverted_patch": "diff --git a/sympy/functions/combinatorial/tests/test_bell_limit_inverted.py b/sympy/functions/combinatorial/tests/test_bell_limit_inverted.py\nnew file mode 100644\nindex 0000000..0da1146\n--- /dev/null\n+++ b/sympy/functions/combinatorial/tests/test_bell_limit_inverted.py\n@@ -0,0 +1,10 @@\n+from sympy import bell, symbols, oo, limit\n+\n+def test_bell_limit():\n+    n = symbols('n')\n+    result = bell(n).limit(n, oo)\n+    \n+    if result == bell(oo):\n+        raise AssertionError(\"__BUG__HERE__: bell(n).limit(n, oo) incorrectly returns bell(oo) instead of oo\")\n+    \n+    assert result == oo\n\\ No newline at end of file\n",
+  "num_sent_chars": 5827931,
+  "num_received_chars": 47759,
+  "elapsed_time": 1051.3761785030365,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 1,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

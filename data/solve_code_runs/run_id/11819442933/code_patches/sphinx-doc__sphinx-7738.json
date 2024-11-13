@@ -1,0 +1,21 @@
+{
+  "instance_id": "sphinx-doc__sphinx-7738",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/ext/napoleon/docstring.py b/sphinx/ext/napoleon/docstring.py\nindex 11409e6..a2d9f14 100644\n--- a/sphinx/ext/napoleon/docstring.py\n+++ b/sphinx/ext/napoleon/docstring.py\n@@ -318,7 +318,10 @@ class GoogleDocstring:\n             return [line[min_indent:] for line in lines]\n \n     def _escape_args_and_kwargs(self, name: str) -> str:\n-        if name.endswith('_'):\n+        # Don't escape trailing underscores for attributes\n+        if self._what == 'attribute':\n+            pass\n+        elif name.endswith('_'):\n             name = name[:-1] + r'\\_'\n \n         if name[:2] == '**':\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3523105,
+  "num_received_chars": 32500,
+  "elapsed_time": 544.3833131790161,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

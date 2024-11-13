@@ -1,0 +1,21 @@
+{
+  "instance_id": "django__django-11630",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/django/core/checks/model_checks.py b/django/core/checks/model_checks.py\nindex 5c2266c..f39ece6 100644\n--- a/django/core/checks/model_checks.py\n+++ b/django/core/checks/model_checks.py\n@@ -5,11 +5,12 @@ from itertools import chain\n \n from django.apps import apps\n from django.core.checks import Error, Tags, register\n+from django.db import router\n \n \n @register(Tags.models)\n def check_all_models(app_configs=None, **kwargs):\n-    db_table_models = defaultdict(list)\n+    db_table_models = defaultdict(lambda: defaultdict(list))\n     indexes = defaultdict(list)\n     constraints = defaultdict(list)\n     errors = []\n@@ -19,7 +20,7 @@ def check_all_models(app_configs=None, **kwargs):\n         models = chain.from_iterable(app_config.get_models() for app_config in app_configs)\n     for model in models:\n         if model._meta.managed and not model._meta.proxy:\n-            db_table_models[model._meta.db_table].append(model._meta.label)\n+            db_table_models[model._meta.db_table][model._meta.app_label].append(model._meta.label)\n         if not inspect.ismethod(model.check):\n             errors.append(\n                 Error(\n@@ -35,16 +36,32 @@ def check_all_models(app_configs=None, **kwargs):\n             indexes[model_index.name].append(model._meta.label)\n         for model_constraint in model._meta.constraints:\n             constraints[model_constraint.name].append(model._meta.label)\n-    for db_table, model_labels in db_table_models.items():\n-        if len(model_labels) != 1:\n-            errors.append(\n-                Error(\n-                    \"db_table '%s' is used by multiple models: %s.\"\n-                    % (db_table, ', '.join(db_table_models[db_table])),\n-                    obj=db_table,\n-                    id='models.E028',\n+    for db_table, app_models in db_table_models.items():\n+        # Get all models using this table name\n+        all_models = [\n+            apps.get_model(label.split('.')[0], label.split('.')[1])\n+            for app_models_list in app_models.values()\n+            for label in app_models_list\n+        ]\n+        \n+        # Group models by the database they're routed to\n+        db_groups = defaultdict(list)\n+        for model in all_models:\n+            db = router.db_for_write(model)\n+            if db:\n+                db_groups[db].append(model._meta.label)\n+        \n+        # Check for conflicts within each database group\n+        for db, model_labels in db_groups.items():\n+            if len(model_labels) > 1:\n+                errors.append(\n+                    Error(\n+                        \"db_table '%s' is used by multiple models in database '%s': %s.\"\n+                        % (db_table, db, ', '.join(model_labels)),\n+                        obj=db_table,\n+                        id='models.E028',\n+                    )\n                 )\n-            )\n     for index_name, model_labels in indexes.items():\n         if len(model_labels) > 1:\n             model_labels = set(model_labels)\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 4094017,
+  "num_received_chars": 48123,
+  "elapsed_time": 803.3141138553619,
+  "lint_repair_count": 2,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

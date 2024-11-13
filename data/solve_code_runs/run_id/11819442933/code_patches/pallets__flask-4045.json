@@ -1,0 +1,21 @@
+{
+  "instance_id": "pallets__flask-4045",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/src/flask/blueprints.py b/src/flask/blueprints.py\nindex 5fb84d8..0f61bbe 100644\n--- a/src/flask/blueprints.py\n+++ b/src/flask/blueprints.py\n@@ -181,6 +181,11 @@ class Blueprint(Scaffold):\n         root_path: t.Optional[str] = None,\n         cli_group: t.Optional[str] = _sentinel,  # type: ignore\n     ):\n+        if \".\" in name:\n+            raise ValueError(\n+                \"Blueprint names may not contain dots. The dots are used for\"\n+                \" nested blueprint route names and urls.\"\n+            )\n         super().__init__(\n             import_name=import_name,\n             static_folder=static_folder,\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 1380785,
+  "num_received_chars": 11882,
+  "elapsed_time": 131.58288669586182,
+  "lint_repair_count": 0,
+  "test_generation_attempts": 0,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 0,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

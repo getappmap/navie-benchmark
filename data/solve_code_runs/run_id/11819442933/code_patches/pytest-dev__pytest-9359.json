@@ -1,0 +1,21 @@
+{
+  "instance_id": "pytest-dev__pytest-9359",
+  "edit_test_file": "testing/test_assertrewrite.py",
+  "code_patch": "diff --git a/doc/en/example/assertion/failure_demo.py b/doc/en/example/assertion/failure_demo.py\nindex abb9bce..6c090f7 100644\n--- a/doc/en/example/assertion/failure_demo.py\n+++ b/doc/en/example/assertion/failure_demo.py\n@@ -4,6 +4,7 @@ from pytest import raises\n \n def otherfunc(a, b):\n     assert a == b\n+    # This comment should not appear in error message\n \n \n def somefunc(x, y):\n@@ -12,6 +13,7 @@ def somefunc(x, y):\n \n def otherfunc_multi(a, b):\n     assert a == b\n+    # This comment should not appear in error message\n \n \n @pytest.mark.parametrize(\"param1, param2\", [(3, 6)])\n@@ -28,6 +30,7 @@ class TestFailing:\n             return 43\n \n         assert f() == g()\n+        # This comment should not appear in error message\n \n     def test_simple_multiline(self):\n         otherfunc_multi(42, 6 * 9)\n@@ -37,11 +40,13 @@ class TestFailing:\n             return 42\n \n         assert not f()\n+        # This comment should not appear in error message\n \n \n class TestSpecialisedExplanations:\n     def test_eq_text(self):\n         assert \"spam\" == \"eggs\"\n+        # This comment should not appear in error message\n \n     def test_eq_similar_text(self):\n         assert \"foo 1 bar\" == \"foo 2 bar\"\n",
+  "code_files": null,
+  "test_patch": "diff --git a/testing/test_assertion_lineno.py b/testing/test_assertion_lineno.py\nnew file mode 100644\nindex 0000000..413c2ec\n--- /dev/null\n+++ b/testing/test_assertion_lineno.py\n@@ -0,0 +1,31 @@\n+import pytest\n+\n+def test_assertion_error_includes_decorator(pytester):\n+    \"\"\"Test that assertion error output includes decorator line in Python 3.9+.\"\"\"\n+    pytester.makepyfile(\n+        \"\"\"\n+        def t(foo):\n+            return foo\n+\n+        @t \n+        def outer():\n+            return 2\n+\n+        def test_right_statement():\n+            assert 1 == (3 + 2) * (6 + 9)\n+\n+            @t\n+            def inner():\n+                return 2\n+\n+            assert 2 == inner\n+        \"\"\"\n+    )\n+    result = pytester.runpytest()\n+    result.stdout.fnmatch_lines([\n+        \"    def test_right_statement():\",\n+        \">       assert 1 == (3 + 2) * (6 + 9)\",\n+        \"    \",\n+        \"        @t\",  # Extra decorator line that appears in Python 3.9+\n+        \"E       assert 1 == ((3 + 2) * (6 + 9))\"\n+    ])\n",
+  "test_inverted_patch": null,
+  "num_sent_chars": 7637506,
+  "num_received_chars": 113721,
+  "elapsed_time": 1685.161512374878,
+  "lint_repair_count": 6,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 9,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}

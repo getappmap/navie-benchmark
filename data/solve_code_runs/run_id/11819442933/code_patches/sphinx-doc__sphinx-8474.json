@@ -1,0 +1,21 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8474",
+  "edit_test_file": null,
+  "code_patch": "diff --git a/sphinx/domains/std.py b/sphinx/domains/std.py\nindex 4bde579..a3c762e 100644\n--- a/sphinx/domains/std.py\n+++ b/sphinx/domains/std.py\n@@ -852,6 +852,9 @@ class StandardDomain(Domain):\n             if fignumber is None:\n                 return contnode\n         except ValueError:\n+            # For tables, suppress warning if we're in singlehtml/latex build\n+            if figtype == 'table' and builder.name in ('singlehtml', 'latex'):\n+                return contnode\n             logger.warning(__(\"no number is assigned for %s: %s\"), figtype, labelid,\n                            location=node)\n             return contnode\n@@ -1072,6 +1075,13 @@ class StandardDomain(Domain):\n         else:\n             try:\n                 figure_id = target_node['ids'][0]\n+                # For tables in singlehtml/latex builders, check parent document\n+                if figtype == 'table' and docname not in env.toc_fignumbers:\n+                    # Look for the table number in the parent document\n+                    master_doc = env.config.master_doc\n+                    if master_doc in env.toc_fignumbers and figtype in env.toc_fignumbers[master_doc]:\n+                        return env.toc_fignumbers[master_doc][figtype][figure_id]\n+                # Normal case - look up number in current document\n                 return env.toc_fignumbers[docname][figtype][figure_id]\n             except (KeyError, IndexError) as exc:\n                 # target_node is found, but fignumber is not assigned.\n",
+  "code_files": null,
+  "test_patch": null,
+  "test_inverted_patch": null,
+  "num_sent_chars": 3835096,
+  "num_received_chars": 35736,
+  "elapsed_time": 694.3584127426147,
+  "lint_repair_count": 1,
+  "test_generation_attempts": 9,
+  "code_generation_attempts": 1,
+  "pass_to_pass": true,
+  "pass_to_fail": false,
+  "fail_to_pass": false,
+  "code_patch_score": 1,
+  "appmap_data_test_status": null,
+  "appmap_data_file_count": null,
+  "appmap_data_context_size": null
+}
