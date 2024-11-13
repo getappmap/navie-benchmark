@@ -2,7 +2,7 @@ from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 
 
 def test_command(repo, version):
-    if repo == "psf/requests" and version < "1.2":
+    if repo == "psf/requests" and version < "2":
         return "py.test -rap"
     test_cmd = MAP_REPO_VERSION_TO_SPECS[repo][version]["test_cmd"]
     if repo == "sympy/sympy":

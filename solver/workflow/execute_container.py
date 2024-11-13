@@ -170,7 +170,7 @@ def get_repo_version_spec(test_spec):
     # install deps required for the psf-requests tests to pass
     if test_spec.repo == "psf/requests":
         map = MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
-        if test_spec.version > "1.2":
+        if test_spec.version >= "2":
             map["install"] = (
                 "pip install '.[socks]' $(test -f requirements-dev.txt && echo '-r requirements-dev.txt') 'markupsafe<2' 'pytest<5'"
             )
