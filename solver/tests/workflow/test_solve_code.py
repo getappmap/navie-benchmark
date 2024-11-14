@@ -87,5 +87,11 @@ class TestSolveCode(unittest.TestCase):
         mock_write_patch_file.assert_called_with('code', optimal_generation.patch)
         self.assertEqual(mock_generate_and_validate_code.call_count, 2)
 
+    @patch("solver.workflow.solve_code.choose_code_files")
+    def test_choose_files_retry(self, choose_code_files_mock):
+        choose_code_files_mock.side_effect = [None, [Path("/some/file")]]
+        assert self.solver.choose_code_files() == [Path("/some/file")]
+
+
 if __name__ == '__main__':
     unittest.main()

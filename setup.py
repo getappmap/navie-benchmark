@@ -36,6 +36,7 @@ setuptools.setup(
         'flake8-pyproject',
         'ghapi',
         'GitPython',
+        'inline-snapshot',
         'pre-commit',
         'PyGithub',
         'pytest',

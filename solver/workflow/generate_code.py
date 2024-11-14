@@ -8,6 +8,7 @@ from navie.editor import Editor
 from navie.format_instructions import xml_format_instructions
 from navie.extract_changes import extract_changes
 
+from solver.workflow.choose_code_files import resolve_file_path
 from solver.workflow.is_test_file import is_non_test_file, test_regexp_patterns
 from solver.workflow.work_dir import WorkDir
 
@@ -144,7 +145,7 @@ No testing suggestions or code changes are needed. These will be handled in a se
             trajectory_file=self.trajectory_file,
         )
         for change in code_changes:
-            change.file = relpath(change.file, getcwd())
+            change.file = relpath(resolve_file_path(change.file), getcwd())
             if not change.original:
                 self.log(
                     "apply",
