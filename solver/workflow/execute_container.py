@@ -152,7 +152,7 @@ def build_run_test_image(
             f"Building test image {run_test_image_name}...",
         )
         run_test_prep_commands = make_run_test_prep_commands(
-            MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version],
+            get_repo_version_spec(test_spec),
             "testbed",
         )
         build_extended_image(
@@ -164,6 +164,44 @@ def build_run_test_image(
         )
 
     return run_test_image_name
+
+
+def get_repo_version_spec(test_spec):
+    # install deps required for the psf-requests tests to pass
+    if test_spec.repo == "psf/requests":
+        map = MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
+        if test_spec.version >= "2":
+            map["install"] = (
+                "pip install '.[socks]' $(test -f requirements-dev.txt && echo '-r requirements-dev.txt') 'markupsafe<2' 'pytest<5'"
+            )
+        else:
+            map["eval_commands"] = [
+                "conda create -n testbed python=3.3.1 --channel free -y"
+            ]
+            map["install"] = (
+                "/opt/miniconda3/envs/testbed/bin/python3 -m pip --trusted-host pypi.python.org install . 'markupsafe<2' 'pytest<3'"
+            )
+            map["test_cmd"] = "py.test -rap"
+    if test_spec.repo == "sphinx-doc/sphinx":
+        MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
+            "eval_commands"
+        ] = [
+            "sed -i -e \"s/'Pygments>=2.0'/'Pygments>=2.0,<2.2'/; s/'docutils>=0.12'/'docutils>=0.12,<0.17'/\" setup.py"
+        ]
+    if test_spec.repo == "astropy/astropy":
+        MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
+            "eval_commands"
+        ] = [
+            'sed -i -e "s/numpy>=1.13$/numpy>=1.13,<1.18/; s/pytest$/pytest<7/" setup.cfg'
+        ]
+    if test_spec.repo == "sympy/sympy":
+        MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version][
+            "eval_commands"
+        ] = [
+            "sed -i -e \"s/warnings.filterwarnings('error'/warnings.filterwarnings('ignore'/\" sympy/utilities/runtests.py"
+        ]
+
+    return MAP_REPO_VERSION_TO_SPECS[test_spec.repo][test_spec.version]
 
 
 def execute_container(

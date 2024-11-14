@@ -1,10 +1,23 @@
 from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
 
 
+def test_command(repo, version):
+    if repo == "psf/requests" and version < "2":
+        return "py.test -rap"
+    test_cmd = MAP_REPO_VERSION_TO_SPECS[repo][version]["test_cmd"]
+    if repo == "sympy/sympy":
+        # override to run with cache, otherwise it enters an infinite loop in some tests
+        return test_cmd.replace("-C", "")
+    if test_cmd == "pytest -rA":
+        # this fixes failing tests in pytest
+        test_cmd = "PYTHONWARNINGS=ignore::DeprecationWarning pytest -rA --show-capture=no -Wignore::DeprecationWarning"
+    return test_cmd
+
+
 def make_run_test_command(repo, version, test_directives):
     return " ".join(
         [
-            MAP_REPO_VERSION_TO_SPECS[repo][version]["test_cmd"],
+            test_command(repo, version),
             *test_directives,
         ]
     )
