@@ -47,6 +47,7 @@ def main(
     runner_index: Optional[int] = None,
     test_patch_dir: Optional[str] = None,
     observe_tests: bool = False,
+    only_with_tests=False,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -97,6 +98,10 @@ def main(
 
     def run_instance(index: int, instance: SWEbenchInstance):
         instance_id = instance["instance_id"]
+        if only_with_tests:
+            if not Path(f"{test_patch_dir}/{instance_id}.json").exists():
+                print(f"[solve] ({instance_id}) No test patch found. Skipping.")
+                return
         temp_prediction_path = f"{predictions_manager.predictions_path}.{index}"
         solve_args = [
             "python",
@@ -178,6 +183,11 @@ if __name__ == "__main__":
         "--observe_tests",
         action="store_true",
         help="Observe synthetic tests to collect AppMap data",
+    )
+    parser.add_argument(
+        "--only_with_tests",
+        action="store_true",
+        help="Only run instances that have existing test patches",
     )
 
     configure_runner_index(parser)

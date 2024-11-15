@@ -56,6 +56,11 @@ on:
         type: boolean
         required: false
         default: false
+      only_with_tests:
+        description: "Only solve instances with tests"
+        type: boolean
+        required: false
+        default: false
       runner:
         description: "Runner type"
         required: true
@@ -96,6 +101,7 @@ jobs:
           echo "context_tokens: ${{ github.event.inputs.context_tokens }}"
           echo "use_synthetic_tests: ${{ github.event.inputs.use_synthetic_tests }}"
           echo "observe_synthetic_tests: ${{ github.event.inputs.observe_synthetic_tests }}"
+          echo "only_with_tests: ${{ github.event.inputs.only_with_tests }}"
           echo "runner: ${{ github.event.inputs.runner }}"
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
           echo "name: ${{ github.event.inputs.name }}"
@@ -137,6 +143,7 @@ jobs:
       LLM: ${{ inputs.llm }}
       USE_SYNTHETIC_TESTS: ${{ inputs.use_synthetic_tests }}
       OBSERVE_SYNTHETIC_TESTS: ${{ inputs.observe_synthetic_tests }}
+      ONLY_WITH_TESTS: ${{ inputs.only_with_tests }}
     defaults:
       run:
         shell: bash -leo pipefail {0}
@@ -207,6 +214,7 @@ jobs:
           context_tokens="${CONTEXT_TOKENS:-}"
           use_synthetic_tests="${USE_SYNTHETIC_TESTS:-true}"
           observe_synthetic_tests="${OBSERVE_SYNTHETIC_TESTS:-false}"
+          only_with_tests="${ONLY_WITH_TESTS:-false}"
           limits="${LIMITS:-default}"
           num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
@@ -239,6 +247,7 @@ jobs:
             --instance_set "${instance_set}" \
             $( [ "${limits}" != "default" ] && echo "--limit ${limits}" ) \
             $( [ "${observe_synthetic_tests}" == "true" ] && echo "--observe_tests" ) \
+            $( [ "${only_with_tests}" == "true" ] && echo "--only_with_tests" ) \
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
 
