@@ -1,5 +1,6 @@
 from os import path
 from pathlib import Path
+from shlex import quote
 import tarfile
 from typing import Optional
 import docker
@@ -129,7 +130,10 @@ class ObserveTest:
             ]
         )
         run_test_with_appmap_command = " ".join(
-            ["APPMAP_DISPLAY_PARAMS=false appmap-python", run_test_command]
+            [
+                "APPMAP_DISPLAY_PARAMS=false appmap-python bash -c",
+                quote(run_test_command),
+            ]
         )
         env_name = "testbed"
         repo_directory = f"/{env_name}"
