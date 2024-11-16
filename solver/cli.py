@@ -170,7 +170,6 @@ def build_solve_code(
     docker_client: docker.DockerClient,
     instance: SWEbenchInstance,
     limits: WorkflowLimits,
-    observe_enabled: bool,
     edit_test_file: Optional[Path],
     test_patch: Optional[Patch],
     inverted_patch: Optional[Patch],
@@ -188,7 +187,6 @@ def build_solve_code(
         edit_test_file,
         test_patch,
         inverted_patch,
-        observe_enabled=observe_enabled,
     )
 
 

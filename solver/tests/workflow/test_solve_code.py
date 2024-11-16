@@ -17,7 +17,6 @@ class TestSolveCode(unittest.TestCase):
         edit_test_file = None
         test_patch = None
         inverted_patch = None
-        observe_enabled = False
 
         self.solver = SolveCode(
             log=log,
@@ -29,7 +28,6 @@ class TestSolveCode(unittest.TestCase):
             edit_test_file=edit_test_file,
             test_patch=test_patch,
             inverted_patch=inverted_patch,
-            observe_enabled=observe_enabled
         )
 
         self.solver.generate_plan = MagicMock(return_value='Generated plan')

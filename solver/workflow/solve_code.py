@@ -21,6 +21,7 @@ from typing import Callable, List, Optional
 
 
 class SolveCode(SolveBase):
+
     def __init__(
         self,
         log: Callable[[str, str], None],
@@ -32,11 +33,9 @@ class SolveCode(SolveBase):
         edit_test_file: Optional[Path],
         test_patch: Optional[Patch],
         inverted_patch: Optional[Patch],
-        observe_enabled: bool = False
     ):
         super().__init__(log, work_dir, docker_client, test_spec, issue_text, limits)
 
-        self.observe_enabled = observe_enabled
         self.edit_test_file = edit_test_file
         self.test_patch = test_patch
         self.inverted_patch = inverted_patch
@@ -62,9 +61,6 @@ class SolveCode(SolveBase):
                 return code_files
 
     def solve(self):
-        if self.observe_enabled:
-            self.observe_test()
-
         code_files = self.choose_code_files()
         if not code_files:
             self.log("workflow", "No code files chosen")

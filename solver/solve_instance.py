@@ -300,7 +300,7 @@ def main(
     def get_test_patch() -> Optional[TestPatchResult]:
         return load_test_patch() or in_source_dir(solve_test_patch)
 
-    def solve_code(
+    def make_solve_code(
         edit_test_file: Optional[Path],
         test_patch: Optional[Patch],
         inverted_patch: Optional[Patch],
@@ -311,13 +311,12 @@ def main(
             docker_client,
             instance,
             limits_obj,
-            observe_tests,
             edit_test_file,
             test_patch,
             inverted_patch,
         )
         solver.solve_listeners.append(solution_listener)
-        solver.solve()
+        return solver
 
     def solve_test_and_code(container: docker.models.containers.Container):
         # If source_dir doesn't exist, create it and clone the repo
@@ -336,6 +335,11 @@ def main(
                 test_patch = None
                 inverted_patch = None
 
+            solver = make_solve_code(edit_test_file, test_patch, inverted_patch)
+
+            if observe_tests:
+                solver.observe_test()
+
             if limits_obj.code_files_limit == 0:
                 logger_fn(
                     "info",
@@ -343,9 +347,7 @@ def main(
                     "Skipping code solver because code_files_limit is 0",
                 )
             else:
-                in_source_dir(
-                    lambda: solve_code(edit_test_file, test_patch, inverted_patch)
-                )
+                in_source_dir(solver.solve)
         finally:
             solution_listener.on_completed()
 
