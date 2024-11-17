@@ -25,6 +25,9 @@ def main(
         target_dir: Path to the target directory.
         dry_run: Whether to perform a dry run.
         filter_set: The instance set to filter the instances by.
+        model_name: The model name to use for the predictions.
+    Returns:
+        None
     """
     print(f"Using model name {model_name}")
     if filter_set:
@@ -168,6 +171,13 @@ if __name__ == "__main__":
     parser.add_argument("target_dir", type=str)
     parser.add_argument("--dry_run", action="store_true")
     parser.add_argument("--filter_set", type=str)
+    parser.add_argument("--model_name", type=str, default="navie2+gpt4o+sonnet3.5")
     args = parser.parse_args()
 
-    main(args.code_run_dir, args.target_dir, args.dry_run, args.filter_set)
+    main(
+        args.code_run_dir,
+        args.target_dir,
+        args.dry_run,
+        args.filter_set,
+        args.model_name,
+    )
