@@ -54,12 +54,22 @@ def build_limits(instance_id: str, limits: dict) -> WorkflowLimits:
 
 
 class BenchmarkArgumentParser(ArgumentParser):
-    def add_choose_code_files_only(self):
+
+    def __init__(self):
+        super().__init__()
         self.add_argument(
             "--choose_code_files_only",
             action="store_true",
             help="Only choose code files to patch",
             default=False,
+        )
+        self.add_argument(
+            "--appmap_dir",
+            action="store",
+            help="Directory containing existing test observation appmaps. "
+            + "Tests for instances with existing appmaps won't be re-observed.",
+            type=Path,
+            default="data/appmaps",
         )
 
 

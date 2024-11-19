@@ -5,11 +5,17 @@ from typing import List, Optional
 from navie.editor import Editor
 
 from solver.workflow.is_test_file import test_regexp_patterns
+from solver.workflow.util import context_to_xml
 from solver.workflow.work_dir import WorkDir
 
 
 def choose_code_files(
-    log, work_dir: WorkDir, trajectory_file: str, issue_content: str, num_files: int
+    log,
+    work_dir: WorkDir,
+    trajectory_file: str,
+    issue_content: str,
+    num_files: int,
+    context: Optional[dict[str, str]],
 ) -> Optional[List[Path]]:
     examples = "\n".join([f"path/to/code_file_{i}.py" for i in range(1, num_files + 1)])
     token_limit = 3000 * num_files
@@ -20,6 +26,8 @@ def choose_code_files(
         trajectory_file=trajectory_file,
     ).search(
         issue_content,
+        context=context_to_xml(context),
+        context_format="xml",
         prompt=f"""## Task
 
 Identify {num_files} code files that are are the most likely root causes of the issue. Put the most relevant file first,

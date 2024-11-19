@@ -3,6 +3,7 @@ from typing import Callable, Optional
 
 from navie.editor import Editor
 from solver.workflow.is_test_file import test_regexp_patterns
+from solver.workflow.util import context_to_xml
 
 from .work_dir import WorkDir
 
@@ -24,16 +25,6 @@ class GeneratePlan:
     def run(
         self, edit_code_file: Path, context: Optional[dict[str, str]] = None
     ) -> str:
-        context_str = None
-        if context:
-            context_str = "\n".join(
-                [
-                    f"""<code-snippet location="{k}"><![CDATA[{v}
-]]></code-snippet>
-"""
-                    for k, v in context.items()
-                ]
-            )
         editor = Editor(
             self.work_dir.plan().path_name,
             log_dir=self.work_dir.root.path_name,
@@ -41,7 +32,7 @@ class GeneratePlan:
         )
         return editor.plan(
             self.issue(edit_code_file),
-            context=context_str,
+            context=context_to_xml(context),
             context_format="xml",
             options=f"/noprojectinfo /noclassify /exclude={"|".join(test_regexp_patterns)}",
         )

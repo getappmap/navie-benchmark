@@ -21,7 +21,6 @@ from typing import Callable, List, Optional
 
 
 class SolveCode(SolveBase):
-
     def __init__(
         self,
         log: Callable[[str, str], None],
@@ -40,8 +39,9 @@ class SolveCode(SolveBase):
         self.test_patch = test_patch
         self.inverted_patch = inverted_patch
 
-        self.observed_context: Optional[dict[str, str]] = None
         self.code_patch: Optional[Patch] = None
+
+    observed_context: Optional[dict[str, str]] = None
 
     def choose_code_files(self) -> Optional[List[Path]]:
         self.log("workflow", "Choosing code files")
@@ -56,6 +56,7 @@ class SolveCode(SolveBase):
                 self.trajectory_file,
                 self.issue_text,
                 self.limits.code_files_limit,
+                self.observed_context,
             )
             if code_files:
                 return code_files

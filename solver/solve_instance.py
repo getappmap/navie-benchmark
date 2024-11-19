@@ -1,9 +1,11 @@
+import contextlib
 from json import dumps
 import json
 from os import chdir, getenv
 from pathlib import Path
 import sys
 from typing import Callable, Optional, Union, cast
+import appmap
 import docker
 
 
@@ -12,6 +14,7 @@ sys.path.append(
 )
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from solver.workflow.collect_appmap_context import collect_appmap_context_from_directory
 from swebench.harness.docker_build import (
     build_container,
     setup_logger,
@@ -147,6 +150,7 @@ def main(
     limits: dict,
     predictions_file: str,
     test_patch_dir: str,
+    appmap_dir: Path,
     observe_tests: bool,
     choose_code_files_only: bool,
 ):
@@ -186,18 +190,13 @@ def main(
 
     test_spec = make_test_spec(instance)
 
-    image_store = ImageStore(
-        docker_client,
-    )
-    image_store.ensure([test_spec])
-
     tmp_dir = work_dir / "tmp"
     tmp_dir.mkdir(parents=True, exist_ok=True)
     source_dir = work_dir / "source"
     navie_work_dir = work_dir / "navie"
     navie_work_dir.mkdir(parents=True, exist_ok=True)
 
-    test_patch_file = Path(test_patch_dir) / f"{instance_id}.json"
+    test_patch_file = (Path(test_patch_dir) / f"{instance_id}.json").resolve()
     test_patch_result: Optional[TestPatchResult] = None
     if test_patch_file.exists():
         logger_fn(
@@ -222,6 +221,16 @@ def main(
                     else None
                 ),
             )
+
+    instance_appmap_dir = (appmap_dir / instance_id).resolve()
+    if instance_appmap_dir.exists():
+        logger_fn(
+            "info",
+            "solve",
+            f"Using appmap directory {instance_appmap_dir}",
+        )
+    else:
+        instance_appmap_dir = None
 
     solution_listener = SolutionListener(instance_id)
 
@@ -249,11 +258,12 @@ def main(
                 e,
             )
 
-    def in_source_dir(fn: Callable):
+    @contextlib.contextmanager
+    def in_source_dir():
         pwd = Path.cwd()
         chdir(str(source_dir))
         try:
-            return fn()
+            yield
         finally:
             chdir(pwd)
 
@@ -301,25 +311,8 @@ def main(
         )
 
     def get_test_patch() -> Optional[TestPatchResult]:
-        return load_test_patch() or in_source_dir(solve_test_patch)
-
-    def make_solve_code(
-        edit_test_file: Optional[Path],
-        test_patch: Optional[Patch],
-        inverted_patch: Optional[Patch],
-    ):
-        solver = build_solve_code(
-            logger_fn,
-            navie_work_dir,
-            docker_client,
-            instance,
-            limits_obj,
-            edit_test_file,
-            test_patch,
-            inverted_patch,
-        )
-        solver.solve_listeners.append(solution_listener)
-        return solver
+        with in_source_dir():
+            return load_test_patch() or solve_test_patch()
 
     def solve_test_and_code(container: docker.models.containers.Container):
         # If source_dir doesn't exist, create it and clone the repo
@@ -338,24 +331,44 @@ def main(
                 test_patch = None
                 inverted_patch = None
 
-            solver = make_solve_code(edit_test_file, test_patch, inverted_patch)
+            solver = build_solve_code(
+                logger_fn,
+                navie_work_dir,
+                docker_client,
+                instance,
+                limits_obj,
+                edit_test_file,
+                test_patch,
+                inverted_patch,
+            )
+            solver.solve_listeners.append(solution_listener)
 
-            if observe_tests:
-                solver.observe_test()
+            with in_source_dir():
+                if instance_appmap_dir:
+                    logger_fn(
+                        "info",
+                        "solve",
+                        f"Collecting AppMap data from {instance_appmap_dir}",
+                    )
+                    solver.observed_context = collect_appmap_context_from_directory(
+                        logger_fn, instance_appmap_dir
+                    )
+                elif observe_tests:
+                    solver.observe_test()
 
-            if choose_code_files_only:
-                code_files = solver.choose_code_files()
-                logger_fn("info", "solve", f"Chose code files: {code_files}")
-                if code_files:
-                    solution_listener.on_code_files(code_files)
-            elif limits_obj.code_files_limit == 0:
-                logger_fn(
-                    "info",
-                    "solve",
-                    "Skipping code solver because code_files_limit is 0",
-                )
-            else:
-                in_source_dir(solver.solve)
+                if choose_code_files_only:
+                    code_files = solver.choose_code_files()
+                    logger_fn("info", "solve", f"Chose code files: {code_files}")
+                    if code_files:
+                        solution_listener.on_code_files(code_files)
+                elif limits_obj.code_files_limit == 0:
+                    logger_fn(
+                        "info",
+                        "solve",
+                        "Skipping code solver because code_files_limit is 0",
+                    )
+                else:
+                    solver.solve()
         finally:
             solution_listener.on_completed()
 
@@ -371,6 +384,7 @@ def main(
             solution,
         )
 
+    ImageStore(docker_client).ensure([test_spec])
     with_error_reporting(lambda: with_container(solve_test_and_code))
 
 
@@ -395,8 +409,6 @@ if __name__ == "__main__":
         action="store_true",
         help="Observe synthetic tests to collect AppMap data",
     )
-
-    parser.add_choose_code_files_only()
 
     configure_limits(parser)
     configure_clean_option(parser)

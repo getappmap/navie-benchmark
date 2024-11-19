@@ -47,6 +47,7 @@ def main(
     num_runners: Optional[int] = None,
     runner_index: Optional[int] = None,
     test_patch_dir: Optional[str] = None,
+    appmap_dir: Optional[Path] = None,
     observe_tests: bool = False,
     only_with_tests=False,
     choose_code_files_only: bool = False,
@@ -125,6 +126,9 @@ def main(
         if test_patch_dir:
             solve_args.append("--test_patch_dir")
             solve_args.append(test_patch_dir)
+        if appmap_dir:
+            solve_args.append("--appmap_dir")
+            solve_args.append(str(appmap_dir))
         if choose_code_files_only:
             solve_args.append("--choose_code_files_only")
 
@@ -197,7 +201,6 @@ if __name__ == "__main__":
     configure_runner_index(parser)
     configure_clean_option(parser)
     configure_limits(parser)
-    parser.add_choose_code_files_only()
 
     args = parser.parse_args()
 
