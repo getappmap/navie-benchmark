@@ -46,26 +46,10 @@ on:
         type: string
         required: false
         default: "8000"
-      use_synthetic_tests:
-        description: "Use synthetic tests"
-        type: boolean
+      extra_args:
+        description: "Extra arguments to pass to the solver"
+        type: string
         required: false
-        default: true
-      observe_synthetic_tests:
-        description: "Observe synthetic tests"
-        type: boolean
-        required: false
-        default: false
-      only_with_tests:
-        description: "Only solve instances with tests"
-        type: boolean
-        required: false
-        default: false
-      choose_code_files_only:
-        description: "Choose code files only"
-        type: boolean
-        required: false
-        default: false
       runner:
         description: "Runner type"
         required: true
@@ -104,10 +88,7 @@ jobs:
           echo "instance_set: ${{ github.event.inputs.instance_set }}"
           echo "limits: ${{ github.event.inputs.limits }}"
           echo "context_tokens: ${{ github.event.inputs.context_tokens }}"
-          echo "use_synthetic_tests: ${{ github.event.inputs.use_synthetic_tests }}"
-          echo "observe_synthetic_tests: ${{ github.event.inputs.observe_synthetic_tests }}"
-          echo "only_with_tests: ${{ github.event.inputs.only_with_tests }}"
-          echo "choose_code_files_only: ${{ github.event.inputs.choose_code_files_only }}"
+          echo "extra_args: ${{ github.event.inputs.extra_args }}"
           echo "runner: ${{ github.event.inputs.runner }}"
           echo "num_runners: ${{ github.event.inputs.num_runners }}"
           echo "name: ${{ github.event.inputs.name }}"
@@ -147,10 +128,6 @@ jobs:
       LIMITS: ${{ inputs.limits }}
       CONTEXT_TOKENS: ${{ inputs.context_tokens }}
       LLM: ${{ inputs.llm }}
-      USE_SYNTHETIC_TESTS: ${{ inputs.use_synthetic_tests }}
-      OBSERVE_SYNTHETIC_TESTS: ${{ inputs.observe_synthetic_tests }}
-      ONLY_WITH_TESTS: ${{ inputs.only_with_tests }}
-      CHOOSE_CODE_FILES_ONLY: ${{ inputs.choose_code_files_only }}
     defaults:
       run:
         shell: bash -leo pipefail {0}
@@ -219,10 +196,6 @@ jobs:
 
           instance_set="${INSTANCE_SET:-smoke}"
           context_tokens="${CONTEXT_TOKENS:-}"
-          use_synthetic_tests="${USE_SYNTHETIC_TESTS:-true}"
-          observe_synthetic_tests="${OBSERVE_SYNTHETIC_TESTS:-false}"
-          only_with_tests="${ONLY_WITH_TESTS:-false}"
-          choose_code_files_only="${CHOOSE_CODE_FILES_ONLY:-false}"
           limits="${LIMITS:-default}"
           num_runners="${NUM_RUNNERS:-2}"
           runner_index="${{ matrix.index }}"
@@ -246,25 +219,13 @@ jobs:
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
 
-          if [ "${use_synthetic_tests}" == "false" ]; then
-            echo Removing synthetic tests by deleting data/test_patches
-            rm -rf data/test_patches
-          fi
-
           python -m solver.solve \
             --instance_set "${instance_set}" \
             $( [ "${limits}" != "default" ] && echo "--limit ${limits}" ) \
-            $( [ "${observe_synthetic_tests}" == "true" ] && echo "--observe_tests" ) \
-            $( [ "${only_with_tests}" == "true" ] && echo "--only_with_tests" ) \
-            $( [ "${choose_code_files_only}" == "true" ] && echo "--choose_code_files_only" ) \
+            ${{ inputs.extra_args }} \
             --num_runners "${num_runners}" \
             --runner_index "${runner_index}"
 
-          touch predictions.jsonl
-
-      - name: Run evaluation
-        if: inputs.choose_code_files_only == 'false'
-        run: |
           python -m swebench.harness.run_evaluation \
             --predictions_path predictions.jsonl \
             --run_id "${instance_set}"
