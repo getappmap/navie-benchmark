@@ -194,6 +194,8 @@ if __name__ == "__main__":
         print("[solve] Running with OpenAI API key")
     elif environ.get("ANTHROPIC_API_KEY"):
         print("[solve] Running with Anthropic API key")
+    elif environ.get("GOOGLE_WEB_CREDENTIALS"):
+        print("[solve] Running with Google Web credentials")
     else:
         print("[solve] WARNING: OpenAI API key not found in environment")
 

@@ -11,10 +11,12 @@ on:
           - gemini-1.5-pro-002
           - gpt-4o-2024-08-06
           - gpt-4o-2024-05-13
-          - claude-3-5-sonnet-20240620
-          - claude-3-5-sonnet-20241022
+          - gpt-4.1-2025-04-14
           - o1-preview-2024-09-12
           - o1-mini-2024-09-12
+          - claude-3-5-sonnet-20240620
+          - claude-3-5-sonnet-20241022
+          - claude-3-7-sonnet-20250219
       instance_set:
         description: "Instance set to solve"
         type: string
@@ -86,7 +88,7 @@ permissions:
 
 jobs:
   show-inputs:
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     steps:
       - name: Display Input Values
         run: |
@@ -149,7 +151,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       # Restore the appmap-js build
       - name: Restore appmap-js build
@@ -296,7 +298,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
