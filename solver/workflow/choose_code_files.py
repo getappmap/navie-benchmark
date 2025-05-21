@@ -35,7 +35,7 @@ Output the results as one file path on each line, and nothing else.
 
 Do not include line numbers or any location within the file. Just the file path.
 """,
-        options=f"/noprojectinfo /noformat /noclassify /exclude={"|".join(test_regexp_patterns)} /noterms /include=py /tokenlimit={token_limit}",
+        options=f"/gather /noprojectinfo /noformat /noclassify /exclude={"|".join(test_regexp_patterns)} /noterms /include=py /tokenlimit={token_limit}",
         extension="txt",
     )
 

@@ -55,7 +55,7 @@ Do not include line numbers or any location within the file. Just the file path.
     ).search(
         issue_content,
         prompt="\n\n".join(prompt),
-        options=f"/noprojectinfo /noformat /noclassify /include={"|".join(test_regexp_patterns)} /noterms /tokenlimit={token_limit}",
+        options=f"/gather /noprojectinfo /noformat /noclassify /include={"|".join(test_regexp_patterns)} /noterms /tokenlimit={token_limit}",
         extension="txt",
     )
 
