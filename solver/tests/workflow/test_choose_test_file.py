@@ -244,7 +244,7 @@ I ranked them in this order because:
         editor_instance_mock.search.assert_called_once_with(
             self.issue_content,
             prompt=ANY,
-            options=f"/gather /noprojectinfo /noformat /noclassify /include={"|".join(test_regexp_patterns)} /noterms /tokenlimit=3000",
+            options=f"/noprojectinfo /noformat /noclassify /include={"|".join(test_regexp_patterns)} /noterms /tokenlimit=3000",
             extension="txt",
         )
 
